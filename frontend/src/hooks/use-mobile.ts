@@ -1,6 +1,8 @@
 import * as React from "react"
 
-const MOBILE_BREAKPOINT = 768
+// Prog zwijania sidebara w hamburger (wysuwany Sheet). 1440 obejmuje tablety
+// poziomo (iPad Pro 1366) i laptopy 1366px — staly panel dopiero na wiekszych ekranach.
+const MOBILE_BREAKPOINT = 1440
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)

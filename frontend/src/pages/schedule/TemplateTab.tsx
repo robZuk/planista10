@@ -638,17 +638,21 @@ export default function TemplateTab() {
           </SelectContent>
         </Select>
 
-        <div className="ml-auto flex gap-2">
+        <div className="flex w-full gap-2 sm:ml-auto sm:w-auto">
           {/* Kasowanie idzie po calym wzorcu wydzialu, wiec nie zalezy od wybranej siatki. */}
           {/* Dodawanie wymaga konkretnej siatki i semestru — dialog czerpie z nich liste przedmiotow. */}
           {canEdit && !allSpecializations && typeof semester === 'number' && (
-            <Button onClick={() => openCreate(days[0]!.key, blocks[0]!.id)}>
+            <Button className="flex-1 sm:flex-none" onClick={() => openCreate(days[0]!.key, blocks[0]!.id)}>
               <Plus />
               Dodaj zajecia
             </Button>
           )}
           {canClearPlan && (
-            <Button variant="destructive" onClick={() => setClearOpen(true)}>
+            <Button
+              variant="destructive"
+              className="flex-1 sm:flex-none"
+              onClick={() => setClearOpen(true)}
+            >
               <Trash2 />
               Usun plan
             </Button>

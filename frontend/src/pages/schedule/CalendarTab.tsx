@@ -650,21 +650,25 @@ export default function CalendarTab() {
           </SelectContent>
         </Select>
 
-        <div className="ml-auto flex gap-2">
+        <div className="flex w-full flex-wrap gap-2 sm:ml-auto sm:w-auto sm:flex-nowrap">
           {canAddEntry && (
-            <Button onClick={() => openCreate(from)}>
+            <Button className="flex-1 sm:flex-none" onClick={() => openCreate(from)}>
               <Plus />
               Dodaj zajecia
             </Button>
           )}
           {canGenerate && (
-            <Button variant="destructive" onClick={() => setClearOpen(true)}>
+            <Button
+              variant="destructive"
+              className="flex-1 sm:flex-none"
+              onClick={() => setClearOpen(true)}
+            >
               <Trash2 />
               Usun plan
             </Button>
           )}
           {canGenerate && (
-            <Button onClick={() => setGenerateOpen(true)}>
+            <Button className="flex-1 sm:flex-none" onClick={() => setGenerateOpen(true)}>
               <Sparkles />
               Generuj semestr
             </Button>

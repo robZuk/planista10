@@ -12,6 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { NavUser } from './NavUser';
 import { useAuthStore } from '@/store/authStore';
@@ -27,6 +28,13 @@ export function AppSidebar() {
   const role = useAuthStore((s) => s.user?.role);
   const { pathname } = useLocation();
   const groups = visibleGroups(role);
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  // Na mobile panel to wysuwany Sheet — po wyborze pozycji zamykamy go,
+  // zeby nie zaslanial tresci. Na desktopie no-op (Sheet nie jest widoczny).
+  const closeOnMobile = () => {
+    if (isMobile) setOpenMobile(false);
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -34,7 +42,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <NavLink to="/">
+              <NavLink to="/" onClick={closeOnMobile}>
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <CalendarRange className="size-4" />
                 </div>
@@ -60,7 +68,7 @@ export function AppSidebar() {
                   return (
                     <SidebarMenuItem key={item.to}>
                       <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-                        <NavLink to={item.to}>
+                        <NavLink to={item.to} onClick={closeOnMobile}>
                           <item.icon />
                           <span>{item.label}</span>
                         </NavLink>
