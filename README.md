@@ -68,20 +68,24 @@ konfliktów sal, prowadzących i grup.
 Cały system działa w kontenerach. Usługi są w **dwóch sieciach** (defense in depth):
 na zewnątrz wystawiony jest **tylko** frontend, baza jest odcięta od internetu.
 
+Całość działa w Dockerze na jednym VPS:
+
 ```mermaid
 flowchart TB
-    user([Użytkownik]) -->|HTTPS| fe
-    subgraph host["VPS · Docker"]
-        subgraph edge["sieć edge"]
-            fe["frontend<br/>nginx + SPA"]
-            be["backend<br/>Node + Express"]
-        end
-        subgraph internal["sieć internal · internal: true (bez internetu)"]
-            db[("PostgreSQL")]
-        end
-        fe -->|/api| be
-        be --> db
+    user(["Użytkownik"])
+
+    subgraph edgeNet["VPS · sieć edge (wystawiona na świat)"]
+        fe["frontend · nginx + SPA"]
+        be["backend · Node + Express"]
     end
+
+    subgraph internalNet["sieć internal · internal: true (bez internetu)"]
+        db["PostgreSQL"]
+    end
+
+    user -->|HTTPS| fe
+    fe -->|/api| be
+    be --> db
 ```
 
 - **frontend** (nginx) serwuje statyczny build SPA i proxuje `/api` na backend.
@@ -97,10 +101,20 @@ To rdzeń projektu — pełny łańcuch od kodu do działającej produkcji.
 
 ```mermaid
 flowchart LR
-    push["git push · main"] --> test["testy<br/>lint + test + build<br/>(tests.yml)"]
-    test -->|zielone| build["build obrazów"] --> ghcr[("GHCR<br/>rejestr obrazów")]
-    ghcr --> deploy["deploy przez SSH"] --> prod["docker compose pull + up -d<br/>(VPS)"]
-    test -.->|czerwone| stop["STOP — brak wdrożenia"]
+    push["git push · main"]
+    test["testy<br/>lint + test + build<br/>(tests.yml)"]
+    build["build obrazów"]
+    ghcr["GHCR<br/>rejestr obrazów"]
+    deploy["deploy przez SSH"]
+    prod["docker compose pull + up -d<br/>(VPS)"]
+    stop["STOP — brak wdrożenia"]
+
+    push --> test
+    test -->|zielone| build
+    build --> ghcr
+    ghcr --> deploy
+    deploy --> prod
+    test -.->|czerwone| stop
 ```
 
 - **Bramka jakości:** deploy rusza **dopiero po zielonych testach** (`needs`) — czerwony test
