@@ -55,16 +55,25 @@ jobs:
           docker compose exec -T backend npx prisma migrate deploy
           docker compose exec -T backend npm run db:seed
 
+      # Pętla MUSI konczyc sie bledem, gdy usluga nie wstanie. Inaczej krok przechodzi
+      # na zielono, a job pada dopiero na testach E2E — z mylacym komunikatem o
+      # nieznalezionym elemencie zamiast o niedzialajacym stacku.
       - name: Czekaj az backend i frontend odpowiedza
         run: |
-          for i in $(seq 1 60); do
-            [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:4001/health || true)" = "200" ] && echo "backend OK" && break
-            sleep 2
-          done
-          for i in $(seq 1 60); do
-            [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:5174 || true)" = "200" ] && echo "frontend OK" && break
-            sleep 2
-          done
+          wait_for() {
+            name="$1"; url="$2"
+            for i in $(seq 1 60); do
+              if [ "$(curl -s -o /dev/null -w '%{http_code}' "$url" || true)" = "200" ]; then
+                echo "$name OK (po $((i * 2)) s)"
+                return 0
+              fi
+              sleep 2
+            done
+            echo "::error::$name nie odpowiedzial 200 na $url w ciagu 120 s"
+            return 1
+          }
+          wait_for backend http://localhost:4001/health || exit 1
+          wait_for frontend http://localhost:5174 || exit 1
 
       - name: Testy E2E
         working-directory: frontend

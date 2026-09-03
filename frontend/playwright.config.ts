@@ -25,15 +25,29 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5174',
     trace: 'on-first-retry',
   },
+  // Dwa uklady, bo sidebar zmienia sie skokowo na MOBILE_BREAKPOINT
+  // (src/hooks/use-mobile.ts = 1440): powyzej staly panel, ponizej wysuwany Sheet.
+  // Testowanie tylko jednego zostawiloby drugi bez pokrycia — a to wlasnie zmiana
+  // tego progu (768 -> 1440) wywalila kiedys cale E2E.
   projects: [
     {
       name: 'chromium',
+      testIgnore: /mobile-nav\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
-        // UWAGA: viewport musi byc >= MOBILE_BREAKPOINT z src/hooks/use-mobile.ts (1440),
-        // inaczej sidebar zwija sie w hamburger (Sheet) i testy nie widza linkow menu.
-        // Desktop Chrome daje domyslnie 1280x720 — czyli PONIZEJ progu.
+        // UWAGA: viewport musi byc >= MOBILE_BREAKPOINT, inaczej sidebar zwija sie
+        // w hamburger i testy nie widza linkow menu. Desktop Chrome daje domyslnie
+        // 1280x720 — czyli PONIZEJ progu.
         viewport: { width: 1600, height: 900 },
+      },
+    },
+    {
+      name: 'chromium-hamburger',
+      testMatch: /mobile-nav\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        // Ponizej progu — sidebar jako wysuwany Sheet (laptopy 1366/1280).
+        viewport: { width: 1280, height: 720 },
       },
     },
   ],
