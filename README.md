@@ -95,8 +95,6 @@ flowchart TB
 
 ## 🚀 DevOps
 
-To rdzeń projektu — pełny łańcuch od kodu do działającej produkcji.
-
 ### CI/CD
 
 ```mermaid
