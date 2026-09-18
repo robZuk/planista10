@@ -55,7 +55,7 @@ export function getGroupFamilyIds(
   const result = new Set<string>([groupId]);
 
   let curr = byId.get(groupId);
-  while (curr?.parentGroupId) {
+  while (curr?.parentGroupId && !result.has(curr.parentGroupId)) {
     result.add(curr.parentGroupId);
     curr = byId.get(curr.parentGroupId);
   }
@@ -69,6 +69,32 @@ export function getGroupFamilyIds(
         queue.push(g.id);
       }
     }
+  }
+
+  return [...result];
+}
+
+/**
+ * Grupa + jej przodkowie (bez potomkow i rodzenstwa) — dokladnie te zajecia, na
+ * ktore chodzi sklad tej grupy: wlasne plus dziedziczone po grupie nadrzednej
+ * (cwiczenia C-B chodza tez na wyklad W).
+ *
+ * To NIE jest `getGroupFamilyIds`. Przy konfliktach potomkowie sa potrzebni, bo
+ * wyklad realnie koliduje z cwiczeniami swoich podgrup. Jako filtr widoku
+ * zstepowanie w dol byloby bledem: wybor grupy wykladowej pokazywalby plan
+ * calego rocznika, czyli nie zawezalby niczego.
+ */
+export function getGroupWithAncestorIds(
+  groupId: string,
+  groups: { id: string; parentGroupId: string | null }[],
+): string[] {
+  const byId = new Map(groups.map((g) => [g.id, g]));
+  const result = new Set<string>([groupId]);
+
+  let curr = byId.get(groupId);
+  while (curr?.parentGroupId && !result.has(curr.parentGroupId)) {
+    result.add(curr.parentGroupId);
+    curr = byId.get(curr.parentGroupId);
   }
 
   return [...result];

@@ -56,6 +56,7 @@ import { UNPLANNED_DROP_BLOCKS, computeUnplannedItems } from '@/lib/unplannedIte
 import {
   DAY_TO_NUM,
   getGroupFamilyIds,
+  getGroupWithAncestorIds,
   isTimeWindowOk,
   rangesOverlap,
   weekTypesConflict,
@@ -322,16 +323,19 @@ export default function TemplateTab() {
     }
   }, [relevantGroups, groupFilter]);
 
-  // Filtr po grupie obejmuje CALA rodzine (wyklad -> cwiczenia -> lab): wybor dowolnej
-  // grupy pokazuje komplet zajec, na ktore chodzi jej sklad. null = brak zawezenia.
-  const groupFilterFamilyIds = useMemo(
-    () => (groupFilter === 'all' ? null : getGroupFamilyIds(groupFilter, groups ?? [])),
+  // Filtr po grupie: sama grupa + jej przodkowie, bo na tyle zajec chodzi jej sklad
+  // (cwiczenia C-B maja tez wyklad W). W dol NIE schodzimy — rodzina z potomkami
+  // sprawdza sie przy konfliktach, ale jako filtr widoku znaczyla, ze wybor grupy
+  // wykladowej pokazuje plan calego rocznika, czyli nie zaweza niczego.
+  // null = brak zawezenia.
+  const groupFilterIds = useMemo(
+    () => (groupFilter === 'all' ? null : getGroupWithAncestorIds(groupFilter, groups ?? [])),
     [groupFilter, groups],
   );
 
   // Backlog liczymy z PELNEJ listy wzorcow semestru — filtry widoku (sala/prowadzacy/forma)
   // zawezaja tylko to, co widac na siatce, a nie to, co faktycznie jest juz zaplanowane.
-  const { items: unplannedItems, missingGroupTypes } = useMemo(
+  const { items: allUnplannedItems, missingGroupTypes } = useMemo(
     () =>
       computeUnplannedItems({
         entries: semesterEntries,
@@ -340,6 +344,18 @@ export default function TemplateTab() {
         teachingWeeks,
       }),
     [semesterEntries, relevantGroups, templates, teachingWeeks],
+  );
+
+  // Filtr grupy obowiazuje tak samo w backlogu, jak na siatce — inaczej panel kusil
+  // pozycjami grup, ktorych w planie akurat nie widac. `missingGroupTypes` zostaje
+  // policzone z PELNEJ listy grup: ostrzezenie "brak grup" mowi o brakach w danych,
+  // a nie o tym, ze filtr odcial grupe danego typu.
+  const unplannedItems = useMemo(
+    () =>
+      groupFilterIds === null
+        ? allUnplannedItems
+        : allUnplannedItems.filter((item) => groupFilterIds.includes(item.group.id)),
+    [allUnplannedItems, groupFilterIds],
   );
 
   // Panel ma sens tylko dla konkretnej siatki i semestru — inaczej nie wiadomo,
@@ -357,11 +373,11 @@ export default function TemplateTab() {
           (roomFilter === 'all' || template.room.id === roomFilter) &&
           (instructorFilter === 'all' || template.instructor.id === instructorFilter) &&
           (classTypeFilter === 'all' || template.classType === classTypeFilter) &&
-          (groupFilterFamilyIds === null ||
-            (!!template.studentGroup && groupFilterFamilyIds.includes(template.studentGroup.id))) &&
+          (groupFilterIds === null ||
+            (!!template.studentGroup && groupFilterIds.includes(template.studentGroup.id))) &&
           matchesWeekView(template.weekType, weekView),
       ) ?? [],
-    [templates, roomFilter, instructorFilter, classTypeFilter, groupFilterFamilyIds, weekView],
+    [templates, roomFilter, instructorFilter, classTypeFilter, groupFilterIds, weekView],
   );
 
   /**

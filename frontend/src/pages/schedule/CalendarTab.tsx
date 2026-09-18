@@ -51,7 +51,12 @@ import { fetchInstructors } from '@/api/instructors';
 import { fetchTimeBlocks } from '@/api/timeBlocks';
 import { getScheduleErrorMessage } from '@/lib/scheduleErrors';
 import { CLASS_COLORS, CLASS_FULL_LABELS, CLASS_LABELS, CLASS_TYPES, daysForMode } from '@/lib/scheduleDisplay';
-import { getGroupFamilyIds, isTimeWindowOk, rangesOverlap } from '@/lib/scheduleConflicts';
+import {
+  getGroupFamilyIds,
+  getGroupWithAncestorIds,
+  isTimeWindowOk,
+  rangesOverlap,
+} from '@/lib/scheduleConflicts';
 import type { PlanScope } from '@/lib/planScope';
 import { STUDY_MODES, STUDY_MODE_LABELS } from '@/lib/labels';
 import {
@@ -352,9 +357,11 @@ export default function CalendarTab() {
     }
   }, [relevantGroups, groupFilter]);
 
-  // Filtr po grupie obejmuje CALA rodzine (wyklad -> cwiczenia -> lab). null = brak zawezenia.
-  const groupFilterFamilyIds = useMemo(
-    () => (groupFilter === 'all' ? null : getGroupFamilyIds(groupFilter, groups ?? [])),
+  // Filtr po grupie: sama grupa + jej przodkowie (cwiczenia C-B maja tez wyklad W).
+  // W dol nie schodzimy — patrz komentarz przy tym samym filtrze we wzorcu tygodnia.
+  // null = brak zawezenia.
+  const groupFilterIds = useMemo(
+    () => (groupFilter === 'all' ? null : getGroupWithAncestorIds(groupFilter, groups ?? [])),
     [groupFilter, groups],
   );
 
@@ -395,8 +402,8 @@ export default function CalendarTab() {
             entry.curriculumEntry.curriculumVersion.specializationId ===
               selectedSpecializationId) &&
           (semesterFilter === 'all' || entry.curriculumEntry.semester === semesterFilter) &&
-          (groupFilterFamilyIds === null ||
-            (entry.studentGroup != null && groupFilterFamilyIds.includes(entry.studentGroup.id))),
+          (groupFilterIds === null ||
+            (entry.studentGroup != null && groupFilterIds.includes(entry.studentGroup.id))),
       ) ?? [],
     [
       entries,
@@ -409,7 +416,7 @@ export default function CalendarTab() {
       versionFilter,
       selectedSpecializationId,
       semesterFilter,
-      groupFilterFamilyIds,
+      groupFilterIds,
     ],
   );
 

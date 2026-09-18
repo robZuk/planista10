@@ -4,6 +4,7 @@ import {
   isTimeWindowOk,
   weekTypesConflict,
   getGroupFamilyIds,
+  getGroupWithAncestorIds,
 } from './scheduleConflicts';
 
 describe('rangesOverlap', () => {
@@ -60,5 +61,45 @@ describe('getGroupFamilyIds', () => {
 
   it('dla liscia L1 idzie w gore lancucha', () => {
     expect(getGroupFamilyIds('L1', groups).sort()).toEqual(['C1', 'L1', 'W']);
+  });
+
+  it('cykl w danych nie zapetla funkcji', () => {
+    const cykl = [
+      { id: 'A', parentGroupId: 'B' },
+      { id: 'B', parentGroupId: 'A' },
+    ];
+    expect(getGroupFamilyIds('A', cykl).sort()).toEqual(['A', 'B']);
+  });
+});
+
+describe('getGroupWithAncestorIds', () => {
+  // W: rodzic (wyklad) -> C1, C2 (cwiczenia); C1 -> L1 (lab).
+  const groups = [
+    { id: 'W', parentGroupId: null },
+    { id: 'C1', parentGroupId: 'W' },
+    { id: 'C2', parentGroupId: 'W' },
+    { id: 'L1', parentGroupId: 'C1' },
+  ];
+
+  it('dla korzenia W zwraca tylko W — filtr widoku nie schodzi do podgrup', () => {
+    expect(getGroupWithAncestorIds('W', groups)).toEqual(['W']);
+  });
+
+  it('dla C1 zwraca C1 i wyklad W, bez laboratorium L1', () => {
+    const ids = getGroupWithAncestorIds('C1', groups);
+    expect(ids.sort()).toEqual(['C1', 'W']);
+    expect(ids).not.toContain('L1');
+  });
+
+  it('dla liscia L1 idzie caly lancuch w gore', () => {
+    expect(getGroupWithAncestorIds('L1', groups).sort()).toEqual(['C1', 'L1', 'W']);
+  });
+
+  it('cykl w danych nie zapetla funkcji', () => {
+    const cykl = [
+      { id: 'A', parentGroupId: 'B' },
+      { id: 'B', parentGroupId: 'A' },
+    ];
+    expect(getGroupWithAncestorIds('A', cykl).sort()).toEqual(['A', 'B']);
   });
 });
