@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { fromIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
 import { expandDates, modeWeekdays, TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
-import { groupsOverlap, indexGroups } from '../lib/groupTree';
+import { groupsOverlap, indexGroups, pathFromRoot } from '../lib/groupTree';
 import { checkTimeWindow, rangesOverlap, roomTypeMap } from '../lib/scheduleTime';
 import {
   findConflict,
@@ -357,7 +357,14 @@ export async function planView(term: AcademicTerm, cohortId: string) {
         order: s.programEntry.orderInSemester,
         specialization: s.programEntry.specialization?.shortName ?? null,
         classType: s.classType,
-        group: { id: s.groupId, name: ctx.nameOf(s.groupId) },
+        group: {
+          id: s.groupId,
+          name: ctx.nameOf(s.groupId),
+          // Przodkowie od korzenia (bez samej grupy) — drzewo filtra i widok "co ma student tej grupy".
+          ancestors: pathFromRoot(s.groupId, ctx.index)
+            .slice(0, -1)
+            .map((g) => ({ id: g.id, name: ctx.nameOf(g.id) })),
+        },
         hours: s.hours,
         plannedHours: (planned.get(s.id) ?? 0) + (manualHours.get(s.id) ?? 0),
         status: s.status,

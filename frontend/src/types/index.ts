@@ -517,7 +517,8 @@ export interface PlanSection {
   order: number;
   specialization: string | null;
   classType: ClassType;
-  group: { id: string; name: string };
+  /** ancestors: przodkowie grupy od korzenia (bez niej samej). */
+  group: { id: string; name: string; ancestors: { id: string; name: string }[] };
   hours: number;
   plannedHours: number;
   status: 'ACTIVE' | 'ORPHANED';

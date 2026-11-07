@@ -17,6 +17,7 @@ import { fetchAvailability, fetchPlan, updatePlacement } from '@/api/plan';
 import { fetchTimeBlocks } from '@/api/timeBlocks';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage } from '@/lib/errors';
+import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGroupFilter';
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
@@ -107,8 +108,11 @@ export default function PlanPage() {
   };
 
   const sections = useMemo(() => plan?.sections ?? [], [plan]);
-  const groups = useMemo(() => [...new Set(sections.map((s) => s.group.name))].sort(), [sections]);
-  const backlog = sections.filter((s) => s.status === 'ACTIVE' && s.plannedHours < s.hours);
+  const groups = useMemo(() => groupTreeOptions(sections.map((s) => s.group)), [sections]);
+  // Filtr grupy: wybrana grupa i jej przodkowie — ta sama regula dla siatki i listy.
+  const visibleGroups = useMemo(() => visibleGroupIds(sections.map((s) => s.group), groupFilter), [sections, groupFilter]);
+  const inView = (s: PlanSection) => !visibleGroups || visibleGroups.has(s.group.id);
+  const backlog = sections.filter((s) => s.status === 'ACTIVE' && s.plannedHours < s.hours && inView(s));
 
   const visiblePlacement = (p: PlanPlacement) =>
     !zjazd || p.cycle !== 'ZJAZD' || p.pattern === 'ALL' || p.numbers.includes(zjazd);
@@ -122,7 +126,7 @@ export default function PlanPage() {
       classType: s.classType,
       title: s.subject.name,
       lines: [s.group.name, p.room.label, `${p.instructor?.name ?? 'NN'} · ${patternLabel(p)}`],
-      muted: groupFilter !== 'all' && s.group.name !== groupFilter,
+      muted: !inView(s),
     })),
   );
   const placementOwner = new Map(sections.flatMap((s) => s.placements.map((p) => [p.id, { section: s, placement: p }] as const)));
@@ -159,7 +163,7 @@ export default function PlanPage() {
         actions={
           <>
             {isAdmin && <FacultySelector />}
-            <NativeSelect value={cohortId} onChange={(e) => { setCohortId(e.target.value); setSelected(null); setZjazd(null); }} className="w-72" aria-label="Rocznik">
+            <NativeSelect value={cohortId} onChange={(e) => { setCohortId(e.target.value); setSelected(null); setZjazd(null); setGroupFilter('all'); }} className="w-72" aria-label="Rocznik">
               {cohorts.map((c) => (
                 <NativeSelectOption key={c.id} value={c.id}>
                   {c.program.code} · semestr {c.semester} (nabor {c.startTermLabel})
@@ -248,11 +252,17 @@ export default function PlanPage() {
 
           <TabsContent value="pattern" className="mt-3 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <NativeSelect value={groupFilter} onChange={(e) => setGroupFilter(e.target.value)} className="w-56" aria-label="Wyroznij grupe">
+              <NativeSelect
+                value={groupFilter}
+                onChange={(e) => setGroupFilter(e.target.value)}
+                className="w-56"
+                aria-label="Filtr grupy"
+                title="Zajecia, na ktore chodzi wybrana grupa: ona sama i grupy nadrzedne (wyklad, caly rocznik)"
+              >
                 <NativeSelectOption value="all">Wszystkie grupy</NativeSelectOption>
                 {groups.map((g) => (
-                  <NativeSelectOption key={g} value={g}>
-                    {g}
+                  <NativeSelectOption key={g.id} value={g.id}>
+                    {treeOptionLabel(g)}
                   </NativeSelectOption>
                 ))}
               </NativeSelect>
@@ -346,7 +356,9 @@ export default function PlanPage() {
                   ))}
                   {backlog.length === 0 &&
                     (sections.some((s) => s.status === 'ACTIVE') ? (
-                      <li className="text-sm text-muted-foreground">Wszystkie godziny zaplanowane.</li>
+                      <li className="text-sm text-muted-foreground">
+                        {visibleGroups ? 'Wszystkie godziny tej grupy zaplanowane.' : 'Wszystkie godziny zaplanowane.'}
+                      </li>
                     ) : (
                       // Pusta lista bez zajec to nie "wszystko zaplanowane" — zajecia powstaja z synchronizacji.
                       <li className="text-sm text-muted-foreground">
