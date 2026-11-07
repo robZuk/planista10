@@ -10,7 +10,7 @@ import { findConflict, type BusySlot } from '../lib/materializer';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
 import { toTreeGroup } from '../services/cohorts';
 import { activeCohorts } from '../services/sections';
-import { availability, calendarFor, checkPlacement, generate, planView, type PlacementInput } from '../services/plan';
+import { assertVersionApproved, availability, calendarFor, checkPlacement, generate, planView, type PlacementInput } from '../services/plan';
 
 /**
  * Plan semestru: umieszczenia (wzorzec) i terminy. Uklada wylacznie planista; terminy
@@ -108,7 +108,10 @@ export const createPlacement = asyncHandler(async (req, res) => {
 });
 
 async function loadPlacement(id: string) {
-  const placement = await prisma.placement.findUnique({ where: { id }, include: { term: true } });
+  const placement = await prisma.placement.findUnique({
+    where: { id },
+    include: { term: true, section: { select: { cohort: { include: { program: true, programVersion: true, startTerm: true } } } } },
+  });
   if (!placement) throw new AppError(404, 'Umieszczenie nie znalezione');
   return placement;
 }
@@ -146,6 +149,7 @@ export const updatePlacement = asyncHandler(async (req, res) => {
 export const deletePlacement = asyncHandler(async (req, res) => {
   const current = await loadPlacement(String(req.params.id));
   await assertFacultyScope(req, current.facultyId);
+  assertVersionApproved(current.section.cohort);
   // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania.
   await prisma.placement.delete({ where: { id: current.id } });
   res.json({ message: 'Umieszczenie usuniete — jego terminy znikna przy kolejnym "Generuj terminy"' });
@@ -230,11 +234,13 @@ async function occurrenceConflicts(slot: Omit<BusySlot, 'label'>, excludeId?: st
   );
 }
 
-async function assertCalendarOpen(termId: string, cohortId: string) {
+/** Terminy rocznika wolno zmieniac: kalendarz nie w archiwum i wersja programu zatwierdzona. */
+async function assertPlanEditable(termId: string, cohortId: string) {
   const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: termId } });
   const [ctx] = await activeCohorts(term, null, [cohortId]);
   const calendar = ctx ? await calendarFor(term, ctx) : null;
   if (calendar?.status === 'ARCHIVED') throw new AppError(409, 'Kalendarz w archiwum — terminy tylko do odczytu');
+  if (ctx) assertVersionApproved(ctx.cohort);
 }
 
 /**
@@ -246,7 +252,7 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
   const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) }, include: { placement: true, section: true } });
   if (!occ) throw new AppError(404, 'Termin nie znaleziony');
   await assertFacultyScope(req, occ.facultyId);
-  await assertCalendarOpen(occ.termId, occ.section.cohortId);
+  await assertPlanEditable(occ.termId, occ.section.cohortId);
   const body = req.body as {
     action: 'CANCEL' | 'MODIFY' | 'RESTORE';
     date?: string;
@@ -353,7 +359,7 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
   const section = await prisma.classSection.findUnique({ where: { id: body.sectionId } });
   if (!section || section.termId !== term.id) throw new AppError(400, 'Zajecia nie naleza do tego semestru');
   await assertFacultyScope(req, section.facultyId);
-  await assertCalendarOpen(term.id, section.cohortId);
+  await assertPlanEditable(term.id, section.cohortId);
   if (!isIsoDate(body.date) || !Number.isInteger(body.startOrder) || !Number.isInteger(body.endOrder) || body.endOrder < body.startOrder) {
     throw new AppError(400, 'Podaj date i godziny');
   }
@@ -387,10 +393,11 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
 });
 
 export const deleteManualOccurrence = asyncHandler(async (req, res) => {
-  const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) } });
+  const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) }, include: { section: { select: { cohortId: true } } } });
   if (!occ) throw new AppError(404, 'Termin nie znaleziony');
   await assertFacultyScope(req, occ.facultyId);
   if (occ.kind !== 'MANUAL') throw new AppError(409, 'Termin z wzorca mozna odwolac, ale nie usunac');
+  await assertPlanEditable(occ.termId, occ.section.cohortId);
   await prisma.occurrence.delete({ where: { id: occ.id } });
   res.json({ message: 'Termin reczny usuniety' });
 });

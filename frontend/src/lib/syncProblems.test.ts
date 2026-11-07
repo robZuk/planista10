@@ -13,6 +13,7 @@ function problem(over: Partial<SyncProblem>): SyncProblem {
     subject: 'Przedmiot',
     kind: 'MISSING_SPECIALIZATION_GROUP',
     specialization: zeew,
+    programVersion: null,
     message: 'Rocznik nie ma grupy specjalnosci ZEEW',
     ...over,
   };

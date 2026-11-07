@@ -55,6 +55,24 @@ describe('API — plan', () => {
     expect(res.status).toBe(409);
   });
 
+  it('usuniecie umieszczenia, gdy wersja programu rocznika jest w projekcie -> 409', async () => {
+    prismaMock.placement.findUnique.mockResolvedValueOnce({
+      id: 'p1',
+      facultyId: 'wm',
+      section: {
+        cohort: {
+          name: null,
+          program: { code: 'EDST-N1' },
+          programVersion: { label: 'Wersja 1', status: 'DRAFT' },
+          startTerm: { startYear: 2024, type: 'WINTER' },
+        },
+      },
+    });
+    const res = await request(app).delete('/api/placements/p1').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/Wersja programu "Wersja 1" .* jest w projekcie/);
+  });
+
   it('zla data "od kiedy" przy generowaniu -> 400', async () => {
     const res = await request(app)
       .post('/api/terms/2026-L/generate')

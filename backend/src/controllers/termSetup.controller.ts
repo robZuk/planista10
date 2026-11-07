@@ -84,6 +84,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
       code: ctx.cohort.program.code,
       semester: ctx.semester,
       isNewIntake: ctx.semester === 1,
+      programVersion: { id: ctx.cohort.programVersion.id, label: ctx.cohort.programVersion.label, status: ctx.cohort.programVersion.status },
       calendar: calendar ? { name: calendar.name, status: calendar.status } : null,
       groups: ctx.tree.length,
       sections,
@@ -102,6 +103,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
       totals: {
         cohorts: cohorts.length,
         cohortsWithoutCalendar: cohorts.filter((c) => !c.calendar).length,
+        cohortsWithDraftVersion: cohorts.filter((c) => c.programVersion.status === 'DRAFT').length,
         cohortsWithoutSections: cohorts.filter((c) => c.sections === 0).length,
         sections: cohorts.reduce((s, c) => s + c.sections, 0),
         vacancies: cohorts.reduce((s, c) => s + c.vacancies, 0),

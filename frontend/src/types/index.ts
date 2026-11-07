@@ -323,6 +323,8 @@ export interface ProgramEntry {
 
 export interface ProgramVersionDetail {
   version: Omit<ProgramVersionSummary, '_count'> & {
+    /** Roczniki korzystajace z tej wersji (cofniecie do projektu blokuje ich plan). */
+    cohorts: { id: string; label: string }[];
     program: {
       id: string;
       code: string;
@@ -467,8 +469,10 @@ export interface SyncProblem {
   /** Semestr programu rocznika w synchronizowanym semestrze. */
   semester: number;
   subject: string;
-  kind: 'NO_ROOT_GROUP' | 'MISSING_SPECIALIZATION_GROUP';
+  kind: 'NO_ROOT_GROUP' | 'MISSING_SPECIALIZATION_GROUP' | 'DRAFT_PROGRAM_VERSION';
   specialization: { id: string; shortName: string; name: string } | null;
+  /** Wersja programu rocznika (DRAFT_PROGRAM_VERSION). */
+  programVersion: { id: string; label: string } | null;
   message: string;
 }
 
@@ -529,7 +533,14 @@ export interface PlanSection {
 }
 
 export interface PlanView {
-  cohort: { id: string; label: string; code: string; semester: number; studyMode: StudyMode };
+  cohort: {
+    id: string;
+    label: string;
+    code: string;
+    semester: number;
+    studyMode: StudyMode;
+    programVersion: { id: string; label: string; status: ProgramVersionStatus };
+  };
   calendar: {
     id: string;
     name: string;
@@ -573,6 +584,8 @@ export interface GenerateReport {
   shortfalls: { section: string; missing: number }[];
   orphanExceptions: { section: string; date: string; action: string }[];
   calendarsMissing: string[];
+  /** Roczniki pominiete, bo ich wersja programu jest w projekcie. */
+  draftVersions: string[];
 }
 
 export interface OccurrenceRow {
@@ -621,6 +634,7 @@ export interface SetupCohort {
   code: string;
   semester: number;
   isNewIntake: boolean;
+  programVersion: { id: string; label: string; status: ProgramVersionStatus };
   calendar: { name: string; status: CalendarStatus } | null;
   groups: number;
   sections: number;
@@ -637,6 +651,7 @@ export interface SetupStatus {
   totals: {
     cohorts: number;
     cohortsWithoutCalendar: number;
+    cohortsWithDraftVersion: number;
     cohortsWithoutSections: number;
     sections: number;
     vacancies: number;

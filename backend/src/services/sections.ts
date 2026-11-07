@@ -17,7 +17,7 @@ const cohortForTerm = {
   program: {
     include: { fieldOfStudy: { include: { specializations: { select: { id: true, shortName: true, name: true } } } } },
   },
-  programVersion: { select: { id: true, totalSemesters: true } },
+  programVersion: { select: { id: true, totalSemesters: true, label: true, status: true } },
   startTerm: true,
   terms: true,
   groups: true,
@@ -110,8 +110,10 @@ export interface SyncProblem {
   /** Semestr programu rocznika w synchronizowanym semestrze. */
   semester: number;
   subject: string;
-  kind: DemandProblem['kind'];
+  kind: DemandProblem['kind'] | 'DRAFT_PROGRAM_VERSION';
   specialization: { id: string; shortName: string; name: string } | null;
+  /** Wersja programu rocznika (DRAFT_PROGRAM_VERSION). */
+  programVersion: { id: string; label: string } | null;
   message: string;
 }
 
@@ -125,6 +127,21 @@ export async function syncSections(
 
   for (const ctx of contexts) {
     const { cohort, semester } = ctx;
+    // Plan uklada sie tylko z zatwierdzonego programu — wersja w projekcie moze sie jeszcze
+    // zmienic. Rocznik pomijamy (istniejace zajecia zostaja bez zmian) i zglaszamy.
+    if (cohort.programVersion.status === 'DRAFT') {
+      report.problems.push({
+        cohort: cohortLabel(cohort),
+        cohortId: cohort.id,
+        semester,
+        subject: '',
+        kind: 'DRAFT_PROGRAM_VERSION',
+        specialization: null,
+        programVersion: { id: cohort.programVersion.id, label: cohort.programVersion.label },
+        message: `Wersja programu "${cohort.programVersion.label}" jest w projekcie — zatwierdz ja, zeby utworzyc zajecia`,
+      });
+      continue;
+    }
     const entries = await prisma.programEntry.findMany({
       where: { versionId: cohort.programVersionId, semester },
       include: { subject: { select: { name: true } } },
@@ -148,6 +165,7 @@ export async function syncSections(
           subject: subjectOf.get(p.programEntryId) ?? '',
           kind: p.kind,
           specialization: spec,
+          programVersion: null,
           message:
             p.kind === 'MISSING_SPECIALIZATION_GROUP' && spec
               ? `Rocznik nie ma grupy specjalnosci ${spec.shortName} — zajecia pominiete (dodaj specjalnosc w Rocznikach)`

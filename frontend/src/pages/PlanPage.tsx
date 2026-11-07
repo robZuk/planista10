@@ -84,9 +84,16 @@ export default function PlanPage() {
   const days = plan?.cohort.studyMode === 'PART_TIME' ? PART_DAYS : FULL_DAYS;
   // Zablokowany na stale (archiwum / brak uprawnien) — akcji nie pokazujemy wcale.
   const locked = plan?.calendar?.status === 'ARCHIVED' || !(isAdmin || me?.role === 'DEAN_OFFICE');
-  // Brak kalendarza da sie naprawic — akcje widoczne, ale wylaczone (uklad naglowka nie skacze).
+  // Brak kalendarza i wersja programu w projekcie da sie naprawic — akcje widoczne, ale
+  // wylaczone (uklad naglowka nie skacze), z podpowiedzia, co zrobic.
   const noCalendar = !!plan && !plan.calendar;
-  const readOnly = locked || !plan?.calendar;
+  const draftVersion = plan?.cohort.programVersion.status === 'DRAFT';
+  const blockedReason = draftVersion
+    ? 'Najpierw zatwierdz wersje programu tego rocznika'
+    : noCalendar
+      ? 'Najpierw zaloz kalendarz dla tego rocznika'
+      : null;
+  const readOnly = locked || !plan?.calendar || draftVersion;
 
   // Podpowiedz dostepnosci dla wybranych zajec (grupa + prowadzacy z obsady).
   const { data: availability } = useQuery({
@@ -177,15 +184,15 @@ export default function PlanPage() {
               ))}
             </NativeSelect>
             {plan && !locked && (
-              <Tooltip open={noCalendar ? undefined : false}>
+              <Tooltip open={blockedReason ? undefined : false}>
                 <TooltipTrigger asChild>
                   {/* span: wylaczony przycisk nie emituje zdarzen, a podpowiedz ma sie pokazac */}
-                  <span tabIndex={noCalendar ? 0 : -1} className="inline-flex gap-2">
-                    <Button variant="outline" disabled={noCalendar} onClick={() => setCarrying(true)}>
+                  <span tabIndex={blockedReason ? 0 : -1} className="inline-flex gap-2">
+                    <Button variant="outline" disabled={!!blockedReason} onClick={() => setCarrying(true)}>
                       <History /> Przenies plan z zeszlego roku
                     </Button>
                     <Button
-                      disabled={noCalendar}
+                      disabled={!!blockedReason}
                       onClick={() => setGenerating(true)}
                       variant={plan.stale ? 'default' : 'outline'}
                     >
@@ -193,7 +200,7 @@ export default function PlanPage() {
                     </Button>
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>Najpierw zaloz kalendarz dla tego rocznika</TooltipContent>
+                <TooltipContent>{blockedReason}</TooltipContent>
               </Tooltip>
             )}
           </>
@@ -226,6 +233,24 @@ export default function PlanPage() {
             <Badge variant="secondary" className="ml-2">zatwierdzona</Badge>
           )}
         </p>
+      )}
+      {plan && draftVersion && (
+        <Alert variant="destructive">
+          <TriangleAlert />
+          <AlertTitle>Wersja programu w projekcie — plan tylko do odczytu</AlertTitle>
+          <AlertDescription>
+            <p>
+              Plan uklada sie tylko z zatwierdzonego programu, bo wersja w projekcie moze sie jeszcze zmienic. Zatwierdz{' '}
+              <Link
+                to={`/curriculum/program/${plan.cohort.programVersion.id}`}
+                className="font-medium underline underline-offset-4"
+              >
+                {plan.cohort.programVersion.label}
+              </Link>
+              , a potem zsynchronizuj zajecia w „Zajecia i obsada”. Istniejace umieszczenia zostaja.
+            </p>
+          </AlertDescription>
+        </Alert>
       )}
       {plan && !plan.calendar && (
         <Alert variant="destructive">

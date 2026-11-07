@@ -30,6 +30,24 @@ const CLASS_LETTER: Record<string, string> = { LECTURE: 'W', EXERCISE: 'C', LAB:
 
 export type CalendarRow = TermCalendar & Prisma.TermCalendarGetPayload<{ include: typeof calendarInclude }>;
 
+/**
+ * Plan uklada sie tylko z zatwierdzonej wersji programu. Wersja w projekcie (takze cofnieta
+ * do projektu w trakcie planowania) blokuje zapisy planu rocznika do ponownego zatwierdzenia.
+ */
+export function assertVersionApproved(cohort: {
+  programVersion: { label: string; status: string };
+  program: { code: string };
+  startTerm: { startYear: number; type: 'WINTER' | 'SUMMER' };
+  name?: string | null;
+}) {
+  if (cohort.programVersion.status === 'DRAFT') {
+    throw new AppError(
+      409,
+      `Wersja programu "${cohort.programVersion.label}" rocznika ${cohortLabel(cohort)} jest w projekcie — zatwierdz ja, zeby ukladac plan`,
+    );
+  }
+}
+
 /** Kalendarz, wg ktorego rocznik ma zajecia: wybrany w Rocznikach albo domyslny wydzialu. */
 export async function calendarFor(term: AcademicTerm, ctx: CohortContext): Promise<CalendarRow | null> {
   const chosen = ctx.cohort.terms.find((t) => t.termId === term.id)?.calendarId;
@@ -182,6 +200,7 @@ export async function checkPlacement(term: AcademicTerm, input: PlacementInput, 
   if (!section || section.termId !== term.id) throw new AppError(400, 'Zajecia nie naleza do tego semestru');
   const [ctx] = await activeCohorts(term, null, [section.cohortId]);
   if (!ctx) throw new AppError(400, 'Rocznik nie ma zajec w tym semestrze');
+  assertVersionApproved(ctx.cohort);
   const calendar = await calendarFor(term, ctx);
   if (!calendar) throw new AppError(409, 'Rocznik nie ma kalendarza w tym semestrze — ustaw go w Kalendarzu semestru');
   if (calendar.status === 'ARCHIVED') throw new AppError(409, 'Kalendarz jest w archiwum — plan tylko do odczytu');
@@ -354,6 +373,11 @@ export async function planView(term: AcademicTerm, cohortId: string) {
       code: ctx.cohort.program.code,
       semester: ctx.semester,
       studyMode: ctx.cohort.program.studyMode,
+      programVersion: {
+        id: ctx.cohort.programVersion.id,
+        label: ctx.cohort.programVersion.label,
+        status: ctx.cohort.programVersion.status,
+      },
     },
     calendar: calendar
       ? {
@@ -425,6 +449,8 @@ export interface GenerateReport {
   shortfalls: { section: string; missing: number }[];
   orphanExceptions: { section: string; date: IsoDate; action: string }[];
   calendarsMissing: string[];
+  /** Roczniki pominiete, bo ich wersja programu jest w projekcie. */
+  draftVersions: string[];
 }
 
 export async function generate(
@@ -432,8 +458,12 @@ export async function generate(
   opts: { facultyId: string | null; cohortIds?: string[]; fromDate?: IsoDate | null; dryRun: boolean },
 ): Promise<GenerateReport> {
   const scope = await loadScope(term, opts.facultyId, opts.cohortIds);
-  const report: GenerateReport = { added: 0, removed: 0, changed: 0, unchanged: 0, total: 0, conflicts: [], beyondHours: 0, shortfalls: [], orphanExceptions: [], calendarsMissing: [] };
+  const report: GenerateReport = { added: 0, removed: 0, changed: 0, unchanged: 0, total: 0, conflicts: [], beyondHours: 0, shortfalls: [], orphanExceptions: [], calendarsMissing: [], draftVersions: [] };
   const ctxs = scope.contexts.filter((c) => {
+    if (c.cohort.programVersion.status === 'DRAFT') {
+      report.draftVersions.push(cohortLabel(c.cohort));
+      return false;
+    }
     if (!scope.teaching.has(c.cohort.id)) report.calendarsMissing.push(cohortLabel(c.cohort));
     return scope.teaching.has(c.cohort.id);
   });

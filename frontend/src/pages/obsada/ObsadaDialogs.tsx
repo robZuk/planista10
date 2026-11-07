@@ -155,6 +155,18 @@ export function SyncDialog({
                           Pominiete przedmioty ({g.subjects.length}): {g.subjects.join(', ')}
                         </div>
                       )}
+                      {g.kind === 'DRAFT_PROGRAM_VERSION' && g.programVersion && (
+                        <div className="text-xs text-muted-foreground">
+                          Plan uklada sie tylko z zatwierdzonego programu. Zatwierdz{' '}
+                          <Link
+                            to={`/curriculum/program/${g.programVersion.id}`}
+                            className="font-medium text-foreground underline underline-offset-4"
+                          >
+                            {g.programVersion.label}
+                          </Link>{' '}
+                          i zsynchronizuj ponownie. Istniejace zajecia rocznika zostaja bez zmian.
+                        </div>
+                      )}
                       {g.kind === 'MISSING_SPECIALIZATION_GROUP' && g.specialization && (
                         <div className="text-xs text-muted-foreground">
                           Jesli w tym naborze nikt nie realizuje {g.specialization.shortName}, mozesz to zignorowac. W

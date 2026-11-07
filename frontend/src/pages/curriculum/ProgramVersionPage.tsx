@@ -85,6 +85,7 @@ export default function ProgramVersionPage() {
   const [specFilter, setSpecFilter] = useState(ALL);
   const [dialog, setDialog] = useState<{ semester: number; entry: ProgramEntry | null } | null>(null);
   const [deleting, setDeleting] = useState<ProgramEntry | null>(null);
+  const [confirmRevert, setConfirmRevert] = useState(false);
 
   const queryKey = ['program-version', versionId];
   const { data, isPending, isError, error } = useQuery({
@@ -139,7 +140,10 @@ export default function ProgramVersionPage() {
     mutationFn: (status: 'DRAFT' | 'APPROVED') => updateProgramVersion(versionId, { status }),
     onSuccess: async (result) => {
       toast.success(result.message);
+      setConfirmRevert(false);
       await invalidate();
+      // Status wersji blokuje/odblokowuje plan rocznikow — odswiez widoki, ktore go pokazuja.
+      for (const key of ['plan', 'term-cohorts', 'setup']) await queryClient.invalidateQueries({ queryKey: [key] });
     },
     onError: (err) => toast.error(getErrorMessage(err)),
   });
@@ -233,7 +237,12 @@ export default function ProgramVersionPage() {
             <Badge variant={isApproved ? 'secondary' : 'default'}>{isApproved ? 'Zatwierdzona' : 'Projekt'}</Badge>
             {canManage &&
               (isApproved ? (
-                <Button variant="outline" onClick={() => statusMutation.mutate('DRAFT')} disabled={statusMutation.isPending}>
+                <Button
+                  variant="outline"
+                  // Z wersji korzystaja roczniki -> najpierw ostrzezenie (ich plan sie zablokuje).
+                  onClick={() => (version.cohorts.length > 0 ? setConfirmRevert(true) : statusMutation.mutate('DRAFT'))}
+                  disabled={statusMutation.isPending}
+                >
                   <Undo2 />
                   Cofnij do projektu
                 </Button>
@@ -521,6 +530,18 @@ export default function ProgramVersionPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmRevert}
+        onOpenChange={setConfirmRevert}
+        title={`Cofnac ${version.label} do projektu?`}
+        description={`Roczniki korzystajace z tej wersji (${version.cohorts.length}): ${version.cohorts
+          .map((c) => c.label)
+          .join(', ')}. Do ponownego zatwierdzenia ich plan bedzie tylko do odczytu, a synchronizacja zajec je pominie. Umieszczenia i terminy zostaja.`}
+        confirmLabel="Cofnij do projektu"
+        isPending={statusMutation.isPending}
+        onConfirm={() => statusMutation.mutate('DRAFT')}
+      />
 
       <ConfirmDialog
         open={!!deleting}

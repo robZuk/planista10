@@ -4,6 +4,7 @@ import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { assertFacultyScope } from '../lib/facultyScope';
 import type { ProgramEntryInput } from '../schemas/program';
+import { cohortLabel } from '../services/cohorts';
 
 /**
  * Programy studiow (nowy model). Program = kierunek + poziom + tryb; wersja programu
@@ -190,6 +191,8 @@ export const getVersion = asyncHandler(async (req, res) => {
         },
       },
       clonedFrom: { select: { id: true, label: true } },
+      // Roczniki na tej wersji — ostrzezenie przy cofaniu do projektu (blokuje ich plan).
+      cohorts: { include: { startTerm: true, program: { select: { code: true } } }, orderBy: { startTerm: { startYear: 'desc' } } },
       entries: {
         include: {
           subject: { select: { id: true, name: true, code: true } },
@@ -201,7 +204,7 @@ export const getVersion = asyncHandler(async (req, res) => {
   });
   if (!version) throw new AppError(404, 'Wersja programu nie znaleziona');
 
-  const { entries, ...rest } = version;
+  const { entries, cohorts, ...rest } = version;
   const semesters = Array.from({ length: version.totalSemesters }, (_, i) => {
     const semEntries = entries.filter((e) => e.semester === i + 1);
     return {
@@ -216,7 +219,13 @@ export const getVersion = asyncHandler(async (req, res) => {
   });
   // Pozycje poza zakresem semestrow (np. po skroceniu) — zeby nie zniknely z widoku.
   const outOfRange = entries.filter((e) => e.semester > version.totalSemesters);
-  res.json({ data: { version: rest, semesters, outOfRange } });
+  res.json({
+    data: {
+      version: { ...rest, cohorts: cohorts.map((c) => ({ id: c.id, label: cohortLabel(c) })) },
+      semesters,
+      outOfRange,
+    },
+  });
 });
 
 export const updateVersion = asyncHandler(async (req, res) => {

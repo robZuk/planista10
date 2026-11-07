@@ -86,6 +86,11 @@ export function GenerateTermsDialog({
               Terminow: <b>{report.total}</b> · nowe <b>{report.added}</b> · zmienione <b>{report.changed}</b> · znikna{' '}
               <b>{report.removed}</b> · bez zmian {report.unchanged}
             </p>
+            {report.draftVersions.length > 0 && (
+              <p className="text-destructive">
+                Pominiete — wersja programu w projekcie: {report.draftVersions.join(', ')}
+              </p>
+            )}
             {report.calendarsMissing.length > 0 && (
               <p className="text-destructive">Brak kalendarza: {report.calendarsMissing.join(', ')}</p>
             )}

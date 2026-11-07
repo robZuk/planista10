@@ -148,8 +148,34 @@ describe('syncSections — problemy do wyjasnienia', () => {
         subject: 'Ubezpieczenia morskie',
         kind: 'MISSING_SPECIALIZATION_GROUP',
         specialization: zeew,
+        programVersion: null,
         message: expect.stringContaining('specjalnosci ZEEW'),
       },
     ]);
+  });
+});
+
+describe('syncSections — wersja programu w projekcie', () => {
+  it('rocznik pominiety (zajecia bez zmian) i zgloszony z wersja do zatwierdzenia', async () => {
+    prismaMock.cohort.findMany.mockResolvedValue([
+      { ...cohort, programVersion: { ...cohort.programVersion, label: 'Wersja 1', status: 'DRAFT' } },
+    ]);
+    prismaMock.classSection.findMany.mockResolvedValue([stale('wolne', {})]);
+
+    const report = await syncSections(term, { facultyId: null, dryRun: false });
+
+    expect(report.problems).toEqual([
+      expect.objectContaining({
+        cohortId: 'c1',
+        semester: 5,
+        kind: 'DRAFT_PROGRAM_VERSION',
+        programVersion: { id: 'v1', label: 'Wersja 1' },
+        message: expect.stringContaining('jest w projekcie'),
+      }),
+    ]);
+    // Ani program, ani zajecia rocznika nie sa czytane — nic nie powstaje i nic nie znika.
+    expect(prismaMock.programEntry.findMany).not.toHaveBeenCalled();
+    expect(report.deleted).toEqual([]);
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 });

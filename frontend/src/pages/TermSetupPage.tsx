@@ -72,16 +72,27 @@ export default function TermSetupPage() {
             <Step n={2} title="Roczniki i grupy" state={t.cohorts === 0 ? 'todo' : t.cohortsWithoutCalendar > 0 ? 'warn' : 'done'} to={`/cohorts/${key}`} link="Roczniki i grupy">
               {t.cohorts} rocznikow w semestrze{t.cohortsWithoutCalendar > 0 ? ` · ${t.cohortsWithoutCalendar} bez kalendarza` : ''} · nowy nabor zakladasz recznie
             </Step>
-            <Step n={3} title="Zajecia" state={t.cohortsWithoutSections > 0 || t.sections === 0 ? 'todo' : 'done'} to={`/obsada/${key}`} link="Synchronizuj zajecia">
+            <Step
+              n={3}
+              title="Programy zatwierdzone"
+              state={t.cohorts === 0 ? 'todo' : t.cohortsWithDraftVersion > 0 ? 'todo' : 'done'}
+              to="/curriculum"
+              link="Programy studiow"
+            >
+              {t.cohortsWithDraftVersion > 0
+                ? `Roczniki z wersja programu w projekcie: ${t.cohortsWithDraftVersion} — bez zatwierdzenia nie powstana zajecia ani plan`
+                : 'Wszystkie roczniki korzystaja z zatwierdzonych wersji programu'}
+            </Step>
+            <Step n={4} title="Zajecia" state={t.cohortsWithoutSections > 0 || t.sections === 0 ? 'todo' : 'done'} to={`/obsada/${key}`} link="Synchronizuj zajecia">
               {t.sections} zajec{t.cohortsWithoutSections > 0 ? ` · ${t.cohortsWithoutSections} rocznikow bez zajec — zsynchronizuj` : ''}
             </Step>
-            <Step n={4} title="Obsada" state={t.sections === 0 ? 'todo' : t.vacancies > 0 ? 'warn' : 'done'} to={`/obsada/${key}`} link="Zajecia i obsada">
+            <Step n={5} title="Obsada" state={t.sections === 0 ? 'todo' : t.vacancies > 0 ? 'warn' : 'done'} to={`/obsada/${key}`} link="Zajecia i obsada">
               {t.vacancies > 0 ? `${t.vacancies} zajec bez pelnej obsady (NN)` : 'Wszystkie zajecia obsadzone'}
             </Step>
-            <Step n={5} title="Plan (wzorzec)" state={t.sections === 0 ? 'todo' : t.placedSections < t.sections ? 'warn' : 'done'} to={`/plan/${key}`} link="Ukladanie planu">
+            <Step n={6} title="Plan (wzorzec)" state={t.sections === 0 ? 'todo' : t.placedSections < t.sections ? 'warn' : 'done'} to={`/plan/${key}`} link="Ukladanie planu">
               {t.placedSections}/{t.sections} zajec umieszczonych · opcjonalnie „Przenies plan z zeszlego roku”
             </Step>
-            <Step n={6} title="Terminy i publikacja" state={t.staleCohorts > 0 ? 'warn' : t.published > 0 ? 'done' : 'todo'} to={`/calendar/${key}`} link="Publikacja w kalendarzu">
+            <Step n={7} title="Terminy i publikacja" state={t.staleCohorts > 0 ? 'warn' : t.published > 0 ? 'done' : 'todo'} to={`/calendar/${key}`} link="Publikacja w kalendarzu">
               {t.staleCohorts > 0 ? `${t.staleCohorts} rocznikow z nieaktualnymi terminami — „Generuj terminy”` : 'Terminy aktualne'} ·{' '}
               {t.published > 0 ? `opublikowane kalendarze: ${t.published}` : 'nic nie opublikowano'}
             </Step>
@@ -92,6 +103,7 @@ export default function TermSetupPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Rocznik</TableHead>
+                  <TableHead>Program</TableHead>
                   <TableHead>Kalendarz</TableHead>
                   <TableHead className="text-right">Grupy</TableHead>
                   <TableHead className="text-right">Zajecia</TableHead>
@@ -105,6 +117,16 @@ export default function TermSetupPage() {
                   <TableRow key={c.id}>
                     <TableCell className="font-medium">
                       {c.code} · semestr {c.semester} {c.isNewIntake && <Badge className="ml-1">nowy nabor</Badge>}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <Link to={`/curriculum/program/${c.programVersion.id}`} className="underline-offset-4 hover:underline">
+                        {c.programVersion.label}
+                      </Link>
+                      {c.programVersion.status === 'DRAFT' && (
+                        <Badge variant="destructive" className="ml-1">
+                          projekt
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       {c.calendar ? `${c.calendar.name} (${CALENDAR_STATUS_LABELS[c.calendar.status].toLowerCase()})` : <span className="text-destructive">brak</span>}

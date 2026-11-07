@@ -7,6 +7,7 @@ export interface SyncProblemGroup {
   semester: number;
   kind: SyncProblem['kind'];
   specialization: SyncProblem['specialization'];
+  programVersion: SyncProblem['programVersion'];
   message: string;
   /** Przedmioty, ktorych dotyczy problem (bez pustych i bez powtorzen). */
   subjects: string[];
@@ -24,7 +25,16 @@ export function groupSyncProblems(problems: SyncProblem[]): SyncProblemGroup[] {
     const key = [p.cohortId, p.kind, p.specialization?.id ?? '', p.specialization ? '' : p.message].join('|');
     let group = groups.get(key);
     if (!group) {
-      group = { key, cohort: p.cohort, semester: p.semester, kind: p.kind, specialization: p.specialization, message: p.message, subjects: [] };
+      group = {
+        key,
+        cohort: p.cohort,
+        semester: p.semester,
+        kind: p.kind,
+        specialization: p.specialization,
+        programVersion: p.programVersion,
+        message: p.message,
+        subjects: [],
+      };
       groups.set(key, group);
     }
     if (p.subject && !group.subjects.includes(p.subject)) group.subjects.push(p.subject);
