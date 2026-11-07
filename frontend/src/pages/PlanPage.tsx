@@ -330,7 +330,19 @@ export default function PlanPage() {
                       </button>
                     </li>
                   ))}
-                  {backlog.length === 0 && <li className="text-sm text-muted-foreground">Wszystkie godziny zaplanowane.</li>}
+                  {backlog.length === 0 &&
+                    (sections.some((s) => s.status === 'ACTIVE') ? (
+                      <li className="text-sm text-muted-foreground">Wszystkie godziny zaplanowane.</li>
+                    ) : (
+                      // Pusta lista bez zajec to nie "wszystko zaplanowane" — zajecia powstaja z synchronizacji.
+                      <li className="text-sm text-muted-foreground">
+                        Rocznik nie ma zajec w tym semestrze — uruchom „Synchronizuj zajecia” w{' '}
+                        <Link to={`/obsada/${term.key}`} className="font-medium text-foreground underline underline-offset-4">
+                          Obsadzie zajec
+                        </Link>
+                        .
+                      </li>
+                    ))}
                 </ul>
                 {sections.some((s) => s.plannedHours > s.hours) && (
                   <p className="text-xs text-amber-600">
