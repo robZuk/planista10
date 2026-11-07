@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Trash2 } from 'lucide-react';
+import { Trash2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Spinner } from '@/components/ui/spinner';
 import { Combobox } from '@/components/Combobox';
+import { AssignmentDialog } from '@/pages/obsada/ObsadaDialogs';
 import { createPlacement, deletePlacement, updatePlacement } from '@/api/plan';
 import { fetchBuildings } from '@/api/buildings';
 import { getErrorMessage } from '@/lib/errors';
@@ -44,6 +46,7 @@ export function PlacementDialog({
   target,
   onClose,
   onSaved,
+  onObsadaSaved,
 }: {
   termKey: string;
   plan: PlanView;
@@ -52,8 +55,12 @@ export function PlacementDialog({
   target: PlacementTarget;
   onClose: () => void;
   onSaved: () => void;
+  /** Po zmianie obsady z tego okna — odswiezenie planu (lista prowadzacych z obsady). */
+  onObsadaSaved: () => Promise<void> | void;
 }) {
-  const { section, placement } = target;
+  const { placement } = target;
+  // Swieze dane zajec z planu: po zmianie obsady z tego okna lista prowadzacych sie odswieza.
+  const section = plan.sections.find((s) => s.id === target.section.id) ?? target.section;
   const zjazdCalendar = plan.calendar?.kind === 'ZJAZD';
   const [day, setDay] = useState<DayOfWeek>(placement?.dayOfWeek ?? target.day);
   const [start, setStart] = useState(placement?.startOrder ?? target.startOrder);
@@ -61,6 +68,19 @@ export function PlacementDialog({
   const [roomId, setRoomId] = useState(placement?.room.id ?? '');
   const staff = section.instructors.filter((i) => i.instructorId);
   const [instructorId, setInstructorId] = useState(placement?.instructor?.id ?? staff[0]?.instructorId ?? '');
+  const [assigning, setAssigning] = useState(false);
+  const [pickAfterAssign, setPickAfterAssign] = useState(false);
+  // Po przypisaniu obsady z tego okna wybierz od razu pierwsza osobe (jesli dotad bylo NN).
+  useEffect(() => {
+    if (!pickAfterAssign || staff.length === 0) return;
+    setPickAfterAssign(false);
+    if (!instructorId) setInstructorId(staff[0]!.instructorId!);
+  }, [pickAfterAssign, staff, instructorId]);
+  // Osoba usunieta z obsady nie moze zostac w formularzu — pole pokazaloby NN, a serwer
+  // odrzucilby zapis (prowadzacy spoza obsady). Wracamy jawnie na NN.
+  useEffect(() => {
+    if (instructorId && !staff.some((i) => i.instructorId === instructorId)) setInstructorId('');
+  }, [staff, instructorId]);
   const [pattern, setPattern] = useState<PlacementPattern>(
     placement?.pattern ?? (zjazdCalendar && target.zjazd ? 'LIST' : 'ALL'),
   );
@@ -171,7 +191,19 @@ export function PlacementDialog({
                 </NativeSelectOption>
               ))}
             </NativeSelect>
+            <Button type="button" variant="link" size="sm" className="h-auto justify-start px-0" onClick={() => setAssigning(true)}>
+              <UserPlus /> {staff.length === 0 ? 'Przypisz prowadzacego' : 'Zmien obsade'}
+            </Button>
           </Field>
+          {staff.length === 0 && (
+            <p className="text-xs text-muted-foreground sm:col-span-3">
+              Zajecia nie maja obsady, wiec do wyboru jest tylko NN. Przypisz prowadzacego tutaj albo na stronie{' '}
+              <Link to={`/obsada/${termKey}`} className="font-medium text-foreground underline underline-offset-4">
+                Zajecia i obsada
+              </Link>
+              .
+            </p>
+          )}
           <Field className="sm:col-span-3">
             <FieldLabel htmlFor="pl-pattern">Rytm</FieldLabel>
             <NativeSelect id="pl-pattern" value={pattern} onChange={(e) => setPattern(e.target.value as PlacementPattern)}>
@@ -249,6 +281,17 @@ export function PlacementDialog({
           </div>
         </DialogFooter>
       </DialogContent>
+      {assigning && (
+        <AssignmentDialog
+          section={section}
+          onClose={() => setAssigning(false)}
+          onDone={async () => {
+            setAssigning(false);
+            setPickAfterAssign(true);
+            await onObsadaSaved();
+          }}
+        />
+      )}
     </Dialog>
   );
 }

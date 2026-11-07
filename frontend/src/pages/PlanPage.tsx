@@ -397,6 +397,13 @@ export default function PlanPage() {
             setSelected(null);
             await refresh();
           }}
+          onObsadaSaved={async () => {
+            // Okno umieszczenia zostaje otwarte — odswiezamy tylko dane (plan bierze prowadzacych z obsady).
+            await queryClient.invalidateQueries({ queryKey: ['plan'] });
+            await queryClient.invalidateQueries({ queryKey: ['availability'] });
+            await queryClient.invalidateQueries({ queryKey: ['sections'] });
+            await queryClient.invalidateQueries({ queryKey: ['workload'] });
+          }}
         />
       )}
       {carrying && term && cohort && (

@@ -257,13 +257,23 @@ export function CarryDialog({
   );
 }
 
+/** Pola zajec potrzebne do edycji obsady — pasuje wiersz Zajec i obsady i zajecia z planu. */
+export interface AssignableSection {
+  id: string;
+  hours: number;
+  classType: ClassSectionRow['classType'];
+  subject: { name: string };
+  group: { name: string };
+  instructors: { instructorId: string | null; hours: number }[];
+}
+
 /** Edycja obsady jednych zajec: prowadzacy (albo NN) i godziny, z podzialem na kilku. */
 export function AssignmentDialog({
   section,
   onClose,
   onDone,
 }: {
-  section: ClassSectionRow;
+  section: AssignableSection;
   onClose: () => void;
   onDone: () => void;
 }) {
