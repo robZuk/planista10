@@ -1,9 +1,13 @@
 import { cn } from '@/lib/utils';
-import { CLASS_COLORS, CLASS_LABELS } from '@/lib/scheduleDisplay';
+import { CLASS_COLORS, CLASS_LABELS, fitGridLines } from '@/lib/scheduleDisplay';
 import type { ClassType, DayOfWeek, TimeBlock } from '@/types';
 
-export const ROW = 56;
+// Wiersz 1 h miesci tytul i trzy linie opisu (4 x LINE + PAD).
+export const ROW = 68;
 const HEADER = 36;
+/** Wysokosc linii tekstu w bloku (text-[11px] leading-tight) i pionowy padding (py-1). */
+const LINE = 14;
+const PAD = 8;
 
 export interface GridItem {
   id: string;
@@ -112,28 +116,33 @@ export function WeekGrid({
               {dayItems.map((item) => {
                 const lane = lanes.get(item.id) ?? { lane: 0, lanes: 1 };
                 const width = 100 / lane.lanes;
+                const rows = item.endOrder - item.startOrder + 1;
+                const height = rows * ROW - 2;
+                // Blok 1 h: tytul w jednej linii; dluzszy: tytul do 2 linii. Reszta miejsca na opis.
+                const titleLines = rows === 1 ? 1 : 2;
+                const lines = fitGridLines(item.lines, Math.floor((height - PAD) / LINE) - titleLines);
+                const title = `${CLASS_LABELS[item.classType]} · ${item.title}`;
                 return (
                   <button
                     key={item.id}
                     type="button"
                     onClick={() => onItemClick?.(item.id)}
+                    title={[title, ...item.lines].join('\n')}
                     style={{
                       position: 'absolute',
                       top: (item.startOrder - firstOrder) * ROW + 1,
-                      height: (item.endOrder - item.startOrder + 1) * ROW - 2,
+                      height,
                       left: `calc(${lane.lane * width}% + 2px)`,
                       width: `calc(${width}% - 4px)`,
                     }}
                     className={cn(
-                      'overflow-hidden rounded-md border-l-4 px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm',
+                      'flex flex-col justify-start overflow-hidden rounded-md border-l-4 px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm',
                       CLASS_COLORS[item.classType],
                       item.muted && 'opacity-40',
                     )}
                   >
-                    <div className="font-semibold">
-                      {CLASS_LABELS[item.classType]} · {item.title}
-                    </div>
-                    {item.lines.map((line, n) => (
+                    <div className={cn('font-semibold', titleLines === 1 ? 'truncate' : 'line-clamp-2')}>{title}</div>
+                    {lines.map((line, n) => (
                       <div key={n} className="truncate">
                         {line}
                       </div>

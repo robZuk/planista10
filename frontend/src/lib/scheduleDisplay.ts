@@ -55,3 +55,14 @@ export const ROOM_TYPES_FOR_CLASS: Record<ClassType, RoomType[]> = {
   PROJECT: ['EXERCISE', 'COMPUTER_LAB', 'SEMINAR'],
   SEMINAR: ['SEMINAR', 'EXERCISE'],
 };
+
+/**
+ * Linie opisu bloku na siatce dopasowane do jego wysokosci: gdy sie nie mieszcza,
+ * ogon laczymy w ostatniej dozwolonej linii (" · "), a reszte ucina `truncate`.
+ * Pelny opis jest w podpowiedzi bloku.
+ */
+export function fitGridLines(lines: string[], maxLines: number): string[] {
+  if (maxLines <= 0) return [];
+  if (lines.length <= maxLines) return lines;
+  return [...lines.slice(0, maxLines - 1), lines.slice(maxLines - 1).join(' · ')];
+}
