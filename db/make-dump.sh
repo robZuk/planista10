@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Odswieza db/planista7-dump.sql — zrzut bazy pozbawiony tokenow sesji
+# Odswieza db/planista8-dump.sql — zrzut bazy pozbawiony tokenow sesji
 # i z haslami przestawionymi na te z backend/prisma/seed.ts.
 #
-# Czysci na KOPII bazy, zeby nie ruszyc `planista7`. Uzycie: bash db/make-dump.sh
+# Czysci na KOPII bazy, zeby nie ruszyc `planista8`. Uzycie: bash db/make-dump.sh
 set -euo pipefail
 
-CONTAINER=planista-db-1
-ZRODLO=planista7
-KOPIA=planista7_public
+CONTAINER=planista8-db-1
+ZRODLO=planista8
+KOPIA=planista8_public
 KATALOG="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WYJSCIE="$KATALOG/planista7-dump.sql"
+WYJSCIE="$KATALOG/planista8-dump.sql"
 
 psql_kopia() { docker exec -i "$CONTAINER" psql -U postgres -d "$KOPIA" -v ON_ERROR_STOP=1 "$@"; }
 

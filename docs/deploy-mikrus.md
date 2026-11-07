@@ -56,11 +56,11 @@ WEB_PORT=$WEB_PORT docker compose -f docker-compose.prod.yml up -d --build
 Backend na starcie robi `prisma migrate deploy` (tworzy schemat w pustej bazie).
 
 ## 7. Dane demo (pełny zbiór z repo)
-Nowa baza jest pusta — wgraj oczyszczony zrzut (191 przedmiotów, 3327 terminów,
-konta demo):
+Nowa baza jest pusta — wgraj oczyszczony zrzut w nowym modelu (programy, roczniki,
+obsada, 3327 terminów, konta demo):
 ```bash
 docker compose -f docker-compose.prod.yml \
-  exec -T db psql -U postgres -d planista7 < db/planista7-dump.sql
+  exec -T db psql -U postgres -d planista7 < db/planista8-dump.sql
 docker compose -f docker-compose.prod.yml restart backend
 ```
 Konta demo (hasła w `README.md`): `admin@umg.edu.pl` / `Admin1234!` itd.

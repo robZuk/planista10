@@ -12,7 +12,8 @@ import {
   roomCreateSchema,
   roomUpdateSchema,
 } from './schemas/building';
-import { publicHolidayCreateSchema } from './schemas/publicHoliday';
+import { calendarBodySchema, calendarCreateSchema, calendarPreviewSchema, calendarStatusSchema, termCreateSchema } from './schemas/termCalendar';
+import { programCreateSchema, programEntrySchema, versionCreateSchema, versionUpdateSchema } from './schemas/program';
 import { userCreateSchema, userUpdateSchema } from './schemas/user';
 
 /**
@@ -56,7 +57,15 @@ const schemas = {
   BuildingUpdate: toJson(buildingUpdateSchema),
   RoomCreate: toJson(roomCreateSchema),
   RoomUpdate: toJson(roomUpdateSchema),
-  PublicHolidayCreate: toJson(publicHolidayCreateSchema),
+  TermCreate: toJson(termCreateSchema),
+  CalendarBody: toJson(calendarBodySchema),
+  CalendarCreate: toJson(calendarCreateSchema),
+  CalendarPreview: toJson(calendarPreviewSchema),
+  CalendarStatus: toJson(calendarStatusSchema),
+  ProgramCreate: toJson(programCreateSchema),
+  VersionCreate: toJson(versionCreateSchema),
+  VersionUpdate: toJson(versionUpdateSchema),
+  ProgramEntry: toJson(programEntrySchema),
   UserCreate: toJson(userCreateSchema),
   UserUpdate: toJson(userUpdateSchema),
   // Wspolny ksztalt bledu z centralnego errorHandler.
@@ -90,6 +99,8 @@ const errResp = (description: string) => ({
 });
 const bearer = [{ bearerAuth: [] as string[] }];
 const pathId = (name = 'id') => ({ name, in: 'path', required: true, schema: { type: 'string' } });
+const termKey = { name: 'key', in: 'path', required: true, description: 'Semestr, np. 2026-Z / 2026-L', schema: { type: 'string' } };
+const dateQ = (name: string) => ({ name, in: 'query', schema: { type: 'string', format: 'date' } });
 
 /** Standardowe 401/403 dla tras chronionych. */
 const authErrors = { 401: errResp('Brak lub niewazny token'), 403: errResp('Brak uprawnien') };
@@ -108,9 +119,11 @@ export const openApiDocument = {
   tags: [
     { name: 'Auth', description: 'Logowanie, odswiezanie tokenu, dane zalogowanego' },
     { name: 'Zasoby', description: 'Wydzialy, budynki, sale, prowadzacy, bloki czasowe' },
-    { name: 'Program', description: 'Kierunki, specjalnosci, przedmioty, siatki godzin' },
-    { name: 'Grupy', description: 'Grupy studenckie i ich hierarchia' },
-    { name: 'Plan', description: 'Wzorce tygodnia, terminy, generator, kalendarz, dni wolne' },
+    { name: 'Semestr', description: 'Semestry, kalendarze (przerwy, wyjatki dni, zjazdy), swieta ustawowe' },
+    { name: 'Program', description: 'Kierunki, specjalnosci, przedmioty, programy studiow i ich wersje' },
+    { name: 'Roczniki', description: 'Roczniki (nabory) i drzewo grup' },
+    { name: 'Obsada', description: 'Zajecia semestru i obsada prowadzacych' },
+    { name: 'Plan', description: 'Umieszczenia, generowanie terminow, poprawki terminow, moj plan' },
     { name: 'Uzytkownicy', description: 'Konta i impersonacja (ADMIN)' },
     { name: 'System', description: 'Health-check' },
   ],
@@ -268,116 +281,112 @@ export const openApiDocument = {
       post: { tags: ['Program'], summary: 'Utworz przedmiot (ADMIN)', security: bearer, requestBody: jsonBody('SubjectCreate'), responses: { 201: dataResp('Utworzony'), 400: errResp('Blad walidacji'), 409: errResp('Duplikat'), ...authErrors } },
     },
     '/api/subjects/{id}': {
-      delete: { tags: ['Program'], summary: 'Usun przedmiot (ADMIN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniety'), 409: errResp('W siatce'), ...authErrors } },
+      delete: { tags: ['Program'], summary: 'Usun przedmiot (ADMIN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniety'), 409: errResp('W programie'), ...authErrors } },
     },
 
-    // ─── Program: Siatki godzin (curriculum) ─────────────────
-    '/api/curriculum/academic-years': {
-      get: { tags: ['Program'], summary: 'Lata akademickie siatek', security: bearer, responses: { 200: dataResp('Lista lat'), ...authErrors } },
+    // ─── Semestry i kalendarze ───────────────────────────────
+    '/api/terms': {
+      get: { tags: ['Semestr'], summary: 'Semestry z kalendarzami i semestrem domyslnym', security: bearer, responses: { 200: dataResp('Semestry'), ...authErrors } },
+      post: { tags: ['Semestr'], summary: 'Utworz semestr (ADMIN)', security: bearer, requestBody: jsonBody('TermCreate'), responses: { 201: dataResp('Utworzony'), 409: errResp('Istnieje'), ...authErrors } },
     },
-    '/api/curriculum/versions': {
-      get: { tags: ['Program'], summary: 'Lista wersji siatek', security: bearer, responses: { 200: dataResp('Wersje'), ...authErrors } },
-      post: { tags: ['Program'], summary: 'Utworz wersje siatki (ADMIN)', security: bearer, responses: { 201: dataResp('Utworzona'), 400: errResp('Brak pol'), ...authErrors } },
+    '/api/terms/holidays': {
+      get: { tags: ['Semestr'], summary: 'Swieta ustawowe w zakresie dat (liczone)', security: bearer, parameters: [dateQ('from'), dateQ('to')], responses: { 200: dataResp('Swieta'), ...authErrors } },
     },
-    '/api/curriculum/versions/{id}': {
-      put: { tags: ['Program'], summary: 'Aktualizuj wersje (ADMIN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zaktualizowana'), ...authErrors } },
-      delete: { tags: ['Program'], summary: 'Usun wersje siatki (ADMIN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usunieta'), 404: errResp('Nie znaleziono'), ...authErrors } },
+    '/api/terms/{key}/calendars': {
+      get: { tags: ['Semestr'], summary: 'Kalendarze semestru', security: bearer, parameters: [termKey], responses: { 200: dataResp('Kalendarze'), ...authErrors } },
+      post: { tags: ['Semestr'], summary: 'Zaloz kalendarz', security: bearer, parameters: [termKey], requestBody: jsonBody('CalendarCreate'), responses: { 201: dataResp('Utworzony'), 400: errResp('Niespojny kalendarz'), 409: errResp('Istnieje'), ...authErrors } },
     },
-    '/api/curriculum/versions/{id}/entries': {
-      get: { tags: ['Program'], summary: 'Wpisy siatki (po semestrach)', security: bearer, parameters: [pathId(), { name: 'semester', in: 'query', schema: { type: 'integer' } }], responses: { 200: dataResp('Wpisy'), 404: errResp('Nie znaleziono'), ...authErrors } },
-      post: { tags: ['Program'], summary: 'Dodaj przedmiot do siatki (ADMIN)', security: bearer, parameters: [pathId()], responses: { 201: dataResp('Dodany'), 400: errResp('Brak pol / zly semestr'), ...authErrors } },
+    '/api/terms/{key}/calendars/proposal': {
+      get: { tags: ['Semestr'], summary: 'Propozycja kalendarza z ostatniego semestru tego typu', security: bearer, parameters: [termKey], responses: { 200: dataResp('Propozycja'), ...authErrors } },
     },
-    '/api/curriculum/entries/{id}': {
-      put: { tags: ['Program'], summary: 'Aktualizuj wpis siatki (ADMIN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zaktualizowany'), ...authErrors } },
-      delete: { tags: ['Program'], summary: 'Usun wpis siatki (ADMIN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniety'), 409: errResp('W planie'), ...authErrors } },
+    '/api/term-calendars/preview': {
+      post: { tags: ['Semestr'], summary: 'Podglad kalendarza (tygodnie, zjazdy, problemy)', security: bearer, requestBody: jsonBody('CalendarPreview'), responses: { 200: dataResp('Podglad'), ...authErrors } },
     },
-
-    // ─── Grupy ───────────────────────────────────────────────
-    '/api/groups': {
-      get: {
-        tags: ['Grupy'],
-        summary: 'Lista grup (z filtrami)',
-        security: bearer,
-        parameters: [
-          { name: 'fieldOfStudyId', in: 'query', schema: { type: 'string' } },
-          { name: 'specializationId', in: 'query', schema: { type: 'string' } },
-          { name: 'studyYear', in: 'query', schema: { type: 'integer' } },
-          { name: 'academicYear', in: 'query', schema: { type: 'string' } },
-          { name: 'studyMode', in: 'query', schema: { type: 'string', enum: ['FULL_TIME', 'PART_TIME'] } },
-        ],
-        responses: { 200: dataResp('Grupy'), ...authErrors },
-      },
-      post: { tags: ['Grupy'], summary: 'Utworz grupe', security: bearer, responses: { 201: dataResp('Utworzona'), 400: errResp('Brak pol'), 422: errResp('Zla hierarchia'), ...authErrors } },
-      delete: { tags: ['Grupy'], summary: 'Usun grupy (opcjonalnie po roku)', security: bearer, parameters: [{ name: 'academicYear', in: 'query', schema: { type: 'string' } }], responses: { 200: dataResp('Usunieto N grup'), ...authErrors } },
+    '/api/term-calendars/{id}': {
+      put: { tags: ['Semestr'], summary: 'Zapisz kalendarz', security: bearer, parameters: [pathId()], requestBody: jsonBody('CalendarBody'), responses: { 200: dataResp('Zapisany'), 409: errResp('Archiwum'), ...authErrors } },
+      delete: { tags: ['Semestr'], summary: 'Usun kalendarz', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniety'), 409: errResp('Archiwum'), ...authErrors } },
     },
-    '/api/groups/{id}': {
-      get: { tags: ['Grupy'], summary: 'Grupa po id', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Grupa'), 404: errResp('Nie znaleziono'), ...authErrors } },
-      put: { tags: ['Grupy'], summary: 'Aktualizuj grupe', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zaktualizowana'), ...authErrors } },
-      delete: { tags: ['Grupy'], summary: 'Usun grupe', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usunieta'), 409: errResp('W planie / ma podgrupy'), ...authErrors } },
-    },
-    '/api/groups/copy-to-next-year': {
-      post: { tags: ['Grupy'], summary: 'Skopiuj rocznik na kolejny rok', security: bearer, responses: { 201: dataResp('Skopiowano'), 409: errResp('Rok docelowy nie jest pusty'), 422: errResp('Zly format roku'), ...authErrors } },
+    '/api/term-calendars/{id}/status': {
+      put: { tags: ['Semestr'], summary: 'Status: w przygotowaniu / opublikowany / archiwum', security: bearer, parameters: [pathId()], requestBody: jsonBody('CalendarStatus'), responses: { 200: dataResp('Zmieniony'), ...authErrors } },
     },
 
-    // ─── Plan: Wzorce tygodnia ───────────────────────────────
-    '/api/schedule/templates': {
-      get: { tags: ['Plan'], summary: 'Wzorce tygodnia (z filtrami)', security: bearer, responses: { 200: dataResp('Wzorce'), ...authErrors } },
-      post: { tags: ['Plan'], summary: 'Dodaj wzorzec', security: bearer, responses: { 201: dataResp('Dodany'), 400: errResp('Brak pol'), 409: errResp('Konflikt'), ...authErrors } },
-      delete: { tags: ['Plan'], summary: 'Usun wiele wzorcow (lista ids)', security: bearer, responses: { 200: dataResp('Usunieto'), 400: errResp('Brak ids'), ...authErrors } },
+    // ─── Programy studiow ────────────────────────────────────
+    '/api/programs': {
+      get: { tags: ['Program'], summary: 'Programy z wersjami', security: bearer, responses: { 200: dataResp('Programy'), ...authErrors } },
+      post: { tags: ['Program'], summary: 'Utworz program', security: bearer, requestBody: jsonBody('ProgramCreate'), responses: { 201: dataResp('Utworzony'), ...authErrors } },
     },
-    '/api/schedule/templates/{id}': {
-      put: { tags: ['Plan'], summary: 'Aktualizuj wzorzec', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zaktualizowany'), 404: errResp('Nie znaleziono'), 409: errResp('Konflikt'), ...authErrors } },
-      delete: { tags: ['Plan'], summary: 'Usun wzorzec', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniety'), 404: errResp('Nie znaleziono'), ...authErrors } },
+    '/api/programs/{id}/versions': {
+      post: { tags: ['Program'], summary: 'Nowa wersja programu (pusta albo klon)', security: bearer, parameters: [pathId()], requestBody: jsonBody('VersionCreate'), responses: { 201: dataResp('Utworzona'), ...authErrors } },
     },
-    '/api/schedule/templates/summary/{curriculumVersionId}': {
-      get: { tags: ['Plan'], summary: 'Bilans pokrycia godzin', security: bearer, parameters: [pathId('curriculumVersionId')], responses: { 200: dataResp('Bilans'), 404: errResp('Pusta siatka'), ...authErrors } },
+    '/api/program-versions/{id}': {
+      get: { tags: ['Program'], summary: 'Wersja z przedmiotami po semestrach', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Wersja'), ...authErrors } },
+      put: { tags: ['Program'], summary: 'Zmien wersje (etykieta, status, semestry)', security: bearer, parameters: [pathId()], requestBody: jsonBody('VersionUpdate'), responses: { 200: dataResp('Zapisana'), ...authErrors } },
+      delete: { tags: ['Program'], summary: 'Usun wersje (projekt, nieuzywana)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usunieta'), 409: errResp('Uzywana / zatwierdzona'), ...authErrors } },
     },
-    '/api/schedule/generate': {
-      post: { tags: ['Plan'], summary: 'Generuj terminy semestru (nadpisuje kalendarz wydzialu)', security: bearer, responses: { 200: dataResp('Podsumowanie generowania'), 400: errResp('Brak pol / wydzialu'), ...authErrors } },
+    '/api/program-versions/{id}/entries': {
+      post: { tags: ['Program'], summary: 'Dodaj przedmiot do wersji', security: bearer, parameters: [pathId()], requestBody: jsonBody('ProgramEntry'), responses: { 201: dataResp('Dodany'), 409: errResp('Wersja zatwierdzona / duplikat'), ...authErrors } },
     },
-
-    // ─── Plan: Terminy (kalendarz) ───────────────────────────
-    '/api/schedule/entries': {
-      get: {
-        tags: ['Plan'],
-        summary: 'Terminy (kalendarz semestru)',
-        security: bearer,
-        parameters: [
-          { name: 'from', in: 'query', schema: { type: 'string', format: 'date' } },
-          { name: 'to', in: 'query', schema: { type: 'string', format: 'date' } },
-          { name: 'studentGroupId', in: 'query', schema: { type: 'string' } },
-          { name: 'instructorId', in: 'query', schema: { type: 'string' } },
-        ],
-        responses: { 200: dataResp('Terminy'), ...authErrors },
-      },
-      post: { tags: ['Plan'], summary: 'Dodaj termin recznie', security: bearer, responses: { 201: dataResp('Dodany'), 400: errResp('Brak pol / poza semestrem'), 409: errResp('Konflikt'), ...authErrors } },
-      delete: { tags: ['Plan'], summary: 'Wyczysc kalendarz wydzialu', security: bearer, responses: { 200: dataResp('Wyczyszczono'), 400: errResp('Brak pol / wydzialu'), ...authErrors } },
-    },
-    '/api/schedule/entries/{id}': {
-      delete: { tags: ['Plan'], summary: 'Usun termin (scope ONE/ALL)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniety'), 404: errResp('Nie znaleziono'), ...authErrors } },
-    },
-    '/api/schedule/entries/{id}/status': {
-      put: { tags: ['Plan'], summary: 'Zmien status terminu (np. odwolaj)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zaktualizowany'), 400: errResp('Brak statusu'), 404: errResp('Nie znaleziono'), ...authErrors } },
-    },
-    '/api/schedule/entries/{id}/move': {
-      post: { tags: ['Plan'], summary: 'Przenies termin (drag&drop, ONE/ALL)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Przeniesiony'), 400: errResp('Brak pol / poza semestrem'), 409: errResp('Konflikt'), ...authErrors } },
+    '/api/program-entries/{id}': {
+      put: { tags: ['Program'], summary: 'Zmien pozycje programu', security: bearer, parameters: [pathId()], requestBody: jsonBody('ProgramEntry'), responses: { 200: dataResp('Zapisana'), ...authErrors } },
+      delete: { tags: ['Program'], summary: 'Usun pozycje programu', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usunieta'), ...authErrors } },
     },
 
-    // ─── Plan: Kalendarz semestru i dni wolne ────────────────
-    '/api/schedule/calendars': {
-      get: { tags: ['Plan'], summary: 'Kalendarze semestru', security: bearer, responses: { 200: dataResp('Kalendarze'), ...authErrors } },
-      post: { tags: ['Plan'], summary: 'Utworz kalendarz semestru', security: bearer, responses: { 201: dataResp('Utworzony'), 400: errResp('Blad walidacji'), 409: errResp('Duplikat'), ...authErrors } },
+    // ─── Roczniki i grupy ────────────────────────────────────
+    '/api/cohorts': {
+      get: { tags: ['Roczniki'], summary: 'Roczniki', security: bearer, responses: { 200: dataResp('Roczniki'), ...authErrors } },
+      post: { tags: ['Roczniki'], summary: 'Nowy nabor (z kopia struktury grup)', security: bearer, responses: { 201: dataResp('Utworzony'), 409: errResp('Istnieje'), ...authErrors } },
     },
-    '/api/schedule/calendars/{id}': {
-      put: { tags: ['Plan'], summary: 'Aktualizuj kalendarz', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zaktualizowany'), 404: errResp('Nie znaleziono'), 409: errResp('Zajecia poza zakresem'), ...authErrors } },
-      delete: { tags: ['Plan'], summary: 'Usun kalendarz', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniety'), 404: errResp('Nie znaleziono'), ...authErrors } },
+    '/api/terms/{key}/cohorts': {
+      get: { tags: ['Roczniki'], summary: 'Roczniki aktywne w semestrze', security: bearer, parameters: [termKey], responses: { 200: dataResp('Roczniki'), ...authErrors } },
     },
-    '/api/schedule/holidays': {
-      get: { tags: ['Plan'], summary: 'Dni wolne', security: bearer, parameters: [{ name: 'from', in: 'query', schema: { type: 'string', format: 'date' } }, { name: 'to', in: 'query', schema: { type: 'string', format: 'date' } }], responses: { 200: dataResp('Dni wolne'), ...authErrors } },
-      post: { tags: ['Plan'], summary: 'Dodaj dzien wolny', security: bearer, requestBody: jsonBody('PublicHolidayCreate'), responses: { 201: dataResp('Dodany'), 400: errResp('Blad walidacji'), 409: errResp('Duplikat'), ...authErrors } },
+    '/api/cohorts/{id}/groups': {
+      get: { tags: ['Roczniki'], summary: 'Drzewo grup z nazwami dla semestru', security: bearer, parameters: [pathId(), { name: 'semester', in: 'query', schema: { type: 'integer' } }], responses: { 200: dataResp('Grupy'), ...authErrors } },
+      post: { tags: ['Roczniki'], summary: 'Dodaj grupe', security: bearer, parameters: [pathId()], responses: { 201: dataResp('Dodana'), ...authErrors } },
     },
-    '/api/schedule/holidays/{id}': {
-      delete: { tags: ['Plan'], summary: 'Usun dzien wolny', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniety'), ...authErrors } },
+    '/api/cohorts/{id}/groups/bulk': {
+      post: { tags: ['Roczniki'], summary: 'Kreator podgrup (N pod kazdym rodzicem)', security: bearer, parameters: [pathId()], responses: { 201: dataResp('Dodane'), ...authErrors } },
+    },
+
+    // ─── Zajecia i obsada ────────────────────────────────────
+    '/api/terms/{key}/sections': {
+      get: { tags: ['Obsada'], summary: 'Zajecia semestru z obsada', security: bearer, parameters: [termKey], responses: { 200: dataResp('Zajecia'), ...authErrors } },
+    },
+    '/api/terms/{key}/sections/sync': {
+      post: { tags: ['Obsada'], summary: 'Synchronizuj zajecia z programem i grupami (dryRun = podglad)', security: bearer, parameters: [termKey], responses: { 200: dataResp('Raport'), ...authErrors } },
+    },
+    '/api/terms/{key}/sections/carry': {
+      post: { tags: ['Obsada'], summary: 'Obsada z poprzedniego roku (dryRun = podglad)', security: bearer, parameters: [termKey], responses: { 200: dataResp('Raport'), ...authErrors } },
+    },
+    '/api/sections/{id}/instructors': {
+      put: { tags: ['Obsada'], summary: 'Obsada zajec (podzial godzin, NN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zapisana'), 400: errResp('Za duzo godzin'), ...authErrors } },
+    },
+
+    // ─── Plan ────────────────────────────────────────────────
+    '/api/terms/{key}/plan': {
+      get: { tags: ['Plan'], summary: 'Plan rocznika: zajecia, umieszczenia, bilans godzin', security: bearer, parameters: [termKey, { name: 'cohortId', in: 'query', required: true, schema: { type: 'string' } }], responses: { 200: dataResp('Plan'), ...authErrors } },
+    },
+    '/api/terms/{key}/placements': {
+      post: { tags: ['Plan'], summary: 'Umiesc zajecia (kolizje sprawdzane na datach)', security: bearer, parameters: [termKey], responses: { 201: dataResp('Umieszczone'), 400: errResp('Blad'), 409: errResp('Kolizje (lista dat)'), ...authErrors } },
+    },
+    '/api/placements/{id}': {
+      put: { tags: ['Plan'], summary: 'Zmien umieszczenie', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zapisane'), 409: errResp('Kolizje'), ...authErrors } },
+      delete: { tags: ['Plan'], summary: 'Usun umieszczenie', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniete'), ...authErrors } },
+    },
+    '/api/terms/{key}/generate': {
+      post: { tags: ['Plan'], summary: 'Generuj terminy (dryRun = podglad); poprawki terminow zostaja', security: bearer, parameters: [termKey], responses: { 200: dataResp('Raport'), ...authErrors } },
+    },
+    '/api/terms/{key}/plan/carry': {
+      post: { tags: ['Plan'], summary: 'Przenies plan z zeszlego roku (na zadanie, dryRun = podglad)', security: bearer, parameters: [termKey], responses: { 200: dataResp('Raport'), ...authErrors } },
+    },
+    '/api/terms/{key}/occurrences': {
+      get: { tags: ['Plan'], summary: 'Terminy rocznika', security: bearer, parameters: [termKey], responses: { 200: dataResp('Terminy'), ...authErrors } },
+      post: { tags: ['Plan'], summary: 'Termin reczny (odrobienie)', security: bearer, parameters: [termKey], responses: { 201: dataResp('Dodany'), 409: errResp('Kolizja'), ...authErrors } },
+    },
+    '/api/occurrences/{id}': {
+      put: { tags: ['Plan'], summary: 'Odwolaj / przenies / przywroc termin', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zmieniony'), 409: errResp('Kolizja'), ...authErrors } },
+    },
+    '/api/terms/{key}/my-plan': {
+      get: { tags: ['Plan'], summary: 'Moj plan (student/prowadzacy, tylko opublikowane)', security: bearer, parameters: [termKey, dateQ('from'), dateQ('to')], responses: { 200: dataResp('Terminy'), ...authErrors } },
     },
 
     // ─── Uzytkownicy ─────────────────────────────────────────

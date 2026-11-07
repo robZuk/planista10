@@ -10,11 +10,13 @@ import timeBlocksRoutes from './routes/timeBlocks';
 import fieldsOfStudyRoutes from './routes/fieldsOfStudy';
 import specializationsRoutes from './routes/specializations';
 import subjectsRoutes from './routes/subjects';
-import curriculumRoutes from './routes/curriculum';
-import groupsRoutes from './routes/groups';
-import scheduleRoutes from './routes/schedule';
 import dashboardRoutes from './routes/dashboard';
 import usersRoutes from './routes/users';
+import { termCalendarsRouter, termsRouter } from './routes/terms';
+import { programEntriesRouter, programsRouter, programVersionsRouter } from './routes/programs';
+import { cohortGroupsRouter, cohortsRouter } from './routes/cohorts';
+import { sectionsRouter, termSectionsRouter } from './routes/sections';
+import { occurrencesRouter, placementsRouter, termPlanRouter } from './routes/plan';
 import swaggerUi from 'swagger-ui-express';
 import { openApiDocument } from './openapi';
 import { errorHandler } from './middleware/errorHandler';
@@ -41,10 +43,10 @@ export function createApp(): Express {
   app.use(httpLogger);
 
   // CORS — pozwala frontendowi (inny origin/port) wolac to API.
-  app.use(cors({ origin: process.env.CORS_ORIGIN ?? 'http://localhost:5174' }));
+  app.use(cors({ origin: process.env.CORS_ORIGIN ?? 'http://localhost:5175' }));
 
   // Parsowanie cial JSON w zadaniach (req.body).
-  app.use(express.json());
+  app.use(express.json({ limit: '2mb' })); // import obsady z CSV bywa wiekszy niz domyslne 100 kB
 
   // Endpoint zdrowia — sluzy do sprawdzenia, czy serwer zyje.
   app.get('/health', (_req: Request, res: Response) => {
@@ -67,11 +69,20 @@ export function createApp(): Express {
   app.use('/api/fields-of-study', fieldsOfStudyRoutes);
   app.use('/api/specializations', specializationsRoutes);
   app.use('/api/subjects', subjectsRoutes);
-  app.use('/api/curriculum', curriculumRoutes);
-  app.use('/api/groups', groupsRoutes);
-  app.use('/api/schedule', scheduleRoutes);
   app.use('/api/dashboard', dashboardRoutes);
   app.use('/api/users', usersRoutes);
+  app.use('/api/terms/:key', termSectionsRouter);
+  app.use('/api/terms/:key', termPlanRouter);
+  app.use('/api/terms', termsRouter);
+  app.use('/api/sections', sectionsRouter);
+  app.use('/api/placements', placementsRouter);
+  app.use('/api/occurrences', occurrencesRouter);
+  app.use('/api/term-calendars', termCalendarsRouter);
+  app.use('/api/programs', programsRouter);
+  app.use('/api/program-versions', programVersionsRouter);
+  app.use('/api/program-entries', programEntriesRouter);
+  app.use('/api/cohorts', cohortsRouter);
+  app.use('/api/cohort-groups', cohortGroupsRouter);
 
   // Nieznana trasa -> 404 w spojnym ksztalcie { error }.
   app.use((_req: Request, res: Response) => {
@@ -92,7 +103,7 @@ if (require.main === module) {
   initSentry();
 
   const app = createApp();
-  const port = Number(process.env.PORT ?? 4001);
+  const port = Number(process.env.PORT ?? 4002);
   const server = app.listen(port, () => {
     logger.info({ port }, `Backend nasluchuje na http://localhost:${port}`);
   });

@@ -27,14 +27,14 @@ export const create = asyncHandler(async (req, res) => {
 export const remove = asyncHandler(async (req, res) => {
   const field = await prisma.fieldOfStudy.findUnique({
     where: { id: req.params.id },
-    include: { _count: { select: { specializations: true, studentGroups: true } } },
+    include: { _count: { select: { specializations: true, programs: true } } },
   });
   if (!field) throw new AppError(404, 'Kierunek nie znaleziony');
   if (field._count.specializations > 0) {
     throw new AppError(409, 'Nie mozna usunac kierunku z przypisanymi specjalnosciami');
   }
-  if (field._count.studentGroups > 0) {
-    throw new AppError(409, 'Nie mozna usunac kierunku z przypisanymi grupami studenckimi');
+  if (field._count.programs > 0) {
+    throw new AppError(409, 'Nie mozna usunac kierunku z programami studiow');
   }
   await prisma.fieldOfStudy.delete({ where: { id: req.params.id } });
   res.json({ message: 'Kierunek usuniety' });

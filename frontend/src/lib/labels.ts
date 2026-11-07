@@ -1,4 +1,13 @@
-import type { AssessmentType, DegreeLevel, GroupType, RoomType, StudyMode } from '@/types';
+import type {
+  AssessmentType,
+  CalendarDayKind,
+  CalendarKind,
+  CalendarStatus,
+  DayOfWeek,
+  DegreeLevel,
+  RoomType,
+  StudyMode,
+} from '@/types';
 
 /** Polskie nazwy typow sal (backend trzyma enumy po angielsku). */
 export const ROOM_TYPE_LABELS: Record<RoomType, string> = {
@@ -33,12 +42,36 @@ export const ASSESSMENT_TYPE_LABELS: Record<AssessmentType, string> = {
 
 export const ASSESSMENT_TYPES = Object.keys(ASSESSMENT_TYPE_LABELS) as AssessmentType[];
 
-export const GROUP_TYPE_LABELS: Record<GroupType, string> = {
-  LECTURE: 'Wykladowa',
-  EXERCISE: 'Cwiczeniowa',
-  LAB: 'Laboratoryjna',
-  PROJECT: 'Projektowa',
-  SEMINAR: 'Seminaryjna',
+
+export const CALENDAR_KIND_LABELS: Record<CalendarKind, string> = {
+  WEEKLY: 'Tygodniowy',
+  ZJAZD: 'Zjazdowy',
 };
 
-export const GROUP_TYPES = Object.keys(GROUP_TYPE_LABELS) as GroupType[];
+export const CALENDAR_STATUS_LABELS: Record<CalendarStatus, string> = {
+  PLANNING: 'W przygotowaniu',
+  PUBLISHED: 'Opublikowany',
+  ARCHIVED: 'Archiwum',
+};
+
+export const CALENDAR_STATUSES = Object.keys(CALENDAR_STATUS_LABELS) as CalendarStatus[];
+
+export const CALENDAR_DAY_KIND_LABELS: Record<CalendarDayKind, string> = {
+  DAY_OFF: 'Dzien wolny',
+  FOLLOWS_WEEKDAY: 'Zajecia wg planu innego dnia',
+  CLOSED_FROM: 'Godziny rektorskie (od bloku)',
+};
+
+export const CALENDAR_DAY_KINDS = Object.keys(CALENDAR_DAY_KIND_LABELS) as CalendarDayKind[];
+
+export const WEEKDAY_LABELS: Record<DayOfWeek, string> = {
+  MONDAY: 'Poniedzialek',
+  TUESDAY: 'Wtorek',
+  WEDNESDAY: 'Sroda',
+  THURSDAY: 'Czwartek',
+  FRIDAY: 'Piatek',
+  SATURDAY: 'Sobota',
+  SUNDAY: 'Niedziela',
+};
+
+export const WEEKDAYS = Object.keys(WEEKDAY_LABELS) as DayOfWeek[];

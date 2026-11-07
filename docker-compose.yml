@@ -2,13 +2,13 @@
 #   make dev   albo   docker compose up
 # Hot-reload: kod montowany z dysku, backend tsx watch, frontend Vite HMR.
 # (Wariant produkcyjny jest w osobnym, tez kompletnym pliku: docker-compose.prod.yml)
-name: planista
+name: planista8
 
 services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: planista7
+      POSTGRES_DB: planista8
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     volumes:
@@ -17,24 +17,24 @@ services:
     networks:
       - internal
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d planista7']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d planista8']
       interval: 5s
       timeout: 3s
       retries: 10
 
   backend:
-    image: planista-backend-dev
+    image: planista8-backend-dev
     build:
       context: ./backend
       target: dev
     command: npm run dev
     environment:
-      PORT: 4001
-      DATABASE_URL: postgresql://postgres:password@db:5432/planista7?schema=public
+      PORT: 4002
+      DATABASE_URL: postgresql://postgres:password@db:5432/planista8?schema=public
       # Sekrety deweloperskie — jawne, bo to tylko lokalne srodowisko.
       JWT_ACCESS_SECRET: dev-access-secret-change-me
       JWT_REFRESH_SECRET: dev-refresh-secret-change-me
-      CORS_ORIGIN: http://localhost:5174
+      CORS_ORIGIN: http://localhost:5175
     volumes:
       # Kod z dysku -> hot-reload; anonimowy wolumen chroni node_modules z obrazu.
       - ./backend:/app
@@ -44,27 +44,27 @@ services:
       - edge
     ports:
       # Bind na localhost — nie wystawiamy dev na LAN.
-      - '127.0.0.1:4001:4001'
+      - '127.0.0.1:4002:4002'
     depends_on:
       db:
         condition: service_healthy
 
   frontend:
-    image: planista-frontend-dev
+    image: planista8-frontend-dev
     build:
       context: ./frontend
       target: dev
     command: npm run dev -- --host
     environment:
       # Vite proxuje /api na kontener backendu (nazwa uslugi w sieci compose).
-      VITE_PROXY_TARGET: http://backend:4001
+      VITE_PROXY_TARGET: http://backend:4002
     volumes:
       - ./frontend:/app
       - /app/node_modules
     networks:
       - edge
     ports:
-      - '127.0.0.1:5174:5174'
+      - '127.0.0.1:5175:5175'
     depends_on:
       - backend
 

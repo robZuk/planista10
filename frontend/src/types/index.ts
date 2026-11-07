@@ -105,75 +105,9 @@ export type DegreeLevel = 'BACHELOR' | 'MASTER';
 export type AssessmentType = 'EXAM' | 'CREDIT';
 export type SemesterType = 'WINTER' | 'SUMMER';
 
-export interface CurriculumVersion {
-  id: string;
-  academicYear: string;
-  studyMode: StudyMode;
-  degreeLevel: DegreeLevel;
-  totalSemesters: number;
-  startSemesterType: SemesterType;
-  specializationId: string;
-  specialization?: Specialization;
-  _count?: { entries: number };
-}
-
-export interface InstructorRef {
-  id: string;
-  firstName: string;
-  lastName: string;
-  title: string | null;
-}
-
-export interface CurriculumEntry {
-  id: string;
-  orderInSemester: number;
-  subject: { id: string; name: string; code: string | null };
-  instructor: InstructorRef | null;
-  hoursLecture: number;
-  hoursExercise: number;
-  hoursLab: number;
-  hoursProject: number;
-  hoursSeminar: number;
-  totalHours: number;
-  ects: number;
-  assessmentType: AssessmentType;
-}
-
-export interface SemesterEntries {
-  semester: number;
-  totalEcts: number;
-  entries: CurriculumEntry[];
-}
-
-export type GroupType = 'LECTURE' | 'EXERCISE' | 'LAB' | 'PROJECT' | 'SEMINAR';
-
-export interface StudentGroup {
-  id: string;
-  name: string;
-  type: GroupType;
-  size: number;
-  fieldOfStudyId: string;
-  specializationId: string | null;
-  studyYear: number;
-  academicYear: string;
-  studyMode: StudyMode;
-  parentGroupId: string | null;
-  preferredRoomId: string | null;
-  subGroups?: StudentGroup[];
-}
-
 export type ClassType = 'LECTURE' | 'EXERCISE' | 'LAB' | 'PROJECT' | 'SEMINAR';
-export type WeekType = 'EVERY' | 'EVEN' | 'ODD';
 export type EntryStatus = 'SCHEDULED' | 'CANCELLED' | 'MAKEUP';
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
-
-export interface BlockRef {
-  id: string;
-  order: number;
-  startTime: string;
-  endTime: string;
-  label: string;
-}
 
 export interface RoomRef {
   id: string;
@@ -182,73 +116,6 @@ export interface RoomRef {
   capacity: number;
   building: { id: string; name: string };
 }
-
-export interface ScheduleTemplate {
-  id: string;
-  curriculumEntryId: string;
-  /** Wydzial wyprowadzany z siatki po stronie serwera — niezmienny. */
-  facultyId: string;
-  curriculumEntry: {
-    id: string;
-    subject: { id: string; name: string };
-    /** Nabor programu — z nim i `semester` liczy sie pora roku wzorca (semesterTypeOf). */
-    curriculumVersion: { startSemesterType: SemesterType };
-  };
-  classType: ClassType;
-  room: RoomRef;
-  instructor: InstructorRef & { id: string };
-  studentGroup: { id: string; name: string; parentGroupId: string | null } | null;
-  dayOfWeek: DayOfWeek;
-  startBlock: BlockRef;
-  endBlock: BlockRef;
-  semester: number;
-  academicYear: string;
-  weekType: WeekType;
-  studyMode: StudyMode;
-}
-
-export interface ScheduleEntry {
-  id: string;
-  date: string;
-  status: EntryStatus;
-  /** Recznie zmieniony pojedynczy termin — nie idzie za operacjami na calej serii. */
-  detached: boolean;
-  /** Wydzial terminu — takze dla terminow dodanych recznie (template = null). */
-  facultyId: string;
-  classType: ClassType;
-  room: RoomRef;
-  instructor: InstructorRef & { id: string };
-  studentGroup: { id: string; name: string } | null;
-  curriculumEntry: {
-    id: string;
-    semester: number;
-    subject: { id: string; name: string };
-    curriculumVersion: { specializationId: string; studyMode: StudyMode };
-  };
-  template: { id: string; dayOfWeek: DayOfWeek; weekType: WeekType; studyMode: StudyMode } | null;
-  startBlock: BlockRef;
-  endBlock: BlockRef;
-}
-
-export interface SemesterCalendar {
-  id: string;
-  academicYear: string;
-  semesterType: SemesterType;
-  studyMode: StudyMode;
-  startDate: string;
-  endDate: string;
-  teachingWeeks: number;
-  /** Kalendarz zawsze nalezy do wydzialu — wariant ogolnouczelniany nie istnieje. */
-  facultyId: string;
-  faculty: { id: string; name: string; shortName: string };
-  /** Wzorce tygodnia, ktore rozpisza sie z tego zakresu dat (liczone przez serwer). */
-  templateCount: number;
-  /** Terminy juz stojace w tym zakresie — tyle skasuje nadpisanie albo czyszczenie planu. */
-  entryCount: number;
-}
-
-/** Skad wziely sie daty semestru uzyte przy generowaniu. */
-export type SemesterRangeSource = 'FACULTY' | 'DERIVED';
 
 export interface PublicHoliday {
   id: string;
@@ -262,7 +129,7 @@ export interface DashboardEntry {
   status: EntryStatus;
   date: string;
   room: { number: string; building: { name: string } };
-  instructor: { firstName: string; lastName: string; title: string | null };
+  instructor: { firstName: string; lastName: string; title: string | null } | null;
   studentGroup: { id: string; name: string } | null;
   curriculumEntry: { subject: { name: string } };
   startBlock: { order: number; startTime: string };
@@ -282,6 +149,8 @@ export interface DashboardStats {
   subjects: { total: number };
   calendars: { total: number };
   todayEntries: DashboardEntry[];
+  /** Biezacy tydzien (pon-nd), przyciety do roli: student/prowadzacy — tylko swoje, opublikowane. */
+  weekEntries: DashboardEntry[];
   upcomingHolidays: PublicHoliday[];
   recentUsers: { id: string; name: string; email: string; role: Role; createdAt: string }[];
 }
@@ -294,4 +163,479 @@ export interface ApiOk<T> {
 export interface ApiError {
   error: string;
   details?: unknown;
+}
+
+// ─── Semestry i kalendarze (nowy model) ──────────────────────
+
+export type CalendarKind = 'WEEKLY' | 'ZJAZD';
+export type CalendarStatus = 'PLANNING' | 'PUBLISHED' | 'ARCHIVED';
+export type CalendarDayKind = 'DAY_OFF' | 'FOLLOWS_WEEKDAY' | 'CLOSED_FROM';
+
+/** Kalendarz w skrocie — tyle wystarcza przelacznikowi semestru. */
+export interface TermCalendarRef {
+  id: string;
+  facultyId: string;
+  studyMode: StudyMode;
+  name: string;
+  status: CalendarStatus;
+  kind: CalendarKind;
+}
+
+export interface AcademicTerm {
+  id: string;
+  /** Klucz w adresie URL: "2026-Z" / "2026-L". */
+  key: string;
+  /** "2026/27 zimowy" */
+  label: string;
+  academicYear: string;
+  startYear: number;
+  type: SemesterType;
+  ordinal: number;
+  calendars: TermCalendarRef[];
+}
+
+export interface CalendarBreak {
+  id?: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface CalendarDay {
+  id?: string;
+  date: string;
+  kind: CalendarDayKind;
+  name?: string | null;
+  followsWeekday?: DayOfWeek | null;
+  closedFromBlockOrder?: number | null;
+}
+
+export interface Zjazd {
+  id?: string;
+  number: number;
+  startDate: string;
+  endDate: string;
+}
+
+/** Tresc kalendarza — to, co edytuje planista. */
+export interface CalendarBody {
+  name: string;
+  kind: CalendarKind;
+  startDate: string;
+  endDate: string;
+  breaks: CalendarBreak[];
+  days: CalendarDay[];
+  zjazdy: Zjazd[];
+}
+
+export interface CalendarSummary {
+  teachingWeeks: number;
+  teachingDays: number;
+  zjazdCount: number;
+}
+
+export interface TermCalendar extends CalendarBody {
+  id: string;
+  termId: string;
+  termKey: string;
+  termLabel: string;
+  facultyId: string;
+  faculty: { id: string; name: string; shortName: string };
+  studyMode: StudyMode;
+  status: CalendarStatus;
+  summary: CalendarSummary;
+  updatedAt: string;
+}
+
+export interface TeachingWeek {
+  index: number | null;
+  monday: string;
+  sunday: string;
+  teachingDays: number;
+  notes: string[];
+  breakName: string | null;
+}
+
+export interface CalendarPreview extends Partial<CalendarSummary> {
+  problems: string[];
+  weeks?: TeachingWeek[];
+  zjazdy?: (Zjazd & { teachingDays: number; notes: string[] })[];
+  holidays?: { date: string; name: string }[];
+}
+
+export interface CalendarProposal {
+  source: { termKey: string; termLabel: string; facultyName: string; name: string } | null;
+  calendar: CalendarBody;
+}
+
+// ─── Programy studiow (nowy model) ───────────────────────────
+
+export type ProgramVersionStatus = 'DRAFT' | 'APPROVED';
+
+export interface ProgramVersionSummary {
+  id: string;
+  programId: string;
+  label: string;
+  status: ProgramVersionStatus;
+  totalSemesters: number;
+  defaultStartType: SemesterType;
+  clonedFromId: string | null;
+  clonedFrom: { id: string; label: string } | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: { entries: number };
+}
+
+export interface Program {
+  id: string;
+  code: string;
+  name: string;
+  fieldOfStudyId: string;
+  degreeLevel: DegreeLevel;
+  studyMode: StudyMode;
+  fieldOfStudy: {
+    id: string;
+    name: string;
+    shortName: string;
+    facultyId: string;
+    faculty: { id: string; name: string; shortName: string };
+  };
+  versions: ProgramVersionSummary[];
+}
+
+export interface ProgramEntry {
+  id: string;
+  versionId: string;
+  subjectId: string;
+  semester: number;
+  specializationId: string | null;
+  orderInSemester: number;
+  hoursLecture: number;
+  hoursExercise: number;
+  hoursLab: number;
+  hoursProject: number;
+  hoursSeminar: number;
+  ects: number;
+  assessmentType: AssessmentType;
+  subject: { id: string; name: string; code: string | null };
+  specialization: { id: string; shortName: string; name: string } | null;
+}
+
+export interface ProgramVersionDetail {
+  version: Omit<ProgramVersionSummary, '_count'> & {
+    program: {
+      id: string;
+      code: string;
+      name: string;
+      degreeLevel: DegreeLevel;
+      studyMode: StudyMode;
+      fieldOfStudy: {
+        id: string;
+        name: string;
+        shortName: string;
+        facultyId: string;
+        faculty: { id: string; name: string; shortName: string };
+        specializations: { id: string; name: string; shortName: string }[];
+      };
+    };
+  };
+  semesters: { semester: number; totalEcts: number; totalHours: number; entries: ProgramEntry[] }[];
+  outOfRange: ProgramEntry[];
+}
+
+// ─── Roczniki i grupy (nowy model) ───────────────────────────
+
+export type CohortLectureMode = 'SEPARATE' | 'JOINT';
+
+export interface CohortDto {
+  id: string;
+  name: string | null;
+  label: string;
+  lectureMode: CohortLectureMode;
+  startTermKey: string;
+  startTermLabel: string;
+  program: {
+    id: string;
+    code: string;
+    name: string;
+    studyMode: StudyMode;
+    degreeLevel: DegreeLevel;
+    fieldOfStudy: {
+      id: string;
+      name: string;
+      shortName: string;
+      facultyId: string;
+      specializations: { id: string; name: string; shortName: string }[];
+    };
+  };
+  programVersion: { id: string; label: string; status: ProgramVersionStatus; totalSemesters: number };
+}
+
+export interface TermCohort extends CohortDto {
+  semester: number;
+  studyYear: number;
+  semesterOverridden: boolean;
+  isNewIntake: boolean;
+  calendar: { id: string; name: string; kind: CalendarKind } | null;
+  calendarIsDefault: boolean;
+  availableCalendars: { id: string; name: string; kind: CalendarKind }[];
+  groupCount: number;
+  size: number;
+}
+
+export interface IntakeCandidate {
+  id: string;
+  code: string;
+  name: string;
+  studyMode: StudyMode;
+}
+
+export interface CohortGroup {
+  id: string;
+  parentId: string | null;
+  partitionKey: string | null;
+  code: string | null;
+  specializationId: string | null;
+  size: number;
+  fromSemester: number;
+  toSemester: number | null;
+  active: boolean;
+  name: string;
+  memberCount: number;
+  usedInPlan: boolean;
+  childCount: number;
+}
+
+// ─── Zajecia semestru i obsada (nowy model) ─────────────────
+
+export interface SectionAssignment {
+  id: string;
+  instructorId: string | null;
+  name: string;
+  hours: number;
+}
+
+export interface ClassSectionRow {
+  id: string;
+  cohort: { id: string; label: string; code: string; semester: number };
+  subject: { id: string; name: string; code: string | null };
+  order: number;
+  specialization: string | null;
+  classType: ClassType;
+  group: { id: string; partitionKey: string | null; name: string };
+  hours: number;
+  status: 'ACTIVE' | 'ORPHANED';
+  assignedHours: number;
+  hasVacancy: boolean;
+  instructors: SectionAssignment[];
+}
+
+export interface SectionsSummary {
+  sections: number;
+  hours: number;
+  assignedHours: number;
+  vacancies: number;
+  orphaned: number;
+}
+
+export interface SyncRow {
+  cohort: string;
+  subject: string;
+  classType: ClassType;
+  group: string;
+  hours: number;
+  oldHours?: number;
+  fallback?: boolean;
+}
+
+export interface SyncReport {
+  created: SyncRow[];
+  hoursChanged: SyncRow[];
+  reactivated: SyncRow[];
+  orphaned: SyncRow[];
+  deleted: SyncRow[];
+  unchanged: number;
+  problems: { cohort: string; subject: string; message: string }[];
+}
+
+export interface CarryRow {
+  sectionId: string;
+  cohort: string;
+  subject: string;
+  classType: ClassType;
+  group: string;
+  hours: number;
+  source?: string;
+  instructors?: { name: string; hours: number }[];
+}
+
+export interface WorkloadRow {
+  id: string;
+  name: string;
+  here: number;
+  total: number;
+}
+
+// ─── Plan (nowy model): umieszczenia i terminy ───────────────
+
+export type PlacementCycle = 'WEEK' | 'ZJAZD';
+export type PlacementPattern = 'ALL' | 'EVEN' | 'ODD' | 'LIST';
+
+export interface PlanPlacement {
+  id: string;
+  dayOfWeek: DayOfWeek;
+  startOrder: number;
+  endOrder: number;
+  room: { id: string; label: string };
+  instructor: { id: string; name: string } | null;
+  cycle: PlacementCycle;
+  pattern: PlacementPattern;
+  numbers: number[];
+  fromIndex: number | null;
+  toIndex: number | null;
+  jointKey: string | null;
+  exceptionCount: number;
+}
+
+export interface PlanSection {
+  id: string;
+  subject: { id: string; name: string };
+  order: number;
+  specialization: string | null;
+  classType: ClassType;
+  group: { id: string; name: string };
+  hours: number;
+  plannedHours: number;
+  status: 'ACTIVE' | 'ORPHANED';
+  instructors: { instructorId: string | null; name: string; hours: number }[];
+  placements: PlanPlacement[];
+}
+
+export interface PlanView {
+  cohort: { id: string; label: string; code: string; semester: number; studyMode: StudyMode };
+  calendar: {
+    id: string;
+    name: string;
+    kind: CalendarKind;
+    status: CalendarStatus;
+    lastGeneratedAt: string | null;
+    teachingWeeks: number;
+    zjazdy: { number: number; startDate: string; endDate: string }[];
+  } | null;
+  stale: boolean;
+  generatedOccurrences: number;
+  sections: PlanSection[];
+}
+
+export interface PlacementPayload {
+  sectionId: string;
+  dayOfWeek: DayOfWeek;
+  startOrder: number;
+  endOrder: number;
+  roomId: string;
+  instructorId: string | null;
+  cycle: PlacementCycle;
+  pattern: PlacementPattern;
+  numbers: number[];
+  fromIndex: number | null;
+  toIndex: number | null;
+  jointKey: string | null;
+}
+
+export interface GenerateReport {
+  added: number;
+  removed: number;
+  changed: number;
+  unchanged: number;
+  total: number;
+  conflicts: { date: string; section: string; reason: string; with: string }[];
+  beyondHours: number;
+  shortfalls: { section: string; missing: number }[];
+  orphanExceptions: { section: string; date: string; action: string }[];
+  calendarsMissing: string[];
+}
+
+export interface OccurrenceRow {
+  id: string;
+  sectionId: string;
+  placementId: string | null;
+  date: string;
+  originalDate: string | null;
+  startOrder: number;
+  endOrder: number;
+  subject: string;
+  classType: ClassType;
+  group: string;
+  groupId: string;
+  room: { id: string; label: string };
+  instructor: string;
+  instructorId: string | null;
+  kind: 'DERIVED' | 'MANUAL';
+  status: EntryStatus;
+  changed: boolean;
+  note: string | null;
+}
+
+// ─── Etap 6: przenoszenie planu, przygotowanie semestru, moj plan ──
+
+export interface CarryPlanRow {
+  cohort: string;
+  subject: string;
+  classType: ClassType;
+  group: string;
+  source?: string;
+  problem?: string;
+}
+
+export interface CarryPlanReport {
+  created: CarryPlanRow[];
+  conflicts: CarryPlanRow[];
+  unmatched: CarryPlanRow[];
+  skipped: number;
+  sources: { cohort: string; source: string | null }[];
+}
+
+export interface SetupCohort {
+  id: string;
+  label: string;
+  code: string;
+  semester: number;
+  isNewIntake: boolean;
+  calendar: { name: string; status: CalendarStatus } | null;
+  groups: number;
+  sections: number;
+  vacancies: number;
+  placedSections: number;
+  occurrences: number;
+  stale: boolean;
+}
+
+export interface SetupStatus {
+  calendars: { id: string; facultyId: string; studyMode: StudyMode; name: string; kind: CalendarKind; status: CalendarStatus }[];
+  missingCalendars: number;
+  cohorts: SetupCohort[];
+  totals: {
+    cohorts: number;
+    cohortsWithoutCalendar: number;
+    cohortsWithoutSections: number;
+    sections: number;
+    vacancies: number;
+    placedSections: number;
+    staleCohorts: number;
+    published: number;
+  };
+}
+
+export interface MyPlanRow {
+  id: string;
+  date: string;
+  startOrder: number;
+  endOrder: number;
+  subject: string;
+  classType: ClassType;
+  program: string;
+  room: string;
+  instructor: string;
+  status: EntryStatus;
+  note: string | null;
 }

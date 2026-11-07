@@ -28,11 +28,11 @@ export const create = asyncHandler(async (req, res) => {
 export const remove = asyncHandler(async (req, res) => {
   const spec = await prisma.specialization.findUnique({
     where: { id: req.params.id },
-    include: { _count: { select: { curriculumVersions: true, studentGroups: true } } },
+    include: { _count: { select: { programEntries: true, studentGroups: true } } },
   });
   if (!spec) throw new AppError(404, 'Specjalnosc nie znaleziona');
-  if (spec._count.curriculumVersions > 0) {
-    throw new AppError(409, 'Nie mozna usunac specjalnosci z przypisanymi wersjami planu');
+  if (spec._count.programEntries > 0) {
+    throw new AppError(409, 'Nie mozna usunac specjalnosci z przedmiotami w programach studiow');
   }
   if (spec._count.studentGroups > 0) {
     throw new AppError(409, 'Nie mozna usunac specjalnosci z przypisanymi grupami studenckimi');

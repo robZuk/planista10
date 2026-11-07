@@ -15,7 +15,7 @@ export interface TodayEntry {
   classType: ClassType;
   status: EntryStatus;
   room: { number: string; building: { name: string } };
-  instructor: { firstName: string; lastName: string; title: string | null };
+  instructor: { firstName: string; lastName: string; title: string | null } | null;
   studentGroup: { name: string } | null;
   curriculumEntry: { subject: { name: string } };
   startBlock: { order: number; startTime: string };
@@ -77,7 +77,7 @@ export function TodayCard({
                   </ItemTitle>
                   <ItemDescription>
                     {entry.room.building.name} · sala {entry.room.number} ·{' '}
-                    {`${entry.instructor.title ?? ''} ${entry.instructor.firstName} ${entry.instructor.lastName}`.trim()}
+                    {entry.instructor ? `${entry.instructor.title ?? ''} ${entry.instructor.firstName} ${entry.instructor.lastName}`.trim() : 'NN'}
                     {entry.studentGroup && ` · ${entry.studentGroup.name}`}
                   </ItemDescription>
                 </ItemContent>

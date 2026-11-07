@@ -18,6 +18,12 @@ import { isValidHour, addOneHour, blockLabel } from '../lib/timeBlocks';
  */
 async function recomputeOrder(tx: Prisma.TransactionClient): Promise<void> {
   const blocks = await tx.timeBlock.findMany({ orderBy: { startTime: 'asc' } });
+  // Umieszczenia i terminy wskazuja bloki numerem (order). Gdy plan juz istnieje,
+  // przenumerowanie przesunelo by zajecia na inne godziny — wolno tylko dopisac blok na koncu.
+  const shifted = blocks.some((b, i) => b.order > 0 && b.order < 1000 && b.order !== i + 1);
+  if (shifted && ((await tx.placement.count()) > 0 || (await tx.occurrence.count()) > 0)) {
+    throw new AppError(409, 'Zmiana siatki godzin przesunelaby zaplanowane zajecia — mozna tylko dodac blok po ostatnim');
+  }
   for (const [i, b] of blocks.entries()) {
     await tx.timeBlock.update({ where: { id: b.id }, data: { order: -(i + 1) } });
   }
@@ -59,21 +65,12 @@ export const create = asyncHandler(async (req, res) => {
 
 export const remove = asyncHandler(async (req, res) => {
   await prisma.$transaction(async (tx) => {
-    const block = await tx.timeBlock.findUnique({
-      where: { id: req.params.id },
-      include: {
-        _count: {
-          select: { templateStarts: true, templateEnds: true, entryStarts: true, entryEnds: true },
-        },
-      },
-    });
+    const block = await tx.timeBlock.findUnique({ where: { id: req.params.id } });
     if (!block) throw new AppError(404, 'Blok czasowy nie znaleziony');
     const inUse =
-      block._count.templateStarts > 0 ||
-      block._count.templateEnds > 0 ||
-      block._count.entryStarts > 0 ||
-      block._count.entryEnds > 0;
-    if (inUse) throw new AppError(409, 'Nie mozna usunac bloku uzywanego w planie zajec');
+      (await tx.placement.count({ where: { startOrder: { lte: block.order }, endOrder: { gte: block.order } } })) +
+      (await tx.occurrence.count({ where: { startOrder: { lte: block.order }, endOrder: { gte: block.order } } }));
+    if (inUse > 0) throw new AppError(409, 'Nie mozna usunac bloku uzywanego w planie zajec');
 
     await tx.timeBlock.delete({ where: { id: req.params.id } });
     await recomputeOrder(tx);

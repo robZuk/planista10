@@ -7,40 +7,35 @@ Wskazówki dla Claude Code przy pracy w tym repozytorium. Szczegóły domenowe
 
 ## Czym jest projekt
 
-Planista 7 — system układania planu zajęć dla uczelni. Backend przeniesiony
-z planista6 bez zmiany logiki; frontend napisany od nowa. Porty są celowo inne
-niż w planista6 (4000/5433/5173), więc oba projekty mogą działać równolegle.
+Planista 8 — system układania planu zajęć dla uczelni, nowa wersja planista7 z przebudowanym
+modelem planowania (semestry, programy, roczniki, obsada, plan). Porty są celowo inne niż
+w planista7 (4001/5434/5174), więc oba projekty mogą działać równolegle.
 
-- **Backend:** Node.js + Express + TypeScript, ORM Prisma — port **4001**
-- **Baza:** PostgreSQL 16 w Dockerze — host port **5434**
-- **Frontend:** React 19 + Vite + TypeScript + Tailwind 4 + shadcn/ui — port **5174** (`strictPort`)
+- **Backend:** Node.js + Express + TypeScript, ORM Prisma — port **4002**
+- **Baza:** PostgreSQL 16 w Dockerze — host port **5435**
+- **Frontend:** React 19 + Vite + TypeScript + Tailwind 4 + shadcn/ui — port **5175** (`strictPort`)
 
 ## Uruchamianie (dev)
 
 ```bash
-# 1. Baza (katalog główny) — kontener planista-db-1, Postgres na :5434
+# 1. Baza (katalog główny) — kontener planista8-db-1, Postgres na :5435
 docker compose up -d
 
-# 2. Backend (:4001)
+# 2. Backend (:4002)
 cd backend
 cp .env.example .env        # przy pierwszym uruchomieniu
 npm install
 npx prisma migrate deploy   # albo: npm run prisma:migrate
-npm run db:seed
-npm run dev
-
-# 3. Frontend (:5174, drugi terminal)
-cd frontend
-npm install
+npm run db:seed             # minimalne dane; pelne dane dev: db/planista8-dump.sql (db/README.md)
 npm run dev
 ```
 
-Health-check backendu: `GET http://localhost:4001/health` (poza prefiksem
+Health-check backendu: `GET http://localhost:4002/health` (poza prefiksem
 `/api`). Wszystkie właściwe endpointy są pod `/api/*` i wymagają tokenu JWT.
 
-Port frontu jest ustawiony na sztywno (`strictPort`) — jeśli 5174 jest zajęty,
+Port frontu jest ustawiony na sztywno (`strictPort`) — jeśli 5175 jest zajęty,
 Vite zatrzyma się z błędem zamiast przejść na kolejny wolny port (inaczej łatwo
-pomylić planista7 z uruchomioną obok planista6).
+pomylić planista8 z uruchomioną obok planista7).
 
 ## Polecenia
 
@@ -69,17 +64,13 @@ katalogu głównym. Wspólny jest tylko runner, nie konfiguracja.
   `vitest.config.mts` (`environment: node`). Prisma jest **mockowana** przez
   `vi.mock('../lib/prisma')`, więc testy nie wymagają bazy ani zmiennych
   środowiskowych. Pliki `*.test.ts` są wykluczone z builda `tsc` (patrz
-  `exclude` w `tsconfig.json`), więc nie trafiają do `dist/`. Pokryte:
-  `services/scheduleValidation`, `lib/scheduleTime`, `lib/semester`.
+  `exclude` w `tsconfig.json`), więc nie trafiają do `dist/`. Pokryte czyste funkcje
+  domeny (`lib/terms`, `holidays`, `teachingCalendar`, `groupTree`, `demand`,
+  `materializer`, `scheduleTime`) i trasy API przez supertest (`*.api.test.ts`,
+  `createApp()` bez nasłuchiwania na porcie).
 - **Frontend** (`frontend/`): `npm test` / `npm run test:watch`. Config w
   `vitest.config.ts` (osobny od `vite.config.ts`, z tym samym aliasem `@`).
-  Pierwsza iteracja to **czysta logika** z `src/lib` (bez DOM): `semester`,
-  `scheduleConflicts`, `planScope`, `unplannedItems`.
-
-Zakres startowy to wyłącznie czysta logika domenowa — **nie ma** jeszcze testów
-komponentów React ani tras Express (supertest). `createApp()` w
-`backend/src/index.ts` jest wyeksportowane właśnie pod przyszłe testy API bez
-nasłuchiwania na porcie (serwer startuje tylko przy `require.main === module`).
+  Czysta logika bez DOM (`semester`, `navigation`, `calendarUtils`).
 
 Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`).
 
@@ -88,42 +79,52 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 **Backend** — klasyczny podział warstwowy:
 - `src/routes/*` — definicje tras Express (montowane pod `/api/*` w `index.ts`)
 - `src/controllers/*` — obsługa żądań (walidacja wejścia, wywołanie logiki, odpowiedź)
-- `src/services/*` — logika domenowa (m.in. `scheduleValidation.ts`)
-- `src/lib/*` — współdzielone helpery czyste i dostęp do zasobów:
+- `src/services/*` — logika domenowa z bazą: `termCalendars`, `cohorts`, `sections`
+  (synchronizacja zajęć, przenoszenie obsady), `plan` (walidacja umieszczeń, dostępność,
+  generowanie terminów), `carryPlan`, `visibility`
+- `src/lib/*` — czyste funkcje domeny (bez bazy, testowane jednostkowo):
   - `prisma.ts` — **singleton PrismaClient**; nigdy nie rób `new PrismaClient()`, importuj `prisma` stąd
-  - `scheduleTime.ts` — logika czasowa planu (bloki, nakładanie zakresów, okna trybu studiów)
-  - `semester.ts` — typ semestru (zimowy/letni) liczony od semestru startowego programu
-  - `groupFamily.ts` — rodzina grup (wykład → ćwiczenia → lab)
+  - `isoDate.ts` — daty jako tekst `YYYY-MM-DD` (arytmetyka w UTC)
+  - `terms.ts` — semestry (`2026-Z`/`2026-L`), `ordinal`, semestr programu rocznika
+  - `holidays.ts` — święta ustawowe liczone (Wielkanoc, Boże Ciało, Wigilia od 2025)
+  - `teachingCalendar.ts` — dni i tygodnie zajęć, zjazdy, `expandDates`
+  - `groupTree.ts` — drzewo grup: reguła nakładania i nazwy liczone
+  - `demand.ts` — zajęcia wynikające z programu i grup
+  - `materializer.ts` — terminy z umieszczeń (limit godzin, wyjątki, kolizje)
+  - `scheduleTime.ts` — nakładanie bloków, typy sal, okna trybu studiów
+  - `facultyScope.ts` — zakres wydziału wywołującego (`assertFacultyScope`)
 - `src/middleware/authenticate.ts` — weryfikacja JWT; role w enumie `Role`
-- `prisma/schema.prisma` — źródło prawdy o modelu danych (17 modeli, m.in.
-  `ScheduleTemplate`, `ScheduleEntry`, `CurriculumEntry`, `SemesterCalendar`)
+- `prisma/schema.prisma` — źródło prawdy o modelu danych (opis: `docs/model-danych.md`)
 
 **Frontend** — React 19 + Vite:
 - `src/pages/*` — strony (routing `react-router-dom`)
 - `src/api/*` — klienci HTTP per zasób (axios, `src/lib/api.ts`)
 - `src/store/*` — stan globalny współdzielony między stronami (**zustand**):
-  `authStore`, `academicYearStore`, `facultyStore`, `fieldFilterStore`
-- `src/lib/*` — logika czysta wielokrotnego użytku (`planScope`, `scheduleDisplay`,
-  `unplannedItems`, `semester`, `scheduleConflicts`)
+  `authStore`, `termStore` (ostatni semestr), `facultyStore`, `fieldFilterStore`
+- Strony semestralne (`termScoped` w `lib/navigation.ts`) mają semestr w adresie
+  (`/plan/2026-L`); `TermSelector` w nagłówku zmienia klucz, `useCurrentTerm` go czyta
+- `src/lib/*` — logika czysta wielokrotnego użytku (`navigation`, `scheduleDisplay`, `labels`, `semester`)
 - Dane serwera przez **TanStack Query**; formularze przez react-hook-form + zod;
-  drag & drop planu przez dnd-kit; UI to shadcn/ui (preset `nova`, baza Radix)
+  UI to shadcn/ui (preset `nova`, baza Radix)
 
-### Rozdział „Wzorzec" vs „Kalendarz"
+### Reguły domenowe (nowy model)
 
-Kluczowa reguła domenowa: **wzorzec tygodnia i kalendarz semestru to dwa
-rozdzielone światy.**
-- `validateTemplate` patrzy WYŁĄCZNIE na inne wzorce (`ScheduleTemplate`),
-  `validateEntry` wyłącznie na inne terminy (`ScheduleEntry`).
-- Spotykają się dopiero przy generowaniu semestru (tam konflikty liczy generator).
-- **Nie** „naprawiaj" tego, dokładając zapytań o `ScheduleEntry` w walidacji wzorca.
-
-Typ semestru (zimowy/letni) liczy się naprzemiennie od `CurriculumVersion.startSemesterType`,
-a **nie** z parzystości numeru — przy naborze lutowym semestr 1 jest letni.
-Zajęcia różnych typów semestru nigdy nie kolidują (mogą dzielić salę/prowadzącego/slot).
-
-Filtry wyświetlania w widoku Plan zajęć są **lokalne** (`useState`) — resetują się
-po wyjściu z widoku i powrocie. Rok akademicki, wydział i kierunek mają osobne
-store'y zustand (współdzielone między stronami).
+- **Cztery osie czasu:** katalog (bez roku) · program (wersje, wiele roczników na wersję) ·
+  rocznik (grupy idą z nim przez studia) · semestr kalendarzowy (jedyny kontekst planowania).
+- **Nic nie układa planu automatycznie.** Planista umieszcza każde zajęcia sam; masowe
+  akcje („Przenieś plan z zeszłego roku", „Kopiuj zjazd", synchronizacja zajęć, obsada
+  z poprzedniego roku) są uruchamiane przyciskiem i zawsze mają podgląd (`dryRun`).
+- **Terminy powstają tylko z „Generuj terminy"** (`services/plan.ts → generate`). Zmiana
+  wzorca NIE przelicza terminów — plan pokazuje wtedy „kalendarz nieaktualny".
+  Ręczne poprawki terminów to `PlacementException` i przeżywają ponowne generowanie;
+  terminy ręczne (`Occurrence.kind = MANUAL`) nie znikają.
+- **Kolizje sprawdzamy na konkretnych datach** w całej uczelni (sala, prowadzący, grupy wg
+  `groupTree.groupsOverlap`) — jeden mechanizm dla umieszczeń i terminów.
+- **Semestr programu rocznika** = `termOrdinal(term) − termOrdinal(startTerm) + 1`
+  (działa dla naboru lutowego); nigdy z parzystości numeru.
+- **Nazwy grup nie są zapisywane** — licz je `displayName` dla semestru.
+- **Dziekanat** zmienia tylko dane swojego wydziału (`assertFacultyScope`); semestry w
+  archiwum są tylko do odczytu.
 
 ## Konwencje
 
@@ -139,7 +140,8 @@ store'y zustand (współdzielone między stronami).
     całość, umożliwia `revert -m`), albo `--squash` gdy ma zostać jeden wpis w `main`.
 - **Czas w planie:** wyrażany blokami 1-godzinnymi (`TimeBlock.order`), nie
   stringami godzin. Konflikt czasu = nakładanie zakresów `order` (`rangesOverlap`).
-- **Daty semestru:** generator używa **południa UTC** (odporność na DST).
+- **Daty:** dni jako tekst `YYYY-MM-DD` (`lib/isoDate.ts`), kolumny `@db.Date`; nigdy
+  arytmetyka na `Date` w strefie lokalnej.
 - **TypeScript:** `strict` po obu stronach; backend CommonJS, frontend ESM.
 
 ### Logowanie

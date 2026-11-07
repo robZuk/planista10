@@ -20,11 +20,11 @@ export const create = asyncHandler(async (req, res) => {
 export const remove = asyncHandler(async (req, res) => {
   const subject = await prisma.subject.findUnique({
     where: { id: req.params.id },
-    include: { _count: { select: { entries: true } } },
+    include: { _count: { select: { programEntries: true } } },
   });
   if (!subject) throw new AppError(404, 'Przedmiot nie znaleziony');
-  if (subject._count.entries > 0) {
-    throw new AppError(409, 'Nie mozna usunac przedmiotu uzywanego w siatce godzin');
+  if (subject._count.programEntries > 0) {
+    throw new AppError(409, 'Nie mozna usunac przedmiotu uzywanego w programach studiow');
   }
   await prisma.subject.delete({ where: { id: req.params.id } });
   res.json({ message: 'Przedmiot usuniety' });

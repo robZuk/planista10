@@ -1,0 +1,31 @@
+import { Router } from 'express';
+import { authenticate, authorize } from '../middleware/authenticate';
+import * as plan from '../controllers/plan.controller';
+import * as setup from '../controllers/termSetup.controller';
+
+/**
+ * Plan semestru (nowy model): /api/terms/:key/plan..., /api/placements/:id,
+ * /api/occurrences/:id. Zapis dla admina i planisty wydzialu.
+ */
+export const termPlanRouter = Router({ mergeParams: true });
+export const placementsRouter = Router();
+export const occurrencesRouter = Router();
+
+const viewers = authorize('ADMIN', 'DEAN_OFFICE', 'INSTRUCTOR');
+const planners = authorize('ADMIN', 'DEAN_OFFICE');
+
+termPlanRouter.get('/plan', authenticate, viewers, plan.getPlan);
+termPlanRouter.get('/plan/availability', authenticate, planners, plan.getAvailability);
+termPlanRouter.post('/placements', authenticate, planners, plan.createPlacement);
+termPlanRouter.post('/generate', authenticate, planners, plan.generateTerms);
+termPlanRouter.get('/occurrences', authenticate, viewers, plan.listOccurrences);
+termPlanRouter.post('/occurrences', authenticate, planners, plan.createManualOccurrence);
+termPlanRouter.post('/plan/carry', authenticate, planners, setup.carryPlanHandler);
+termPlanRouter.get('/setup', authenticate, planners, setup.setupStatus);
+termPlanRouter.get('/my-plan', authenticate, authorize('INSTRUCTOR', 'STUDENT'), setup.myPlan);
+
+placementsRouter.put('/:id', authenticate, planners, plan.updatePlacement);
+placementsRouter.delete('/:id', authenticate, planners, plan.deletePlacement);
+
+occurrencesRouter.put('/:id', authenticate, planners, plan.changeOccurrence);
+occurrencesRouter.delete('/:id', authenticate, planners, plan.deleteManualOccurrence);

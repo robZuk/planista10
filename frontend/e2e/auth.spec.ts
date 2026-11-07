@@ -6,7 +6,7 @@ test.describe('Uwierzytelnianie', () => {
     await login(page);
     // Po zalogowaniu jestesmy na panelu glownym (/), a nie na /login.
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole('link', { name: 'Plan zajec' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Ukladanie planu' })).toBeVisible();
   });
 
   test('bledne haslo pokazuje blad i zostaje na logowaniu', async ({ page }) => {

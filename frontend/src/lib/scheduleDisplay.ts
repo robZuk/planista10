@@ -1,9 +1,6 @@
-import type { ClassType, DayOfWeek, EntryStatus, RoomType, StudyMode, WeekType } from '@/types';
+import type { ClassType, EntryStatus, RoomType } from '@/types';
 
 export const CLASS_TYPES: ClassType[] = ['LECTURE', 'EXERCISE', 'LAB', 'PROJECT', 'SEMINAR'];
-
-/** Maksymalna dlugosc jednych zajec we wzorcu, w blokach godzinowych. */
-export const MAX_TEMPLATE_BLOCKS = 4;
 
 /** Jednoliterowe skroty na blokach w siatce — miejsca jest tam malo. */
 export const CLASS_LABELS: Record<ClassType, string> = {
@@ -41,78 +38,11 @@ export const CLASS_COLORS: Record<ClassType, string> = {
     'bg-pink-100 border-pink-400 text-pink-900 dark:bg-pink-950 dark:border-pink-600 dark:text-pink-100',
 };
 
-export const WEEK_TYPE_LABELS: Record<WeekType, string> = {
-  EVERY: 'Co tydzien',
-  EVEN: 'Tygodnie parzyste',
-  ODD: 'Tygodnie nieparzyste',
-};
-
-export const WEEK_TYPE_SHORT: Record<WeekType, string> = {
-  EVERY: '',
-  EVEN: 'parz.',
-  ODD: 'nieparz.',
-};
-
-/**
- * Etykieta rotacji tygodniowej pokazywana na kazdym bloku wzorca — w nomenklaturze
- * A/B zamiast parzyste/nieparzyste. Tydzien 1 semestru jest nieparzysty (ODD), stad
- * ODD = "Tydzien A", EVEN = "Tydzien B".
- */
-export const WEEK_TYPE_BADGE: Record<WeekType, string> = {
-  EVERY: 'Co tydzien',
-  ODD: 'Tydzien A',
-  EVEN: 'Tydzien B',
-};
-
-/** Filtr widoku siatki: ktory tydzien rotacji ogladamy. 'all' = bez zawezania. */
-export type WeekView = 'all' | 'ODD' | 'EVEN';
-
-export const WEEK_VIEW_LABELS: Record<WeekView, string> = {
-  all: 'Wszystkie tygodnie',
-  ODD: 'Tydzien A (nieparzysty)',
-  EVEN: 'Tydzien B (parzysty)',
-};
-
-/**
- * Czy wzorzec pojawia sie w ogladanym tygodniu rotacji.
- *
- * Zajecia "co tydzien" wchodza do OBU tygodni — bez tego podglad tygodnia A klamalby,
- * pokazujac wylacznie zajecia co drugi tydzien i gubiac wieksza czesc planu. Efekt
- * uboczny, dla ktorego filtr powstal: para A/B stojaca w tym samym slocie rysuje sie
- * na siatce jeden blok na drugim, a po wybraniu tygodnia zostaje z niej jeden.
- */
-export function matchesWeekView(weekType: WeekType, view: WeekView): boolean {
-  return view === 'all' || weekType === 'EVERY' || weekType === view;
-}
-
 export const STATUS_LABELS: Record<EntryStatus, string> = {
   SCHEDULED: 'Zaplanowane',
   CANCELLED: 'Odwolane',
   MAKEUP: 'Odrobienie',
 };
-
-const DAY_LABELS_FULL: { key: DayOfWeek; label: string }[] = [
-  { key: 'MONDAY', label: 'Poniedzialek' },
-  { key: 'TUESDAY', label: 'Wtorek' },
-  { key: 'WEDNESDAY', label: 'Sroda' },
-  { key: 'THURSDAY', label: 'Czwartek' },
-  { key: 'FRIDAY', label: 'Piatek' },
-];
-
-const DAY_LABELS_PART: { key: DayOfWeek; label: string }[] = [
-  { key: 'FRIDAY', label: 'Piatek' },
-  { key: 'SATURDAY', label: 'Sobota' },
-  { key: 'SUNDAY', label: 'Niedziela' },
-];
-
-/**
- * Dni widoczne w siatce zaleza od trybu studiow — backend i tak odrzuci zajecia
- * poza oknem (stacjonarne pn-pt, niestacjonarne pt od 15:00 / sob / nd),
- * wiec nie pokazujemy kolumn, w ktorych nic nie mozna postawic.
- */
-export function daysForMode(studyMode: StudyMode): { key: DayOfWeek; label: string }[] {
-  return studyMode === 'PART_TIME' ? DAY_LABELS_PART : DAY_LABELS_FULL;
-}
 
 /**
  * Lustro backend/src/lib/scheduleTime.ts — jakie typy sal pasuja do typu zajec.
@@ -125,28 +55,3 @@ export const ROOM_TYPES_FOR_CLASS: Record<ClassType, RoomType[]> = {
   PROJECT: ['EXERCISE', 'COMPUTER_LAB', 'SEMINAR'],
   SEMINAR: ['SEMINAR', 'EXERCISE'],
 };
-
-/** Ile godzin danego typu przewiduje wpis siatki — potrzebne przy planowaniu. */
-export function requiredHours(
-  entry: {
-    hoursLecture: number;
-    hoursExercise: number;
-    hoursLab: number;
-    hoursProject: number;
-    hoursSeminar: number;
-  },
-  classType: ClassType,
-): number {
-  switch (classType) {
-    case 'LECTURE':
-      return entry.hoursLecture;
-    case 'EXERCISE':
-      return entry.hoursExercise;
-    case 'LAB':
-      return entry.hoursLab;
-    case 'PROJECT':
-      return entry.hoursProject;
-    case 'SEMINAR':
-      return entry.hoursSeminar;
-  }
-}

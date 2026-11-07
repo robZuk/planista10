@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { toDateKey } from '@/lib/scheduleDates';
-import type { ScheduleEntry } from '@/types';
+import type { DashboardEntry } from '@/types';
 
 const WEEKDAYS = [
   { key: 1, label: 'Pn' },
@@ -28,7 +28,7 @@ export function WeekLoadChart({
   title = 'Obciazenie tygodnia',
   description,
 }: {
-  entries: ScheduleEntry[];
+  entries: DashboardEntry[];
   title?: string;
   description?: string;
 }) {

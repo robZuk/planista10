@@ -94,10 +94,10 @@ export const updateRoom = asyncHandler(async (req, res) => {
 export const removeRoom = asyncHandler(async (req, res) => {
   const room = await prisma.room.findUnique({
     where: { id: req.params.roomId },
-    include: { _count: { select: { templateEntries: true, scheduleEntries: true } } },
+    include: { _count: { select: { placements: true, occurrences: true } } },
   });
   if (!room) throw new AppError(404, 'Sala nie znaleziona');
-  if (room._count.templateEntries > 0 || room._count.scheduleEntries > 0) {
+  if (room._count.placements > 0 || room._count.occurrences > 0) {
     throw new AppError(409, 'Nie mozna usunac sali przypisanej do planu zajec');
   }
   await prisma.room.delete({ where: { id: req.params.roomId } });

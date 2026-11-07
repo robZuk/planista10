@@ -18,6 +18,6 @@ export const useFieldFilterStore = create<FieldFilterState>()(
       fieldOfStudyId: 'all',
       setFieldOfStudyId: (fieldOfStudyId) => set({ fieldOfStudyId }),
     }),
-    { name: 'planista7-field-filter' },
+    { name: 'planista8-field-filter' },
   ),
 );

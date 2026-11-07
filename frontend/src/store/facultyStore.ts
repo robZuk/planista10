@@ -2,9 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 /**
- * Globalny filtr wydzialu dla widoku Siatka godzin (zakladki Siatki / Kierunki i
- * specjalnosci). 'all' = brak filtra. Przedmioty go nie uzywaja — to slownik
- * wspolny dla calej uczelni, bez pola wydzialu.
+ * Globalny filtr wydzialu (dla admina) — programy, roczniki, obsada, plan, kalendarz.
+ * 'all' = brak filtra. Dziekanat zawsze pracuje na swoim wydziale (wymusza to backend).
  */
 interface FacultyFilterState {
   facultyId: string;
@@ -17,6 +16,6 @@ export const useFacultyFilterStore = create<FacultyFilterState>()(
       facultyId: 'all',
       setFacultyId: (facultyId) => set({ facultyId }),
     }),
-    { name: 'planista7-faculty-filter' },
+    { name: 'planista8-faculty-filter' },
   ),
 );

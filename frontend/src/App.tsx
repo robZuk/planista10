@@ -6,11 +6,13 @@ import BuildingsPage from '@/pages/BuildingsPage';
 import InstructorsPage from '@/pages/InstructorsPage';
 import TimeBlocksPage from '@/pages/TimeBlocksPage';
 import CurriculumPage from '@/pages/CurriculumPage';
-import CurriculumVersionPage from '@/pages/curriculum/CurriculumVersionPage';
-import GroupsPage from '@/pages/GroupsPage';
-import SchedulePage from '@/pages/SchedulePage';
-import HolidaysPage from '@/pages/HolidaysPage';
-import SemesterCalendarsPage from '@/pages/SemesterCalendarsPage';
+import ProgramVersionPage from '@/pages/curriculum/ProgramVersionPage';
+import CohortsPage from '@/pages/CohortsPage';
+import ObsadaPage from '@/pages/ObsadaPage';
+import PlanPage from '@/pages/PlanPage';
+import TermSetupPage from '@/pages/TermSetupPage';
+import MyPlanPage from '@/pages/MyPlanPage';
+import TermCalendarPage from '@/pages/TermCalendarPage';
 import DashboardPage from '@/pages/DashboardPage';
 import UsersPage from '@/pages/UsersPage';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -21,10 +23,12 @@ import { NAV_ITEMS } from '@/lib/navigation';
 const PAGES: Record<string, ComponentType> = {
   '/': DashboardPage,
   '/curriculum': CurriculumPage,
-  '/groups': GroupsPage,
-  '/schedule': SchedulePage,
-  '/holidays': HolidaysPage,
-  '/semester-calendars': SemesterCalendarsPage,
+  '/cohorts': CohortsPage,
+  '/obsada': ObsadaPage,
+  '/plan': PlanPage,
+  '/setup': TermSetupPage,
+  '/my-plan': MyPlanPage,
+  '/calendar': TermCalendarPage,
   '/faculties': FacultiesPage,
   '/buildings': BuildingsPage,
   '/instructors': InstructorsPage,
@@ -50,7 +54,9 @@ export default function App() {
           return (
             <Route
               key={item.to}
-              path={item.to}
+              // Strony semestralne niosa klucz semestru w adresie (/calendar/2026-L);
+              // bez klucza strona sama przekieruje na wlasciwy semestr.
+              path={item.termScoped ? `${item.to}/:termKey?` : item.to}
               element={
                 <ProtectedRoute roles={item.roles}>
                   <Page />
@@ -63,10 +69,10 @@ export default function App() {
         {/* Podstrona edytora konkretnej siatki — poza NAV_ITEMS, bo nie ma wlasnej
             pozycji w menu, ale breadcrumb i podswietlenie dziala przez prefiks /curriculum. */}
         <Route
-          path="/curriculum/:versionId"
+          path="/curriculum/program/:versionId"
           element={
             <ProtectedRoute roles={['ADMIN', 'DEAN_OFFICE', 'INSTRUCTOR']}>
-              <CurriculumVersionPage />
+              <ProgramVersionPage />
             </ProtectedRoute>
           }
         />

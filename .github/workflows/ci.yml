@@ -72,8 +72,8 @@ jobs:
             echo "::error::$name nie odpowiedzial 200 na $url w ciagu 120 s"
             return 1
           }
-          wait_for backend http://localhost:4001/health || exit 1
-          wait_for frontend http://localhost:5174 || exit 1
+          wait_for backend http://localhost:4002/health || exit 1
+          wait_for frontend http://localhost:5175 || exit 1
 
       - name: Testy E2E
         working-directory: frontend

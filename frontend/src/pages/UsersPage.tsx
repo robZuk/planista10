@@ -45,7 +45,7 @@ import {
   type UserInput,
 } from '@/api/users';
 import { fetchInstructors } from '@/api/instructors';
-import { fetchGroups } from '@/api/groups';
+import { fetchGroupOptions } from '@/api/cohorts';
 import { fetchFaculties } from '@/api/faculties';
 import { getErrorMessage } from '@/lib/errors';
 import { ROLE_LABELS } from '@/lib/navigation';
@@ -116,7 +116,9 @@ export default function UsersPage() {
 
   const { data: users, isPending } = useQuery({ queryKey: ['users'], queryFn: fetchUsers });
   const { data: instructors } = useQuery({ queryKey: ['instructors'], queryFn: fetchInstructors });
-  const { data: groups } = useQuery({ queryKey: ['groups', 'all'], queryFn: () => fetchGroups({}) });
+  const { data: groups } = useQuery({ queryKey: ['group-options'], queryFn: fetchGroupOptions });
+  // Nazwy grup licza sie z semestru rocznika — do wyswietlenia bierzemy je z listy opcji.
+  const groupLabel = useMemo(() => new Map((groups ?? []).map((g) => [g.id, g.label])), [groups]);
   const { data: faculties } = useQuery({ queryKey: ['faculties'], queryFn: fetchFaculties });
 
   const visible = useMemo(() => {
@@ -143,7 +145,7 @@ export default function UsersPage() {
   );
 
   const groupOptions = useMemo(
-    () => (groups ?? []).map((group) => ({ value: group.id, label: group.name })),
+    () => (groups ?? []).map((group) => ({ value: group.id, label: group.label })),
     [groups],
   );
 
@@ -263,7 +265,7 @@ export default function UsersPage() {
       accessorFn: (row) =>
         row.instructor
           ? `${row.instructor.firstName} ${row.instructor.lastName}`
-          : row.studentGroups.map((group) => group.name).join(' '),
+          : row.studentGroups.map((group) => groupLabel.get(group.id) ?? group.name).join(' '),
       header: 'Powiazanie',
       cell: ({ row }) => {
         const { instructor, studentGroups } = row.original;
@@ -279,7 +281,7 @@ export default function UsersPage() {
             <div className="flex flex-wrap gap-1">
               {studentGroups.map((group) => (
                 <Badge key={group.id} variant="secondary">
-                  {group.name}
+                  {groupLabel.get(group.id) ?? group.name}
                 </Badge>
               ))}
             </div>
@@ -521,8 +523,8 @@ export default function UsersPage() {
                     )}
                   />
                   <FieldDescription>
-                    Student nalezy zwykle do kilku grup naraz: wykladowej, cwiczeniowej
-                    i laboratoryjnej.
+                    Wybierz najmniejsze grupy studenta (np. laboratoryjna i projektowa) — wyklady
+                    calego rocznika i cwiczenia grupy nadrzednej wynikaja same.
                   </FieldDescription>
                 </Field>
               )}

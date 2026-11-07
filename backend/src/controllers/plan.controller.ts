@@ -1,0 +1,396 @@
+import type { Request } from 'express';
+import type { DayOfWeek } from '@prisma/client';
+import { prisma } from '../lib/prisma';
+import { AppError } from '../lib/AppError';
+import { asyncHandler } from '../middleware/asyncHandler';
+import { assertFacultyScope, getCallerScope } from '../lib/facultyScope';
+import { fromIsoDate, isIsoDate, toIsoDate } from '../lib/isoDate';
+import { parseTermKey } from '../lib/terms';
+import { findConflict, type BusySlot } from '../lib/materializer';
+import { groupsOverlap, indexGroups } from '../lib/groupTree';
+import { toTreeGroup } from '../services/cohorts';
+import { activeCohorts } from '../services/sections';
+import { availability, calendarFor, checkPlacement, generate, planView, type PlacementInput } from '../services/plan';
+
+/**
+ * Plan semestru: umieszczenia (wzorzec) i terminy. Uklada wylacznie planista; terminy
+ * powstaja tylko z "Generuj terminy" (najpierw podglad). Reczne poprawki terminow sa
+ * zapisywane jako wyjatki i przezywaja ponowne generowanie.
+ */
+
+async function findTerm(key: string) {
+  const ref = parseTermKey(key);
+  if (!ref) throw new AppError(400, 'Nieprawidlowy klucz semestru');
+  const term = await prisma.academicTerm.findUnique({ where: { startYear_type: ref } });
+  if (!term) throw new AppError(404, 'Semestr nie istnieje');
+  return term;
+}
+
+async function facultyOf(req: Request): Promise<string | null> {
+  const scope = await getCallerScope(req);
+  const requested =
+    (typeof req.query.facultyId === 'string' ? req.query.facultyId : null) ??
+    (typeof req.body?.facultyId === 'string' ? req.body.facultyId : null);
+  if (scope.isAdmin) return requested && requested !== 'all' ? requested : null;
+  if (!scope.facultyId) throw new AppError(403, 'Konto bez przypisanego wydzialu');
+  return scope.facultyId;
+}
+
+const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+
+function parsePlacement(body: Record<string, unknown>): PlacementInput {
+  const int = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) ? v : null);
+  const startOrder = int(body.startOrder);
+  const endOrder = int(body.endOrder);
+  if (typeof body.sectionId !== 'string' || !DAYS.includes(String(body.dayOfWeek)) || startOrder === null || endOrder === null || typeof body.roomId !== 'string') {
+    throw new AppError(400, 'Podaj zajecia, dzien, godziny i sale');
+  }
+  const cycle = body.cycle === 'ZJAZD' ? 'ZJAZD' : 'WEEK';
+  const pattern = ['ALL', 'EVEN', 'ODD', 'LIST'].includes(String(body.pattern)) ? (body.pattern as PlacementInput['pattern']) : 'ALL';
+  return {
+    sectionId: body.sectionId,
+    dayOfWeek: body.dayOfWeek as DayOfWeek,
+    startOrder,
+    endOrder,
+    roomId: body.roomId,
+    instructorId: typeof body.instructorId === 'string' && body.instructorId ? body.instructorId : null,
+    cycle,
+    pattern,
+    numbers: Array.isArray(body.numbers) ? body.numbers.filter((n): n is number => Number.isInteger(n)) : [],
+    fromIndex: int(body.fromIndex),
+    toIndex: int(body.toIndex),
+    jointKey: typeof body.jointKey === 'string' && body.jointKey.trim() ? body.jointKey.trim() : null,
+  };
+}
+
+/** Bledy -> 400, kolizje -> 409 z pelna lista dat. */
+function rejectIfInvalid(check: Awaited<ReturnType<typeof checkPlacement>>) {
+  if (check.errors.length > 0) throw new AppError(400, check.errors.join('; '));
+  if (check.conflicts.length > 0) {
+    const first = check.conflicts.slice(0, 5).map((c) => `${c.date}: ${c.with}`).join('; ');
+    throw new AppError(409, `Kolizja w ${check.conflicts.length} terminach (${first}${check.conflicts.length > 5 ? '…' : ''})`);
+  }
+}
+
+export const getPlan = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  const cohortId = String(req.query.cohortId ?? '');
+  if (!cohortId) throw new AppError(400, 'Wskaz rocznik');
+  res.json({ data: await planView(term, cohortId) });
+});
+
+export const getAvailability = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  const numbers = String(req.query.numbers ?? '')
+    .split(',')
+    .map(Number)
+    .filter((n) => Number.isInteger(n) && n > 0);
+  res.json({
+    data: await availability(term, String(req.query.sectionId ?? ''), Math.max(1, Number(req.query.length) || 2), {
+      roomId: typeof req.query.roomId === 'string' && req.query.roomId ? req.query.roomId : undefined,
+      cycle: req.query.cycle === 'ZJAZD' ? 'ZJAZD' : 'WEEK',
+      pattern: numbers.length > 0 ? 'LIST' : 'ALL',
+      numbers,
+    }),
+  });
+});
+
+export const createPlacement = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  const input = parsePlacement(req.body);
+  const section = await prisma.classSection.findUnique({ where: { id: input.sectionId } });
+  if (!section) throw new AppError(404, 'Zajecia nie znalezione');
+  await assertFacultyScope(req, section.facultyId);
+  const check = await checkPlacement(term, input);
+  rejectIfInvalid(check);
+  const data = await prisma.placement.create({ data: { ...input, termId: term.id, facultyId: section.facultyId } });
+  res.status(201).json({ data, message: `Zajecia umieszczone (${check.dates} terminow w semestrze)` });
+});
+
+async function loadPlacement(id: string) {
+  const placement = await prisma.placement.findUnique({ where: { id }, include: { term: true } });
+  if (!placement) throw new AppError(404, 'Umieszczenie nie znalezione');
+  return placement;
+}
+
+export const updatePlacement = asyncHandler(async (req, res) => {
+  const current = await loadPlacement(String(req.params.id));
+  await assertFacultyScope(req, current.facultyId);
+  const input = parsePlacement({ ...current, ...req.body, sectionId: current.sectionId });
+  const check = await checkPlacement(current.term, input, current.id);
+  rejectIfInvalid(check);
+  // Zajecia laczone: ten sam czas, sala i prowadzacy dla calej grupy umieszczen.
+  const data = await prisma.$transaction(async (tx) => {
+    const updated = await tx.placement.update({ where: { id: current.id }, data: input });
+    if (input.jointKey) {
+      await tx.placement.updateMany({
+        where: { termId: current.termId, jointKey: input.jointKey, id: { not: current.id } },
+        data: {
+          dayOfWeek: input.dayOfWeek,
+          startOrder: input.startOrder,
+          endOrder: input.endOrder,
+          roomId: input.roomId,
+          cycle: input.cycle,
+          pattern: input.pattern,
+          numbers: input.numbers,
+          fromIndex: input.fromIndex,
+          toIndex: input.toIndex,
+        },
+      });
+    }
+    return updated;
+  });
+  res.json({ data, message: 'Umieszczenie zapisane — terminy zmienia sie po "Generuj terminy"' });
+});
+
+export const deletePlacement = asyncHandler(async (req, res) => {
+  const current = await loadPlacement(String(req.params.id));
+  await assertFacultyScope(req, current.facultyId);
+  // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania.
+  await prisma.placement.delete({ where: { id: current.id } });
+  res.json({ message: 'Umieszczenie usuniete — jego terminy znikna przy kolejnym "Generuj terminy"' });
+});
+
+export const generateTerms = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  const facultyId = await facultyOf(req);
+  const { dryRun = true, cohortIds, fromDate } = req.body as { dryRun?: boolean; cohortIds?: string[]; fromDate?: string | null };
+  if (fromDate && !isIsoDate(fromDate)) throw new AppError(400, 'Nieprawidlowa data "od kiedy"');
+  const report = await generate(term, { facultyId, cohortIds, fromDate: fromDate ?? null, dryRun });
+  res.json({
+    data: report,
+    message: dryRun
+      ? 'Podglad generowania'
+      : `Wygenerowano ${report.total} terminow (+${report.added}, zmienione ${report.changed}, usuniete ${report.removed}); kolizje: ${report.conflicts.length}`,
+  });
+});
+
+// ─── Terminy ─────────────────────────────────────────────────
+
+export const listOccurrences = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  const cohortId = String(req.query.cohortId ?? '');
+  const from = typeof req.query.from === 'string' && isIsoDate(req.query.from) ? fromIsoDate(req.query.from) : undefined;
+  const to = typeof req.query.to === 'string' && isIsoDate(req.query.to) ? fromIsoDate(req.query.to) : undefined;
+  const [ctx] = await activeCohorts(term, null, [cohortId]);
+  if (!ctx) throw new AppError(404, 'Rocznik nie ma zajec w tym semestrze');
+  const rows = await prisma.occurrence.findMany({
+    where: { termId: term.id, section: { cohortId }, ...(from || to ? { date: { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) } } : {}) },
+    include: {
+      section: { select: { classType: true, programEntry: { select: { subject: { select: { name: true } } } } } },
+      room: { select: { number: true, building: { select: { name: true } } } },
+      instructor: { select: { title: true, firstName: true, lastName: true } },
+    },
+    orderBy: [{ date: 'asc' }, { startOrder: 'asc' }],
+  });
+  const exceptionKeys = new Set(
+    (
+      await prisma.placementException.findMany({
+        where: { placement: { termId: term.id, section: { cohortId } } },
+        select: { placementId: true, originalDate: true },
+      })
+    ).map((e) => `${e.placementId}|${toIsoDate(e.originalDate)}`),
+  );
+  res.json({
+    data: rows.map((o) => ({
+      id: o.id,
+      sectionId: o.sectionId,
+      placementId: o.placementId,
+      date: toIsoDate(o.date),
+      originalDate: o.originalDate ? toIsoDate(o.originalDate) : null,
+      startOrder: o.startOrder,
+      endOrder: o.endOrder,
+      subject: o.section.programEntry.subject.name,
+      classType: o.section.classType,
+      group: ctx.nameOf(o.groupId),
+      groupId: o.groupId,
+      room: { id: o.roomId, label: `${o.room.number} (${o.room.building.name})` },
+      instructor: o.instructor ? `${o.instructor.title ?? ''} ${o.instructor.firstName} ${o.instructor.lastName}`.trim() : 'NN',
+      instructorId: o.instructorId,
+      kind: o.kind,
+      status: o.status,
+      changed: !!o.placementId && !!o.originalDate && exceptionKeys.has(`${o.placementId}|${toIsoDate(o.originalDate)}`),
+      note: o.note,
+    })),
+  });
+});
+
+/** Kolizje terminu na konkretnej dacie z pozostalymi terminami calej uczelni. */
+async function occurrenceConflicts(slot: Omit<BusySlot, 'label'>, excludeId?: string) {
+  const others = await prisma.occurrence.findMany({
+    where: { date: fromIsoDate(slot.date), status: { not: 'CANCELLED' }, ...(excludeId ? { id: { not: excludeId } } : {}) },
+    include: { section: { select: { programEntry: { select: { subject: { select: { name: true } } } } } } },
+  });
+  const groups = await prisma.studentGroup.findMany();
+  const index = indexGroups(groups.map(toTreeGroup));
+  return findConflict(
+    slot,
+    others.map((o) => ({ ...o, date: toIsoDate(o.date), label: o.section.programEntry.subject.name })),
+    (a, b) => groupsOverlap(a, b, index),
+  );
+}
+
+async function assertCalendarOpen(termId: string, cohortId: string) {
+  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: termId } });
+  const [ctx] = await activeCohorts(term, null, [cohortId]);
+  const calendar = ctx ? await calendarFor(term, ctx) : null;
+  if (calendar?.status === 'ARCHIVED') throw new AppError(409, 'Kalendarz w archiwum — terminy tylko do odczytu');
+}
+
+/**
+ * Zmiana pojedynczego terminu: odwolanie, przeniesienie (data/godziny/sala/prowadzacy)
+ * albo przywrocenie wg wzorca. Dla terminow z wzorca zapisujemy wyjatek, ktory przezyje
+ * ponowne generowanie; terminy reczne zmieniamy wprost.
+ */
+export const changeOccurrence = asyncHandler(async (req, res) => {
+  const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) }, include: { placement: true, section: true } });
+  if (!occ) throw new AppError(404, 'Termin nie znaleziony');
+  await assertFacultyScope(req, occ.facultyId);
+  await assertCalendarOpen(occ.termId, occ.section.cohortId);
+  const body = req.body as {
+    action: 'CANCEL' | 'MODIFY' | 'RESTORE';
+    date?: string;
+    startOrder?: number;
+    endOrder?: number;
+    roomId?: string;
+    instructorId?: string | null;
+    note?: string;
+  };
+  const derived = occ.kind === 'DERIVED' && occ.placement && occ.originalDate;
+
+  if (body.action === 'RESTORE') {
+    if (!derived) throw new AppError(400, 'Przywracac mozna tylko terminy z wzorca');
+    const p = occ.placement!;
+    const length = occ.endOrder - occ.startOrder + 1;
+    await prisma.$transaction([
+      prisma.placementException.deleteMany({ where: { placementId: p.id, originalDate: occ.originalDate! } }),
+      prisma.occurrence.update({
+        where: { id: occ.id },
+        data: {
+          date: occ.originalDate!,
+          startOrder: p.startOrder,
+          endOrder: Math.min(p.endOrder, p.startOrder + length - 1),
+          roomId: p.roomId,
+          instructorId: p.instructorId,
+          status: 'SCHEDULED',
+        },
+      }),
+    ]);
+    res.json({ message: 'Termin przywrocony wg wzorca' });
+    return;
+  }
+
+  if (body.action === 'CANCEL') {
+    await prisma.$transaction([
+      ...(derived
+        ? [
+            prisma.placementException.upsert({
+              where: { placementId_originalDate: { placementId: occ.placementId!, originalDate: occ.originalDate! } },
+              create: { placementId: occ.placementId!, originalDate: occ.originalDate!, action: 'CANCEL', note: body.note ?? null },
+              update: { action: 'CANCEL', note: body.note ?? null },
+            }),
+          ]
+        : []),
+      prisma.occurrence.update({ where: { id: occ.id }, data: { status: 'CANCELLED', note: body.note ?? occ.note } }),
+    ]);
+    res.json({ message: 'Termin odwolany' });
+    return;
+  }
+
+  // MODIFY
+  const date = body.date ?? toIsoDate(occ.date);
+  if (!isIsoDate(date)) throw new AppError(400, 'Nieprawidlowa data');
+  const next = {
+    date,
+    startOrder: body.startOrder ?? occ.startOrder,
+    endOrder: body.endOrder ?? occ.endOrder,
+    roomId: body.roomId ?? occ.roomId,
+    instructorId: body.instructorId === undefined ? occ.instructorId : body.instructorId,
+  };
+  if (next.endOrder < next.startOrder) throw new AppError(400, 'Nieprawidlowy zakres godzin');
+  const conflict = await occurrenceConflicts({ ...next, groupId: occ.groupId, jointKey: occ.jointKey }, occ.id);
+  if (conflict) throw new AppError(409, `Kolizja (${conflict.reason}): ${conflict.with}`);
+  await prisma.$transaction([
+    ...(derived
+      ? [
+          prisma.placementException.upsert({
+            where: { placementId_originalDate: { placementId: occ.placementId!, originalDate: occ.originalDate! } },
+            create: {
+              placementId: occ.placementId!,
+              originalDate: occ.originalDate!,
+              action: 'MODIFY',
+              newDate: fromIsoDate(next.date),
+              newStartOrder: next.startOrder,
+              newEndOrder: next.endOrder,
+              newRoomId: next.roomId,
+              newInstructorId: next.instructorId,
+              note: body.note ?? null,
+            },
+            update: {
+              action: 'MODIFY',
+              newDate: fromIsoDate(next.date),
+              newStartOrder: next.startOrder,
+              newEndOrder: next.endOrder,
+              newRoomId: next.roomId,
+              newInstructorId: next.instructorId,
+              note: body.note ?? null,
+            },
+          }),
+        ]
+      : []),
+    prisma.occurrence.update({
+      where: { id: occ.id },
+      data: { ...next, date: fromIsoDate(next.date), status: 'SCHEDULED', note: body.note ?? occ.note },
+    }),
+  ]);
+  res.json({ message: 'Termin zmieniony' });
+});
+
+/** Termin reczny (odrobienie, zajecia jednorazowe) — liczy sie do godzin i nie znika przy generowaniu. */
+export const createManualOccurrence = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  const body = req.body as { sectionId: string; date: string; startOrder: number; endOrder: number; roomId: string; instructorId?: string | null; note?: string };
+  const section = await prisma.classSection.findUnique({ where: { id: body.sectionId } });
+  if (!section || section.termId !== term.id) throw new AppError(400, 'Zajecia nie naleza do tego semestru');
+  await assertFacultyScope(req, section.facultyId);
+  await assertCalendarOpen(term.id, section.cohortId);
+  if (!isIsoDate(body.date) || !Number.isInteger(body.startOrder) || !Number.isInteger(body.endOrder) || body.endOrder < body.startOrder) {
+    throw new AppError(400, 'Podaj date i godziny');
+  }
+  const conflict = await occurrenceConflicts({
+    date: body.date,
+    startOrder: body.startOrder,
+    endOrder: body.endOrder,
+    roomId: body.roomId,
+    instructorId: body.instructorId ?? null,
+    groupId: section.groupId,
+    jointKey: null,
+  });
+  if (conflict) throw new AppError(409, `Kolizja (${conflict.reason}): ${conflict.with}`);
+  const data = await prisma.occurrence.create({
+    data: {
+      termId: term.id,
+      facultyId: section.facultyId,
+      sectionId: section.id,
+      date: fromIsoDate(body.date),
+      startOrder: body.startOrder,
+      endOrder: body.endOrder,
+      roomId: body.roomId,
+      instructorId: body.instructorId ?? null,
+      groupId: section.groupId,
+      kind: 'MANUAL',
+      status: 'MAKEUP',
+      note: body.note ?? null,
+    },
+  });
+  res.status(201).json({ data, message: 'Termin reczny dodany' });
+});
+
+export const deleteManualOccurrence = asyncHandler(async (req, res) => {
+  const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) } });
+  if (!occ) throw new AppError(404, 'Termin nie znaleziony');
+  await assertFacultyScope(req, occ.facultyId);
+  if (occ.kind !== 'MANUAL') throw new AppError(409, 'Termin z wzorca mozna odwolac, ale nie usunac');
+  await prisma.occurrence.delete({ where: { id: occ.id } });
+  res.json({ message: 'Termin reczny usuniety' });
+});

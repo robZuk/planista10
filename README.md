@@ -1,7 +1,7 @@
 # Planista
 
-> System układania planu zajęć dla uczelni — od siatki godzin, przez grupy i sale,
-> po plan tygodnia i cały semestr, z automatycznym wykrywaniem konfliktów.
+> System układania planu zajęć dla uczelni — od programu studiów i roczników, przez obsadę,
+> po plan i terminy semestru, z wykrywaniem konfliktów na konkretnych datach.
 
 [![CI](https://github.com/robZuk/planista/actions/workflows/ci.yml/badge.svg)](https://github.com/robZuk/planista/actions/workflows/ci.yml)
 [![Deploy](https://github.com/robZuk/planista/actions/workflows/deploy.yml/badge.svg)](https://github.com/robZuk/planista/actions/workflows/deploy.yml)
@@ -16,30 +16,33 @@
 
 ## Czym jest Planista
 
-Aplikacja webowa, w której dziekanat układa plan zajęć dla całej uczelni: definiuje
-zasoby (sale, prowadzących, bloki czasowe), buduje **siatki godzin** kierunków,
-generuje **grupy** studenckie, a następnie układa **wzorzec tygodnia** metodą
-przeciągnij-i-upuść i **generuje z niego terminy na cały semestr** — pilnując
-konfliktów sal, prowadzących i grup.
+Aplikacja webowa, w której planista każdego wydziału układa plan zajęć. Model jest
+zbudowany wokół czterech osi czasu: **katalog** (sale, prowadzący, przedmioty — bez roku),
+**program studiów** (wersja obowiązuje wiele roczników), **rocznik** (grupy idą z nim przez
+studia) i **semestr** (jedyny kontekst planowania). Szczegóły: `docs/model-danych.md`.
 
 ## ✨ Funkcje
 
-- **Plan zajęć — wzorzec tygodnia:** siatka dzień × godzina, układanie zajęć
-  **drag & drop** z backlogu „Do zaplanowania", kolory wg formy (wykład/ćwiczenia/lab),
-  **wykrywanie konfliktów** (sala / prowadzący / grupa) na żywo.
-- **Generator terminów:** ze wzorca powstają terminy na cały semestr wg kalendarza,
-  z **odwoływaniem i przenoszeniem** zajęć (jeden termin albo cała seria) i dniami wolnymi.
-- **Siatka godzin (curriculum):** kierunki, specjalności, przedmioty, wersje siatek
-  z podziałem na semestry i typy zajęć.
-- **Grupy:** kreator hierarchii (wykład → ćwiczenia → laboratorium), kopiowanie rocznika na następny rok.
-- **Zasoby:** pełny CRUD wydziałów, budynków i sal, prowadzących, bloków czasowych.
-- **Dashboardy per rola:** kafelki, wykres obciążenia tygodnia, pasek statusów terminów;
-  własny plan prowadzącego i studenta.
-- **Użytkownicy i role:** ADMIN / dziekanat / prowadzący / student, **impersonacja**
-  („zobacz jako…" — podgląd systemu oczami wybranej osoby).
+- **Kalendarz semestru:** daty, przerwy, dni wolne uczelni, zamiany dni, godziny rektorskie
+  i **zjazdy** niestacjonarnych; święta ustawowe liczą się same; propozycja z zeszłego roku.
+- **Programy studiów:** wersje programu (klon + zmiany), przedmioty wspólne i specjalnościowe.
+- **Roczniki i grupy:** nabór raz na studia, drzewo grup z nazwami liczonymi na semestr,
+  podział na specjalności i korekty od wybranego semestru, nowy nabór ze strukturą poprzedniego.
+- **Obsada zajęć:** zajęcia wyliczone z programu i grup, prowadzący i podział godzin (NN),
+  obsada z poprzedniego roku, eksport/import CSV dla katedr, obciążenie prowadzących.
+- **Układanie planu — ręcznie:** podpowiedzi wolnych godzin, kolizje sprawdzane na
+  konkretnych datach (sala / prowadzący / grupy), rytmy tygodniowe i zjazdowe, zajęcia łączone,
+  opcjonalne „Przenieś plan z zeszłego roku" (z podglądem).
+- **Generuj terminy (z podglądem):** terminy z wzorca do wyczerpania godzin; ręczne poprawki
+  terminów i odrobienia przeżywają ponowne generowanie.
+- **Przygotowanie semestru i publikacja:** lista kontrolna wydziału; studenci i prowadzący
+  widzą „Mój plan" dopiero po publikacji.
+- **Użytkownicy i role:** ADMIN / dziekanat (swój wydział) / prowadzący / student, impersonacja.
 - **Auth:** JWT z tokenem odświeżania (unieważnialnym), role, ochrona tras.
 
 ## 🖥️ Zrzuty ekranu
+
+> Zrzuty pochodzą z poprzedniej wersji (planista7) — do odświeżenia.
 
 | Panel główny | Kalendarz semestru |
 |---|---|
@@ -169,7 +172,7 @@ flowchart LR
 Wymagany Docker. Cały system startuje jednym poleceniem:
 
 ```bash
-docker compose up          # DEV — hot-reload, http://localhost:5174
+docker compose up          # DEV — hot-reload, http://localhost:5175
 # lub: make dev
 ```
 

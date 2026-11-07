@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { ImpersonationBanner } from './ImpersonationBanner';
+import { TermSelector } from '@/components/TermSelector';
 import { breadcrumbFor } from '@/lib/navigation';
 
 /**
@@ -49,6 +50,10 @@ export function AppShell() {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
+            {/* Przelacznik semestru tylko na stronach semestralnych (sam sie ukrywa). */}
+            <div className="ml-auto">
+              <TermSelector />
+            </div>
           </header>
         </div>
 

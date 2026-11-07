@@ -1,0 +1,108 @@
+import { api } from '@/lib/api';
+import type {
+  CarryPlanReport,
+  GenerateReport,
+  MyPlanRow,
+  OccurrenceRow,
+  PlacementPayload,
+  PlanView,
+  SetupStatus,
+} from '@/types';
+
+export async function fetchPlan(termKey: string, cohortId: string): Promise<PlanView> {
+  const res = await api.get(`/terms/${termKey}/plan`, { params: { cohortId } });
+  return res.data.data;
+}
+
+export interface Availability {
+  days: string[];
+  /** dzien -> order bloku startowego -> powod zajetosci (null = wolne) */
+  cells: Record<string, Record<number, string | null>>;
+}
+
+export async function fetchAvailability(
+  termKey: string,
+  params: { sectionId: string; length: number; cycle: 'WEEK' | 'ZJAZD'; numbers?: number[]; roomId?: string },
+): Promise<Availability> {
+  const res = await api.get(`/terms/${termKey}/plan/availability`, {
+    params: { ...params, numbers: params.numbers?.join(',') || undefined },
+  });
+  return res.data.data;
+}
+
+export async function createPlacement(termKey: string, input: PlacementPayload): Promise<{ message: string }> {
+  const res = await api.post(`/terms/${termKey}/placements`, input);
+  return res.data;
+}
+
+export async function updatePlacement(id: string, input: Partial<PlacementPayload>): Promise<{ message: string }> {
+  const res = await api.put(`/placements/${id}`, input);
+  return res.data;
+}
+
+export async function deletePlacement(id: string): Promise<{ message: string }> {
+  const res = await api.delete(`/placements/${id}`);
+  return res.data;
+}
+
+export async function generateOccurrences(
+  termKey: string,
+  input: { cohortIds?: string[]; fromDate?: string | null; dryRun: boolean; facultyId?: string },
+): Promise<{ data: GenerateReport; message: string }> {
+  const res = await api.post(`/terms/${termKey}/generate`, input);
+  return res.data;
+}
+
+export async function fetchOccurrences(termKey: string, cohortId: string): Promise<OccurrenceRow[]> {
+  const res = await api.get(`/terms/${termKey}/occurrences`, { params: { cohortId } });
+  return res.data.data;
+}
+
+export async function changeOccurrence(
+  id: string,
+  input: {
+    action: 'CANCEL' | 'MODIFY' | 'RESTORE';
+    date?: string;
+    startOrder?: number;
+    endOrder?: number;
+    roomId?: string;
+    instructorId?: string | null;
+    note?: string;
+  },
+): Promise<{ message: string }> {
+  const res = await api.put(`/occurrences/${id}`, input);
+  return res.data;
+}
+
+export async function createManualOccurrence(
+  termKey: string,
+  input: { sectionId: string; date: string; startOrder: number; endOrder: number; roomId: string; instructorId?: string | null; note?: string },
+): Promise<{ message: string }> {
+  const res = await api.post(`/terms/${termKey}/occurrences`, input);
+  return res.data;
+}
+
+export async function deleteManualOccurrence(id: string): Promise<{ message: string }> {
+  const res = await api.delete(`/occurrences/${id}`);
+  return res.data;
+}
+
+export async function carryPlan(
+  termKey: string,
+  input: { cohortIds: string[]; dryRun: boolean; facultyId?: string },
+): Promise<{ data: CarryPlanReport; message: string }> {
+  const res = await api.post(`/terms/${termKey}/plan/carry`, input);
+  return res.data;
+}
+
+export async function fetchSetup(termKey: string, facultyId?: string): Promise<SetupStatus> {
+  const res = await api.get(`/terms/${termKey}/setup`, {
+    params: facultyId && facultyId !== 'all' ? { facultyId } : {},
+  });
+  return res.data.data;
+}
+
+export async function fetchMyPlan(termKey: string, from: string, to: string): Promise<MyPlanRow[]> {
+  const res = await api.get(`/terms/${termKey}/my-plan`, { params: { from, to } });
+  return res.data.data;
+}

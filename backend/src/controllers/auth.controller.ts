@@ -20,7 +20,7 @@ function findUserWithRelations(where: { id: string } | { email: string }) {
     where: where as never,
     include: {
       instructor: true,
-      studentGroups: { select: { id: true, name: true } },
+      studentGroups: { select: { id: true, code: true, partitionKey: true } },
     },
   });
 }
@@ -33,7 +33,8 @@ function toPublicUser(user: NonNullable<UserWithRelations>) {
     role: user.role,
     instructorId: user.instructorId,
     facultyId: user.facultyId,
-    studentGroups: user.studentGroups, // [{ id, name }]
+    // Nazwy grup licza sie z semestru rocznika — tu tylko skrot do podpowiedzi.
+    studentGroups: user.studentGroups.map((g) => ({ id: g.id, name: `${g.partitionKey}${g.code ? `-${g.code}` : ''}` })),
   };
 }
 

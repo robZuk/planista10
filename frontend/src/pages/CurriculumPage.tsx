@@ -2,30 +2,30 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
-import VersionsTab from './curriculum/VersionsTab';
+import ProgramsTab from './curriculum/ProgramsTab';
 import StructureTab from './curriculum/StructureTab';
 import SubjectsTab from './curriculum/SubjectsTab';
 
 /**
- * Siatka godzin ma trzy warstwy, ktore latwo pomylic, wiec siedza w osobnych zakladkach:
- *  - Siatki    — wersje programu (specjalnosc + rok + tryb) i ich przedmioty
- *  - Struktura — kierunki i nalezace do nich specjalnosci
- *  - Przedmioty— slownik przedmiotow wspolny dla calej uczelni
+ * Programy studiow w osobnych zakladkach:
+ *  - Programy     — program (kierunek + poziom + tryb) i jego wersje; wersja obowiazuje wiele rocznikow
+ *  - Struktura    — kierunki i nalezace do nich specjalnosci
+ *  - Przedmioty   — slownik przedmiotow wspolny dla calej uczelni
  */
 export default function CurriculumPage() {
-  const [tab, setTab] = useState('versions');
+  const [tab, setTab] = useState('programs');
 
   return (
     <>
       <PageHeader
-        title="Siatka godzin"
-        description="Program studiow: co, w ktorym semestrze i w jakim wymiarze godzin."
+        title="Programy studiow"
+        description="Co, w ktorym semestrze i w jakim wymiarze godzin. Wersja programu obowiazuje wiele rocznikow — bez kopiowania co rok."
       />
 
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <TabsList>
-            <TabsTrigger value="versions">Siatki</TabsTrigger>
+            <TabsTrigger value="programs">Programy</TabsTrigger>
             <TabsTrigger value="structure">Kierunki i specjalnosci</TabsTrigger>
             <TabsTrigger value="subjects">Przedmioty</TabsTrigger>
           </TabsList>
@@ -33,8 +33,8 @@ export default function CurriculumPage() {
           {tab !== 'subjects' && <FacultySelector />}
         </div>
 
-        <TabsContent value="versions" className="mt-4">
-          <VersionsTab />
+        <TabsContent value="programs" className="mt-4">
+          <ProgramsTab />
         </TabsContent>
         <TabsContent value="structure" className="mt-4">
           <StructureTab />

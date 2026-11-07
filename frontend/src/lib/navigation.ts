@@ -1,14 +1,16 @@
 import {
   Building2,
   CalendarDays,
-  CalendarOff,
   CalendarRange,
   Clock,
   GraduationCap,
   LayoutDashboard,
+  LayoutGrid,
+  ListChecks,
   School,
   ShieldCheck,
   Table2,
+  UserCheck,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -22,6 +24,11 @@ export interface NavItem {
   roles: Role[];
   /** Slowa kluczowe dla palety polecen (Ctrl+K) — poza samym labelem. */
   keywords?: string[];
+  /**
+   * Strona dziala w kontekscie semestru: adres ma postac `${to}/:termKey`, a w naglowku
+   * pojawia sie przelacznik semestru. Strony bez tej flagi nie zaleza od czasu.
+   */
+  termScoped?: boolean;
 }
 
 export interface NavGroup {
@@ -45,31 +52,65 @@ export const NAV_GROUPS: NavGroup[] = [
         keywords: ['dashboard', 'start', 'statystyki'],
       },
       {
-        to: '/curriculum',
-        label: 'Siatka godzin',
-        icon: Table2,
-        roles: ['ADMIN', 'DEAN_OFFICE', 'INSTRUCTOR'],
-        keywords: ['program', 'przedmioty', 'ects', 'kierunki'],
+        to: '/setup',
+        label: 'Przygotowanie semestru',
+        icon: ListChecks,
+        roles: ['ADMIN', 'DEAN_OFFICE'],
+        keywords: ['lista kontrolna', 'postep', 'nowy semestr', 'publikacja'],
+        termScoped: true,
       },
       {
-        to: '/schedule',
-        label: 'Plan zajec',
+        to: '/my-plan',
+        label: 'Moj plan',
         icon: CalendarDays,
-        roles: ['ADMIN', 'DEAN_OFFICE', 'INSTRUCTOR', 'STUDENT'],
-        keywords: ['harmonogram', 'wzorzec', 'kalendarz'],
+        roles: ['INSTRUCTOR', 'STUDENT'],
+        keywords: ['plan', 'zajecia', 'tydzien'],
+        termScoped: true,
+      },
+      {
+        to: '/curriculum',
+        label: 'Programy studiow',
+        icon: Table2,
+        roles: ['ADMIN', 'DEAN_OFFICE', 'INSTRUCTOR'],
+        keywords: ['siatka godzin', 'program', 'przedmioty', 'ects', 'kierunki', 'wersje'],
+      },
+      {
+        to: '/calendar',
+        label: 'Kalendarz semestru',
+        icon: CalendarRange,
+        roles: ['ADMIN', 'DEAN_OFFICE'],
+        keywords: ['semestr', 'daty', 'tygodnie', 'przerwy', 'zjazdy', 'swieta', 'dni wolne'],
+        termScoped: true,
+      },
+      {
+        to: '/cohorts',
+        label: 'Roczniki i grupy',
+        icon: Users,
+        roles: ['ADMIN', 'DEAN_OFFICE'],
+        keywords: ['grupy', 'studenci', 'podgrupy', 'nabor', 'specjalnosci'],
+        termScoped: true,
+      },
+      {
+        to: '/obsada',
+        label: 'Obsada zajec',
+        icon: UserCheck,
+        roles: ['ADMIN', 'DEAN_OFFICE'],
+        keywords: ['prowadzacy', 'przydzial', 'pensum', 'obciazenie', 'katedry', 'NN'],
+        termScoped: true,
+      },
+      {
+        to: '/plan',
+        label: 'Ukladanie planu',
+        icon: LayoutGrid,
+        roles: ['ADMIN', 'DEAN_OFFICE'],
+        keywords: ['wzorzec', 'umieszczenie', 'terminy', 'generuj', 'zjazdy'],
+        termScoped: true,
       },
     ],
   },
   {
     label: 'Zasoby',
     items: [
-      {
-        to: '/groups',
-        label: 'Grupy',
-        icon: Users,
-        roles: ['ADMIN'],
-        keywords: ['studenci', 'podgrupy', 'roczniki'],
-      },
       {
         to: '/faculties',
         label: 'Wydzialy',
@@ -95,20 +136,6 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Ustawienia',
     items: [
-      {
-        to: '/semester-calendars',
-        label: 'Kalendarz semestru',
-        icon: CalendarRange,
-        roles: ['ADMIN', 'DEAN_OFFICE'],
-        keywords: ['semestr', 'zakres', 'daty', 'tygodnie'],
-      },
-      {
-        to: '/holidays',
-        label: 'Dni wolne',
-        icon: CalendarOff,
-        roles: ['ADMIN', 'DEAN_OFFICE'],
-        keywords: ['swieta', 'wolne'],
-      },
       {
         to: '/time-blocks',
         label: 'Bloki czasowe',
@@ -141,7 +168,7 @@ export function visibleGroups(role: Role | undefined): NavGroup[] {
 
 /**
  * Sciezka breadcrumbow dla adresu: [nazwa grupy, nazwa strony].
- * Dopasowanie po prefiksie, zeby /schedule/kalendarz tez trafil w "Plan zajec".
+ * Dopasowanie po prefiksie, zeby /plan/2026-L tez trafil w "Ukladanie planu".
  */
 export function breadcrumbFor(pathname: string): { group: string; item: NavItem } | null {
   for (const group of NAV_GROUPS) {
@@ -151,6 +178,18 @@ export function breadcrumbFor(pathname: string): { group: string; item: NavItem 
     }
   }
   return null;
+}
+
+/** Pozycja nawigacji dzialajaca w kontekscie semestru, w ktorej jest adres (albo null). */
+export function termScopedItemFor(pathname: string): NavItem | null {
+  const crumb = breadcrumbFor(pathname);
+  return crumb?.item.termScoped ? crumb.item : null;
+}
+
+/** Klucz semestru z adresu strony semestralnej: "/calendar/2026-L" -> "2026-L". */
+export function termKeyFromPath(pathname: string, item: NavItem): string | null {
+  const rest = pathname.slice(item.to.length).split('/').filter(Boolean);
+  return rest[0] ?? null;
 }
 
 export const ROLE_LABELS: Record<Role, string> = {

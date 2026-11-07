@@ -26,13 +26,21 @@ const userSelect = {
   facultyId: true,
   createdAt: true,
   instructor: { select: { id: true, firstName: true, lastName: true, title: true } },
-  studentGroups: { select: { id: true, name: true } },
+  studentGroups: { select: { id: true, code: true, partitionKey: true } },
 } as const;
+
+/** Grupy w odpowiedzi z krotka nazwa (pelna liczy sie z rocznika — patrz /cohort-groups/options). */
+function withGroupNames<T extends { studentGroups: { id: string; code: string | null; partitionKey: string }[] }>(user: T) {
+  return {
+    ...user,
+    studentGroups: user.studentGroups.map((g) => ({ id: g.id, name: `${g.partitionKey}${g.code ? `-${g.code}` : ''}` })),
+  };
+}
 
 // GET /api/users
 export const getAll = asyncHandler(async (_req, res) => {
   const data = await prisma.user.findMany({ select: userSelect, orderBy: { createdAt: 'asc' } });
-  res.json({ data });
+  res.json({ data: data.map(withGroupNames) });
 });
 
 // POST /api/users
@@ -61,7 +69,7 @@ export const create = asyncHandler(async (req, res) => {
     },
     select: userSelect,
   });
-  res.status(201).json({ data, message: 'Uzytkownik utworzony' });
+  res.status(201).json({ data: withGroupNames(data), message: 'Uzytkownik utworzony' });
 });
 
 // PUT /api/users/:id
@@ -93,7 +101,7 @@ export const update = asyncHandler(async (req, res) => {
     },
     select: userSelect,
   });
-  res.json({ data, message: 'Uzytkownik zaktualizowany' });
+  res.json({ data: withGroupNames(data), message: 'Uzytkownik zaktualizowany' });
 });
 
 // DELETE /api/users/:id
@@ -115,5 +123,5 @@ export const impersonate = asyncHandler(async (req, res) => {
 
   // Krotki token (2h) — sesja podgladowa, nieodnawialna (brak refresh tokenu).
   const accessToken = signAccessToken({ sub: target.id, role: target.role }, '2h');
-  res.json({ data: { accessToken, user: target } });
+  res.json({ data: { accessToken, user: withGroupNames(target) } });
 });

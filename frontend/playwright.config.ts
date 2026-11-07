@@ -7,7 +7,7 @@ import { defineConfig, devices } from '@playwright/test';
  * bo klika po prawdziwym UI i uderza w prawdziwe API. Playwright sam bazy nie postawi.
  * Najprosciej:
  *
- *   docker compose up -d      # z katalogu glownego repo (front :5174, backend :4001, db)
+ *   docker compose up -d      # z katalogu glownego repo (front :5175, backend :4002, db)
  *   cd frontend && npx playwright test
  *
  * Adres aplikacji mozna nadpisac zmienna E2E_BASE_URL (np. pod inny port albo demo).
@@ -22,7 +22,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5174',
+    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5175',
     trace: 'on-first-retry',
   },
   // Dwa uklady, bo sidebar zmienia sie skokowo na MOBILE_BREAKPOINT

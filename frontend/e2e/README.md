@@ -7,7 +7,7 @@ Playwright sam bazy nie postawi.
 ## Uruchomienie lokalne
 
 ```bash
-# 1. Postaw stack (z katalogu glownego repo) — front :5174, backend :4001, db :5434
+# 1. Postaw stack (z katalogu glownego repo) — front :5175, backend :4002, db :5435
 docker compose up -d
 #    (przy pierwszym razie backend zrobi migracje; seed: cd backend && npm run db:seed)
 

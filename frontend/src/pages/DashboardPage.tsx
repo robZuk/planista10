@@ -17,9 +17,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '@/components/ui/item';
 import { PageHeader } from '@/components/PageHeader';
 import { fetchDashboardStats } from '@/api/dashboard';
-import { fetchEntries } from '@/api/schedule';
 import { ROLE_LABELS } from '@/lib/navigation';
-import { addDays, formatDateLong, startOfWeek, toDateKey } from '@/lib/scheduleDates';
+import { formatDateLong, toDateKey } from '@/lib/scheduleDates';
 import { useAuthStore } from '@/store/authStore';
 import { StatTile } from './dashboard/StatTile';
 import { WeekLoadChart } from './dashboard/WeekLoadChart';
@@ -30,43 +29,17 @@ export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const role = user?.role;
 
-  const monday = startOfWeek(new Date());
-  const from = toDateKey(monday);
-  const to = toDateKey(addDays(monday, 6));
 
   const { data: stats, isPending } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: fetchDashboardStats,
   });
 
-  /**
-   * Endpoint /dashboard/stats zwraca dane CALEJ uczelni, niezaleznie od roli.
-   * Dla prowadzacego i studenta pobieramy wiec osobno ich wlasny tydzien —
-   * inaczej "moje zajecia" pokazywalyby cudze.
-   */
+  /** Tydzien i dzis przychodza z /dashboard/stats juz przyciete do roli uzytkownika. */
   const myInstructorId = role === 'INSTRUCTOR' ? user?.instructorId : null;
   const myGroupIds = role === 'STUDENT' ? (user?.studentGroups.map((g) => g.id) ?? []) : [];
   const hasOwnPlan = !!myInstructorId || myGroupIds.length > 0;
-
-  const { data: weekEntries } = useQuery({
-    queryKey: ['schedule-entries', from, to, myInstructorId, myGroupIds],
-    queryFn: async () => {
-      if (myInstructorId) return fetchEntries({ from, to, instructorId: myInstructorId });
-
-      if (myGroupIds.length > 0) {
-        // Student nalezy zwykle do kilku grup naraz (wykladowa + cwiczeniowa +
-        // laboratoryjna), a backend filtruje po JEDNEJ grupie. Pytamy wiec o kazda
-        // osobno i scalamy, odsiewajac powtorzenia po id.
-        const perGroup = await Promise.all(
-          myGroupIds.map((groupId) => fetchEntries({ from, to, studentGroupId: groupId })),
-        );
-        const byId = new Map(perGroup.flat().map((entry) => [entry.id, entry]));
-        return [...byId.values()];
-      }
-
-      return fetchEntries({ from, to });
-    },
-  });
+  const weekEntries = stats?.weekEntries;
 
   const todayKey = toDateKey(new Date());
   const myToday = weekEntries?.filter((entry) => toDateKey(entry.date) === todayKey) ?? [];
@@ -133,7 +106,7 @@ export default function DashboardPage() {
         </div>
 
         <Button variant="outline" asChild className="w-fit">
-          <Link to="/schedule">
+          <Link to="/my-plan">
             <CalendarDays />
             Zobacz caly plan
           </Link>
@@ -184,7 +157,7 @@ export default function DashboardPage() {
           loading={isPending}
         />
         <StatTile
-          label="Wzorce tygodnia"
+          label="Zajecia we wzorcach planu"
           value={stats?.templates.total ?? 0}
           icon={Table2}
           loading={isPending}

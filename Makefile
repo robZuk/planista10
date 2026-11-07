@@ -7,7 +7,7 @@ help: ## Pokaz dostepne cele
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-## --- DEV (hot-reload, http://localhost:5174) ---
+## --- DEV (hot-reload, http://localhost:5175) ---
 dev: ## Start dev w tle
 	docker compose up -d
 
