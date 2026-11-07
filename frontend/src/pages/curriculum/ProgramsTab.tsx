@@ -34,6 +34,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { DEGREE_LEVEL_LABELS, DEGREE_LEVELS, STUDY_MODE_LABELS, STUDY_MODES } from '@/lib/labels';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
+import { useStudyModeFilterStore } from '@/store/studyModeFilterStore';
 import type { DegreeLevel, Program, ProgramVersionSummary, StudyMode } from '@/types';
 
 type VersionDialog = { program: Program; source: ProgramVersionSummary | null } | null;
@@ -47,6 +48,7 @@ export default function ProgramsTab() {
   const queryClient = useQueryClient();
   const me = useAuthStore((s) => s.user);
   const facultyId = useFacultyFilterStore((s) => s.facultyId);
+  const studyMode = useStudyModeFilterStore((s) => s.studyMode);
   const isAdmin = me?.role === 'ADMIN';
   const canEditProgram = (program: Program) =>
     isAdmin || (me?.role === 'DEAN_OFFICE' && program.fieldOfStudy.facultyId === me.facultyId);
@@ -56,6 +58,7 @@ export default function ProgramsTab() {
     queryKey: ['programs', facultyId],
     queryFn: () => fetchPrograms(facultyId),
   });
+  const visiblePrograms = programs?.filter((p) => studyMode === 'all' || p.studyMode === studyMode);
 
   const [versionDialog, setVersionDialog] = useState<VersionDialog>(null);
   const [label, setLabel] = useState('');
@@ -133,7 +136,19 @@ export default function ProgramsTab() {
         </Empty>
       )}
 
-      {programs?.map((program) => {
+      {!!programs?.length && visiblePrograms?.length === 0 && (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <GraduationCap />
+            </EmptyMedia>
+            <EmptyTitle>Brak programow w tym trybie</EmptyTitle>
+            <EmptyDescription>Zmien filtr trybu studiow, zeby zobaczyc pozostale programy.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )}
+
+      {visiblePrograms?.map((program) => {
         const editable = canEditProgram(program);
         return (
           <Card key={program.id}>

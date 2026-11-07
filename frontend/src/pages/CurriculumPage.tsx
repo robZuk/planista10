@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
+import { StudyModeSelector } from '@/components/StudyModeSelector';
 import ProgramsTab from './curriculum/ProgramsTab';
 import StructureTab from './curriculum/StructureTab';
 import SubjectsTab from './curriculum/SubjectsTab';
@@ -30,7 +31,11 @@ export default function CurriculumPage() {
             <TabsTrigger value="subjects">Przedmioty</TabsTrigger>
           </TabsList>
           {/* Przedmioty sa wspolne dla calej uczelni (brak facultyId), wiec filtr tam nie pasuje. */}
-          {tab !== 'subjects' && <FacultySelector />}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Tryb studiow ma tylko program (kierunek i przedmiot sa wspolne dla obu trybow). */}
+            {tab === 'programs' && <StudyModeSelector />}
+            {tab !== 'subjects' && <FacultySelector />}
+          </div>
         </div>
 
         <TabsContent value="programs" className="mt-4">
