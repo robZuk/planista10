@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarCheck, Copy, History, TriangleAlert, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
 import { fetchTermCohorts } from '@/api/cohorts';
@@ -78,7 +80,11 @@ export default function PlanPage() {
 
   const zjazdCalendar = plan?.calendar?.kind === 'ZJAZD';
   const days = plan?.cohort.studyMode === 'PART_TIME' ? PART_DAYS : FULL_DAYS;
-  const readOnly = !plan?.calendar || plan.calendar.status === 'ARCHIVED' || !(isAdmin || me?.role === 'DEAN_OFFICE');
+  // Zablokowany na stale (archiwum / brak uprawnien) — akcji nie pokazujemy wcale.
+  const locked = plan?.calendar?.status === 'ARCHIVED' || !(isAdmin || me?.role === 'DEAN_OFFICE');
+  // Brak kalendarza da sie naprawic — akcje widoczne, ale wylaczone (uklad naglowka nie skacze).
+  const noCalendar = !!plan && !plan.calendar;
+  const readOnly = locked || !plan?.calendar;
 
   // Podpowiedz dostepnosci dla wybranych zajec (grupa + prowadzacy z obsady).
   const { data: availability } = useQuery({
@@ -160,15 +166,25 @@ export default function PlanPage() {
                 </NativeSelectOption>
               ))}
             </NativeSelect>
-            {plan && !readOnly && (
-              <Button variant="outline" onClick={() => setCarrying(true)}>
-                <History /> Przenies plan z zeszlego roku
-              </Button>
-            )}
-            {plan && !readOnly && (
-              <Button onClick={() => setGenerating(true)} variant={plan.stale ? 'default' : 'outline'}>
-                <CalendarCheck /> Generuj terminy
-              </Button>
+            {plan && !locked && (
+              <Tooltip open={noCalendar ? undefined : false}>
+                <TooltipTrigger asChild>
+                  {/* span: wylaczony przycisk nie emituje zdarzen, a podpowiedz ma sie pokazac */}
+                  <span tabIndex={noCalendar ? 0 : -1} className="inline-flex gap-2">
+                    <Button variant="outline" disabled={noCalendar} onClick={() => setCarrying(true)}>
+                      <History /> Przenies plan z zeszlego roku
+                    </Button>
+                    <Button
+                      disabled={noCalendar}
+                      onClick={() => setGenerating(true)}
+                      variant={plan.stale ? 'default' : 'outline'}
+                    >
+                      <CalendarCheck /> Generuj terminy
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Najpierw zaloz kalendarz dla tego rocznika</TooltipContent>
+              </Tooltip>
             )}
           </>
         }
@@ -183,7 +199,19 @@ export default function PlanPage() {
         <Alert variant="destructive">
           <TriangleAlert />
           <AlertTitle>Rocznik nie ma kalendarza w tym semestrze</AlertTitle>
-          <AlertDescription>Zaloz kalendarz w „Kalendarz semestru” — bez niego nie da sie policzyc terminow.</AlertDescription>
+          <AlertDescription>
+            <p>
+              Zaloz kalendarz w{' '}
+              {term ? (
+                <Link to={`/calendar/${term.key}`} className="font-medium underline underline-offset-4">
+                  „Kalendarz semestru”
+                </Link>
+              ) : (
+                '„Kalendarz semestru”'
+              )}{' '}
+              — bez niego nie da sie policzyc terminow.
+            </p>
+          </AlertDescription>
         </Alert>
       )}
       {plan?.stale && (
