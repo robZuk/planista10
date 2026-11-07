@@ -22,6 +22,7 @@ import { createPlacement, deletePlacement, updatePlacement } from '@/api/plan';
 import { fetchBuildings } from '@/api/buildings';
 import { getErrorMessage } from '@/lib/errors';
 import { WEEKDAY_LABELS } from '@/lib/labels';
+import { formatDayMonth } from '@/lib/planHours';
 import { CLASS_FULL_LABELS, ROOM_TYPES_FOR_CLASS } from '@/lib/scheduleDisplay';
 import type { DayOfWeek, PlacementPattern, PlanPlacement, PlanSection, PlanView, TimeBlock } from '@/types';
 
@@ -144,6 +145,7 @@ export function PlacementDialog({
           <DialogDescription>
             {CLASS_FULL_LABELS[section.classType]} · {section.group.name} · {section.plannedHours}/{section.hours} h
             zaplanowane
+            {section.endsOn && ` · konczy sie ${formatDayMonth(section.endsOn)}`}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 sm:grid-cols-3">

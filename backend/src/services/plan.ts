@@ -4,6 +4,7 @@ import { AppError } from '../lib/AppError';
 import { fromIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
 import { expandDates, modeWeekdays, TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
 import { groupsOverlap, indexGroups, pathFromRoot } from '../lib/groupTree';
+import { staleReasons } from '../lib/planStaleness';
 import { checkTimeWindow, rangesOverlap, roomTypeMap } from '../lib/scheduleTime';
 import {
   findConflict,
@@ -303,11 +304,19 @@ export async function planView(term: AcademicTerm, cohortId: string) {
     where: { termId: term.id, kind: 'MANUAL', status: { not: 'CANCELLED' }, section: { cohortId } },
     _sum: { endOrder: true, startOrder: true },
     _count: { _all: true },
+    _max: { date: true },
   });
   const manualHours = new Map(manual.map((m) => [m.sectionId, (m._sum.endOrder ?? 0) - (m._sum.startOrder ?? 0) + m._count._all]));
 
-  // Bilans godzin: ile godzin dadza obecne umieszczenia (bez kolizji, z limitem).
+  // Bilans godzin: ile godzin dadza obecne umieszczenia (bez kolizji, z limitem) i kiedy
+  // zajecia sie skoncza (ostatnia data, na ktora starcza godzin — razem z terminami recznymi).
   const planned = new Map<string, number>();
+  const endsOn = new Map<string, string>();
+  const later = (id: string, date: string) => {
+    const current = endsOn.get(id);
+    if (!current || date > current) endsOn.set(id, date);
+  };
+  for (const m of manual) if (m._max.date) later(m.sectionId, toIsoDate(m._max.date));
   if (cal) {
     const mat = materialize({
       sections: sections.map((s) => ({ id: s.id, hours: s.hours, groupId: s.groupId, calendar: cal, consumedHours: manualHours.get(s.id) ?? 0, label: s.id })),
@@ -317,7 +326,10 @@ export async function planView(term: AcademicTerm, cohortId: string) {
       groupsOverlap: () => false,
       skipConflicts: true,
     });
-    for (const o of mat.occurrences) planned.set(o.sectionId, (planned.get(o.sectionId) ?? 0) + o.endOrder - o.startOrder + 1);
+    for (const o of mat.occurrences) {
+      planned.set(o.sectionId, (planned.get(o.sectionId) ?? 0) + o.endOrder - o.startOrder + 1);
+      later(o.sectionId, o.date);
+    }
   }
 
   const name = (i: { title: string | null; firstName: string; lastName: string } | null) =>
@@ -327,6 +339,13 @@ export async function planView(term: AcademicTerm, cohortId: string) {
     .reduce((a, b) => Math.max(a, b), 0);
   const generatedAt = calendar?.lastGeneratedAt?.getTime() ?? 0;
   const derivedCount = await prisma.occurrence.count({ where: { termId: term.id, kind: 'DERIVED', section: { cohortId } } });
+  // Zmiana zajec (godziny / status z synchronizacji) po generowaniu tez unieaktualnia terminy —
+  // liczymy tylko zajecia, ktore sa w planie (nowe zajecia bez umieszczen terminow nie zmieniaja).
+  const lastSectionChange = sections
+    .filter((s) => s.placements.length > 0 || manualHours.has(s.id))
+    .map((s) => s.updatedAt.getTime())
+    .reduce((a, b) => Math.max(a, b), 0);
+  const reasons = staleReasons({ lastPlacementChange, lastSectionChange, generatedAt });
 
   return {
     cohort: {
@@ -343,12 +362,15 @@ export async function planView(term: AcademicTerm, cohortId: string) {
           kind: calendar.kind,
           status: calendar.status,
           lastGeneratedAt: calendar.lastGeneratedAt,
+          endDate: toIsoDate(calendar.endDate),
           teachingWeeks: cal!.teachingWeeks().filter((w) => w.index !== null).length,
           zjazdy: calendar.zjazdy.map((z) => ({ number: z.number, startDate: toIsoDate(z.startDate), endDate: toIsoDate(z.endDate) })),
         }
       : null,
     // Kalendarz nieaktualny: umieszczenia zmienione po ostatnim generowaniu.
-    stale: lastPlacementChange > generatedAt && (generatedAt > 0 || derivedCount > 0 || lastPlacementChange > 0),
+    stale: reasons.length > 0,
+    // Powody (do komunikatu): zmiana wzorca i/lub zmiana godzin zajec po generowaniu.
+    staleReasons: reasons,
     generatedOccurrences: derivedCount,
     sections: sections
       .map((s) => ({
@@ -367,6 +389,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
         },
         hours: s.hours,
         plannedHours: (planned.get(s.id) ?? 0) + (manualHours.get(s.id) ?? 0),
+        endsOn: endsOn.get(s.id) ?? null,
         status: s.status,
         instructors: s.instructors.map((i) => ({ instructorId: i.instructorId, name: name(i.instructor), hours: i.hours })),
         placements: s.placements.map((p) => ({

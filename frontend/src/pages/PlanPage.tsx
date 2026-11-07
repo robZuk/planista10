@@ -18,6 +18,7 @@ import { fetchTimeBlocks } from '@/api/timeBlocks';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage } from '@/lib/errors';
 import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGroupFilter';
+import { earlyEndWeeks, formatDayMonth } from '@/lib/planHours';
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
@@ -113,6 +114,11 @@ export default function PlanPage() {
   const visibleGroups = useMemo(() => visibleGroupIds(sections.map((s) => s.group), groupFilter), [sections, groupFilter]);
   const inView = (s: PlanSection) => !visibleGroups || visibleGroups.has(s.group.id);
   const backlog = sections.filter((s) => s.status === 'ACTIVE' && s.plannedHours < s.hours && inView(s));
+  // Pelne godziny, ale rytm konczy zajecia wyraznie przed koncem semestru — latwo to przeoczyc.
+  const earlyEnds = sections
+    .filter((s) => s.status === 'ACTIVE' && inView(s))
+    .map((s) => ({ section: s, weeks: earlyEndWeeks(s, plan?.calendar?.endDate) }))
+    .filter((e): e is { section: PlanSection; weeks: number } => e.weeks !== null);
 
   const visiblePlacement = (p: PlanPlacement) =>
     !zjazd || p.cycle !== 'ZJAZD' || p.pattern === 'ALL' || p.numbers.includes(zjazd);
@@ -237,8 +243,12 @@ export default function PlanPage() {
           <TriangleAlert />
           <AlertTitle>Kalendarz nieaktualny</AlertTitle>
           <AlertDescription>
-            Wzorzec zmienil sie po ostatnim generowaniu. Terminy w kalendarzu sa jeszcze stare — uzyj „Generuj terminy”, gdy
-            skonczysz zmiany.
+            {plan.staleReasons.includes('PLACEMENTS') && plan.staleReasons.includes('SECTIONS')
+              ? 'Wzorzec i godziny zajec zmienily sie po ostatnim generowaniu.'
+              : plan.staleReasons.includes('SECTIONS')
+                ? 'Godziny zajec zmienily sie po ostatnim generowaniu (synchronizacja z programem).'
+                : 'Wzorzec zmienil sie po ostatnim generowaniu.'}{' '}
+            Terminy w kalendarzu sa jeszcze stare — uzyj „Generuj terminy”, gdy skonczysz zmiany.
           </AlertDescription>
         </Alert>
       )}
@@ -370,6 +380,25 @@ export default function PlanPage() {
                       </li>
                     ))}
                 </ul>
+                {earlyEnds.length > 0 && (
+                  <div className="space-y-1 rounded-md border border-amber-500/40 bg-amber-500/5 p-2 text-xs">
+                    <div className="font-medium text-amber-700 dark:text-amber-400">
+                      Koncza sie wczesnie ({earlyEnds.length})
+                    </div>
+                    <ul className="space-y-0.5">
+                      {earlyEnds.map(({ section: s, weeks }) => (
+                        <li key={s.id}>
+                          {CLASS_LABELS[s.classType]} · {s.subject.name} · {s.group.name} — ostatnie zajecia{' '}
+                          {formatDayMonth(s.endsOn!)}, {weeks} tyg. przed koncem semestru
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-muted-foreground">
+                      Rytm wyczerpuje godziny wczesniej. Jesli to niezamierzone, zmniejsz liczbe umieszczen albo ustaw
+                      „Od/Do tygodnia”.
+                    </p>
+                  </div>
+                )}
                 {sections.some((s) => s.plannedHours > s.hours) && (
                   <p className="text-xs text-amber-600">
                     Nadmiar: {sections.filter((s) => s.plannedHours > s.hours).map((s) => `${s.subject.name} (${CLASS_FULL_LABELS[s.classType]}) ${s.group.name}`).join('; ')}

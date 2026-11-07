@@ -521,6 +521,8 @@ export interface PlanSection {
   group: { id: string; name: string; ancestors: { id: string; name: string }[] };
   hours: number;
   plannedHours: number;
+  /** Ostatnia data, na ktora starcza godzin (umieszczenia + terminy reczne); null = brak terminow. */
+  endsOn: string | null;
   status: 'ACTIVE' | 'ORPHANED';
   instructors: { instructorId: string | null; name: string; hours: number }[];
   placements: PlanPlacement[];
@@ -534,10 +536,13 @@ export interface PlanView {
     kind: CalendarKind;
     status: CalendarStatus;
     lastGeneratedAt: string | null;
+    /** Ostatni dzien semestru wg kalendarza rocznika. */
+    endDate: string;
     teachingWeeks: number;
     zjazdy: { number: number; startDate: string; endDate: string }[];
   } | null;
   stale: boolean;
+  staleReasons: ('PLACEMENTS' | 'SECTIONS')[];
   generatedOccurrences: number;
   sections: PlanSection[];
 }
