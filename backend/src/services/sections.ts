@@ -8,7 +8,8 @@ import { cohortLabel, toTreeGroup } from './cohorts';
 /**
  * Zajecia semestru (ClassSection) i obsada. Synchronizacja to idempotentny diff:
  * dodaje brakujace zajecia, poprawia godziny, a zbedne usuwa tylko wtedy, gdy nie maja
- * obsady — inaczej oznacza je jako ORPHANED (do decyzji planisty). Przeniesienie
+ * obsady, umieszczen w planie ani terminow — inaczej oznacza je jako ORPHANED (do decyzji
+ * planisty). Przeniesienie
  * obsady z poprzedniego roku uzupelnia wylacznie zajecia bez obsady.
  */
 
@@ -130,7 +131,10 @@ export async function syncSections(
 
     const existing = await prisma.classSection.findMany({
       where: { termId: term.id, cohortId: cohort.id },
-      include: { _count: { select: { instructors: true } }, programEntry: { include: { subject: { select: { name: true } } } } },
+      include: {
+        _count: { select: { instructors: true, placements: true, occurrences: true } },
+        programEntry: { include: { subject: { select: { name: true } } } },
+      },
     });
     const existingByKey = new Map(existing.map((s) => [sectionKey(s), s]));
     const desiredKeys = new Set(desired.map(sectionKey));
@@ -172,7 +176,9 @@ export async function syncSections(
     for (const s of existing) {
       if (desiredKeys.has(sectionKey(s))) continue;
       const r = row(s, s.programEntry.subject.name);
-      if (s._count.instructors > 0) {
+      // Umieszczenia i terminy trzymaja zajecia kluczem obcym (RESTRICT) — usuniecie wywrociloby
+      // cala transakcje synchronizacji. Poza tym to praca planisty, ktorej nie kasujemy po cichu.
+      if (s._count.instructors > 0 || s._count.placements > 0 || s._count.occurrences > 0) {
         if (s.status !== 'ORPHANED') {
           report.orphaned.push(r);
           ops.push(prisma.classSection.update({ where: { id: s.id }, data: { status: 'ORPHANED' } }));

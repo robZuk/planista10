@@ -88,8 +88,8 @@ export function SyncDialog({
         <DialogHeader>
           <DialogTitle>Synchronizacja zajec z programem i grupami</DialogTitle>
           <DialogDescription>
-            Zajecia wynikaja z programu rocznika i jego grup. Zbedne zajecia z obsada nie znikaja — zostaja oznaczone
-            jako osierocone do Twojej decyzji.
+            Zajecia wynikaja z programu rocznika i jego grup. Zbedne zajecia z obsada albo umieszczone w planie nie
+            znikaja — zostaja oznaczone jako osierocone do Twojej decyzji.
           </DialogDescription>
         </DialogHeader>
         {!report ? (
@@ -117,13 +117,13 @@ export function SyncDialog({
             )}
             {report.deleted.length > 0 && (
               <section>
-                <h4 className="font-medium">Do usuniecia (bez obsady)</h4>
+                <h4 className="font-medium">Do usuniecia (bez obsady i planu)</h4>
                 <RowList rows={report.deleted} />
               </section>
             )}
             {report.orphaned.length > 0 && (
               <section>
-                <h4 className="font-medium">Osierocone (maja obsade)</h4>
+                <h4 className="font-medium">Osierocone (maja obsade lub sa w planie)</h4>
                 <RowList rows={report.orphaned} />
               </section>
             )}

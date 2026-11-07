@@ -70,7 +70,7 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   C → C, L → L (brak → C), P → P (brak → C), S → S (brak → C), brak C → grupa wykładowa.
   Przedmiot specjalnościowy bez grupy specjalności jest **pomijany i zgłaszany**.
 - **Synchronizacja** to idempotentny diff z podglądem: dodaje, poprawia godziny,
-  usuwa zbędne bez obsady, zbędne z obsadą oznacza `ORPHANED`.
+  usuwa zbędne bez obsady i bez umieszczeń/terminów, pozostałe zbędne oznacza `ORPHANED`.
 - `SectionInstructor` — prowadzący (albo NN) i godziny; podział godzin = kilka wierszy.
 - **Obsada z poprzedniego roku:** te same zajęcia poprzedniego rocznika tego programu
   (przedmiot + forma + sygnatura grupy) w ostatnim semestrze tego samego typu.
