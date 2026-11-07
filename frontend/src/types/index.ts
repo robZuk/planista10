@@ -455,7 +455,19 @@ export interface SyncReport {
   orphaned: SyncRow[];
   deleted: SyncRow[];
   unchanged: number;
-  problems: { cohort: string; subject: string; message: string }[];
+  problems: SyncProblem[];
+}
+
+export interface SyncProblem {
+  /** Pelna etykieta rocznika ("EDST-N1 · nabor 2023/24 zimowy" albo nazwa wlasna). */
+  cohort: string;
+  cohortId: string;
+  /** Semestr programu rocznika w synchronizowanym semestrze. */
+  semester: number;
+  subject: string;
+  kind: 'NO_ROOT_GROUP' | 'MISSING_SPECIALIZATION_GROUP';
+  specialization: { id: string; shortName: string; name: string } | null;
+  message: string;
 }
 
 export interface CarryRow {

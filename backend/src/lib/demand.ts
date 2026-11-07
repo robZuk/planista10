@@ -40,8 +40,13 @@ export interface DemandSection {
   fallback: boolean;
 }
 
+export type DemandProblemKind = 'NO_ROOT_GROUP' | 'MISSING_SPECIALIZATION_GROUP';
+
 export interface DemandProblem {
   programEntryId: string;
+  kind: DemandProblemKind;
+  /** Specjalnosc, ktorej grupy brakuje (MISSING_SPECIALIZATION_GROUP). */
+  specializationId: string | null;
   message: string;
 }
 
@@ -92,7 +97,7 @@ export function deriveSections(input: {
   const sections: DemandSection[] = [];
   const problems: DemandProblem[] = [];
   if (!root) {
-    problems.push({ programEntryId: '', message: 'Rocznik nie ma grupy "caly rocznik"' });
+    problems.push({ programEntryId: '', kind: 'NO_ROOT_GROUP', specializationId: null, message: 'Rocznik nie ma grupy "caly rocznik"' });
     return { sections, problems };
   }
 
@@ -105,6 +110,8 @@ export function deriveSections(input: {
         // rocznikowi dalo by je studentom innej specjalnosci. Pomijamy i zglaszamy.
         problems.push({
           programEntryId: entry.id,
+          kind: 'MISSING_SPECIALIZATION_GROUP',
+          specializationId: entry.specializationId,
           message: 'Przedmiot specjalnosciowy, a rocznik nie ma grupy tej specjalnosci — zajecia pominiete (dodaj specjalnosc w Rocznikach)',
         });
         continue;

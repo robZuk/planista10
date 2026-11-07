@@ -76,6 +76,13 @@ describe('deriveSections', () => {
     const r = deriveSections({ entries: [entry('x', { hoursLecture: 10 }, 's-dut')], groups: plain, semester: 1, lectureMode: 'SEPARATE' });
     expect(r.sections).toEqual([]);
     expect(r.problems).toHaveLength(1);
+    // Rodzaj i specjalnosc, zeby podglad mogl powiedziec, ktorej grupy brakuje.
+    expect(r.problems[0]).toMatchObject({ programEntryId: 'x', kind: 'MISSING_SPECIALIZATION_GROUP', specializationId: 's-dut' });
+  });
+
+  it('brak grupy "caly rocznik" -> jeden problem bez specjalnosci', () => {
+    const r = deriveSections({ entries: [entry('x', { hoursLecture: 10 })], groups: [], semester: 1, lectureMode: 'SEPARATE' });
+    expect(r.problems).toEqual([expect.objectContaining({ kind: 'NO_ROOT_GROUP', specializationId: null })]);
   });
 });
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ import { carryInstructors, importSectionsCsv, setSectionInstructors, syncSection
 import { fetchInstructors } from '@/api/instructors';
 import { getErrorMessage } from '@/lib/errors';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
+import { groupSyncProblems } from '@/lib/syncProblems';
 import type { CarryRow, ClassSectionRow, SyncReport, SyncRow } from '@/types';
 
 const NN = '__nn__';
@@ -78,6 +80,7 @@ export function SyncDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const problemGroups = report ? groupSyncProblems(report.problems) : [];
   const changes = report
     ? report.created.length + report.hoursChanged.length + report.reactivated.length + report.orphaned.length + report.deleted.length
     : 0;
@@ -127,13 +130,41 @@ export function SyncDialog({
                 <RowList rows={report.orphaned} />
               </section>
             )}
-            {report.problems.length > 0 && (
-              <section>
-                <h4 className="font-medium text-destructive">Do wyjasnienia ({report.problems.length})</h4>
-                <ul className="max-h-40 overflow-y-auto text-sm">
-                  {report.problems.map((p, i) => (
-                    <li key={i}>
-                      <span className="text-muted-foreground">{p.cohort.split(' · ')[0]}</span> {p.subject}: {p.message}
+            {problemGroups.length > 0 && (
+              <section className="space-y-2">
+                <h4 className="font-medium text-destructive">Do wyjasnienia ({problemGroups.length})</h4>
+                <ul className="max-h-60 space-y-2 overflow-y-auto text-sm">
+                  {problemGroups.map((g) => (
+                    <li key={g.key} className="space-y-1 rounded-md border border-destructive/30 p-2">
+                      <div>
+                        <span className="font-medium">
+                          {g.cohort} · sem. {g.semester}
+                        </span>
+                        {': '}
+                        {g.kind === 'MISSING_SPECIALIZATION_GROUP' && g.specialization ? (
+                          <>
+                            brak grupy specjalnosci <b>{g.specialization.shortName}</b>{' '}
+                            <span className="text-muted-foreground">({g.specialization.name})</span>
+                          </>
+                        ) : (
+                          g.message
+                        )}
+                      </div>
+                      {g.subjects.length > 0 && (
+                        <div className="text-muted-foreground">
+                          Pominiete przedmioty ({g.subjects.length}): {g.subjects.join(', ')}
+                        </div>
+                      )}
+                      {g.kind === 'MISSING_SPECIALIZATION_GROUP' && g.specialization && (
+                        <div className="text-xs text-muted-foreground">
+                          Jesli w tym naborze nikt nie realizuje {g.specialization.shortName}, mozesz to zignorowac. W
+                          przeciwnym razie dodaj grupe {g.specialization.shortName} w{' '}
+                          <Link to={`/cohorts/${termKey}`} className="font-medium text-foreground underline underline-offset-4">
+                            Rocznikach
+                          </Link>{' '}
+                          i zsynchronizuj ponownie.
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

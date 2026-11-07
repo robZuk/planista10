@@ -15,7 +15,7 @@ import { cohortLabel, toTreeGroup } from './cohorts';
 
 const cohortForTerm = {
   program: {
-    include: { fieldOfStudy: { include: { specializations: { select: { id: true, shortName: true } } } } },
+    include: { fieldOfStudy: { include: { specializations: { select: { id: true, shortName: true, name: true } } } } },
   },
   programVersion: { select: { id: true, totalSemesters: true } },
   startTerm: true,
@@ -100,7 +100,19 @@ export interface SyncReport {
   orphaned: SyncRow[];
   deleted: SyncRow[];
   unchanged: number;
-  problems: { cohort: string; subject: string; message: string }[];
+  problems: SyncProblem[];
+}
+
+export interface SyncProblem {
+  /** Pelna etykieta rocznika ("EDST-N1 · nabor 2023/24 zimowy" albo nazwa wlasna). */
+  cohort: string;
+  cohortId: string;
+  /** Semestr programu rocznika w synchronizowanym semestrze. */
+  semester: number;
+  subject: string;
+  kind: DemandProblem['kind'];
+  specialization: { id: string; shortName: string; name: string } | null;
+  message: string;
 }
 
 export async function syncSections(
@@ -125,8 +137,23 @@ export async function syncSections(
       lectureMode: cohort.lectureMode,
     });
     const label = cohortLabel(cohort);
+    const specs = cohort.program.fieldOfStudy.specializations;
     report.problems.push(
-      ...problems.map((p: DemandProblem) => ({ cohort: label, subject: subjectOf.get(p.programEntryId) ?? '', message: p.message })),
+      ...problems.map((p: DemandProblem): SyncProblem => {
+        const spec = p.specializationId ? (specs.find((s) => s.id === p.specializationId) ?? null) : null;
+        return {
+          cohort: label,
+          cohortId: cohort.id,
+          semester,
+          subject: subjectOf.get(p.programEntryId) ?? '',
+          kind: p.kind,
+          specialization: spec,
+          message:
+            p.kind === 'MISSING_SPECIALIZATION_GROUP' && spec
+              ? `Rocznik nie ma grupy specjalnosci ${spec.shortName} — zajecia pominiete (dodaj specjalnosc w Rocznikach)`
+              : p.message,
+        };
+      }),
     );
 
     const existing = await prisma.classSection.findMany({

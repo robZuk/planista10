@@ -116,3 +116,40 @@ describe('syncSections — zbedne zajecia', () => {
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 });
+
+describe('syncSections — problemy do wyjasnienia', () => {
+  it('brak grupy specjalnosci: raport podaje specjalnosc, rocznik i semestr', async () => {
+    const zeew = { id: 's-zeew', shortName: 'ZEEW', name: 'Zarzadzanie Eksploatacja Elektrowni Wiatrowych' };
+    prismaMock.cohort.findMany.mockResolvedValue([
+      { ...cohort, program: { ...cohort.program, fieldOfStudy: { ...cohort.program.fieldOfStudy, specializations: [zeew] } } },
+    ]);
+    prismaMock.programEntry.findMany.mockResolvedValue([
+      {
+        id: 'e1',
+        specializationId: 's-zeew',
+        hoursLecture: 15,
+        hoursExercise: 0,
+        hoursLab: 0,
+        hoursProject: 0,
+        hoursSeminar: 0,
+        subject: { name: 'Ubezpieczenia morskie' },
+      },
+    ]);
+    prismaMock.classSection.findMany.mockResolvedValue([]);
+
+    const report = await syncSections(term, { facultyId: null, dryRun: true });
+
+    expect(report.created).toEqual([]);
+    expect(report.problems).toEqual([
+      {
+        cohort: 'EDST-N1 · nabor 2024/25 zimowy',
+        cohortId: 'c1',
+        semester: 5,
+        subject: 'Ubezpieczenia morskie',
+        kind: 'MISSING_SPECIALIZATION_GROUP',
+        specialization: zeew,
+        message: expect.stringContaining('specjalnosci ZEEW'),
+      },
+    ]);
+  });
+});
