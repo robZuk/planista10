@@ -195,6 +195,20 @@ export default function PlanPage() {
       )}
       {isPending && cohortId && <Skeleton className="h-96 w-full" />}
 
+      {cohort && (
+        // Tylko informacja: zajecia rocznika wynikaja z tej wersji programu (zmiana wersji — poza tym widokiem).
+        <p className="text-sm text-muted-foreground">
+          Program {cohort.program.code}:{' '}
+          <Link to={`/curriculum/program/${cohort.programVersion.id}`} className="font-medium text-foreground underline-offset-4 hover:underline">
+            {cohort.programVersion.label}
+          </Link>
+          {cohort.programVersion.status === 'DRAFT' ? (
+            <Badge variant="outline" className="ml-2">projekt</Badge>
+          ) : (
+            <Badge variant="secondary" className="ml-2">zatwierdzona</Badge>
+          )}
+        </p>
+      )}
       {plan && !plan.calendar && (
         <Alert variant="destructive">
           <TriangleAlert />

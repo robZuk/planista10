@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, ChevronUp, UserPlus, Users } from 'lucide-react';
 import { toast } from 'sonner';
@@ -138,7 +139,11 @@ export default function CohortsPage() {
                   <span className="text-sm font-normal text-muted-foreground">nabor {cohort.startTermLabel}</span>
                 </CardTitle>
                 <CardDescription>
-                  {cohort.program.name} · program: {cohort.programVersion.label} · {cohort.size} studentow ·{' '}
+                  {cohort.program.name} · program:{' '}
+                  <Link to={`/curriculum/program/${cohort.programVersion.id}`} className="underline-offset-4 hover:underline">
+                    {cohort.programVersion.label}
+                  </Link>
+                  {cohort.programVersion.status === 'DRAFT' && ' (projekt)'} · {cohort.size} studentow ·{' '}
                   {cohort.groupCount} grup
                 </CardDescription>
                 <CardAction>
