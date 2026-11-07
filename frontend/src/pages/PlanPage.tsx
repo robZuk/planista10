@@ -208,8 +208,16 @@ export default function PlanPage() {
       {cohort && (
         // Tylko informacja: zajecia rocznika wynikaja z tej wersji programu (zmiana wersji — poza tym widokiem).
         <p className="text-sm text-muted-foreground">
-          Program {cohort.program.code}:{' '}
-          <Link to={`/curriculum/program/${cohort.programVersion.id}`} className="font-medium text-foreground underline-offset-4 hover:underline">
+          Plan korzysta z programu studiow{' '}
+          <span className="font-medium text-foreground">
+            {cohort.program.code} — {cohort.program.name}
+          </span>
+          {' · '}
+          <Link
+            to={`/curriculum/program/${cohort.programVersion.id}`}
+            className="font-medium text-foreground underline underline-offset-4"
+            title="Otworz przedmioty tej wersji programu"
+          >
             {cohort.programVersion.label}
           </Link>
           {cohort.programVersion.status === 'DRAFT' ? (
