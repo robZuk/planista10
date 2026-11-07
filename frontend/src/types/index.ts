@@ -420,7 +420,9 @@ export interface ClassSectionRow {
   cohort: { id: string; label: string; code: string; semester: number };
   subject: { id: string; name: string; code: string | null };
   order: number;
+  /** Skrot specjalnosci przedmiotu (null = przedmiot wspolny dla kierunku). */
   specialization: string | null;
+  specializationName: string | null;
   classType: ClassType;
   group: { id: string; partitionKey: string | null; name: string };
   hours: number;
