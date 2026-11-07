@@ -75,7 +75,7 @@ export default function TermSetupPage() {
             <Step n={3} title="Zajecia" state={t.cohortsWithoutSections > 0 || t.sections === 0 ? 'todo' : 'done'} to={`/obsada/${key}`} link="Synchronizuj zajecia">
               {t.sections} zajec{t.cohortsWithoutSections > 0 ? ` · ${t.cohortsWithoutSections} rocznikow bez zajec — zsynchronizuj` : ''}
             </Step>
-            <Step n={4} title="Obsada" state={t.sections === 0 ? 'todo' : t.vacancies > 0 ? 'warn' : 'done'} to={`/obsada/${key}`} link="Obsada zajec">
+            <Step n={4} title="Obsada" state={t.sections === 0 ? 'todo' : t.vacancies > 0 ? 'warn' : 'done'} to={`/obsada/${key}`} link="Zajecia i obsada">
               {t.vacancies > 0 ? `${t.vacancies} zajec bez pelnej obsady (NN)` : 'Wszystkie zajecia obsadzone'}
             </Step>
             <Step n={5} title="Plan (wzorzec)" state={t.sections === 0 ? 'todo' : t.placedSections < t.sections ? 'warn' : 'done'} to={`/plan/${key}`} link="Ukladanie planu">

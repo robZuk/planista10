@@ -350,9 +350,9 @@ export default function PlanPage() {
                     ) : (
                       // Pusta lista bez zajec to nie "wszystko zaplanowane" — zajecia powstaja z synchronizacji.
                       <li className="text-sm text-muted-foreground">
-                        Rocznik nie ma zajec w tym semestrze — uruchom „Synchronizuj zajecia” w{' '}
+                        Rocznik nie ma zajec w tym semestrze — uruchom „Synchronizuj zajecia” na stronie{' '}
                         <Link to={`/obsada/${term.key}`} className="font-medium text-foreground underline underline-offset-4">
-                          Obsadzie zajec
+                          Zajecia i obsada
                         </Link>
                         .
                       </li>

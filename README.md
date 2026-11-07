@@ -28,7 +28,7 @@ studia) i **semestr** (jedyny kontekst planowania). Szczegóły: `docs/model-dan
 - **Programy studiów:** wersje programu (klon + zmiany), przedmioty wspólne i specjalnościowe.
 - **Roczniki i grupy:** nabór raz na studia, drzewo grup z nazwami liczonymi na semestr,
   podział na specjalności i korekty od wybranego semestru, nowy nabór ze strukturą poprzedniego.
-- **Obsada zajęć:** zajęcia wyliczone z programu i grup, prowadzący i podział godzin (NN),
+- **Zajęcia i obsada:** zajęcia wyliczone z programu i grup, prowadzący i podział godzin (NN),
   obsada z poprzedniego roku, eksport/import CSV dla katedr, obciążenie prowadzących.
 - **Układanie planu — ręcznie:** podpowiedzi wolnych godzin, kolizje sprawdzane na
   konkretnych datach (sala / prowadzący / grupy), rytmy tygodniowe i zjazdowe, zajęcia łączone,

@@ -22,8 +22,8 @@ import type { ClassSectionRow } from '@/types';
 import { AssignmentDialog, CarryDialog, ImportDialog, SyncDialog } from './obsada/ObsadaDialogs';
 
 /**
- * Obsada zajec semestru — osobny etap przed ukladaniem planu. Lista zajec wynika
- * z programow i grup rocznikow (synchronizacja); tu wpisuje sie, kto prowadzi ile
+ * Zajecia i obsada semestru — osobny etap przed ukladaniem planu. Lista zajec wynika
+ * z programow i grup rocznikow (synchronizacja); tu wpisuje sie tez, kto prowadzi ile
  * godzin. Obsade mozna przeniesc z poprzedniego roku albo wczytac z CSV od katedr.
  */
 export default function ObsadaPage() {
@@ -83,10 +83,10 @@ export default function ObsadaPage() {
   return (
     <>
       <PageHeader
-        title="Obsada zajec"
+        title="Zajecia i obsada"
         description={
           term
-            ? `Semestr ${term.label}: kto prowadzi ktore zajecia i ile godzin. Zajecia wynikaja z programow i grup rocznikow.`
+            ? `Semestr ${term.label}: zajecia wynikajace z programow i grup rocznikow oraz kto je prowadzi i ile godzin.`
             : 'Wybierz semestr w naglowku.'
         }
         actions={

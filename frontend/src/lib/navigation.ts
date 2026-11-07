@@ -92,10 +92,10 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       {
         to: '/obsada',
-        label: 'Obsada zajec',
+        label: 'Zajecia i obsada',
         icon: UserCheck,
         roles: ['ADMIN', 'DEAN_OFFICE'],
-        keywords: ['prowadzacy', 'przydzial', 'pensum', 'obciazenie', 'katedry', 'NN'],
+        keywords: ['obsada', 'synchronizacja', 'prowadzacy', 'przydzial', 'pensum', 'obciazenie', 'katedry', 'NN'],
         termScoped: true,
       },
       {
