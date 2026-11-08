@@ -1,8 +1,9 @@
 import { cn } from '@/lib/utils';
 import { CLASS_COLORS, CLASS_LABELS, fitGridLines } from '@/lib/scheduleDisplay';
+import { gridLayout } from '@/lib/timeGrid';
 import type { ClassType, DayOfWeek, TimeBlock } from '@/types';
 
-// Wiersz 1 h miesci tytul i trzy linie opisu (4 x LINE + PAD).
+// Godzina zajec (60 min) ma ROW px; krotsze bloki sa skalowane, ale miescza tytul i 3 linie.
 export const ROW = 68;
 const HEADER = 36;
 /** Wysokosc linii tekstu w bloku (text-[11px] leading-tight) i pionowy padding (py-1). */
@@ -56,8 +57,9 @@ function assignLanes(items: GridItem[]): Map<string, { lane: number; lanes: numb
 }
 
 /**
- * Siatka wzorca: dni x bloki godzinowe. Zajecia rownolegle (rozne grupy w tym samym
- * czasie) stoja obok siebie, a nie jedne na drugich. `availability` cieniuje komorki,
+ * Siatka wzorca: dni x bloki siatki godzin kalendarza rocznika, na osi minut — blok 45 min
+ * jest nizszy niz 60 min, a przerwy miedzy blokami maja wlasny pas. Zajecia rownolegle
+ * (rozne grupy w tym samym czasie) stoja obok siebie. `availability` cieniuje komorki,
  * gdy planista wybral zajecia do umieszczenia (zielone — wolne, czerwone — kolizja).
  */
 export function WeekGrid({
@@ -75,16 +77,40 @@ export function WeekGrid({
   onCellClick?: (day: DayOfWeek, order: number) => void;
   onItemClick?: (id: string) => void;
 }) {
-  const firstOrder = blocks[0]?.order ?? 1;
+  // Najkrotszy blok miesci tytul i trzy linie opisu; 60 min nie mniej niz ROW.
+  const layout = gridLayout(blocks, { minBlockPx: 4 * LINE + PAD + 2, minPxPerMinute: ROW / 60 });
+  const breakBands = layout.breaks.map((br) => (
+    <div
+      key={br.start}
+      style={{ position: 'absolute', top: br.top, height: br.height, left: 0, right: 0 }}
+      className="bg-[repeating-linear-gradient(135deg,transparent_0_6px,var(--color-muted)_6px_8px)] opacity-70"
+    />
+  ));
   return (
     <div className="flex overflow-x-auto rounded-lg border">
       <div className="w-14 shrink-0 border-r">
         <div style={{ height: HEADER }} className="border-b" />
-        {blocks.map((b) => (
-          <div key={b.id} style={{ height: ROW }} className="border-t px-1 pt-1 text-right text-xs text-muted-foreground tabular-nums first:border-transparent">
-            {b.startTime}
-          </div>
-        ))}
+        <div className="relative" style={{ height: layout.totalHeight }}>
+          {layout.rows.map((r) => (
+            <div
+              key={r.order}
+              style={{ position: 'absolute', top: r.top, height: r.height, left: 0, right: 0 }}
+              className="border-t px-1 pt-1 text-right text-xs text-muted-foreground tabular-nums first:border-transparent"
+            >
+              {r.startTime}
+            </div>
+          ))}
+          {layout.breaks.map((br) => (
+            <div
+              key={br.start}
+              title={`Przerwa ${br.start}-${br.end}`}
+              style={{ position: 'absolute', top: br.top, height: br.height, left: 0, right: 0 }}
+              className="flex items-center justify-end overflow-hidden px-1 text-[10px] leading-none text-amber-700 dark:text-amber-400"
+            >
+              {br.height >= 12 ? `${br.minutes} min` : ''}
+            </div>
+          ))}
+        </div>
       </div>
       {days.map((day) => {
         const dayItems = items.filter((i) => i.dayOfWeek === day);
@@ -94,16 +120,17 @@ export function WeekGrid({
             <div style={{ height: HEADER }} className="flex items-center justify-center border-b text-sm font-medium">
               {DAY_SHORT[day]}
             </div>
-            <div className="relative" style={{ height: blocks.length * ROW }}>
-              {blocks.map((b, i) => {
-                const reason = availability?.[day]?.[b.order];
+            <div className="relative" style={{ height: layout.totalHeight }}>
+              {breakBands}
+              {layout.rows.map((r) => {
+                const reason = availability?.[day]?.[r.order];
                 const state = availability ? (reason === null ? 'free' : reason === undefined ? undefined : 'busy') : undefined;
                 return (
                   <div
-                    key={b.id}
+                    key={r.order}
                     title={reason ?? undefined}
-                    onClick={() => onCellClick?.(day, b.order)}
-                    style={{ position: 'absolute', top: i * ROW, height: ROW, left: 0, right: 0 }}
+                    onClick={() => onCellClick?.(day, r.order)}
+                    style={{ position: 'absolute', top: r.top, height: r.height, left: 0, right: 0 }}
                     className={cn(
                       'border-t border-border/60 first:border-transparent',
                       onCellClick && 'cursor-pointer hover:bg-muted/60',
@@ -116,10 +143,11 @@ export function WeekGrid({
               {dayItems.map((item) => {
                 const lane = lanes.get(item.id) ?? { lane: 0, lanes: 1 };
                 const width = 100 / lane.lanes;
-                const rows = item.endOrder - item.startOrder + 1;
-                const height = rows * ROW - 2;
+                const span = layout.span(item.startOrder, item.endOrder);
+                if (!span) return null;
+                const height = span.height - 2;
                 // Blok 1 h: tytul w jednej linii; dluzszy: tytul do 2 linii. Reszta miejsca na opis.
-                const titleLines = rows === 1 ? 1 : 2;
+                const titleLines = item.endOrder === item.startOrder ? 1 : 2;
                 const lines = fitGridLines(item.lines, Math.floor((height - PAD) / LINE) - titleLines);
                 const title = `${CLASS_LABELS[item.classType]} · ${item.title}`;
                 return (
@@ -130,7 +158,7 @@ export function WeekGrid({
                     title={[title, ...item.lines].join('\n')}
                     style={{
                       position: 'absolute',
-                      top: (item.startOrder - firstOrder) * ROW + 1,
+                      top: span.top + 1,
                       height,
                       left: `calc(${lane.lane * width}% + 2px)`,
                       width: `calc(${width}% - 4px)`,

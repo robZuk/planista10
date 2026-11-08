@@ -14,6 +14,7 @@ import {
 import { calendarBodySchema, calendarCreateSchema, calendarPreviewSchema, calendarStatusSchema, termCreateSchema } from './schemas/termCalendar';
 import { programCreateSchema, programEntrySchema, versionCreateSchema, versionUpdateSchema } from './schemas/program';
 import { userCreateSchema, userUpdateSchema } from './schemas/user';
+import { timeGridUpdateSchema } from './schemas/timeGrid';
 
 /**
  * Specyfikacja OpenAPI 3.1 serwowana przez Swagger UI (/api/docs).
@@ -49,6 +50,7 @@ const schemas = {
   SubjectCreate: toJson(subjectCreateSchema),
   FieldOfStudyCreate: toJson(fieldOfStudyCreateSchema),
   SpecializationCreate: toJson(specializationCreateSchema),
+  TimeGridUpdate: toJson(timeGridUpdateSchema),
   InstructorCreate: toJson(instructorCreateSchema),
   InstructorUpdate: toJson(instructorUpdateSchema),
   BuildingCreate: toJson(buildingCreateSchema),
@@ -116,7 +118,7 @@ export const openApiDocument = {
   servers: [{ url: '/', description: 'Ten sam origin co aplikacja' }],
   tags: [
     { name: 'Auth', description: 'Logowanie, odswiezanie tokenu, dane zalogowanego' },
-    { name: 'Zasoby', description: 'Wydzialy, budynki, sale, prowadzacy, bloki czasowe' },
+    { name: 'Zasoby', description: 'Wydzialy, budynki, sale, prowadzacy, siatki godzin' },
     { name: 'Semestr', description: 'Semestry, kalendarze (przerwy, wyjatki dni, zjazdy), swieta ustawowe' },
     { name: 'Program', description: 'Kierunki, specjalnosci, przedmioty, programy studiow i ich wersje' },
     { name: 'Roczniki', description: 'Roczniki (nabory) i drzewo grup' },
@@ -251,6 +253,12 @@ export const openApiDocument = {
     },
 
     // ─── Zasoby: Bloki czasowe ───────────────────────────────
+    '/api/time-grids': {
+      get: { tags: ['Zasoby'], summary: 'Siatki godzin wydzialow (stacjonarna i niestacjonarna): bloki, przerwy, dni z oknem godzin', security: bearer, responses: { 200: dataResp('Siatki'), ...authErrors } },
+    },
+    '/api/time-grids/{id}': {
+      put: { tags: ['Zasoby'], summary: 'Zmien bloki i/lub dni siatki (ADMIN); bloki zablokowane, gdy wydzial ma plan w biezacym semestrze', security: bearer, parameters: [pathId()], requestBody: jsonBody('TimeGridUpdate'), responses: { 200: dataResp('Zapisana'), 400: errResp('Zle bloki'), 409: errResp('Plan istnieje'), ...authErrors } },
+    },
     '/api/time-blocks': {
       get: { tags: ['Zasoby'], summary: 'Bloki pierwszej siatki stacjonarnej (tylko odczyt)', security: bearer, responses: { 200: dataResp('Bloki'), ...authErrors } },
     },

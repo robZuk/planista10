@@ -72,7 +72,26 @@ export interface TimeBlock {
   startTime: string;
   endTime: string;
   label: string;
-  createdAt: string;
+  createdAt?: string;
+}
+
+/** Dzien zajec siatki z opcjonalnym oknem godzin ("HH:MM"; null = bez ograniczenia). */
+export interface GridDay {
+  day: DayOfWeek;
+  from: string | null;
+  to: string | null;
+}
+
+/** Siatka godzin wydzialu dla trybu studiow (kazdy wydzial: stacjonarna i niestacjonarna). */
+export interface TimeGrid {
+  id: string;
+  faculty: { id: string; name: string; shortName: string };
+  studyMode: StudyMode;
+  days: GridDay[];
+  blocks: TimeBlock[];
+  breaks: { afterOrder: number; startMinute: number; endMinute: number; minutes: number }[];
+  /** Wydzial ma plan w tym trybie w biezacym semestrze — bloki zablokowane (dni mozna zmieniac). */
+  locked: boolean;
 }
 
 export interface FieldOfStudy {
@@ -552,6 +571,8 @@ export interface PlanView {
     teachingWeeks: number;
     zjazdy: { number: number; startDate: string; endDate: string }[];
   } | null;
+  /** Siatka godzin wydzialu i trybu rocznika: bloki planu, przerwy (odstepy) i dni zajec. */
+  timeGrid: { id: string; studyMode: StudyMode; days: GridDay[]; blocks: TimeBlock[] };
   stale: boolean;
   staleReasons: ('PLACEMENTS' | 'SECTIONS')[];
   generatedOccurrences: number;

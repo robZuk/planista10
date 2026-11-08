@@ -22,7 +22,7 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { createTermCalendar, previewTermCalendar, updateTermCalendar } from '@/api/terms';
-import { fetchTimeBlocks } from '@/api/timeBlocks';
+import { fetchTimeGrids } from '@/api/timeGrids';
 import { getErrorMessage } from '@/lib/errors';
 import {
   CALENDAR_DAY_KIND_LABELS,
@@ -143,7 +143,10 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
     form.reset(toFormValues(target.mode === 'create' ? target.proposal.calendar : target.calendar));
   }, [target, form]);
 
-  const { data: timeBlocks } = useQuery({ queryKey: ['time-blocks'], queryFn: fetchTimeBlocks });
+  // Godziny rektorskie wskazuja blok siatki wydzialu i trybu tego kalendarza.
+  const { data: grids } = useQuery({ queryKey: ['time-grids'], queryFn: fetchTimeGrids });
+  const calendarFacultyId = target?.mode === 'create' ? target.facultyId : target?.calendar.facultyId;
+  const timeBlocks = grids?.find((g) => g.faculty.id === calendarFacultyId && g.studyMode === studyMode)?.blocks;
 
   // Podglad na zywo: serwer liczy tygodnie zajec, swieta i problemy spojnosci.
   const watched = form.watch();

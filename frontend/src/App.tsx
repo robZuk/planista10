@@ -4,7 +4,7 @@ import LoginPage from '@/pages/LoginPage';
 import FacultiesPage from '@/pages/FacultiesPage';
 import BuildingsPage from '@/pages/BuildingsPage';
 import InstructorsPage from '@/pages/InstructorsPage';
-import TimeBlocksPage from '@/pages/TimeBlocksPage';
+import TimeGridsPage from '@/pages/TimeGridsPage';
 import CurriculumPage from '@/pages/CurriculumPage';
 import ProgramVersionPage from '@/pages/curriculum/ProgramVersionPage';
 import CohortsPage from '@/pages/CohortsPage';
@@ -32,7 +32,7 @@ const PAGES: Record<string, ComponentType> = {
   '/faculties': FacultiesPage,
   '/buildings': BuildingsPage,
   '/instructors': InstructorsPage,
-  '/time-blocks': TimeBlocksPage,
+  '/time-grids': TimeGridsPage,
   '/users': UsersPage,
 };
 

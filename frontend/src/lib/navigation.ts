@@ -137,11 +137,11 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'Ustawienia',
     items: [
       {
-        to: '/time-blocks',
-        label: 'Bloki czasowe',
+        to: '/time-grids',
+        label: 'Siatki godzin',
         icon: Clock,
         roles: ['ADMIN'],
-        keywords: ['godziny', 'dzwonki'],
+        keywords: ['godziny', 'dzwonki', 'bloki', 'przerwy', 'dni zajec'],
       },
       {
         to: '/users',

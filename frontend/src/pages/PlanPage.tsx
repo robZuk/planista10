@@ -14,12 +14,12 @@ import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
 import { fetchTermCohorts } from '@/api/cohorts';
 import { fetchAvailability, fetchPlan, updatePlacement } from '@/api/plan';
-import { fetchTimeBlocks } from '@/api/timeBlocks';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage } from '@/lib/errors';
 import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGroupFilter';
 import { earlyEndWeeks, formatDayMonth } from '@/lib/planHours';
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
+import { describeDays } from '@/lib/timeGrid';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 import type { DayOfWeek, PlanPlacement, PlanSection } from '@/types';
@@ -29,8 +29,6 @@ import { GenerateTermsDialog } from './plan/GenerateTermsDialog';
 import { OccurrencesTab } from './plan/OccurrencesTab';
 import { CarryPlanDialog } from './plan/CarryPlanDialog';
 
-const FULL_DAYS: DayOfWeek[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
-const PART_DAYS: DayOfWeek[] = ['FRIDAY', 'SATURDAY', 'SUNDAY'];
 
 function patternLabel(p: PlanPlacement): string {
   const range = p.fromIndex || p.toIndex ? ` ${p.fromIndex ?? 1}–${p.toIndex ?? '…'}` : '';
@@ -73,7 +71,6 @@ export default function PlanPage() {
     if (cohorts.length > 0 && !cohorts.some((c) => c.id === cohortId)) setCohortId(cohorts[0]!.id);
   }, [cohorts, cohortId]);
 
-  const { data: blocks } = useQuery({ queryKey: ['time-blocks'], queryFn: fetchTimeBlocks });
   const { data: plan, isPending } = useQuery({
     queryKey: ['plan', term?.key, cohortId],
     queryFn: () => fetchPlan(term!.key, cohortId),
@@ -81,7 +78,9 @@ export default function PlanPage() {
   });
 
   const zjazdCalendar = plan?.calendar?.kind === 'ZJAZD';
-  const days = plan?.cohort.studyMode === 'PART_TIME' ? PART_DAYS : FULL_DAYS;
+  // Bloki i dni zajec z siatki godzin wydzialu i trybu rocznika (np. niestacjonarne: czw-nd).
+  const blocks = plan?.timeGrid.blocks;
+  const days: DayOfWeek[] = plan?.timeGrid.days.map((d) => d.day) ?? [];
   // Zablokowany na stale (archiwum / brak uprawnien) — akcji nie pokazujemy wcale.
   const locked = plan?.calendar?.status === 'ARCHIVED' || !(isAdmin || me?.role === 'DEAN_OFFICE');
   // Brak kalendarza i wersja programu w projekcie da sie naprawic — akcje widoczne, ale
@@ -231,6 +230,12 @@ export default function PlanPage() {
             <Badge variant="outline" className="ml-2">projekt</Badge>
           ) : (
             <Badge variant="secondary" className="ml-2">zatwierdzona</Badge>
+          )}
+          {plan && (
+            <>
+              {' · siatka godzin '}
+              <span className="font-medium text-foreground">{describeDays(plan.timeGrid.days)}</span>
+            </>
           )}
         </p>
       )}

@@ -60,3 +60,19 @@ export function defaultGridsCreate() {
     blocks: { create: defaultBlocks() },
   }));
 }
+
+/**
+ * Czy bloki siatki sa zablokowane: wydzial ma juz umieszczenia w tym trybie w semestrze,
+ * ktorego kalendarz nie jest w archiwum. Umieszczenia wskazuja bloki numerem — zmiana godzin
+ * przesunelaby zajecia. Terminy niosa wlasne minuty, wiec archiwum zostaje poprawne.
+ */
+export async function gridLocked(facultyId: string, studyMode: StudyMode): Promise<boolean> {
+  const placements = await prisma.placement.count({
+    where: {
+      facultyId,
+      section: { cohort: { program: { studyMode } } },
+      term: { calendars: { some: { facultyId, studyMode, status: { not: 'ARCHIVED' } } } },
+    },
+  });
+  return placements > 0;
+}
