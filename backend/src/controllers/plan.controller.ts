@@ -253,9 +253,12 @@ export const listOccurrences = asyncHandler(async (req, res) => {
 
 /** Kolizje terminu na konkretnej dacie z zajetoscia calej uczelni (bez niego samego). */
 async function occurrenceConflicts(term: AcademicTerm, slot: Omit<BusySlot, 'label'>, opts: OccupancyOptions) {
-  // Wspolna zajetosc uczelni (wzorce z wyjatkami, terminy reczne i wygenerowane) na te date.
-  const busy = (await termOccupancy(term, { ...opts, includeGenerated: true })).filter((b) => b.date === slot.date);
-  const groups = await prisma.studentGroup.findMany();
+  // Wspolna zajetosc uczelni (wzorce z wyjatkami, terminy reczne i wygenerowane) na te date —
+  // zawezona do rocznika grupy, sali i prowadzacego terminu (tylko one moga z nim kolidowac).
+  const group = await prisma.studentGroup.findUniqueOrThrow({ where: { id: slot.groupId }, select: { cohortId: true } });
+  const relevantTo = { cohortId: group.cohortId, roomId: slot.roomId, instructorId: slot.instructorId };
+  const busy = (await termOccupancy(term, { ...opts, includeGenerated: true, relevantTo })).filter((b) => b.date === slot.date);
+  const groups = await prisma.studentGroup.findMany({ where: { cohortId: group.cohortId } });
   const index = indexGroups(groups.map(toTreeGroup));
   return findConflict(slot, busy, (a, b) => groupsOverlap(a, b, index));
 }

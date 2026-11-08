@@ -33,6 +33,7 @@ const cohort = {
 
 const calendar = {
   id: 'cal1',
+  facultyId: 'wm',
   name: 'Podstawowy',
   kind: 'WEEKLY',
   studyMode: 'FULL_TIME',
@@ -164,6 +165,46 @@ describe('termOccupancy — wspolna zajetosc wzorca i terminow', () => {
     setup();
     await termOccupancy(term, { excludeCohortIds: ['c1'] });
     expect(prismaMock.classSection.findMany.mock.calls[0]![0].where.cohortId).toEqual({ in: [] });
+  });
+
+  it('kalendarze rocznikow jednym zapytaniem (bez N+1)', async () => {
+    setup();
+    await termOccupancy(term);
+    expect(prismaMock.termCalendar.findMany).toHaveBeenCalledTimes(1);
+    expect(prismaMock.termCalendar.findMany.mock.calls[0]![0].where).toEqual({ termId: term.id });
+  });
+
+  it('relevantTo: rozpisuje tylko rocznik oraz wzorce i wyjatki dotykajace sali lub prowadzacego', async () => {
+    setup();
+    const busy = await termOccupancy(term, { relevantTo: { cohortId: 'c1', roomId: 'r1', instructorId: 'i1' } });
+    expect(busy).toHaveLength(2);
+    expect(prismaMock.classSection.findMany.mock.calls[0]![0].where.OR).toEqual([
+      { cohortId: 'c1' },
+      {
+        placements: {
+          some: {
+            OR: [
+              { roomId: 'r1' },
+              { exceptions: { some: { newRoomId: 'r1' } } },
+              { instructorId: 'i1' },
+              { exceptions: { some: { newInstructorId: 'i1' } } },
+            ],
+          },
+        },
+      },
+    ]);
+    // Terminy osierocone / wygenerowane: tylko rocznika, tej sali albo tego prowadzacego.
+    const derived = prismaMock.occurrence.findMany.mock.calls.find((c) => c[0].where.kind === 'DERIVED')![0];
+    expect(derived.where.OR).toEqual([{ section: { cohortId: 'c1' } }, { roomId: 'r1' }, { instructorId: 'i1' }]);
+    // Terminy reczne bez filtra — zuzywaja godziny zajec, ktore rozpisujemy (limit godzin).
+    const manual = prismaMock.occurrence.findMany.mock.calls.find((c) => c[0].where.kind === 'MANUAL')![0];
+    expect(manual.where.OR).toBeUndefined();
+  });
+
+  it('relevantTo bez sali i prowadzacego: tylko wlasny rocznik', async () => {
+    setup();
+    await termOccupancy(term, { relevantTo: { cohortId: 'c1', roomId: null, instructorId: null } });
+    expect(prismaMock.classSection.findMany.mock.calls[0]![0].where.OR).toEqual([{ cohortId: 'c1' }]);
   });
 });
 

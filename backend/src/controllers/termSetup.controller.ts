@@ -8,7 +8,7 @@ import { parseTermKey } from '../lib/terms';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
 import { activeCohorts } from '../services/sections';
 import { cohortLabel, toTreeGroup } from '../services/cohorts';
-import { calendarFor } from '../services/plan';
+import { calendarsFor } from '../services/plan';
 import { carryPlan } from '../services/carryPlan';
 
 async function findTerm(key: string) {
@@ -65,19 +65,49 @@ export const setupStatus = asyncHandler(async (req, res) => {
   const missingCalendars = [...neededModes].filter((k) => !calendars.some((c) => `${c.facultyId}|${c.studyMode}` === k)).length;
 
   const contexts = await activeCohorts(term, facultyId);
+  const cohortIds = contexts.map((c) => c.cohort.id);
+  // Liczniki wszystkich rocznikow zbiorczo (kilka zapytan zamiast kilku na rocznik).
+  const active = { termId: term.id, cohortId: { in: cohortIds }, status: 'ACTIVE' as const };
+  const [cohortCalendars, sectionRows, placedRows, vacancyRows, termSections, occurrenceRows, changeRows] = await Promise.all([
+    calendarsFor(term, contexts),
+    prisma.classSection.groupBy({ by: ['cohortId'], where: active, _count: { _all: true } }),
+    prisma.classSection.groupBy({ by: ['cohortId'], where: { ...active, placements: { some: {} } }, _count: { _all: true } }),
+    prisma.classSection.groupBy({
+      by: ['cohortId'],
+      where: { ...active, OR: [{ instructors: { none: {} } }, { instructors: { some: { instructorId: null } } }] },
+      _count: { _all: true },
+    }),
+    prisma.classSection.findMany({ where: { termId: term.id, cohortId: { in: cohortIds } }, select: { id: true, cohortId: true } }),
+    prisma.occurrence.groupBy({ by: ['sectionId'], where: { termId: term.id, section: { cohortId: { in: cohortIds } } }, _count: { _all: true } }),
+    prisma.placement.groupBy({ by: ['sectionId'], where: { termId: term.id, section: { cohortId: { in: cohortIds } } }, _max: { updatedAt: true } }),
+  ]);
+  const countOf = (rows: { cohortId: string; _count: { _all: number } }[]) => new Map(rows.map((r) => [r.cohortId, r._count._all]));
+  const sectionCount = countOf(sectionRows);
+  const placedCount = countOf(placedRows);
+  const vacancyCount = countOf(vacancyRows);
+  const cohortOfSection = new Map(termSections.map((s) => [s.id, s.cohortId]));
+  const occurrenceCount = new Map<string, number>();
+  for (const r of occurrenceRows) {
+    const cohortId = cohortOfSection.get(r.sectionId);
+    if (cohortId) occurrenceCount.set(cohortId, (occurrenceCount.get(cohortId) ?? 0) + r._count._all);
+  }
+  const lastChangeOf = new Map<string, Date>();
+  for (const r of changeRows) {
+    const cohortId = cohortOfSection.get(r.sectionId);
+    const at = r._max.updatedAt;
+    if (!cohortId || !at) continue;
+    const prev = lastChangeOf.get(cohortId);
+    if (!prev || at > prev) lastChangeOf.set(cohortId, at);
+  }
+
   const cohorts = [];
   for (const ctx of contexts) {
-    const calendar = await calendarFor(term, ctx);
-    const [sections, withPlacement, vacancies, occurrences, lastChange] = await Promise.all([
-      prisma.classSection.count({ where: { termId: term.id, cohortId: ctx.cohort.id, status: 'ACTIVE' } }),
-      prisma.classSection.count({ where: { termId: term.id, cohortId: ctx.cohort.id, status: 'ACTIVE', placements: { some: {} } } }),
-      prisma.classSection.count({
-        where: { termId: term.id, cohortId: ctx.cohort.id, status: 'ACTIVE', OR: [{ instructors: { none: {} } }, { instructors: { some: { instructorId: null } } }] },
-      }),
-      prisma.occurrence.count({ where: { termId: term.id, section: { cohortId: ctx.cohort.id } } }),
-      prisma.placement.aggregate({ where: { termId: term.id, section: { cohortId: ctx.cohort.id } }, _max: { updatedAt: true } }),
-    ]);
-    const changed = lastChange._max.updatedAt;
+    const calendar = cohortCalendars.get(ctx.cohort.id) ?? null;
+    const sections = sectionCount.get(ctx.cohort.id) ?? 0;
+    const withPlacement = placedCount.get(ctx.cohort.id) ?? 0;
+    const vacancies = vacancyCount.get(ctx.cohort.id) ?? 0;
+    const occurrences = occurrenceCount.get(ctx.cohort.id) ?? 0;
+    const changed = lastChangeOf.get(ctx.cohort.id);
     cohorts.push({
       id: ctx.cohort.id,
       label: cohortLabel(ctx.cohort),
