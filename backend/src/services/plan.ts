@@ -2,7 +2,7 @@ import type { AcademicTerm, DayOfWeek, Prisma, TermCalendar } from '@prisma/clie
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { fromIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
-import { expandDates, TeachingCalendar } from '../lib/teachingCalendar';
+import { calendarPeriods, expandDates, TeachingCalendar } from '../lib/teachingCalendar';
 import { groupsOverlap, indexGroups, pathFromRoot } from '../lib/groupTree';
 import { staleReasons } from '../lib/planStaleness';
 import { roomTypeMap } from '../lib/scheduleTime';
@@ -589,6 +589,8 @@ export async function planView(term: AcademicTerm, cohortId: string) {
           endDate: toIsoDate(calendar.endDate),
           teachingWeeks: cal!.teachingWeeks().filter((w) => w.index !== null).length,
           zjazdy: calendar.zjazdy.map((z) => ({ number: z.number, startDate: toIsoDate(z.startDate), endDate: toIsoDate(z.endDate) })),
+          // Tygodnie albo zjazdy z dniami wolnymi — nawigacja widoku tygodnia w "Terminach".
+          periods: calendarPeriods(cal!),
         }
       : null,
     // Kalendarz nieaktualny: umieszczenia zmienione po ostatnim generowaniu.

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { CLASS_COLORS, CLASS_LABELS, fitGridLines } from '@/lib/scheduleDisplay';
 import { gridLayout } from '@/lib/timeGrid';
@@ -19,6 +20,10 @@ export interface GridItem {
   title: string;
   lines: string[];
   muted?: boolean;
+  /** Termin odwolany: przekreslony i wyszarzony. */
+  cancelled?: boolean;
+  /** Krotkie oznaczenie przy tytule ("przeniesiony", "reczny"). */
+  marker?: string;
 }
 
 const DAY_SHORT: Record<string, string> = {
@@ -69,6 +74,8 @@ export function WeekGrid({
   availability,
   onCellClick,
   onItemClick,
+  dayHeader,
+  closedDays,
 }: {
   days: DayOfWeek[];
   blocks: TimeBlock[];
@@ -76,6 +83,10 @@ export function WeekGrid({
   availability?: Record<string, Record<number, string | null>> | null;
   onCellClick?: (day: DayOfWeek, order: number) => void;
   onItemClick?: (id: string) => void;
+  /** Wlasny naglowek dnia (np. z data) zamiast samej nazwy. */
+  dayHeader?: (day: DayOfWeek) => ReactNode;
+  /** Dni bez zajec (swieto, przerwa, dzien wolny) — kolumna wyszarzona z opisem. */
+  closedDays?: Partial<Record<DayOfWeek, string>>;
 }) {
   // Najkrotszy blok miesci tytul i trzy linie opisu; 60 min nie mniej niz ROW.
   const layout = gridLayout(blocks, { minBlockPx: 4 * LINE + PAD + 2, minPxPerMinute: ROW / 60 });
@@ -118,10 +129,15 @@ export function WeekGrid({
         return (
           <div key={day} className="min-w-40 flex-1 border-r last:border-r-0">
             <div style={{ height: HEADER }} className="flex items-center justify-center border-b text-sm font-medium">
-              {DAY_SHORT[day]}
+              {dayHeader ? dayHeader(day) : DAY_SHORT[day]}
             </div>
             <div className="relative" style={{ height: layout.totalHeight }}>
               {breakBands}
+              {closedDays?.[day] !== undefined && (
+                <div className="absolute inset-0 flex items-start justify-center bg-[repeating-linear-gradient(135deg,var(--muted)_0_8px,transparent_8px_16px)] pt-4 text-center text-xs font-medium text-muted-foreground">
+                  <span className="rounded bg-background/90 px-2 py-1">{closedDays[day] || 'Bez zajec'}</span>
+                </div>
+              )}
               {layout.rows.map((r) => {
                 const reason = availability?.[day]?.[r.order];
                 const state = availability ? (reason === null ? 'free' : reason === undefined ? undefined : 'busy') : undefined;
@@ -155,7 +171,7 @@ export function WeekGrid({
                     key={item.id}
                     type="button"
                     onClick={() => onItemClick?.(item.id)}
-                    title={[title, ...item.lines].join('\n')}
+                    title={[item.marker ? `${title} (${item.marker})` : title, ...item.lines].join('\n')}
                     style={{
                       position: 'absolute',
                       top: span.top + 1,
@@ -167,9 +183,13 @@ export function WeekGrid({
                       'flex flex-col justify-start overflow-hidden rounded-md border-l-4 px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm',
                       CLASS_COLORS[item.classType],
                       item.muted && 'opacity-40',
+                      item.cancelled && 'line-through opacity-50 grayscale',
                     )}
                   >
-                    <div className={cn('font-semibold', titleLines === 1 ? 'truncate' : 'line-clamp-2')}>{title}</div>
+                    <div className={cn('font-semibold', titleLines === 1 ? 'truncate' : 'line-clamp-2')}>
+                      {item.marker && <span className="mr-1 rounded bg-background/70 px-1 font-normal no-underline">{item.marker}</span>}
+                      {title}
+                    </div>
                     {lines.map((line, n) => (
                       <div key={n} className="truncate">
                         {line}

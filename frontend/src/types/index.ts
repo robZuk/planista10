@@ -571,6 +571,8 @@ export interface PlanView {
     endDate: string;
     teachingWeeks: number;
     zjazdy: { number: number; startDate: string; endDate: string }[];
+    /** Tygodnie (pn-nd) albo zjazdy z dniami wolnymi — widok tygodnia w "Terminach". */
+    periods: CalendarPeriod[];
   } | null;
   /** Siatka godzin wydzialu i trybu rocznika: bloki planu, przerwy (odstepy) i dni zajec. */
   timeGrid: { id: string; studyMode: StudyMode; days: GridDay[]; blocks: TimeBlock[] };
@@ -609,6 +611,26 @@ export interface GenerateReport {
   calendarsMissing: string[];
   /** Roczniki pominiete, bo ich wersja programu jest w projekcie. */
   draftVersions: string[];
+}
+
+export interface PeriodDay {
+  date: string;
+  dayOfWeek: DayOfWeek;
+  teaching: boolean;
+  /** Swieto, przerwa, dzien wolny albo nazwa zmiany dnia. */
+  label: string | null;
+  /** Zajecia wg planu innego dnia tygodnia. */
+  followsWeekday: DayOfWeek | null;
+  closedFromBlockOrder: number | null;
+}
+
+export interface CalendarPeriod {
+  /** Numer tygodnia zajec / zjazdu; null = tydzien w przerwie. */
+  index: number | null;
+  label: string;
+  from: string;
+  to: string;
+  days: PeriodDay[];
 }
 
 export interface OccurrenceRow {

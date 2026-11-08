@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { expandDates, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
+import { calendarPeriods, expandDates, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
 import { eachDay } from './isoDate';
 
 /** Zima 2024/25 jak w danych: start we wtorek 1.10, bez przerw. */
@@ -230,5 +230,49 @@ describe('expandDates — szybka wersja daje to samo co sprawdzanie kazdego dnia
     // kontrola sensu: zamiana dni dodaje piatek 13.11 do poniedzialkow, zjazd 1 ma czwartek
     expect(expandDates(weekly, { dayOfWeek: 'MONDAY', cycle: 'WEEK', pattern: 'ALL' }).map((d) => d.date)).toContain('2026-11-13');
     expect(expandDates(zjazdy, { dayOfWeek: 'THURSDAY', cycle: 'ZJAZD', pattern: 'ALL' }).map((d) => d.date)).toEqual(['2026-10-01']);
+  });
+});
+
+describe('calendarPeriods — okresy widoku tygodnia terminow', () => {
+  it('kalendarz tygodniowy: tygodnie pn-nd z numerami, swietami i przerwa', () => {
+    const cal = new TeachingCalendar({
+      ...winter2024,
+      breaks: [{ name: 'Przerwa swiateczna', startDate: '2024-12-23', endDate: '2025-01-01' }],
+      days: [{ date: '2024-11-16', kind: 'FOLLOWS_WEEKDAY', followsWeekday: 'MONDAY' }],
+    });
+    const periods = calendarPeriods(cal);
+    expect(periods[0]).toMatchObject({ index: 1, label: 'Tydzien 1', from: '2024-09-30', to: '2024-10-06' });
+    expect(periods[0]!.days).toHaveLength(7);
+    // 30.09 przed startem semestru — nie jest dniem zajec, bez etykiety.
+    expect(periods[0]!.days[0]).toMatchObject({ date: '2024-09-30', dayOfWeek: 'MONDAY', teaching: false, label: null });
+    const nov = periods.find((p) => p.from === '2024-11-11')!;
+    expect(nov.days[0]).toMatchObject({ dayOfWeek: 'MONDAY', teaching: false, label: 'Narodowe Swieto Niepodleglosci' });
+    // Sobota wg planu poniedzialku.
+    expect(nov.days[5]).toMatchObject({ dayOfWeek: 'SATURDAY', teaching: true, followsWeekday: 'MONDAY' });
+    const xmas = periods.find((p) => p.from === '2024-12-23')!;
+    expect(xmas).toMatchObject({ index: null, label: 'Przerwa: Przerwa swiateczna' });
+    expect(xmas.days[0]).toMatchObject({ teaching: false, label: 'Przerwa swiateczna' });
+  });
+
+  it('kalendarz zjazdowy: okres = zjazd z jego dniami', () => {
+    const cal = new TeachingCalendar({
+      ...winter2024,
+      kind: 'ZJAZD',
+      studyMode: 'PART_TIME',
+      zjazdy: [
+        { number: 2, startDate: '2024-10-18', endDate: '2024-10-20' },
+        { number: 1, startDate: '2024-10-04', endDate: '2024-10-06' },
+      ],
+    });
+    const periods = calendarPeriods(cal);
+    expect(periods.map((p) => [p.label, p.from, p.to])).toEqual([
+      ['Zjazd 1', '2024-10-04', '2024-10-06'],
+      ['Zjazd 2', '2024-10-18', '2024-10-20'],
+    ]);
+    expect(periods[0]!.days.map((d) => [d.dayOfWeek, d.teaching])).toEqual([
+      ['FRIDAY', true],
+      ['SATURDAY', true],
+      ['SUNDAY', true],
+    ]);
   });
 });

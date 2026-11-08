@@ -447,7 +447,15 @@ export default function PlanPage() {
           </TabsContent>
 
           <TabsContent value="occurrences" className="mt-3">
-            <OccurrencesTab termKey={term.key} cohortId={cohortId} sections={sections} blocks={blocks} readOnly={readOnly} />
+            <OccurrencesTab
+              termKey={term.key}
+              cohortId={cohortId}
+              sections={sections}
+              blocks={blocks}
+              readOnly={readOnly}
+              periods={plan?.calendar?.periods ?? []}
+              modeDays={days}
+            />
           </TabsContent>
         </Tabs>
       )}

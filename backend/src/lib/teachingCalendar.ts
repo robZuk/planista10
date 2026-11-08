@@ -294,6 +294,70 @@ export function expandDates(calendar: TeachingCalendar, slot: SlotPattern): Expa
   return result;
 }
 
+/** Dzien okresu (tygodnia albo zjazdu) do widoku tygodnia terminow. */
+export interface PeriodDay {
+  date: IsoDate;
+  dayOfWeek: DayOfWeek;
+  /** Czy w tym dniu wg kalendarza sa zajecia. */
+  teaching: boolean;
+  /** Swieto, przerwa, dzien wolny albo nazwa zmiany dnia (null = zwykly dzien). */
+  label: string | null;
+  /** Zajecia wg planu innego dnia tygodnia (np. sroda wg planu piatku). */
+  followsWeekday: DayOfWeek | null;
+  /** Godziny rektorskie: zajecia od tego bloku odwolane. */
+  closedFromBlockOrder: number | null;
+}
+
+/** Okres nawigacji widoku tygodnia: tydzien kalendarzowy (pn-nd) albo zjazd. */
+export interface CalendarPeriod {
+  /** Numer tygodnia zajec / zjazdu; null = tydzien w calosci w przerwie. */
+  index: number | null;
+  label: string;
+  from: IsoDate;
+  to: IsoDate;
+  days: PeriodDay[];
+}
+
+/**
+ * Okresy semestru do przegladania terminow tydzien po tygodniu: dla kalendarza tygodniowego
+ * kazdy tydzien (pn-nd, takze w przerwie — zeby bylo widac, ze jest pusty), dla zjazdowego
+ * kazdy zjazd. Dni niosa swieta, przerwy, dni wolne i zamiany dni.
+ */
+export function calendarPeriods(calendar: TeachingCalendar): CalendarPeriod[] {
+  const dayOf = (date: IsoDate): PeriodDay => {
+    const info = calendar.dayInfo(date);
+    const weekday = weekdayOf(date);
+    const named = info.reason === 'HOLIDAY' || info.reason === 'BREAK' || info.reason === 'DAY_OFF';
+    return {
+      date,
+      dayOfWeek: WEEKDAY_ENUM[weekday]!,
+      teaching: info.teaching,
+      label: info.teaching || named ? info.label : null,
+      followsWeekday: info.teaching && info.effectiveWeekday !== weekday ? WEEKDAY_ENUM[info.effectiveWeekday]! : null,
+      closedFromBlockOrder: info.closedFromBlockOrder,
+    };
+  };
+  const input = calendar.input;
+  if (input.kind === 'ZJAZD') {
+    return [...input.zjazdy]
+      .sort((a, b) => a.startDate.localeCompare(b.startDate))
+      .map((z) => ({
+        index: z.number,
+        label: `Zjazd ${z.number}`,
+        from: z.startDate,
+        to: z.endDate,
+        days: [...eachDay(z.startDate, z.endDate)].map(dayOf),
+      }));
+  }
+  return calendar.teachingWeeks().map((week) => ({
+    index: week.index,
+    label: week.index !== null ? `Tydzien ${week.index}` : `Przerwa${week.breakName ? `: ${week.breakName}` : ''}`,
+    from: week.monday,
+    to: week.sunday,
+    days: [...eachDay(week.monday, week.sunday)].map(dayOf),
+  }));
+}
+
 /** Problemy spojnosci kalendarza — zwracane przed zapisem, zeby nie zapisac bzdur. */
 export function validateCalendar(input: CalendarInput): string[] {
   const problems: string[] = [];
