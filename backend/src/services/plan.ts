@@ -92,6 +92,36 @@ export async function calendarsFor(term: AcademicTerm, contexts: CohortContext[]
   return out;
 }
 
+/** Ile planu stoi na kalendarzu: roczniki, ktore z niego korzystaja, ich umieszczenia i terminy. */
+export interface CalendarUsage {
+  /** Roczniki semestru, ktorych kalendarzem jest ten (wybrany w Rocznikach albo domyslny). */
+  cohorts: number;
+  /** Roczniki z planem (umieszczenia albo terminy) na tym kalendarzu. */
+  cohortsWithPlan: number;
+  placements: number;
+  occurrences: number;
+}
+
+export async function calendarUsage(calendar: Pick<TermCalendar, 'id' | 'termId' | 'facultyId' | 'studyMode'>): Promise<CalendarUsage> {
+  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: calendar.termId } });
+  const contexts = (await activeCohorts(term, calendar.facultyId)).filter((c) => c.cohort.program.studyMode === calendar.studyMode);
+  const chosen = await calendarsFor(term, contexts);
+  const cohortIds = contexts.filter((c) => chosen.get(c.cohort.id)?.id === calendar.id).map((c) => c.cohort.id);
+  if (cohortIds.length === 0) return { cohorts: 0, cohortsWithPlan: 0, placements: 0, occurrences: 0 };
+  const ofCohorts = { termId: term.id, section: { cohortId: { in: cohortIds } } };
+  const [placements, occurrences, cohortsWithPlan] = await Promise.all([
+    prisma.placement.count({ where: ofCohorts }),
+    prisma.occurrence.count({ where: ofCohorts }),
+    prisma.cohort.count({
+      where: {
+        id: { in: cohortIds },
+        sections: { some: { termId: term.id, OR: [{ placements: { some: {} } }, { occurrences: { some: {} } }] } },
+      },
+    }),
+  ]);
+  return { cohorts: cohortIds.length, cohortsWithPlan, placements, occurrences };
+}
+
 /**
  * Zajecia laczone (wspolny jointKey) moga laczyc wydzialy o roznych siatkach godzin — dziela
  * rzeczywisty czas, nie numery blokow. Nowe umieszczenie dolacza w tym samym dniu i godzinach;

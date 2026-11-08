@@ -37,4 +37,5 @@ termsRouter.put('/:key/cohorts/:cohortId', authenticate, planners, cohorts.setCo
 termCalendarsRouter.post('/preview', authenticate, planners, validateBody(calendarPreviewSchema), terms.previewCalendar);
 termCalendarsRouter.put('/:id', authenticate, planners, validateBody(calendarBodySchema), terms.updateCalendar);
 termCalendarsRouter.put('/:id/status', authenticate, planners, validateBody(calendarStatusSchema), terms.setCalendarStatus);
+termCalendarsRouter.get('/:id/usage', authenticate, planners, terms.getCalendarUsage);
 termCalendarsRouter.delete('/:id', authenticate, planners, terms.deleteCalendar);

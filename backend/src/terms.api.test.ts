@@ -9,12 +9,15 @@ process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn().mockResolvedValue({ facultyId: 'wm' }) },
   academicTerm: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
-  termCalendar: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+  termCalendar: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]), delete: vi.fn().mockResolvedValue({}) },
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
+const usageMock = vi.hoisted(() => vi.fn());
+vi.mock('./services/plan', async (importOriginal) => ({ ...(await importOriginal<object>()), calendarUsage: usageMock }));
 
 import { createApp } from './index';
 import { signAccessToken } from './lib/jwt';
+import { calendarDeleteBlock } from './controllers/terms.controller';
 
 const app = createApp();
 let admin: string;
@@ -128,5 +131,34 @@ describe('API — kalendarze semestru', () => {
       .set('Authorization', `Bearer ${dean}`)
       .send(validCalendar);
     expect(res.status).toBe(409);
+  });
+});
+
+describe('API — usuwanie kalendarza', () => {
+  const calendar = { id: 'c3', termId: 't1', facultyId: 'wm', status: 'PUBLISHED', studyMode: 'FULL_TIME' };
+
+  it('kalendarz z planem rocznikow -> 409, nic nie usuwa', async () => {
+    prismaMock.termCalendar.findUnique.mockResolvedValueOnce(calendar);
+    usageMock.mockResolvedValueOnce({ cohorts: 14, cohortsWithPlan: 12, placements: 412, occurrences: 5000 });
+    prismaMock.termCalendar.delete.mockClear();
+    const res = await request(app).delete('/api/term-calendars/c3').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(409);
+    expect(res.body.message ?? res.body.error).toContain('412 umieszczen');
+    expect(prismaMock.termCalendar.delete).not.toHaveBeenCalled();
+  });
+
+  it('kalendarz bez planu -> usuniety', async () => {
+    prismaMock.termCalendar.findUnique.mockResolvedValueOnce(calendar);
+    usageMock.mockResolvedValueOnce({ cohorts: 3, cohortsWithPlan: 0, placements: 0, occurrences: 0 });
+    prismaMock.termCalendar.delete.mockClear();
+    const res = await request(app).delete('/api/term-calendars/c3').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(200);
+    expect(prismaMock.termCalendar.delete).toHaveBeenCalledWith({ where: { id: 'c3' } });
+  });
+
+  it('powod blokady: umieszczenia i/albo terminy', () => {
+    expect(calendarDeleteBlock({ cohorts: 2, cohortsWithPlan: 0, placements: 0, occurrences: 0 })).toBeNull();
+    expect(calendarDeleteBlock({ cohorts: 2, cohortsWithPlan: 1, placements: 0, occurrences: 7 })).toContain('1 rocznik ma 7 terminow');
+    expect(calendarDeleteBlock({ cohorts: 2, cohortsWithPlan: 2, placements: 3, occurrences: 7 })).toContain('2 roczniki maja 3 umieszczenia i 7 terminow');
   });
 });

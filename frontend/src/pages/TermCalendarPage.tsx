@@ -15,6 +15,7 @@ import { FacultySelector } from '@/components/FacultySelector';
 import {
   deleteTermCalendar,
   fetchCalendarProposal,
+  fetchCalendarUsage,
   fetchTermCalendars,
   setTermCalendarStatus,
 } from '@/api/terms';
@@ -60,6 +61,13 @@ export default function TermCalendarPage() {
 
   const [editor, setEditor] = useState<EditorTarget | null>(null);
   const [deleting, setDeleting] = useState<TermCalendar | null>(null);
+  // Przed usunieciem: czy roczniki maja juz plan na tym kalendarzu (wtedy usuniecie jest zablokowane).
+  const { data: deletingUsage, isPending: usagePending } = useQuery({
+    queryKey: ['calendar-usage', deleting?.id],
+    queryFn: () => fetchCalendarUsage(deleting!.id),
+    enabled: !!deleting,
+    staleTime: 0,
+  });
   const [newTermOpen, setNewTermOpen] = useState(false);
   const [opening, setOpening] = useState<string | null>(null);
 
@@ -253,10 +261,19 @@ export default function TermCalendarPage() {
         title="Usunac kalendarz?"
         description={
           deleting
-            ? `${deleting.faculty.shortName} · ${STUDY_MODE_LABELS[deleting.studyMode]} · ${deleting.name} — razem z przerwami, wyjatkami dni i zjazdami.`
+            ? `${deleting.faculty.shortName} · ${STUDY_MODE_LABELS[deleting.studyMode]} · ${deleting.name} — ` +
+              (usagePending
+                ? 'sprawdzam, czy roczniki maja juz plan na tym kalendarzu...'
+                : (deletingUsage?.deleteBlock ??
+                  `razem z przerwami, wyjatkami dni i zjazdami.${
+                    deletingUsage && deletingUsage.cohorts > 0
+                      ? ` Korzystaja z niego roczniki (${deletingUsage.cohorts}, jeszcze bez planu) — po usunieciu przejda na inny wariant wydzialu albo zostana bez kalendarza.`
+                      : ''
+                  }`))
             : ''
         }
         isPending={deleteMutation.isPending}
+        confirmDisabled={usagePending || !!deletingUsage?.deleteBlock}
         onConfirm={() => deleting && deleteMutation.mutate(deleting.id)}
       />
 
