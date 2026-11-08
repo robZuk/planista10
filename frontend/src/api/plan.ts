@@ -66,6 +66,8 @@ export async function changeOccurrence(
     startOrder?: number;
     endOrder?: number;
     roomId?: string;
+    /** true = na online (bez sali); false + roomId = do sali. */
+    online?: boolean;
     instructorId?: string | null;
     note?: string;
   },
@@ -76,7 +78,7 @@ export async function changeOccurrence(
 
 export async function createManualOccurrence(
   termKey: string,
-  input: { sectionId: string; date: string; startOrder: number; endOrder: number; roomId: string; instructorId?: string | null; note?: string },
+  input: { sectionId: string; date: string; startOrder: number; endOrder: number; roomId: string | null; online?: boolean; instructorId?: string | null; note?: string },
 ): Promise<{ message: string }> {
   const res = await api.post(`/terms/${termKey}/occurrences`, input);
   return res.data;

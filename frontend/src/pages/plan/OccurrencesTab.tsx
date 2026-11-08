@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
@@ -200,11 +201,19 @@ function MoveDialog({
   const length = occurrence.endOrder - occurrence.startOrder + 1;
   const [date, setDate] = useState(occurrence.date);
   const [start, setStart] = useState(occurrence.startOrder);
-  const [roomId, setRoomId] = useState(occurrence.room.id);
+  const [roomId, setRoomId] = useState(occurrence.room.id ?? '');
+  const [online, setOnline] = useState(occurrence.room.id === null);
   const [note, setNote] = useState(occurrence.note ?? '');
   const save = useMutation({
     mutationFn: () =>
-      changeOccurrence(occurrence.id, { action: 'MODIFY', date, startOrder: start, endOrder: start + length - 1, roomId, note: note || undefined }),
+      changeOccurrence(occurrence.id, {
+        action: 'MODIFY',
+        date,
+        startOrder: start,
+        endOrder: start + length - 1,
+        ...(online ? { online: true } : { roomId, online: false }),
+        note: note || undefined,
+      }),
     onSuccess: (r) => {
       toast.success(r.message);
       onDone();
@@ -237,7 +246,11 @@ function MoveDialog({
           </Field>
           <Field className="col-span-2">
             <FieldLabel htmlFor="mv-room">Sala</FieldLabel>
-            <Combobox id="mv-room" options={rooms} value={roomId} onChange={setRoomId} placeholder="Sala" />
+            {!online && <Combobox id="mv-room" options={rooms} value={roomId} onChange={setRoomId} placeholder="Sala" />}
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox checked={online} onCheckedChange={(v) => setOnline(v === true)} />
+              Zajecia online (bez sali)
+            </label>
           </Field>
           <Field className="col-span-2">
             <FieldLabel htmlFor="mv-note">Uwaga</FieldLabel>
@@ -248,7 +261,7 @@ function MoveDialog({
           <Button variant="outline" onClick={onClose}>
             Anuluj
           </Button>
-          <Button onClick={() => save.mutate()} disabled={save.isPending}>
+          <Button onClick={() => save.mutate()} disabled={save.isPending || (!online && !roomId)}>
             {save.isPending && <Spinner />}
             Zapisz
           </Button>
@@ -277,6 +290,7 @@ function ManualDialog({
   const [start, setStart] = useState(blocks[0]?.order ?? 1);
   const [length, setLength] = useState(2);
   const [roomId, setRoomId] = useState('');
+  const [online, setOnline] = useState(false);
   const [note, setNote] = useState('Odrobienie');
   const section = sections.find((s) => s.id === sectionId);
   const save = useMutation({
@@ -286,7 +300,8 @@ function ManualDialog({
         date,
         startOrder: start,
         endOrder: start + length - 1,
-        roomId,
+        roomId: online ? null : roomId,
+        online,
         instructorId: section?.instructors.find((i) => i.instructorId)?.instructorId ?? null,
         note,
       }),
@@ -339,7 +354,11 @@ function ManualDialog({
           </Field>
           <Field className="col-span-2">
             <FieldLabel htmlFor="mn-room">Sala</FieldLabel>
-            <Combobox id="mn-room" options={rooms} value={roomId} onChange={setRoomId} placeholder="Sala" />
+            {!online && <Combobox id="mn-room" options={rooms} value={roomId} onChange={setRoomId} placeholder="Sala" />}
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox checked={online} onCheckedChange={(v) => setOnline(v === true)} />
+              Zajecia online (bez sali)
+            </label>
           </Field>
           <Field className="col-span-2">
             <FieldLabel htmlFor="mn-note">Uwaga</FieldLabel>
@@ -350,7 +369,7 @@ function ManualDialog({
           <Button variant="outline" onClick={onClose}>
             Anuluj
           </Button>
-          <Button onClick={() => save.mutate()} disabled={!sectionId || !date || !roomId || save.isPending}>
+          <Button onClick={() => save.mutate()} disabled={!sectionId || !date || (!online && !roomId) || save.isPending}>
             {save.isPending && <Spinner />}
             Dodaj
           </Button>

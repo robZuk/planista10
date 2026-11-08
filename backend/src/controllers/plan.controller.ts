@@ -54,8 +54,10 @@ function parsePlacement(body: Record<string, unknown>): PlacementInput {
   const int = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) ? v : null);
   const startOrder = int(body.startOrder);
   const endOrder = int(body.endOrder);
-  if (typeof body.sectionId !== 'string' || !DAYS.includes(String(body.dayOfWeek)) || startOrder === null || endOrder === null || typeof body.roomId !== 'string') {
-    throw new AppError(400, 'Podaj zajecia, dzien, godziny i sale');
+  // Zajecia online: bez sali (online = true albo roomId = null).
+  const online = body.online === true || body.roomId === null;
+  if (typeof body.sectionId !== 'string' || !DAYS.includes(String(body.dayOfWeek)) || startOrder === null || endOrder === null || (!online && typeof body.roomId !== 'string')) {
+    throw new AppError(400, 'Podaj zajecia, dzien, godziny i sale (albo zaznacz zajecia online)');
   }
   const cycle = body.cycle === 'ZJAZD' ? 'ZJAZD' : 'WEEK';
   const pattern = ['ALL', 'EVEN', 'ODD', 'LIST'].includes(String(body.pattern)) ? (body.pattern as PlacementInput['pattern']) : 'ALL';
@@ -64,7 +66,7 @@ function parsePlacement(body: Record<string, unknown>): PlacementInput {
     dayOfWeek: body.dayOfWeek as DayOfWeek,
     startOrder,
     endOrder,
-    roomId: body.roomId,
+    roomId: online ? null : (body.roomId as string),
     instructorId: typeof body.instructorId === 'string' && body.instructorId ? body.instructorId : null,
     cycle,
     pattern,
@@ -238,7 +240,7 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       classType: o.section.classType,
       group: ctx.nameOf(o.groupId),
       groupId: o.groupId,
-      room: { id: o.roomId, label: `${o.room.number} (${o.room.building.name})` },
+      room: o.room ? { id: o.roomId, label: `${o.room.number} (${o.room.building.name})` } : { id: null, label: 'ON-LINE' },
       instructor: o.instructor ? `${o.instructor.title ?? ''} ${o.instructor.firstName} ${o.instructor.lastName}`.trim() : 'NN',
       instructorId: o.instructorId,
       kind: o.kind,
@@ -295,6 +297,8 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
     startOrder?: number;
     endOrder?: number;
     roomId?: string;
+    /** true = przenies na online (bez sali); false + roomId = do sali. */
+    online?: boolean;
     instructorId?: string | null;
     note?: string;
   };
@@ -349,10 +353,11 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
     date,
     startOrder: body.startOrder ?? occ.startOrder,
     endOrder: body.endOrder ?? occ.endOrder,
-    roomId: body.roomId ?? occ.roomId,
+    roomId: body.online ? null : (body.roomId ?? occ.roomId),
     instructorId: body.instructorId === undefined ? occ.instructorId : body.instructorId,
   };
   if (next.endOrder < next.startOrder) throw new AppError(400, 'Nieprawidlowy zakres godzin');
+  if (body.online === false && !next.roomId) throw new AppError(400, 'Wybierz sale (albo zostaw zajecia online)');
   const time = minutesOf(grid, next.startOrder, next.endOrder);
   const occTerm = await prisma.academicTerm.findUniqueOrThrow({ where: { id: occ.termId } });
   const conflict = await occurrenceConflicts(
@@ -375,6 +380,7 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
               newStartOrder: next.startOrder,
               newEndOrder: next.endOrder,
               newRoomId: next.roomId,
+              newOnline: next.roomId === null ? true : null,
               newInstructorId: next.instructorId,
               note: body.note ?? null,
             },
@@ -384,6 +390,7 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
               newStartOrder: next.startOrder,
               newEndOrder: next.endOrder,
               newRoomId: next.roomId,
+              newOnline: next.roomId === null ? true : null,
               newInstructorId: next.instructorId,
               note: body.note ?? null,
             },
@@ -401,7 +408,8 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
 /** Termin reczny (odrobienie, zajecia jednorazowe) — liczy sie do godzin i nie znika przy generowaniu. */
 export const createManualOccurrence = asyncHandler(async (req, res) => {
   const term = await findTerm(String(req.params.key));
-  const body = req.body as { sectionId: string; date: string; startOrder: number; endOrder: number; roomId: string; instructorId?: string | null; note?: string };
+  const body = req.body as { sectionId: string; date: string; startOrder: number; endOrder: number; roomId?: string | null; online?: boolean; instructorId?: string | null; note?: string };
+  const roomId = body.online ? null : (body.roomId ?? null);
   const section = await prisma.classSection.findUnique({ where: { id: body.sectionId } });
   if (!section || section.termId !== term.id) throw new AppError(400, 'Zajecia nie naleza do tego semestru');
   await assertFacultyScope(req, section.facultyId);
@@ -409,10 +417,11 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
   if (!isIsoDate(body.date) || !Number.isInteger(body.startOrder) || !Number.isInteger(body.endOrder) || body.endOrder < body.startOrder) {
     throw new AppError(400, 'Podaj date i godziny');
   }
+  if (!body.online && !roomId) throw new AppError(400, 'Wybierz sale (albo zaznacz zajecia online)');
   const time = minutesOf(grid, body.startOrder, body.endOrder);
   const conflict = await occurrenceConflicts(
     term,
-    { date: body.date, ...time, roomId: body.roomId, instructorId: body.instructorId ?? null, groupId: section.groupId, jointKey: null },
+    { date: body.date, ...time, roomId, instructorId: body.instructorId ?? null, groupId: section.groupId, jointKey: null },
     {},
   );
   if (conflict) throw new AppError(409, `Kolizja (${conflict.reason}): ${conflict.with}`);
@@ -425,7 +434,7 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
       startOrder: body.startOrder,
       endOrder: body.endOrder,
       ...time,
-      roomId: body.roomId,
+      roomId,
       instructorId: body.instructorId ?? null,
       groupId: section.groupId,
       kind: 'MANUAL',

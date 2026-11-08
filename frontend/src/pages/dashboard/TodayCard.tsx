@@ -14,7 +14,8 @@ export interface TodayEntry {
   id: string;
   classType: ClassType;
   status: EntryStatus;
-  room: { number: string; building: { name: string } };
+  /** null = zajecia online. */
+  room: { number: string; building: { name: string } } | null;
   instructor: { firstName: string; lastName: string; title: string | null } | null;
   studentGroup: { name: string } | null;
   curriculumEntry: { subject: { name: string } };
@@ -76,7 +77,7 @@ export function TodayCard({
                     )}
                   </ItemTitle>
                   <ItemDescription>
-                    {entry.room.building.name} · sala {entry.room.number} ·{' '}
+                    {entry.room ? `${entry.room.building.name} · sala ${entry.room.number}` : 'ON-LINE'} ·{' '}
                     {entry.instructor ? `${entry.instructor.title ?? ''} ${entry.instructor.firstName} ${entry.instructor.lastName}`.trim() : 'NN'}
                     {entry.studentGroup && ` · ${entry.studentGroup.name}`}
                   </ItemDescription>

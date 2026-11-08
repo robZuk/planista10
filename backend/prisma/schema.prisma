@@ -453,8 +453,8 @@ model Placement {
   dayOfWeek    DayOfWeek
   startOrder   Int // TimeBlock.order — blok poczatkowy
   endOrder     Int // blok koncowy (wlacznie)
-  room         Room                 @relation(fields: [roomId], references: [id])
-  roomId       String
+  room         Room?                @relation(fields: [roomId], references: [id])
+  roomId       String? // null = zajecia online (bez sali)
   instructor   Instructor?          @relation(fields: [instructorId], references: [id])
   instructorId String? // z obsady zajec; null = NN
   cycle        PlacementCycle       @default(WEEK)
@@ -484,6 +484,7 @@ model PlacementException {
   newStartOrder   Int?
   newEndOrder     Int?
   newRoomId       String?
+  newOnline       Boolean? // true = termin przeniesiony na online (bez sali); null = bez zmiany
   newInstructorId String?
   note            String?
   createdAt       DateTime        @default(now())
@@ -509,8 +510,8 @@ model Occurrence {
   // siatkami roznych wydzialow i "Moj plan" licza sie w minutach.
   startMinute  Int
   endMinute    Int
-  room         Room           @relation(fields: [roomId], references: [id])
-  roomId       String
+  room         Room?          @relation(fields: [roomId], references: [id])
+  roomId       String? // null = zajecia online (bez sali)
   instructor   Instructor?    @relation(fields: [instructorId], references: [id])
   instructorId String?
   group        StudentGroup   @relation(fields: [groupId], references: [id])

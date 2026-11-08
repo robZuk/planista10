@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
@@ -66,7 +67,9 @@ export function PlacementDialog({
   const [day, setDay] = useState<DayOfWeek>(placement?.dayOfWeek ?? target.day);
   const [start, setStart] = useState(placement?.startOrder ?? target.startOrder);
   const [length, setLength] = useState(placement ? placement.endOrder - placement.startOrder + 1 : Math.min(2, section.hours));
-  const [roomId, setRoomId] = useState(placement?.room.id ?? '');
+  const [roomId, setRoomId] = useState(placement?.room?.id ?? '');
+  // Zajecia online: bez sali — kolizje sal pomijane, grupy i prowadzacy dalej sprawdzani.
+  const [online, setOnline] = useState(!!placement && !placement.room);
   const staff = section.instructors.filter((i) => i.instructorId);
   const [instructorId, setInstructorId] = useState(placement?.instructor?.id ?? staff[0]?.instructorId ?? '');
   const [assigning, setAssigning] = useState(false);
@@ -106,7 +109,7 @@ export function PlacementDialog({
     dayOfWeek: day,
     startOrder: start,
     endOrder: start + length - 1,
-    roomId,
+    roomId: online ? null : roomId,
     instructorId: instructorId || null,
     cycle: zjazdCalendar ? ('ZJAZD' as const) : ('WEEK' as const),
     pattern,
@@ -181,7 +184,15 @@ export function PlacementDialog({
           </Field>
           <Field className="sm:col-span-2">
             <FieldLabel htmlFor="pl-room">Sala</FieldLabel>
-            <Combobox id="pl-room" options={roomOptions} value={roomId} onChange={setRoomId} placeholder="Wybierz sale" searchPlaceholder="Numer, budynek…" />
+            {online ? (
+              <div className="flex h-9 items-center rounded-md border border-dashed px-3 text-sm text-muted-foreground">ON-LINE — bez sali</div>
+            ) : (
+              <Combobox id="pl-room" options={roomOptions} value={roomId} onChange={setRoomId} placeholder="Wybierz sale" searchPlaceholder="Numer, budynek…" />
+            )}
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox checked={online} onCheckedChange={(v) => setOnline(v === true)} />
+              Zajecia online (bez sali)
+            </label>
           </Field>
           <Field>
             <FieldLabel htmlFor="pl-instr">Prowadzacy (z obsady)</FieldLabel>
@@ -276,7 +287,7 @@ export function PlacementDialog({
             <Button variant="outline" onClick={onClose}>
               Anuluj
             </Button>
-            <Button onClick={() => save.mutate()} disabled={!roomId || save.isPending || (pattern === 'LIST' && numbers.length === 0)}>
+            <Button onClick={() => save.mutate()} disabled={(!online && !roomId) || save.isPending || (pattern === 'LIST' && numbers.length === 0)}>
               {save.isPending && <Spinner />}
               {placement ? 'Zapisz' : 'Umiesc'}
             </Button>

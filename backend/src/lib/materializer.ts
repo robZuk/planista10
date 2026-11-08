@@ -24,7 +24,8 @@ export interface MatPlacement {
   dayOfWeek: DayOfWeek;
   startOrder: number;
   endOrder: number;
-  roomId: string;
+  /** null = zajecia online (bez sali). */
+  roomId: string | null;
   instructorId: string | null;
   cycle: 'WEEK' | 'ZJAZD';
   pattern: 'ALL' | 'EVEN' | 'ODD' | 'LIST';
@@ -54,6 +55,8 @@ export interface MatException {
   newStartOrder?: number | null;
   newEndOrder?: number | null;
   newRoomId?: string | null;
+  /** true = termin przeniesiony na online (bez sali). */
+  newOnline?: boolean | null;
   newInstructorId?: string | null;
 }
 
@@ -63,7 +66,8 @@ export interface BusySlot {
   /** Rzeczywisty czas (minuty od polnocy) — porownywalny miedzy siatkami. */
   startMinute: number;
   endMinute: number;
-  roomId: string;
+  /** null = bez sali (zajecia online) — nie koliduje salowo. */
+  roomId: string | null;
   instructorId: string | null;
   groupId: string;
   jointKey: string | null;
@@ -79,7 +83,7 @@ export interface PlannedOccurrence {
   endOrder: number;
   startMinute: number;
   endMinute: number;
-  roomId: string;
+  roomId: string | null;
   instructorId: string | null;
   groupId: string;
   status: 'SCHEDULED' | 'CANCELLED';
@@ -113,7 +117,7 @@ export function findConflict(
   for (const b of busy) {
     if (b.date !== slot.date || !minutesOverlap(slot.startMinute, slot.endMinute, b.startMinute, b.endMinute)) continue;
     if (slot.jointKey && slot.jointKey === b.jointKey) continue;
-    if (b.roomId === slot.roomId) return { reason: 'ROOM', with: b.label };
+    if (slot.roomId !== null && b.roomId === slot.roomId) return { reason: 'ROOM', with: b.label };
     if (slot.instructorId && b.instructorId === slot.instructorId) return { reason: 'INSTRUCTOR', with: b.label };
     if (groupsOverlap(slot.groupId, b.groupId)) return { reason: 'GROUP', with: b.label };
   }
@@ -188,7 +192,7 @@ export function materialize(input: {
         occ.date = exception.newDate ?? occ.date;
         occ.startOrder = exception.newStartOrder ?? occ.startOrder;
         occ.endOrder = exception.newEndOrder ?? occ.endOrder;
-        occ.roomId = exception.newRoomId ?? occ.roomId;
+        occ.roomId = exception.newOnline ? null : (exception.newRoomId ?? occ.roomId);
         occ.instructorId = exception.newInstructorId === undefined ? occ.instructorId : exception.newInstructorId;
       }
       const time = section.grid.range(occ.startOrder, occ.endOrder);

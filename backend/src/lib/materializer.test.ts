@@ -168,6 +168,41 @@ describe('materialize', () => {
     expect(r.occurrences.map((o) => o.date)).toEqual(['2024-10-09']);
   });
 
+  it('zajecia online (bez sali) nie koliduja salowo, ale prowadzacy dalej tak', () => {
+    const roomOnly = materialize({
+      sections: [section('a', 2, 'ga'), section('b', 2, 'gb')],
+      placements: [placement('pa', 'a', { instructorId: 'i1' }), placement('pb', 'b', { roomId: null, instructorId: 'i2' })],
+      exceptions: [],
+      busy: [],
+      groupsOverlap: noOverlap,
+    });
+    expect(roomOnly.conflicts).toEqual([]);
+    expect(roomOnly.occurrences.find((o) => o.sectionId === 'b')!.roomId).toBeNull();
+
+    const sameInstructor = materialize({
+      sections: [section('a', 2, 'ga'), section('b', 2, 'gb')],
+      placements: [placement('pa', 'a'), placement('pb', 'b', { roomId: null })], // ten sam prowadzacy i1
+      exceptions: [],
+      busy: [],
+      groupsOverlap: noOverlap,
+    });
+    expect(sameInstructor.conflicts[0]).toMatchObject({ section: 'b', reason: 'INSTRUCTOR' });
+  });
+
+  it('przeniesienie terminu na online (newOnline) przezywa przeliczenie', () => {
+    const r = materialize({
+      sections: [section('s', 4)],
+      placements: [placement('p', 's')],
+      exceptions: [{ placementId: 'p', originalDate: '2024-10-02', action: 'MODIFY', newOnline: true }],
+      busy: [],
+      groupsOverlap: noOverlap,
+    });
+    expect(r.occurrences.map((o) => [o.date, o.roomId])).toEqual([
+      ['2024-10-02', null],
+      ['2024-10-09', 'r1'],
+    ]);
+  });
+
   it('zajecia laczone (ten sam jointKey) nie koliduja ze soba', () => {
     const r = materialize({
       sections: [section('a', 2, 'ga'), section('b', 2, 'gb')],

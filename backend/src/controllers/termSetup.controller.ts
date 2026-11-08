@@ -178,7 +178,7 @@ export const myPlan = asyncHandler(async (req, res) => {
       subject: o.section.programEntry.subject.name,
       classType: o.section.classType,
       program: o.section.cohort.program.code,
-      room: `${o.room.number} (${o.room.building.name})`,
+      room: o.room ? `${o.room.number} (${o.room.building.name})` : 'ON-LINE',
       instructor: o.instructor ? `${o.instructor.title ?? ''} ${o.instructor.firstName} ${o.instructor.lastName}`.trim() : 'NN',
       status: o.status,
       note: o.note,

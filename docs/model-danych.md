@@ -83,7 +83,8 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 
 ## 6. Plan i terminy
 
-- `Placement` — dzień, bloki `startOrder..endOrder` (siatki wydziału i trybu rocznika), sala, prowadzący z obsady (null = NN),
+- `Placement` — dzień, bloki `startOrder..endOrder` (siatki wydziału i trybu rocznika), sala albo **online**
+  (`roomId = null`: bez sali, bez kolizji sal — grupy i prowadzący dalej sprawdzani), prowadzący z obsady (null = NN),
   rytm: `WEEK` (ALL / EVEN / ODD / LIST tygodni, od–do) albo `ZJAZD` (ALL / LIST zjazdów).
   Zajęcia łączone między kierunkami: wspólny `jointKey` (ten sam czas i sala, bez kolizji).
 - **Nic nie układa planu automatycznie.** Planista umieszcza zajęcia ręcznie; opcjonalne

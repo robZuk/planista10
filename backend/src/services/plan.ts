@@ -121,7 +121,8 @@ function toMatPlacement(p: {
   dayOfWeek: DayOfWeek;
   startOrder: number;
   endOrder: number;
-  roomId: string;
+  /** null = zajecia online (bez sali). */
+  roomId: string | null;
   instructorId: string | null;
   cycle: 'WEEK' | 'ZJAZD';
   pattern: 'ALL' | 'EVEN' | 'ODD' | 'LIST';
@@ -249,6 +250,7 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
           newStartOrder: e.newStartOrder,
           newEndOrder: e.newEndOrder,
           newRoomId: e.newRoomId,
+          newOnline: e.newOnline,
           newInstructorId: e.newInstructorId ?? undefined,
         })),
       ),
@@ -301,7 +303,8 @@ export interface PlacementInput {
   dayOfWeek: DayOfWeek;
   startOrder: number;
   endOrder: number;
-  roomId: string;
+  /** null = zajecia online (bez sali). */
+  roomId: string | null;
   instructorId: string | null;
   cycle: 'WEEK' | 'ZJAZD';
   pattern: 'ALL' | 'EVEN' | 'ODD' | 'LIST';
@@ -344,11 +347,14 @@ export async function checkPlacement(term: AcademicTerm, input: PlacementInput, 
   if (input.jointKey && time) errors.push(...(await jointProblems(term, input, grid, time, excludeId)));
   if (input.pattern === 'LIST' && input.numbers.length === 0) errors.push('Wybierz numery tygodni/zjazdow');
 
-  const room = await prisma.room.findUnique({ where: { id: input.roomId } });
-  if (!room) errors.push('Sala nie istnieje');
-  else {
-    if (!roomTypeMap[section.classType].includes(room.type)) errors.push('Typ sali nie pasuje do formy zajec');
-    if (room.capacity < section.group.size) errors.push(`Sala ma ${room.capacity} miejsc, grupa ${section.group.size} osob`);
+  // Zajecia online (bez sali): bez typu i pojemnosci sali; grupy i prowadzacy dalej sprawdzani.
+  if (input.roomId) {
+    const room = await prisma.room.findUnique({ where: { id: input.roomId } });
+    if (!room) errors.push('Sala nie istnieje');
+    else {
+      if (!roomTypeMap[section.classType].includes(room.type)) errors.push('Typ sali nie pasuje do formy zajec');
+      if (room.capacity < section.group.size) errors.push(`Sala ma ${room.capacity} miejsc, grupa ${section.group.size} osob`);
+    }
   }
   const staff = section.instructors.map((i) => i.instructorId);
   if (input.instructorId && !staff.includes(input.instructorId)) {
@@ -552,7 +558,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
           dayOfWeek: p.dayOfWeek,
           startOrder: p.startOrder,
           endOrder: p.endOrder,
-          room: { id: p.room.id, label: `${p.room.number} (${p.room.building.name})` },
+          room: p.room ? { id: p.room.id, label: `${p.room.number} (${p.room.building.name})` } : null,
           instructor: p.instructorId ? { id: p.instructorId, name: name(p.instructor) } : null,
           cycle: p.cycle,
           pattern: p.pattern,
@@ -653,6 +659,7 @@ export async function generate(
         newStartOrder: e.newStartOrder,
         newEndOrder: e.newEndOrder,
         newRoomId: e.newRoomId,
+        newOnline: e.newOnline,
         newInstructorId: e.newInstructorId ?? undefined,
       })),
     ),
@@ -693,7 +700,7 @@ export async function generate(
   const existing = await prisma.occurrence.findMany({
     where: { sectionId: { in: sectionIds }, kind: 'DERIVED', ...(from ? { date: { gte: from } } : {}) },
   });
-  const sig = (o: { date: string; startOrder: number; endOrder: number; startMinute: number; endMinute: number; roomId: string; instructorId: string | null; status: string }) =>
+  const sig = (o: { date: string; startOrder: number; endOrder: number; startMinute: number; endMinute: number; roomId: string | null; instructorId: string | null; status: string }) =>
     `${o.date}|${o.startOrder}|${o.endOrder}|${o.startMinute}|${o.endMinute}|${o.roomId}|${o.instructorId}|${o.status}`;
   const before = new Map(
     existing.map((o) => [

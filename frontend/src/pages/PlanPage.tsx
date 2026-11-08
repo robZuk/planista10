@@ -137,7 +137,7 @@ export default function PlanPage() {
       endOrder: p.endOrder,
       classType: s.classType,
       title: s.subject.name,
-      lines: [s.group.name, p.room.label, `${p.instructor?.name ?? 'NN'} · ${patternLabel(p)}`],
+      lines: [s.group.name, p.room?.label ?? 'ON-LINE', `${p.instructor?.name ?? 'NN'} · ${patternLabel(p)}`],
       muted: !inView(s),
     })),
   );

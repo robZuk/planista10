@@ -523,7 +523,8 @@ export interface PlanPlacement {
   dayOfWeek: DayOfWeek;
   startOrder: number;
   endOrder: number;
-  room: { id: string; label: string };
+  /** null = zajecia online (bez sali). */
+  room: { id: string; label: string } | null;
   instructor: { id: string; name: string } | null;
   cycle: PlacementCycle;
   pattern: PlacementPattern;
@@ -584,7 +585,8 @@ export interface PlacementPayload {
   dayOfWeek: DayOfWeek;
   startOrder: number;
   endOrder: number;
-  roomId: string;
+  /** null = zajecia online (bez sali). */
+  roomId: string | null;
   instructorId: string | null;
   cycle: PlacementCycle;
   pattern: PlacementPattern;
@@ -624,7 +626,8 @@ export interface OccurrenceRow {
   classType: ClassType;
   group: string;
   groupId: string;
-  room: { id: string; label: string };
+  /** id = null -> zajecia online (label "ON-LINE"). */
+  room: { id: string | null; label: string };
   instructor: string;
   instructorId: string | null;
   kind: 'DERIVED' | 'MANUAL';
