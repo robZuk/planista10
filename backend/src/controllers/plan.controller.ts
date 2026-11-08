@@ -8,6 +8,8 @@ import { fromIsoDate, isIsoDate, toIsoDate } from '../lib/isoDate';
 import { parseTermKey } from '../lib/terms';
 import { findConflict, type BusySlot } from '../lib/materializer';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
+import { type GridTime } from '../lib/timeGrid';
+import { gridFor } from '../services/timeGrids';
 import { toTreeGroup } from '../services/cohorts';
 import { activeCohorts } from '../services/sections';
 import { assertVersionApproved, availability, calendarFor, checkPlacement, generate, planView, type PlacementInput } from '../services/plan';
@@ -185,7 +187,7 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       room: { select: { number: true, building: { select: { name: true } } } },
       instructor: { select: { title: true, firstName: true, lastName: true } },
     },
-    orderBy: [{ date: 'asc' }, { startOrder: 'asc' }],
+    orderBy: [{ date: 'asc' }, { startMinute: 'asc' }],
   });
   const exceptionKeys = new Set(
     (
@@ -204,6 +206,8 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       originalDate: o.originalDate ? toIsoDate(o.originalDate) : null,
       startOrder: o.startOrder,
       endOrder: o.endOrder,
+      startMinute: o.startMinute,
+      endMinute: o.endMinute,
       subject: o.section.programEntry.subject.name,
       classType: o.section.classType,
       group: ctx.nameOf(o.groupId),
@@ -234,13 +238,25 @@ async function occurrenceConflicts(slot: Omit<BusySlot, 'label'>, excludeId?: st
   );
 }
 
-/** Terminy rocznika wolno zmieniac: kalendarz nie w archiwum i wersja programu zatwierdzona. */
-async function assertPlanEditable(termId: string, cohortId: string) {
+/**
+ * Terminy rocznika wolno zmieniac: kalendarz nie w archiwum i wersja programu zatwierdzona.
+ * Zwraca siatke godzin wydzialu i trybu rocznika — bloki terminu zamieniamy na rzeczywisty czas.
+ */
+async function assertPlanEditable(termId: string, cohortId: string): Promise<GridTime> {
   const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: termId } });
   const [ctx] = await activeCohorts(term, null, [cohortId]);
   const calendar = ctx ? await calendarFor(term, ctx) : null;
-  if (calendar?.status === 'ARCHIVED') throw new AppError(409, 'Kalendarz w archiwum — terminy tylko do odczytu');
-  if (ctx) assertVersionApproved(ctx.cohort);
+  if (!ctx || !calendar) throw new AppError(409, 'Rocznik nie ma kalendarza w tym semestrze');
+  if (calendar.status === 'ARCHIVED') throw new AppError(409, 'Kalendarz w archiwum — terminy tylko do odczytu');
+  assertVersionApproved(ctx.cohort);
+  return (await gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode)).time;
+}
+
+/** Zakres blokow -> minuty; blok spoza siatki kalendarza to blad wejscia. */
+function minutesOf(grid: GridTime, startOrder: number, endOrder: number) {
+  const time = grid.range(startOrder, endOrder);
+  if (!time) throw new AppError(400, 'Godziny poza siatka godzin wydzialu');
+  return time;
 }
 
 /**
@@ -252,7 +268,7 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
   const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) }, include: { placement: true, section: true } });
   if (!occ) throw new AppError(404, 'Termin nie znaleziony');
   await assertFacultyScope(req, occ.facultyId);
-  await assertPlanEditable(occ.termId, occ.section.cohortId);
+  const grid = await assertPlanEditable(occ.termId, occ.section.cohortId);
   const body = req.body as {
     action: 'CANCEL' | 'MODIFY' | 'RESTORE';
     date?: string;
@@ -268,6 +284,8 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
     if (!derived) throw new AppError(400, 'Przywracac mozna tylko terminy z wzorca');
     const p = occ.placement!;
     const length = occ.endOrder - occ.startOrder + 1;
+    const endOrder = Math.min(p.endOrder, p.startOrder + length - 1);
+    const time = minutesOf(grid, p.startOrder, endOrder);
     await prisma.$transaction([
       prisma.placementException.deleteMany({ where: { placementId: p.id, originalDate: occ.originalDate! } }),
       prisma.occurrence.update({
@@ -275,7 +293,8 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
         data: {
           date: occ.originalDate!,
           startOrder: p.startOrder,
-          endOrder: Math.min(p.endOrder, p.startOrder + length - 1),
+          endOrder,
+          ...time,
           roomId: p.roomId,
           instructorId: p.instructorId,
           status: 'SCHEDULED',
@@ -314,7 +333,11 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
     instructorId: body.instructorId === undefined ? occ.instructorId : body.instructorId,
   };
   if (next.endOrder < next.startOrder) throw new AppError(400, 'Nieprawidlowy zakres godzin');
-  const conflict = await occurrenceConflicts({ ...next, groupId: occ.groupId, jointKey: occ.jointKey }, occ.id);
+  const time = minutesOf(grid, next.startOrder, next.endOrder);
+  const conflict = await occurrenceConflicts(
+    { date: next.date, ...time, roomId: next.roomId, instructorId: next.instructorId, groupId: occ.groupId, jointKey: occ.jointKey },
+    occ.id,
+  );
   if (conflict) throw new AppError(409, `Kolizja (${conflict.reason}): ${conflict.with}`);
   await prisma.$transaction([
     ...(derived
@@ -346,7 +369,7 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
       : []),
     prisma.occurrence.update({
       where: { id: occ.id },
-      data: { ...next, date: fromIsoDate(next.date), status: 'SCHEDULED', note: body.note ?? occ.note },
+      data: { ...next, ...time, date: fromIsoDate(next.date), status: 'SCHEDULED', note: body.note ?? occ.note },
     }),
   ]);
   res.json({ message: 'Termin zmieniony' });
@@ -359,14 +382,14 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
   const section = await prisma.classSection.findUnique({ where: { id: body.sectionId } });
   if (!section || section.termId !== term.id) throw new AppError(400, 'Zajecia nie naleza do tego semestru');
   await assertFacultyScope(req, section.facultyId);
-  await assertPlanEditable(term.id, section.cohortId);
+  const grid = await assertPlanEditable(term.id, section.cohortId);
   if (!isIsoDate(body.date) || !Number.isInteger(body.startOrder) || !Number.isInteger(body.endOrder) || body.endOrder < body.startOrder) {
     throw new AppError(400, 'Podaj date i godziny');
   }
+  const time = minutesOf(grid, body.startOrder, body.endOrder);
   const conflict = await occurrenceConflicts({
     date: body.date,
-    startOrder: body.startOrder,
-    endOrder: body.endOrder,
+    ...time,
     roomId: body.roomId,
     instructorId: body.instructorId ?? null,
     groupId: section.groupId,
@@ -381,6 +404,7 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
       date: fromIsoDate(body.date),
       startOrder: body.startOrder,
       endOrder: body.endOrder,
+      ...time,
       roomId: body.roomId,
       instructorId: body.instructorId ?? null,
       groupId: section.groupId,

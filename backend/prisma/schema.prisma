@@ -27,6 +27,7 @@ model Faculty {
   // Wydzial jest jednostka organizacyjna planu: kalendarze semestru, zajecia,
   // umieszczenia i terminy naleza do konkretnego wydzialu.
   termCalendars TermCalendar[]
+  timeGrids     TimeGrid[]
   classSections ClassSection[]
   placements    Placement[]
   occurrences   Occurrence[]
@@ -198,14 +199,36 @@ model Instructor {
 //  Zajecia zaczynaja i koncza sie na granicy bloku (pelna godzina).
 // ═══════════════════════════════════════════════════════════════
 
+// Siatka godzin wydzialu dla trybu studiow (kazdy wydzial: stacjonarna i niestacjonarna).
+// Bloki o dowolnym starcie i dlugosci; przerwy to odstepy miedzy blokami. `days` — dni zajec
+// z opcjonalnym oknem godzin, np. [{"day":"THURSDAY","from":"16:00","to":null}, ...].
+model TimeGrid {
+  id        String      @id @default(uuid())
+  faculty   Faculty     @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  facultyId String
+  studyMode StudyMode
+  days      Json
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  blocks    TimeBlock[]
+
+  @@unique([facultyId, studyMode])
+}
+
 model TimeBlock {
   id        String   @id @default(uuid())
-  order     Int      @unique // kolejnosc w siatce: 1, 2, 3, ... (rosnaco wg godziny)
-  startTime String   @unique // "07:00"
-  endTime   String   @unique // "08:00"
-  label     String // "07:00-08:00"
+  grid      TimeGrid @relation(fields: [gridId], references: [id], onDelete: Cascade)
+  gridId    String
+  order     Int // kolejnosc w siatce: 1, 2, 3, ... (rosnaco wg godziny)
+  startTime String // "08:00" — dowolna minuta
+  endTime   String // "08:45"
+  label     String // "08:00-08:45"
   createdAt DateTime @default(now())
-  // Umieszczenia i terminy wskazuja bloki przez `order` (startOrder..endOrder wlacznie).
+  // Umieszczenia wskazuja bloki siatki wydzialu i trybu rocznika przez `order` (startOrder..endOrder
+  // wlacznie). 1 blok = 1 godzina programu, niezaleznie od dlugosci w minutach.
+
+  @@unique([gridId, order])
+  @@unique([gridId, startTime])
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -482,6 +505,10 @@ model Occurrence {
   date         DateTime       @db.Date
   startOrder   Int
   endOrder     Int
+  // Rzeczywisty czas (minuty od polnocy) z siatki rocznika w chwili zapisu — kolizje miedzy
+  // siatkami roznych wydzialow i "Moj plan" licza sie w minutach.
+  startMinute  Int
+  endMinute    Int
   room         Room           @relation(fields: [roomId], references: [id])
   roomId       String
   instructor   Instructor?    @relation(fields: [instructorId], references: [id])

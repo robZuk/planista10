@@ -1,8 +1,9 @@
-import type { ClassType, RoomType, StudyMode } from '@prisma/client';
+import type { ClassType, RoomType } from '@prisma/client';
 
 /**
- * Logika czasowa planu zajec. Czas jest wyrazany BLOKAMI 1-godzinnymi (TimeBlock.order),
- * a nie stringami godzin — konflikt czasu to nakladanie sie przedzialow `order`.
+ * Typy sal dla form zajec i nakladanie zakresow blokow w obrebie jednej siatki. Dni i okno
+ * godzin zajec sa w siatce wydzialu (lib/timeGrid.ts → dayWindowProblem), a kolizje miedzy
+ * siatkami licza sie w minutach (minutesOverlap).
  */
 
 // ─── Nakladanie sie przedzialow blokow (domkniete) ───────────
@@ -19,22 +20,3 @@ export const roomTypeMap: Record<ClassType, RoomType[]> = {
   PROJECT: ['EXERCISE', 'COMPUTER_LAB', 'SEMINAR'],
   SEMINAR: ['SEMINAR', 'EXERCISE'],
 };
-
-function minutesFromTime(t: string): number {
-  const [h, m] = t.split(':').map(Number);
-  return (h ?? 0) * 60 + (m ?? 0);
-}
-
-/**
- * Okno trybu studiow dla dnia tygodnia (0 = niedziela) i godziny startu; zwraca
- * komunikat bledu albo null. Stacjonarne: pon-pt. Niestacjonarne: pt od 15:00, sob, nd.
- */
-export function checkTimeWindow(dayNum: number, startTime: string, studyMode: StudyMode): string | null {
-  if (studyMode === 'FULL_TIME') {
-    if (dayNum < 1 || dayNum > 5) return 'Studia stacjonarne: dozwolone tylko poniedzialek-piatek';
-    return null;
-  }
-  if (dayNum >= 1 && dayNum <= 4) return 'Studia niestacjonarne: zajecia tylko pt/sob/nd';
-  if (dayNum === 5 && minutesFromTime(startTime) < 15 * 60) return 'Studia niestacjonarne: piatek dopiero od 15:00';
-  return null;
-}

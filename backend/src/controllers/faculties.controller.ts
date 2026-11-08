@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
+import { defaultGridsCreate } from '../services/timeGrids';
 
 export const getAll = asyncHandler(async (_req, res) => {
   const data = await prisma.faculty.findMany({ orderBy: { name: 'asc' } });
@@ -18,7 +19,8 @@ export const getOne = asyncHandler(async (req, res) => {
 
 export const create = asyncHandler(async (req, res) => {
   const { name, shortName } = req.body as { name: string; shortName: string };
-  const data = await prisma.faculty.create({ data: { name, shortName } });
+  // Nowy wydzial od razu dostaje siatki godzin (stacjonarna i niestacjonarna) do dopasowania.
+  const data = await prisma.faculty.create({ data: { name, shortName, timeGrids: { create: defaultGridsCreate() } } });
   res.status(201).json({ data, message: 'Wydzial utworzony' });
 });
 

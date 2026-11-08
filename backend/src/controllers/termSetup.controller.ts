@@ -164,7 +164,7 @@ export const myPlan = asyncHandler(async (req, res) => {
       instructor: { select: { title: true, firstName: true, lastName: true } },
       group: { select: { id: true } },
     },
-    orderBy: [{ date: 'asc' }, { startOrder: 'asc' }],
+    orderBy: [{ date: 'asc' }, { startMinute: 'asc' }],
   });
   const data = rows
     .filter((o) => visible.has(`${o.facultyId}|${o.section.cohort.program.studyMode}`))
@@ -173,6 +173,8 @@ export const myPlan = asyncHandler(async (req, res) => {
       date: toIsoDate(o.date),
       startOrder: o.startOrder,
       endOrder: o.endOrder,
+      startMinute: o.startMinute,
+      endMinute: o.endMinute,
       subject: o.section.programEntry.subject.name,
       classType: o.section.classType,
       program: o.section.cohort.program.code,

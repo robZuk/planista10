@@ -1,6 +1,6 @@
 import type { DayOfWeek } from '@prisma/client';
 import { expandDates, type TeachingCalendar } from './teachingCalendar';
-import { rangesOverlap } from './scheduleTime';
+import { minutesOverlap, type GridTime } from './timeGrid';
 import type { IsoDate } from './isoDate';
 
 /**
@@ -14,6 +14,8 @@ import type { IsoDate } from './isoDate';
  * przypiete do pary umieszczenie+data) sa nakladane na wynik — przezywaja ponowne
  * generowanie. Wyjatek, ktorego data przestala istniec, trafia do raportu.
  * Termin kolidujacy (sala, prowadzacy, nakladajace sie grupy) jest pomijany i zgloszony.
+ * Kolizje licza sie w MINUTACH: kazde zajecia maja siatke godzin swojego kalendarza, a sale
+ * i prowadzacy sa wspolni dla wydzialow z roznymi siatkami.
  */
 
 export interface MatPlacement {
@@ -37,6 +39,8 @@ export interface MatSection {
   hours: number;
   groupId: string;
   calendar: TeachingCalendar;
+  /** Siatka godzin kalendarza rocznika (bloki -> minuty). */
+  grid: GridTime;
   /** Godziny juz zrealizowane poza generowaniem: terminy MANUAL i zachowane sprzed "od kiedy". */
   consumedHours: number;
   label: string;
@@ -56,8 +60,9 @@ export interface MatException {
 /** Zajety slot (z innego zakresu albo wygenerowany wczesniej w tym przebiegu). */
 export interface BusySlot {
   date: IsoDate;
-  startOrder: number;
-  endOrder: number;
+  /** Rzeczywisty czas (minuty od polnocy) — porownywalny miedzy siatkami. */
+  startMinute: number;
+  endMinute: number;
   roomId: string;
   instructorId: string | null;
   groupId: string;
@@ -72,6 +77,8 @@ export interface PlannedOccurrence {
   date: IsoDate;
   startOrder: number;
   endOrder: number;
+  startMinute: number;
+  endMinute: number;
   roomId: string;
   instructorId: string | null;
   groupId: string;
@@ -82,7 +89,8 @@ export interface PlannedOccurrence {
 export interface MatConflict {
   date: IsoDate;
   section: string;
-  reason: 'ROOM' | 'INSTRUCTOR' | 'GROUP';
+  /** GRID: godziny terminu (np. po recznej zmianie) nie istnieja w siatce kalendarza. */
+  reason: 'ROOM' | 'INSTRUCTOR' | 'GROUP' | 'GRID';
   with: string;
 }
 
@@ -103,7 +111,7 @@ export function findConflict(
   groupsOverlap: (a: string, b: string) => boolean,
 ): { reason: MatConflict['reason']; with: string } | null {
   for (const b of busy) {
-    if (b.date !== slot.date || !rangesOverlap(slot.startOrder, slot.endOrder, b.startOrder, b.endOrder)) continue;
+    if (b.date !== slot.date || !minutesOverlap(slot.startMinute, slot.endMinute, b.startMinute, b.endMinute)) continue;
     if (slot.jointKey && slot.jointKey === b.jointKey) continue;
     if (b.roomId === slot.roomId) return { reason: 'ROOM', with: b.label };
     if (slot.instructorId && b.instructorId === slot.instructorId) return { reason: 'INSTRUCTOR', with: b.label };
@@ -167,6 +175,8 @@ export function materialize(input: {
         date,
         startOrder: placement.startOrder,
         endOrder: placement.startOrder + length - 1,
+        startMinute: 0,
+        endMinute: 0,
         roomId: placement.roomId,
         instructorId: placement.instructorId,
         groupId: section.groupId,
@@ -181,6 +191,13 @@ export function materialize(input: {
         occ.roomId = exception.newRoomId ?? occ.roomId;
         occ.instructorId = exception.newInstructorId === undefined ? occ.instructorId : exception.newInstructorId;
       }
+      const time = section.grid.range(occ.startOrder, occ.endOrder);
+      if (!time) {
+        result.conflicts.push({ date: occ.date, section: section.label, reason: 'GRID', with: 'godziny poza siatka kalendarza' });
+        continue;
+      }
+      occ.startMinute = time.startMinute;
+      occ.endMinute = time.endMinute;
 
       if (occ.status === 'SCHEDULED' && !input.skipConflicts) {
         const conflict = findConflict(occ, busy, input.groupsOverlap);

@@ -2,10 +2,12 @@ import type { AcademicTerm, DayOfWeek, Prisma, TermCalendar } from '@prisma/clie
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { fromIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
-import { expandDates, modeWeekdays, TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
+import { expandDates, TeachingCalendar } from '../lib/teachingCalendar';
 import { groupsOverlap, indexGroups, pathFromRoot } from '../lib/groupTree';
 import { staleReasons } from '../lib/planStaleness';
-import { checkTimeWindow, rangesOverlap, roomTypeMap } from '../lib/scheduleTime';
+import { roomTypeMap } from '../lib/scheduleTime';
+import { dayWindowProblem, minutesOverlap, type GridTime } from '../lib/timeGrid';
+import { gridFor, loadGrids, pickGrid } from './timeGrids';
 import {
   findConflict,
   materialize,
@@ -104,19 +106,25 @@ interface Scope {
   contexts: CohortContext[];
   calendars: Map<string, CalendarRow>; // cohortId -> kalendarz
   teaching: Map<string, TeachingCalendar>; // cohortId -> kalendarz zajec
+  grids: Map<string, GridTime>; // cohortId -> siatka godzin wydzialu i trybu rocznika
 }
 
 async function loadScope(term: AcademicTerm, facultyId: string | null, cohortIds?: string[]): Promise<Scope> {
   const contexts = await activeCohorts(term, facultyId, cohortIds);
   const calendars = new Map<string, CalendarRow>();
   const teaching = new Map<string, TeachingCalendar>();
+  const grids = new Map<string, GridTime>();
+  const facultyGrids = await loadGrids();
   for (const ctx of contexts) {
     const calendar = await calendarFor(term, ctx);
     if (!calendar) continue;
+    const grid = pickGrid(facultyGrids, ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode);
+    if (!grid) continue;
     calendars.set(ctx.cohort.id, calendar);
     teaching.set(ctx.cohort.id, new TeachingCalendar(toCalendarInput(calendar)));
+    grids.set(ctx.cohort.id, grid.time);
   }
-  return { contexts, calendars, teaching };
+  return { contexts, calendars, teaching, grids };
 }
 
 /**
@@ -134,13 +142,14 @@ async function placementBusy(term: AcademicTerm, excludePlacementId?: string): P
   for (const p of placements) {
     const ctx = ctxById.get(p.section.cohortId);
     const cal = scope.teaching.get(p.section.cohortId);
-    if (!ctx || !cal) continue;
+    // Minuty z siatki kalendarza rocznika — raz na umieszczenie, dla wszystkich jego dat.
+    const time = scope.grids.get(p.section.cohortId)?.range(p.startOrder, p.endOrder);
+    if (!ctx || !cal || !time) continue;
     const label = sectionLabel(p.section.programEntry.subject.name, p.section.classType, ctx.nameOf(p.section.groupId));
     for (const d of expandDates(cal, { ...toMatPlacement(p) })) {
       busy.push({
         date: d.date,
-        startOrder: p.startOrder,
-        endOrder: p.endOrder,
+        ...time,
         roomId: p.roomId,
         instructorId: p.instructorId,
         groupId: p.section.groupId,
@@ -156,8 +165,8 @@ async function placementBusy(term: AcademicTerm, excludePlacementId?: string): P
   for (const o of manual) {
     busy.push({
       date: toIsoDate(o.date),
-      startOrder: o.startOrder,
-      endOrder: o.endOrder,
+      startMinute: o.startMinute,
+      endMinute: o.endMinute,
       roomId: o.roomId,
       instructorId: o.instructorId,
       groupId: o.groupId,
@@ -205,16 +214,13 @@ export async function checkPlacement(term: AcademicTerm, input: PlacementInput, 
   if (!calendar) throw new AppError(409, 'Rocznik nie ma kalendarza w tym semestrze — ustaw go w Kalendarzu semestru');
   if (calendar.status === 'ARCHIVED') throw new AppError(409, 'Kalendarz jest w archiwum — plan tylko do odczytu');
 
-  const blocks = await prisma.timeBlock.findMany({ orderBy: { order: 'asc' } });
-  const start = blocks.find((b) => b.order === input.startOrder);
-  if (!start || !blocks.some((b) => b.order === input.endOrder) || input.endOrder < input.startOrder) {
-    errors.push('Nieprawidlowy zakres godzin');
-  }
-  const day = WEEKDAY_ENUM.indexOf(input.dayOfWeek);
-  if (!modeWeekdays(calendar.studyMode).includes(day)) {
-    errors.push(calendar.studyMode === 'FULL_TIME' ? 'Stacjonarne: zajecia pon-pt' : 'Niestacjonarne: zajecia pt-nd');
-  } else if (start) {
-    const window = checkTimeWindow(day, start.startTime, calendar.studyMode);
+  // Bloki, dni i okno godzin z siatki wydzialu i trybu rocznika.
+  const facultyGrid = await gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode);
+  const grid = facultyGrid.time;
+  const time = grid.range(input.startOrder, input.endOrder);
+  if (!time) errors.push('Nieprawidlowy zakres godzin (poza siatka godzin wydzialu)');
+  else {
+    const window = dayWindowProblem(facultyGrid.days, input.dayOfWeek, time.startMinute, time.endMinute);
     if (window) errors.push(window);
   }
   if (input.cycle === 'ZJAZD' && calendar.kind !== 'ZJAZD') errors.push('Rocznik ma kalendarz tygodniowy — wybierz rytm tygodniowy');
@@ -236,14 +242,14 @@ export async function checkPlacement(term: AcademicTerm, input: PlacementInput, 
   if (dates.length === 0) errors.push('W tym rytmie nie wypada zaden dzien zajec');
 
   const conflicts: PlacementCheck['conflicts'] = [];
-  if (errors.length === 0) {
+  if (errors.length === 0 && time) {
     const busy = await placementBusy(term, excludeId);
     const overlap = await groupOverlapFn();
     const byDate = new Map<string, BusySlot[]>();
     for (const b of busy) byDate.set(b.date, [...(byDate.get(b.date) ?? []), b]);
     for (const d of dates) {
       const conflict = findConflict(
-        { date: d.date, startOrder: input.startOrder, endOrder: input.endOrder, roomId: input.roomId, instructorId: input.instructorId, groupId: section.groupId, jointKey: input.jointKey },
+        { date: d.date, ...time, roomId: input.roomId, instructorId: input.instructorId, groupId: section.groupId, jointKey: input.jointKey },
         byDate.get(d.date) ?? [],
         overlap,
       );
@@ -269,13 +275,16 @@ export async function availability(
   const calendar = ctx ? await calendarFor(term, ctx) : null;
   if (!calendar) throw new AppError(409, 'Rocznik nie ma kalendarza w tym semestrze');
   const cal = new TeachingCalendar(toCalendarInput(calendar));
-  const blocks = await prisma.timeBlock.findMany({ orderBy: { order: 'asc' } });
+  const facultyGrid = await gridFor(ctx!.cohort.program.fieldOfStudy.facultyId, ctx!.cohort.program.studyMode);
+  const grid = facultyGrid.time;
+  const blocks = grid.blocks;
   const busy = await placementBusy(term);
   const overlap = await groupOverlapFn();
   const instructorId =
     opts.instructorId !== undefined ? opts.instructorId : (section.instructors.find((i) => i.instructorId)?.instructorId ?? null);
 
-  const days = modeWeekdays(calendar.studyMode).map((d) => WEEKDAY_ENUM[d]!);
+  // Dni zajec z siatki wydzialu (np. niestacjonarne WN: czw-nd).
+  const days = facultyGrid.days.map((d) => d.day);
   const cells: Record<string, Record<number, string | null>> = {};
   for (const dayOfWeek of days) {
     cells[dayOfWeek] = {};
@@ -283,13 +292,14 @@ export async function availability(
     const relevant = busy.filter((b) => dates.includes(b.date));
     for (const block of blocks) {
       const endOrder = block.order + length - 1;
-      if (!blocks.some((b) => b.order === endOrder)) {
+      const time = grid.range(block.order, endOrder);
+      if (!time) {
         cells[dayOfWeek]![block.order] = 'Poza siatka godzin';
         continue;
       }
-      let reason: string | null = null;
-      for (const b of relevant) {
-        if (!rangesOverlap(block.order, endOrder, b.startOrder, b.endOrder)) continue;
+      let reason: string | null = dayWindowProblem(facultyGrid.days, dayOfWeek, time.startMinute, time.endMinute);
+      for (const b of reason ? [] : relevant) {
+        if (!minutesOverlap(time.startMinute, time.endMinute, b.startMinute, b.endMinute)) continue;
         if (opts.roomId && b.roomId === opts.roomId) reason = `Sala zajeta: ${b.label}`;
         else if (instructorId && b.instructorId === instructorId) reason = `Prowadzacy zajety: ${b.label}`;
         else if (overlap(section.groupId, b.groupId)) reason = `Grupa zajeta: ${b.label}`;
@@ -309,6 +319,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
   if (!ctx) throw new AppError(404, 'Rocznik nie ma zajec w tym semestrze');
   const calendar = scope.calendars.get(cohortId) ?? null;
   const cal = scope.teaching.get(cohortId) ?? null;
+  const facultyGrid = await gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode);
 
   const sections = await prisma.classSection.findMany({
     where: { termId: term.id, cohortId },
@@ -338,7 +349,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
   for (const m of manual) if (m._max.date) later(m.sectionId, toIsoDate(m._max.date));
   if (cal) {
     const mat = materialize({
-      sections: sections.map((s) => ({ id: s.id, hours: s.hours, groupId: s.groupId, calendar: cal, consumedHours: manualHours.get(s.id) ?? 0, label: s.id })),
+      sections: sections.map((s) => ({ id: s.id, hours: s.hours, groupId: s.groupId, calendar: cal, grid: facultyGrid.time, consumedHours: manualHours.get(s.id) ?? 0, label: s.id })),
       placements: sections.flatMap((s) => s.placements.map(toMatPlacement)),
       exceptions: [],
       busy: [],
@@ -392,6 +403,8 @@ export async function planView(term: AcademicTerm, cohortId: string) {
         }
       : null,
     // Kalendarz nieaktualny: umieszczenia zmienione po ostatnim generowaniu.
+    // Siatka godzin wydzialu i trybu rocznika: bloki planu, przerwy (odstepy) i dni zajec.
+    timeGrid: { id: facultyGrid.id, studyMode: facultyGrid.studyMode, days: facultyGrid.days, blocks: facultyGrid.blocks },
     stale: reasons.length > 0,
     // Powody (do komunikatu): zmiana wzorca i/lub zmiana godzin zajec po generowaniu.
     staleReasons: reasons,
@@ -500,7 +513,15 @@ export async function generate(
     const ctx = ctxById.get(s.cohortId)!;
     const label = `${ctx.cohort.program.code} s${ctx.semester}: ${sectionLabel(s.programEntry.subject.name, s.classType, ctx.nameOf(s.groupId))}`;
     labelOf.set(s.id, label);
-    return { id: s.id, hours: s.hours, groupId: s.groupId, calendar: scope.teaching.get(s.cohortId)!, consumedHours: consumed.get(s.id) ?? 0, label };
+    return {
+      id: s.id,
+      hours: s.hours,
+      groupId: s.groupId,
+      calendar: scope.teaching.get(s.cohortId)!,
+      grid: scope.grids.get(s.cohortId)!,
+      consumedHours: consumed.get(s.id) ?? 0,
+      label,
+    };
   });
   const placements = sections.flatMap((s) => s.placements.map(toMatPlacement));
   const placementSection = new Map(sections.flatMap((s) => s.placements.map((p) => [p.id, s.id] as const)));
@@ -534,8 +555,8 @@ export async function generate(
   });
   const busy: BusySlot[] = outside.map((o) => ({
     date: toIsoDate(o.date),
-    startOrder: o.startOrder,
-    endOrder: o.endOrder,
+    startMinute: o.startMinute,
+    endMinute: o.endMinute,
     roomId: o.roomId,
     instructorId: o.instructorId,
     groupId: o.groupId,
@@ -556,8 +577,8 @@ export async function generate(
   const existing = await prisma.occurrence.findMany({
     where: { sectionId: { in: sectionIds }, kind: 'DERIVED', ...(from ? { date: { gte: from } } : {}) },
   });
-  const sig = (o: { date: string; startOrder: number; endOrder: number; roomId: string; instructorId: string | null; status: string }) =>
-    `${o.date}|${o.startOrder}|${o.endOrder}|${o.roomId}|${o.instructorId}|${o.status}`;
+  const sig = (o: { date: string; startOrder: number; endOrder: number; startMinute: number; endMinute: number; roomId: string; instructorId: string | null; status: string }) =>
+    `${o.date}|${o.startOrder}|${o.endOrder}|${o.startMinute}|${o.endMinute}|${o.roomId}|${o.instructorId}|${o.status}`;
   const before = new Map(
     existing.map((o) => [
       `${o.placementId}|${o.originalDate ? toIsoDate(o.originalDate) : toIsoDate(o.date)}`,
@@ -599,6 +620,8 @@ export async function generate(
           date: fromIsoDate(o.date),
           startOrder: o.startOrder,
           endOrder: o.endOrder,
+          startMinute: o.startMinute,
+          endMinute: o.endMinute,
           roomId: o.roomId,
           instructorId: o.instructorId,
           groupId: o.groupId,

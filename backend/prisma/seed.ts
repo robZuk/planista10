@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { syncSections } from '../src/services/sections';
+import { defaultGridsCreate } from '../src/services/timeGrids';
 import { defaultTermDates, termOfDate } from '../src/lib/terms';
 import { addDays, isoDate, todayIso } from '../src/lib/isoDate';
 
@@ -35,7 +36,7 @@ async function main() {
   await prisma.program.deleteMany();
   await prisma.termCalendar.deleteMany();
   await prisma.academicTerm.deleteMany();
-  await prisma.timeBlock.deleteMany();
+  await prisma.timeGrid.deleteMany(); // bloki znikaja kaskadowo
   await prisma.subject.deleteMany();
   await prisma.room.deleteMany();
   await prisma.building.deleteMany();
@@ -43,18 +44,6 @@ async function main() {
   await prisma.specialization.deleteMany();
   await prisma.fieldOfStudy.deleteMany();
   await prisma.faculty.deleteMany();
-
-  // ─── Bloki czasowe (siatka 07:00-20:00, co 1h) ───────────────
-  console.log('⏰ Bloki czasowe...');
-  const pad = (n: number) => String(n).padStart(2, '0');
-  await prisma.timeBlock.createMany({
-    data: Array.from({ length: 13 }, (_, i) => ({
-      order: i + 1,
-      startTime: `${pad(7 + i)}:00`,
-      endTime: `${pad(8 + i)}:00`,
-      label: `${pad(7 + i)}:00-${pad(8 + i)}:00`,
-    })),
-  });
 
   // ─── Struktura uczelni ───────────────────────────────────────
   console.log('🏛️  Struktura uczelni...');
@@ -66,6 +55,11 @@ async function main() {
       { name: 'Wydzial Zarzadzania i Nauk o Jakosci', shortName: 'WZNJ' },
     ],
   });
+  // Siatki godzin: kazdy wydzial — stacjonarna i niestacjonarna (07:00-20:00 co 1 h, dni domyslne).
+  console.log('⏰ Siatki godzin wydzialow...');
+  for (const faculty of await prisma.faculty.findMany({ select: { id: true } })) {
+    for (const grid of defaultGridsCreate()) await prisma.timeGrid.create({ data: { ...grid, facultyId: faculty.id } });
+  }
   const edst = await prisma.fieldOfStudy.create({
     data: { name: 'Eksploatacja i Diagnostyka Systemow Technicznych', shortName: 'EDST', facultyId: wm.id },
   });

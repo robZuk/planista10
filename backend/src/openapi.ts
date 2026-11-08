@@ -4,7 +4,6 @@ import { facultyCreateSchema, facultyUpdateSchema } from './schemas/faculty';
 import { subjectCreateSchema } from './schemas/subject';
 import { fieldOfStudyCreateSchema } from './schemas/fieldOfStudy';
 import { specializationCreateSchema } from './schemas/specialization';
-import { timeBlockCreateSchema } from './schemas/timeBlock';
 import { instructorCreateSchema, instructorUpdateSchema } from './schemas/instructor';
 import {
   buildingCreateSchema,
@@ -50,7 +49,6 @@ const schemas = {
   SubjectCreate: toJson(subjectCreateSchema),
   FieldOfStudyCreate: toJson(fieldOfStudyCreateSchema),
   SpecializationCreate: toJson(specializationCreateSchema),
-  TimeBlockCreate: toJson(timeBlockCreateSchema),
   InstructorCreate: toJson(instructorCreateSchema),
   InstructorUpdate: toJson(instructorUpdateSchema),
   BuildingCreate: toJson(buildingCreateSchema),
@@ -254,11 +252,7 @@ export const openApiDocument = {
 
     // ─── Zasoby: Bloki czasowe ───────────────────────────────
     '/api/time-blocks': {
-      get: { tags: ['Zasoby'], summary: 'Lista blokow czasowych', security: bearer, responses: { 200: dataResp('Bloki'), ...authErrors } },
-      post: { tags: ['Zasoby'], summary: 'Utworz blok (ADMIN)', security: bearer, requestBody: jsonBody('TimeBlockCreate'), responses: { 201: dataResp('Utworzony'), 400: errResp('Zla godzina'), 409: errResp('Duplikat'), ...authErrors } },
-    },
-    '/api/time-blocks/{id}': {
-      delete: { tags: ['Zasoby'], summary: 'Usun blok (ADMIN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniety'), 409: errResp('W planie'), ...authErrors } },
+      get: { tags: ['Zasoby'], summary: 'Bloki pierwszej siatki stacjonarnej (tylko odczyt)', security: bearer, responses: { 200: dataResp('Bloki'), ...authErrors } },
     },
 
     // ─── Program: Kierunki / specjalnosci / przedmioty ───────

@@ -1,6 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { materialize, type MatPlacement, type MatSection } from './materializer';
 import { TeachingCalendar } from './teachingCalendar';
+import { gridTime, type GridBlock } from './timeGrid';
+
+// Siatka 60 min od 07:00 (blok 2 = 08:00-09:00, blok 3 = 09:00-10:00).
+const g60: GridBlock[] = Array.from({ length: 13 }, (_, i) => ({
+  order: i + 1,
+  startTime: `${String(7 + i).padStart(2, '0')}:00`,
+  endTime: `${String(8 + i).padStart(2, '0')}:00`,
+}));
+// Siatka 45 min z przerwa: 08:00-08:45, 08:45-09:30, 09:45-10:30.
+const g45: GridBlock[] = [
+  { order: 1, startTime: '08:00', endTime: '08:45' },
+  { order: 2, startTime: '08:45', endTime: '09:30' },
+  { order: 3, startTime: '09:45', endTime: '10:30' },
+];
 
 const cal = new TeachingCalendar({
   kind: 'WEEKLY',
@@ -12,11 +26,12 @@ const cal = new TeachingCalendar({
   zjazdy: [],
 });
 
-const section = (id: string, hours: number, groupId = 'g1', consumedHours = 0): MatSection => ({
+const section = (id: string, hours: number, groupId = 'g1', consumedHours = 0, blocks = g60): MatSection => ({
   id,
   hours,
   groupId,
   calendar: cal,
+  grid: gridTime(blocks),
   consumedHours,
   label: id,
 });
@@ -98,10 +113,58 @@ describe('materialize', () => {
       sections: [section('s', 2)],
       placements: [placement('p', 's')],
       exceptions: [],
-      busy: [{ date: '2024-10-02', startOrder: 3, endOrder: 4, roomId: 'r1', instructorId: null, groupId: 'x', jointKey: null, label: 'inne' }],
+      // 09:00-11:00 (bloki 3-4 siatki 60 min) — nachodzi na 08:00-10:00 umieszczenia
+      busy: [{ date: '2024-10-02', startMinute: 540, endMinute: 660, roomId: 'r1', instructorId: null, groupId: 'x', jointKey: null, label: 'inne' }],
       groupsOverlap: noOverlap,
     });
     expect(r.conflicts).toEqual([{ date: '2024-10-02', section: 's', reason: 'ROOM', with: 'inne' }]);
+    expect(r.occurrences.map((o) => o.date)).toEqual(['2024-10-09']);
+  });
+
+  it('terminy niosa rzeczywisty czas z siatki swoich zajec', () => {
+    const r = materialize({
+      sections: [section('s', 2, 'g1', 0, g45)],
+      placements: [placement('p', 's', { startOrder: 2, endOrder: 3 })],
+      exceptions: [],
+      busy: [],
+      groupsOverlap: noOverlap,
+    });
+    // 08:45-10:30 — przez przerwe 09:30-09:45
+    expect(r.occurrences[0]).toMatchObject({ startMinute: 525, endMinute: 630 });
+  });
+
+  it('kolizja sali miedzy roznymi siatkami liczy sie w minutach', () => {
+    const r = materialize({
+      // a: siatka 60 min, blok 3 = 09:00-10:00; b: siatka 45 min, blok 3 = 09:45-10:30 — ta sama sala
+      sections: [section('a', 1, 'ga'), section('b', 1, 'gb', 0, g45)],
+      placements: [placement('pa', 'a', { startOrder: 3, endOrder: 3 }), placement('pb', 'b', { startOrder: 3, endOrder: 3 })],
+      exceptions: [],
+      busy: [],
+      groupsOverlap: noOverlap,
+    });
+    expect(r.conflicts[0]).toMatchObject({ section: 'b', reason: 'ROOM', with: 'a' });
+  });
+
+  it('styk blokow roznych siatek nie jest kolizja (07:00-08:00 vs 08:00-08:45)', () => {
+    const r = materialize({
+      sections: [section('a', 1, 'ga'), section('b', 1, 'gb', 0, g45)],
+      placements: [placement('pa', 'a', { startOrder: 1, endOrder: 1 }), placement('pb', 'b', { startOrder: 1, endOrder: 1 })],
+      exceptions: [],
+      busy: [],
+      groupsOverlap: noOverlap,
+    });
+    expect(r.conflicts).toEqual([]);
+  });
+
+  it('przeniesienie terminu na godziny spoza siatki -> zgloszone, nie zuzywa godzin', () => {
+    const r = materialize({
+      sections: [section('s', 2, 'g1', 0, g45)],
+      placements: [placement('p', 's', { startOrder: 1, endOrder: 2 })],
+      exceptions: [{ placementId: 'p', originalDate: '2024-10-02', action: 'MODIFY', newStartOrder: 3, newEndOrder: 4 }],
+      busy: [],
+      groupsOverlap: noOverlap,
+    });
+    expect(r.conflicts[0]).toMatchObject({ date: '2024-10-02', reason: 'GRID' });
     expect(r.occurrences.map((o) => o.date)).toEqual(['2024-10-09']);
   });
 

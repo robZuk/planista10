@@ -2,6 +2,7 @@ import { prisma } from '../lib/prisma';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { addDays, fromIsoDate, mondayOf, todayIso } from '../lib/isoDate';
 import { holidaysInRange } from '../lib/holidays';
+import { formatMinutes } from '../lib/timeGrid';
 import { occurrenceScope, publishedScopes } from '../services/visibility';
 
 const occurrenceInclude = {
@@ -32,8 +33,6 @@ export const getStats = asyncHandler(async (req, res) => {
     select: { id: true, role: true, instructorId: true, facultyId: true },
   });
   const scope = user ? await occurrenceScope(user) : null;
-  const blocks = await prisma.timeBlock.findMany();
-  const blockByOrder = new Map(blocks.map((b) => [b.order, b]));
 
   const [
     usersByRole,
@@ -70,7 +69,7 @@ export const getStats = asyncHandler(async (req, res) => {
       ? prisma.occurrence.findMany({
           where: { ...scope.where, date: { gte: fromIsoDate(monday), lte: fromIsoDate(sunday) } },
           include: occurrenceInclude,
-          orderBy: [{ date: 'asc' }, { startOrder: 'asc' }],
+          orderBy: [{ date: 'asc' }, { startMinute: 'asc' }],
         })
       : Promise.resolve([]),
   ]);
@@ -90,8 +89,9 @@ export const getStats = asyncHandler(async (req, res) => {
         name: `${o.section.cohort.program.code} ${o.group.partitionKey === 'ROOT' ? 'caly rocznik' : `${o.group.partitionKey}-${o.group.code ?? ''}`}`,
       },
       curriculumEntry: { subject: o.section.programEntry.subject },
-      startBlock: { order: o.startOrder, startTime: blockByOrder.get(o.startOrder)?.startTime ?? '' },
-      endBlock: { order: o.endOrder, endTime: blockByOrder.get(o.endOrder)?.endTime ?? '' },
+      // Godziny z terminu (rozne wydzialy moga miec rozne siatki godzin).
+      startBlock: { order: o.startOrder, startTime: formatMinutes(o.startMinute) },
+      endBlock: { order: o.endOrder, endTime: formatMinutes(o.endMinute) },
     }));
 
   const byRole = Object.fromEntries(usersByRole.map((r) => [r.role, r._count._all])) as Record<string, number>;
