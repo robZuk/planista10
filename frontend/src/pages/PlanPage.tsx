@@ -21,6 +21,7 @@ import { earlyEndWeeks, formatDayMonth, MAX_SUGGESTED_LENGTH, suggestedLength } 
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { describeDays } from '@/lib/timeGrid';
 import { staleMessage } from '@/lib/planStaleness';
+import { copyCandidates, inZjazd, zjazdyDiffer } from '@/lib/zjazdView';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 import type { DayOfWeek, PlanPlacement, PlanSection } from '@/types';
@@ -56,7 +57,7 @@ export default function PlanPage() {
   const [cohortId, setCohortId] = useState('');
   const [selected, setSelected] = useState<PlanSection | null>(null);
   const [target, setTarget] = useState<PlacementTarget | null>(null);
-  const [zjazd, setZjazd] = useState<number | null>(null);
+  const [zjazdChoice, setZjazd] = useState<number | null>(null);
   const [groupFilter, setGroupFilter] = useState('all');
   const [generating, setGenerating] = useState(false);
   const [carrying, setCarrying] = useState(false);
@@ -79,6 +80,18 @@ export default function PlanPage() {
   });
 
   const zjazdCalendar = plan?.calendar?.kind === 'ZJAZD';
+  // Filtr zjazdow i "kopiuj zjazd" tylko, gdy zjazdy sie roznia (lista zjazdow albo zakres od-do);
+  // gdy wszystko jest "kazdy zjazd", kazdy zjazd wyglada tak samo i wybor zjazdu nic nie daje.
+  const zjazdyVary = useMemo(
+    () =>
+      plan?.calendar?.kind === 'ZJAZD' &&
+      zjazdyDiffer(
+        plan.sections.flatMap((s) => s.placements),
+        plan.calendar.zjazdy.map((z) => z.number),
+      ),
+    [plan],
+  );
+  const zjazd = zjazdyVary ? zjazdChoice : null;
   // Bloki i dni zajec z siatki godzin wydzialu i trybu rocznika (np. niestacjonarne: czw-nd).
   const blocks = plan?.timeGrid.blocks;
   const days: DayOfWeek[] = plan?.timeGrid.days.map((d) => d.day) ?? [];
@@ -137,8 +150,7 @@ export default function PlanPage() {
     .map((s) => ({ section: s, weeks: earlyEndWeeks(s, plan?.calendar?.endDate) }))
     .filter((e): e is { section: PlanSection; weeks: number } => e.weeks !== null);
 
-  const visiblePlacement = (p: PlanPlacement) =>
-    !zjazd || p.cycle !== 'ZJAZD' || p.pattern === 'ALL' || p.numbers.includes(zjazd);
+  const visiblePlacement = (p: PlanPlacement) => !zjazd || inZjazd(p, zjazd);
 
   const items: GridItem[] = sections.flatMap((s) =>
     s.placements.filter(visiblePlacement).map((p) => ({
@@ -155,10 +167,11 @@ export default function PlanPage() {
   const placementOwner = new Map(sections.flatMap((s) => s.placements.map((p) => [p.id, { section: s, placement: p }] as const)));
 
   // Kopiowanie zjazdu k -> m: swiadoma akcja planisty, dopisuje numer m do umieszczen z zjazdu k.
+  const toCopy = zjazd && copyTo ? copyCandidates(sections.flatMap((s) => s.placements), zjazd, Number(copyTo)) : [];
   const copyZjazd = useMutation({
     mutationFn: async () => {
       const to = Number(copyTo);
-      const list = sections.flatMap((s) => s.placements).filter((p) => p.cycle === 'ZJAZD' && p.pattern === 'LIST' && p.numbers.includes(zjazd!) && !p.numbers.includes(to));
+      const list = toCopy;
       const errors: string[] = [];
       for (const p of list) {
         try {
@@ -226,8 +239,8 @@ export default function PlanPage() {
         // Tylko informacja: zajecia rocznika wynikaja z tej wersji programu (zmiana wersji — poza tym widokiem).
         <p className="text-sm text-muted-foreground">
           Plan korzysta z programu studiow{' '}
-          <span className="font-medium text-foreground">
-            {cohort.program.code} — {cohort.program.name}
+          <span className="cursor-help font-medium text-foreground" title={cohort.program.name}>
+            {cohort.program.code}
           </span>
           {' · '}
           <Link
@@ -321,7 +334,15 @@ export default function PlanPage() {
                   </NativeSelectOption>
                 ))}
               </NativeSelect>
-              {zjazdCalendar && (
+              {zjazdCalendar && !zjazdyVary && (
+                <span
+                  className="text-sm text-muted-foreground"
+                  title="Filtr zjazdow i kopiowanie zjazdu pojawia sie, gdy jakies zajecia odbywaja sie tylko w czesci zjazdow (na wybranych zjazdach albo z zakresem od-do)"
+                >
+                  wszystkie zjazdy jednakowe
+                </span>
+              )}
+              {zjazdyVary && (
                 <div className="flex flex-wrap items-center gap-1">
                   <Button size="sm" variant={zjazd === null ? 'default' : 'outline'} onClick={() => setZjazd(null)}>
                     Wszystkie zjazdy
@@ -342,8 +363,18 @@ export default function PlanPage() {
                           </NativeSelectOption>
                         ))}
                       </NativeSelect>
-                      <Button size="sm" variant="secondary" disabled={!copyTo || copyZjazd.isPending} onClick={() => copyZjazd.mutate()}>
-                        Kopiuj
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        disabled={toCopy.length === 0 || copyZjazd.isPending}
+                        title={
+                          copyTo && toCopy.length === 0
+                            ? `Nic do skopiowania: kopiuja sie zajecia "na wybranych zjazdach" z zjazdu ${zjazd}, ktorych jeszcze nie ma w zjezdzie ${copyTo}`
+                            : undefined
+                        }
+                        onClick={() => copyZjazd.mutate()}
+                      >
+                        Kopiuj{copyTo && ` (${toCopy.length})`}
                       </Button>
                     </span>
                   )}
