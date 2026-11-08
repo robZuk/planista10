@@ -34,6 +34,8 @@ export interface PlacementTarget {
   startOrder: number;
   /** Zjazd wybrany w widoku (dla nowego umieszczenia: domyslnie tylko ten zjazd). */
   zjazd: number | null;
+  /** Dlugosc (bloki) nowego umieszczenia — ta, dla ktorej siatka pokazala wolne godziny. */
+  length?: number;
 }
 
 /**
@@ -66,7 +68,7 @@ export function PlacementDialog({
   const zjazdCalendar = plan.calendar?.kind === 'ZJAZD';
   const [day, setDay] = useState<DayOfWeek>(placement?.dayOfWeek ?? target.day);
   const [start, setStart] = useState(placement?.startOrder ?? target.startOrder);
-  const [length, setLength] = useState(placement ? placement.endOrder - placement.startOrder + 1 : Math.min(2, section.hours));
+  const [length, setLength] = useState(placement ? placement.endOrder - placement.startOrder + 1 : (target.length ?? Math.min(2, section.hours)));
   const [roomId, setRoomId] = useState(placement?.room?.id ?? '');
   // Zajecia online: bez sali — kolizje sal pomijane, grupy i prowadzacy dalej sprawdzani.
   const [online, setOnline] = useState(!!placement && !placement.room);

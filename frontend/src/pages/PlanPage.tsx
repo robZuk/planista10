@@ -17,7 +17,7 @@ import { fetchAvailability, fetchPlan, updatePlacement } from '@/api/plan';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage } from '@/lib/errors';
 import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGroupFilter';
-import { earlyEndWeeks, formatDayMonth } from '@/lib/planHours';
+import { earlyEndWeeks, formatDayMonth, MAX_SUGGESTED_LENGTH, suggestedLength } from '@/lib/planHours';
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { describeDays } from '@/lib/timeGrid';
 import { staleMessage } from '@/lib/planStaleness';
@@ -95,13 +95,23 @@ export default function PlanPage() {
       : null;
   const readOnly = locked || !plan?.calendar || draftVersion;
 
+  // Dlugosc zajec dla podpowiedzi: domyslnie godziny rozlozone na tygodnie/zjazdy semestru
+  // (15 h -> 1 h tygodniowo), planista moze ja zmienic przy "Umieszczasz".
+  const [lengthChoice, setLengthChoice] = useState<{ sectionId: string; length: number } | null>(null);
+  const periodsCount = zjazdCalendar ? (plan?.calendar?.zjazdy.length ?? 0) : (plan?.calendar?.teachingWeeks ?? 0);
+  const placeLength = selected
+    ? lengthChoice?.sectionId === selected.id
+      ? lengthChoice.length
+      : suggestedLength(selected, periodsCount)
+    : 1;
+
   // Podpowiedz dostepnosci dla wybranych zajec (grupa + prowadzacy z obsady).
   const { data: availability } = useQuery({
-    queryKey: ['availability', term?.key, selected?.id, zjazd],
+    queryKey: ['availability', term?.key, selected?.id, zjazd, placeLength],
     queryFn: () =>
       fetchAvailability(term!.key, {
         sectionId: selected!.id,
-        length: Math.min(2, selected!.hours),
+        length: placeLength,
         cycle: zjazdCalendar ? 'ZJAZD' : 'WEEK',
         numbers: zjazd ? [zjazd] : undefined,
       }),
@@ -341,7 +351,20 @@ export default function PlanPage() {
               )}
               {selected && (
                 <Badge variant="secondary" className="gap-1">
-                  Umieszczasz: {selected.subject.name} ({CLASS_LABELS[selected.classType]}) {selected.group.name} — kliknij godzine
+                  Umieszczasz: {selected.subject.name} ({CLASS_LABELS[selected.classType]}) {selected.group.name} —
+                  <select
+                    aria-label="Dlugosc zajec"
+                    value={placeLength}
+                    onChange={(e) => setLengthChoice({ sectionId: selected.id, length: Number(e.target.value) })}
+                    className="rounded border bg-background px-1 py-0.5 text-xs"
+                  >
+                    {Array.from({ length: Math.min(MAX_SUGGESTED_LENGTH, selected.hours) }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        {n} h
+                      </option>
+                    ))}
+                  </select>
+                  — kliknij godzine
                   <button type="button" aria-label="Anuluj wybor" onClick={() => setSelected(null)}>
                     <X className="size-3" />
                   </button>
@@ -355,10 +378,11 @@ export default function PlanPage() {
                 blocks={blocks}
                 items={items}
                 availability={selected ? availability?.cells : null}
+                passThrough={!!selected && !readOnly}
                 onCellClick={
                   readOnly || !selected
                     ? undefined
-                    : (day, order) => setTarget({ section: selected, placement: null, day, startOrder: order, zjazd })
+                    : (day, order) => setTarget({ section: selected, placement: null, day, startOrder: order, zjazd, length: placeLength })
                 }
                 onItemClick={(id) => {
                   const owner = placementOwner.get(id);

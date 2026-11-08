@@ -76,6 +76,7 @@ export function WeekGrid({
   onItemClick,
   dayHeader,
   closedDays,
+  passThrough,
 }: {
   days: DayOfWeek[];
   blocks: TimeBlock[];
@@ -87,6 +88,11 @@ export function WeekGrid({
   dayHeader?: (day: DayOfWeek) => ReactNode;
   /** Dni bez zajec (swieto, przerwa, dzien wolny) — kolumna wyszarzona z opisem. */
   closedDays?: Partial<Record<DayOfWeek, string>>;
+  /**
+   * Umieszczanie zajec: karty polprzezroczyste i przepuszczaja klikniecie do komorki pod nimi —
+   * zajecia innej grupy w tej samej godzinie nie zaslaniaja wolnego miejsca.
+   */
+  passThrough?: boolean;
 }) {
   // Najkrotszy blok miesci tytul i trzy linie opisu; 60 min nie mniej niz ROW.
   const layout = gridLayout(blocks, { minBlockPx: 4 * LINE + PAD + 2, minPxPerMinute: ROW / 60 });
@@ -184,6 +190,7 @@ export function WeekGrid({
                       CLASS_COLORS[item.classType],
                       item.muted && 'opacity-40',
                       item.cancelled && 'line-through opacity-50 grayscale',
+                      passThrough && 'pointer-events-none opacity-45',
                     )}
                   >
                     <div className={cn('font-semibold', titleLines === 1 ? 'truncate' : 'line-clamp-2')}>
