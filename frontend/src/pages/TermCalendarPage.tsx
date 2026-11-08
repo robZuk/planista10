@@ -41,6 +41,10 @@ const STATUS_VARIANT: Record<CalendarStatus, 'default' | 'secondary' | 'outline'
   PUBLISHED: 'secondary',
   ARCHIVED: 'outline',
 };
+// Opublikowany na zielono: plan widza wszyscy.
+const STATUS_CLASS: Partial<Record<CalendarStatus, string>> = {
+  PUBLISHED: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
+};
 
 /**
  * Kalendarz semestru wydzialu: dla kazdego trybu studiow daty zajec, przerwy, wyjatki
@@ -278,7 +282,7 @@ function CalendarCard({ calendar, editable, canChangeStatus, statusPending, onEd
         <CardTitle className="flex flex-wrap items-center gap-2">
           {calendar.name}
           <Badge variant="outline">{CALENDAR_KIND_LABELS[calendar.kind]}</Badge>
-          <Badge variant={STATUS_VARIANT[calendar.status]}>{CALENDAR_STATUS_LABELS[calendar.status]}</Badge>
+          <Badge variant={STATUS_VARIANT[calendar.status]} className={STATUS_CLASS[calendar.status]}>{CALENDAR_STATUS_LABELS[calendar.status]}</Badge>
         </CardTitle>
         <CardDescription className="tabular-nums">{formatRange(calendar.startDate, calendar.endDate)}</CardDescription>
         <CardAction className="flex gap-1">
