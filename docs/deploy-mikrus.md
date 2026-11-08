@@ -60,7 +60,7 @@ Nowa baza jest pusta — wgraj oczyszczony zrzut w nowym modelu (programy, roczn
 obsada, 3327 terminów, konta demo):
 ```bash
 docker compose -f docker-compose.prod.yml \
-  exec -T db psql -U postgres -d planista7 < db/planista8-dump.sql
+  exec -T db psql -U postgres -d planista7 < db/planista9-dump.sql
 docker compose -f docker-compose.prod.yml restart backend
 ```
 Konta demo (hasła w `README.md`): `admin@umg.edu.pl` / `Admin1234!` itd.

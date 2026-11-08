@@ -43,7 +43,7 @@ export function createApp(): Express {
   app.use(httpLogger);
 
   // CORS — pozwala frontendowi (inny origin/port) wolac to API.
-  app.use(cors({ origin: process.env.CORS_ORIGIN ?? 'http://localhost:5175' }));
+  app.use(cors({ origin: process.env.CORS_ORIGIN ?? 'http://localhost:5176' }));
 
   // Parsowanie cial JSON w zadaniach (req.body).
   app.use(express.json({ limit: '2mb' })); // import obsady z CSV bywa wiekszy niz domyslne 100 kB
@@ -103,7 +103,7 @@ if (require.main === module) {
   initSentry();
 
   const app = createApp();
-  const port = Number(process.env.PORT ?? 4002);
+  const port = Number(process.env.PORT ?? 4003);
   const server = app.listen(port, () => {
     logger.info({ port }, `Backend nasluchuje na http://localhost:${port}`);
   });

@@ -17,6 +17,6 @@ export const useTermStore = create<TermState>()(
       lastTermKey: null,
       setLastTermKey: (lastTermKey) => set({ lastTermKey }),
     }),
-    { name: 'planista8-term' },
+    { name: 'planista9-term' },
   ),
 );

@@ -19,6 +19,6 @@ export const useStudyModeFilterStore = create<StudyModeFilterState>()(
       studyMode: 'all',
       setStudyMode: (studyMode) => set({ studyMode }),
     }),
-    { name: 'planista8-study-mode-filter' },
+    { name: 'planista9-study-mode-filter' },
   ),
 );

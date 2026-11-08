@@ -2,7 +2,7 @@ import axios, { type InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/store/authStore';
 
 /**
- * Klient HTTP do backendu. baseURL '/api' -> proxy Vite przekazuje na :4002.
+ * Klient HTTP do backendu. baseURL '/api' -> proxy Vite przekazuje na :4003.
  *
  * Dwa interceptory:
  *  - request: dokleja Authorization: Bearer <accessToken>.

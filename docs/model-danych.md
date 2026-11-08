@@ -1,4 +1,4 @@
-# Model danych — planowanie zajęć (planista8)
+# Model danych — planowanie zajęć (planista9)
 
 Dokument referencyjny. Opisuje, jak dane zachowują się w czasie, i kluczowe decyzje
 modelowe. Aktualizować przy zmianach `backend/prisma/schema.prisma`.

@@ -1,5 +1,5 @@
 {
-  "name": "planista8-backend",
+  "name": "planista9-backend",
   "version": "0.1.0",
   "description": "Planista6 - backend (Express + TypeScript + Prisma)",
   "main": "dist/index.js",

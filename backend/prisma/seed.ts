@@ -17,7 +17,7 @@ const prisma = new PrismaClient();
  * seed NIE uklada — to zawsze robi planista.
  *
  * Wzorzec "wyczysc i wstaw": idempotentny, mozna uruchamiac wielokrotnie.
- * Pelne dane deweloperskie (zima 2024/25) sa w db/planista8-dump.sql.
+ * Pelne dane deweloperskie (zima 2024/25) sa w db/planista9-dump.sql.
  */
 async function main() {
   console.log('🌱 Seed: czyszczenie...');

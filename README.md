@@ -1,4 +1,9 @@
-# Planista
+# Planista 9
+
+> **Wariant planista8 z siatkami godzin wydziałów** (stacjonarna i niestacjonarna na wydział,
+> dni z oknem godzin, kolizje w minutach) i zajęciami online bez sali. Lokalnie: front
+> http://localhost:5176, backend :4003. Odznaki, demo i wdrożenie poniżej dotyczą jeszcze
+> repozytorium planista8 — do przepięcia po założeniu repozytorium planista9.
 
 > System układania planu zajęć dla uczelni — od programu studiów i roczników, przez obsadę,
 > po plan i terminy semestru, z wykrywaniem konfliktów na konkretnych datach.
@@ -172,7 +177,7 @@ flowchart LR
 Wymagany Docker. Cały system startuje jednym poleceniem:
 
 ```bash
-docker compose up          # DEV — hot-reload, http://localhost:5175
+docker compose up          # DEV — hot-reload, http://localhost:5176
 # lub: make dev
 ```
 

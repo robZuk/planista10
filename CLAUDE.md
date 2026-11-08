@@ -7,35 +7,38 @@ Wskazówki dla Claude Code przy pracy w tym repozytorium. Szczegóły domenowe
 
 ## Czym jest projekt
 
-Planista 8 — system układania planu zajęć dla uczelni, nowa wersja planista7 z przebudowanym
-modelem planowania (semestry, programy, roczniki, obsada, plan). Porty są celowo inne niż
-w planista7 (4001/5434/5174), więc oba projekty mogą działać równolegle.
+Planista 9 — system układania planu zajęć dla uczelni. Wyrósł z planista8 (nowy model
+planowania: semestry, programy, roczniki, obsada, plan) i dokłada **siatki godzin wydziałów**
+(każdy wydział: stacjonarna i niestacjonarna, dni z oknem godzin, kolizje w minutach) oraz
+zajęcia online bez sali. planista8 zostaje przy jednej wspólnej siatce godzin. Porty są celowo
+inne niż w planista7 (4001/5434/5174) i planista8 (4002/5435/5175), więc projekty mogą działać
+równolegle.
 
-- **Backend:** Node.js + Express + TypeScript, ORM Prisma — port **4002**
-- **Baza:** PostgreSQL 16 w Dockerze — host port **5435**
-- **Frontend:** React 19 + Vite + TypeScript + Tailwind 4 + shadcn/ui — port **5175** (`strictPort`)
+- **Backend:** Node.js + Express + TypeScript, ORM Prisma — port **4003**
+- **Baza:** PostgreSQL 16 w Dockerze — host port **5436**
+- **Frontend:** React 19 + Vite + TypeScript + Tailwind 4 + shadcn/ui — port **5176** (`strictPort`)
 
 ## Uruchamianie (dev)
 
 ```bash
-# 1. Baza (katalog główny) — kontener planista8-db-1, Postgres na :5435
+# 1. Baza (katalog główny) — kontener planista9-db-1, Postgres na :5436
 docker compose up -d
 
-# 2. Backend (:4002)
+# 2. Backend (:4003)
 cd backend
 cp .env.example .env        # przy pierwszym uruchomieniu
 npm install
 npx prisma migrate deploy   # albo: npm run prisma:migrate
-npm run db:seed             # minimalne dane; pelne dane dev: db/planista8-dump.sql (db/README.md)
+npm run db:seed             # minimalne dane; pelne dane dev: db/planista9-dump.sql (db/README.md)
 npm run dev
 ```
 
-Health-check backendu: `GET http://localhost:4002/health` (poza prefiksem
+Health-check backendu: `GET http://localhost:4003/health` (poza prefiksem
 `/api`). Wszystkie właściwe endpointy są pod `/api/*` i wymagają tokenu JWT.
 
-Port frontu jest ustawiony na sztywno (`strictPort`) — jeśli 5175 jest zajęty,
+Port frontu jest ustawiony na sztywno (`strictPort`) — jeśli 5176 jest zajęty,
 Vite zatrzyma się z błędem zamiast przejść na kolejny wolny port (inaczej łatwo
-pomylić planista8 z uruchomioną obok planista7).
+pomylić planista9 z uruchomioną obok planista7).
 
 ## Polecenia
 
