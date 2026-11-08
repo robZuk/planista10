@@ -6,7 +6,7 @@ import { expandDates, TeachingCalendar } from '../lib/teachingCalendar';
 import { groupsOverlap, indexGroups, pathFromRoot } from '../lib/groupTree';
 import { staleReasons } from '../lib/planStaleness';
 import { roomTypeMap } from '../lib/scheduleTime';
-import { dayWindowProblem, minutesOverlap, type GridTime } from '../lib/timeGrid';
+import { dayWindowProblem, formatMinutes, mapRangeByTime, minutesOverlap, weekdayLabel, type GridTime, type MinuteRange } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from './timeGrids';
 import {
   findConflict,
@@ -69,6 +69,45 @@ export async function calendarFor(term: AcademicTerm, ctx: CohortContext): Promi
   );
 }
 
+/**
+ * Zajecia laczone (wspolny jointKey) moga laczyc wydzialy o roznych siatkach godzin — dziela
+ * rzeczywisty czas, nie numery blokow. Nowe umieszczenie dolacza w tym samym dniu i godzinach;
+ * zmiana istniejacego przenosi pozostale umieszczenia po godzinach, wiec te godziny musza
+ * istniec w ich siatkach.
+ */
+export async function jointProblems(term: AcademicTerm, input: PlacementInput, grid: GridTime, time: MinuteRange, excludeId?: string): Promise<string[]> {
+  const joined = await prisma.placement.findMany({
+    where: { termId: term.id, jointKey: input.jointKey, ...(excludeId ? { id: { not: excludeId } } : {}) },
+    include: { section: { include: sectionLabelInclude } },
+  });
+  if (joined.length === 0) return [];
+  const grids = await loadGrids();
+  const ctxs = new Map((await activeCohorts(term, null, [...new Set(joined.map((j) => j.section.cohortId))])).map((c) => [c.cohort.id, c]));
+  const problems: string[] = [];
+  for (const j of joined) {
+    const ctx = ctxs.get(j.section.cohortId);
+    const other = ctx && pickGrid(grids, ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode);
+    const label = ctx ? `${ctx.cohort.program.code}: ${j.section.programEntry.subject.name}` : j.section.programEntry.subject.name;
+    if (!other) {
+      problems.push(`Zajecia laczone: ${label} — brak siatki godzin wydzialu`);
+      continue;
+    }
+    if (excludeId) {
+      if (!mapRangeByTime(grid, other.time, input.startOrder, input.endOrder)) {
+        problems.push(`Zajecia laczone: godzin ${formatMinutes(time.startMinute)}-${formatMinutes(time.endMinute)} nie ma w siatce wydzialu dla ${label}`);
+      }
+      continue;
+    }
+    const jt = other.time.range(j.startOrder, j.endOrder);
+    if (j.dayOfWeek !== input.dayOfWeek || !jt || jt.startMinute !== time.startMinute || jt.endMinute !== time.endMinute) {
+      problems.push(
+        `Zajecia laczone "${input.jointKey}" (${label}) sa w ${weekdayLabel(j.dayOfWeek)} ${jt ? `${formatMinutes(jt.startMinute)}-${formatMinutes(jt.endMinute)}` : '?'} — umiesc w tym samym czasie`,
+      );
+    }
+  }
+  return problems;
+}
+
 /** Wszystkie grupy z rocznikami — wspolny indeks do reguly nakladania. */
 async function groupOverlapFn() {
   const groups = await prisma.studentGroup.findMany();
@@ -127,42 +166,115 @@ async function loadScope(term: AcademicTerm, facultyId: string | null, cohortIds
   return { contexts, calendars, teaching, grids };
 }
 
+export interface OccupancyOptions {
+  /** Pomin umieszczenie (zapis jego nowej wersji). */
+  excludePlacementId?: string;
+  /** Pomin jeden termin wzorca: "placementId|originalDate" (przenoszony termin). */
+  excludePatternKey?: string;
+  /** Pomin termin reczny lub osierocony o tym id. */
+  excludeOccurrenceId?: string;
+  /** Pomin wzorce i osierocone terminy tych rocznikow (generowanie liczy je samo). */
+  excludeCohortIds?: string[];
+  /**
+   * Dolacz tez wygenerowane terminy wzorcow (poziom terminow): gdy wzorzec zmieniono, a terminow
+   * jeszcze nie przeliczono, stare terminy sa tym, co dzis widza studenci.
+   */
+  includeGenerated?: boolean;
+}
+
 /**
- * Zajete sloty z umieszczen calego semestru (wszystkie wydzialy) + terminy MANUAL
- * i przeniesione terminy — do sprawdzania nowego umieszczenia jeszcze przed generowaniem.
+ * Zajetosc semestru w calej uczelni — jeden zbior dla wzorca i terminow:
+ *  - wzorce wszystkich wydzialow rozpisane na daty kalendarzy rocznikow, z naniesionymi
+ *    wyjatkami (przeniesienia, odwolania) i limitem godzin — dokladnie to, co dalo by
+ *    "Generuj terminy" (materializer bez sprawdzania kolizji),
+ *  - terminy reczne,
+ *  - terminy wygenerowane z usunietych umieszczen (zyja do ponownego generowania),
+ *  - opcjonalnie wszystkie wygenerowane terminy (includeGenerated — poziom terminow).
+ * Czas w minutach — siatki wydzialow sie roznia.
  */
-async function placementBusy(term: AcademicTerm, excludePlacementId?: string): Promise<BusySlot[]> {
+export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions = {}): Promise<BusySlot[]> {
   const scope = await loadScope(term, null);
+  const skip = new Set(opts.excludeCohortIds ?? []);
   const ctxById = new Map(scope.contexts.map((c) => [c.cohort.id, c]));
-  const placements = await prisma.placement.findMany({
-    where: { termId: term.id, ...(excludePlacementId ? { id: { not: excludePlacementId } } : {}) },
-    include: { section: { include: sectionLabelInclude } },
+  const cohortIds = scope.contexts.map((c) => c.cohort.id).filter((id) => scope.teaching.has(id) && !skip.has(id));
+
+  const [sections, manual, orphans] = await Promise.all([
+    prisma.classSection.findMany({
+      where: { termId: term.id, cohortId: { in: cohortIds }, placements: { some: {} } },
+      include: { ...sectionLabelInclude, placements: { include: { exceptions: true } } },
+    }),
+    prisma.occurrence.findMany({
+      where: { termId: term.id, kind: 'MANUAL', status: { not: 'CANCELLED' } },
+      include: { section: { include: sectionLabelInclude } },
+    }),
+    prisma.occurrence.findMany({
+      where: {
+        termId: term.id,
+        kind: 'DERIVED',
+        status: { not: 'CANCELLED' },
+        section: { cohortId: { notIn: [...skip] } },
+        ...(opts.includeGenerated ? {} : { placementId: null }),
+      },
+      include: { section: { include: sectionLabelInclude } },
+    }),
+  ]);
+
+  const labelOf = (s: { cohortId: string; groupId: string; classType: string; programEntry: { subject: { name: string } } }) => {
+    const ctx = ctxById.get(s.cohortId);
+    return ctx
+      ? `${ctx.cohort.program.code} s${ctx.semester}: ${sectionLabel(s.programEntry.subject.name, s.classType, ctx.nameOf(s.groupId))}`
+      : s.programEntry.subject.name;
+  };
+  const manualHours = new Map<string, number>();
+  for (const m of manual) manualHours.set(m.sectionId, (manualHours.get(m.sectionId) ?? 0) + m.endOrder - m.startOrder + 1);
+
+  const mat = materialize({
+    sections: sections.map((s) => ({
+      id: s.id,
+      hours: s.hours,
+      groupId: s.groupId,
+      calendar: scope.teaching.get(s.cohortId)!,
+      grid: scope.grids.get(s.cohortId)!,
+      consumedHours: manualHours.get(s.id) ?? 0,
+      label: s.id,
+    })),
+    placements: sections.flatMap((s) => s.placements.filter((p) => p.id !== opts.excludePlacementId).map(toMatPlacement)),
+    exceptions: sections.flatMap((s) =>
+      s.placements.flatMap((p) =>
+        p.exceptions.map((e) => ({
+          placementId: e.placementId,
+          originalDate: toIsoDate(e.originalDate),
+          action: e.action,
+          newDate: e.newDate ? toIsoDate(e.newDate) : null,
+          newStartOrder: e.newStartOrder,
+          newEndOrder: e.newEndOrder,
+          newRoomId: e.newRoomId,
+          newInstructorId: e.newInstructorId ?? undefined,
+        })),
+      ),
+    ),
+    busy: [],
+    groupsOverlap: () => false,
+    skipConflicts: true,
   });
-  const busy: BusySlot[] = [];
-  for (const p of placements) {
-    const ctx = ctxById.get(p.section.cohortId);
-    const cal = scope.teaching.get(p.section.cohortId);
-    // Minuty z siatki kalendarza rocznika — raz na umieszczenie, dla wszystkich jego dat.
-    const time = scope.grids.get(p.section.cohortId)?.range(p.startOrder, p.endOrder);
-    if (!ctx || !cal || !time) continue;
-    const label = sectionLabel(p.section.programEntry.subject.name, p.section.classType, ctx.nameOf(p.section.groupId));
-    for (const d of expandDates(cal, { ...toMatPlacement(p) })) {
-      busy.push({
-        date: d.date,
-        ...time,
-        roomId: p.roomId,
-        instructorId: p.instructorId,
-        groupId: p.section.groupId,
-        jointKey: p.jointKey,
-        label,
-      });
-    }
-  }
-  const manual = await prisma.occurrence.findMany({
-    where: { termId: term.id, status: { not: 'CANCELLED' }, kind: 'MANUAL' },
-    include: { section: { include: sectionLabelInclude } },
-  });
-  for (const o of manual) {
+
+  const sectionById = new Map(sections.map((s) => [s.id, s]));
+  const busy: BusySlot[] = mat.occurrences
+    .filter((o) => o.status === 'SCHEDULED' && `${o.placementId}|${o.originalDate}` !== opts.excludePatternKey)
+    .map((o) => ({
+      date: o.date,
+      startMinute: o.startMinute,
+      endMinute: o.endMinute,
+      roomId: o.roomId,
+      instructorId: o.instructorId,
+      groupId: o.groupId,
+      jointKey: o.jointKey,
+      label: labelOf(sectionById.get(o.sectionId)!),
+    }));
+  for (const o of [...manual, ...orphans]) {
+    if (o.id === opts.excludeOccurrenceId) continue;
+    if (o.placementId && o.originalDate && `${o.placementId}|${toIsoDate(o.originalDate)}` === opts.excludePatternKey) continue;
+    if (o.placementId && o.placementId === opts.excludePlacementId) continue;
     busy.push({
       date: toIsoDate(o.date),
       startMinute: o.startMinute,
@@ -171,10 +283,15 @@ async function placementBusy(term: AcademicTerm, excludePlacementId?: string): P
       instructorId: o.instructorId,
       groupId: o.groupId,
       jointKey: o.jointKey,
-      label: `${o.section.programEntry.subject.name} (termin reczny)`,
+      label: `${labelOf(o.section)}${o.kind === 'MANUAL' ? ' (termin reczny)' : ''}`,
     });
   }
   return busy;
+}
+
+/** Zajetosc do sprawdzania umieszczenia (bez jego poprzedniej wersji). */
+async function placementBusy(term: AcademicTerm, excludePlacementId?: string): Promise<BusySlot[]> {
+  return termOccupancy(term, { excludePlacementId });
 }
 
 // ─── Walidacja umieszczenia ──────────────────────────────────
@@ -224,6 +341,7 @@ export async function checkPlacement(term: AcademicTerm, input: PlacementInput, 
     if (window) errors.push(window);
   }
   if (input.cycle === 'ZJAZD' && calendar.kind !== 'ZJAZD') errors.push('Rocznik ma kalendarz tygodniowy — wybierz rytm tygodniowy');
+  if (input.jointKey && time) errors.push(...(await jointProblems(term, input, grid, time, excludeId)));
   if (input.pattern === 'LIST' && input.numbers.length === 0) errors.push('Wybierz numery tygodni/zjazdow');
 
   const room = await prisma.room.findUnique({ where: { id: input.roomId } });
@@ -540,29 +658,27 @@ export async function generate(
     ),
   );
 
-  // Zajete poza zakresem: terminy innych zajec w semestrze + MANUAL + zachowana przeszlosc.
-  const outside = await prisma.occurrence.findMany({
-    where: {
-      termId: term.id,
-      status: { not: 'CANCELLED' },
-      OR: [
-        { sectionId: { notIn: sectionIds } },
-        { kind: 'MANUAL' },
-        ...(from ? [{ kind: 'DERIVED' as const, date: { lt: from } }] : []),
-      ],
-    },
-    include: { section: { include: sectionLabelInclude } },
-  });
-  const busy: BusySlot[] = outside.map((o) => ({
-    date: toIsoDate(o.date),
-    startMinute: o.startMinute,
-    endMinute: o.endMinute,
-    roomId: o.roomId,
-    instructorId: o.instructorId,
-    groupId: o.groupId,
-    jointKey: o.jointKey,
-    label: labelOf.get(o.sectionId) ?? o.section.programEntry.subject.name,
-  }));
+  // Zajete poza zakresem: wzorce pozostalych rocznikow calej uczelni (takze jeszcze
+  // niewygenerowane, z przeniesieniami i odwolaniami) + terminy reczne + osierocone terminy,
+  // a w zakresie — zachowana przeszlosc (generowanie od daty).
+  const busy: BusySlot[] = await termOccupancy(term, { excludeCohortIds: cohortIds });
+  if (from) {
+    const past = await prisma.occurrence.findMany({
+      where: { sectionId: { in: sectionIds }, kind: 'DERIVED', date: { lt: from }, status: { not: 'CANCELLED' } },
+    });
+    for (const o of past) {
+      busy.push({
+        date: toIsoDate(o.date),
+        startMinute: o.startMinute,
+        endMinute: o.endMinute,
+        roomId: o.roomId,
+        instructorId: o.instructorId,
+        groupId: o.groupId,
+        jointKey: o.jointKey,
+        label: labelOf.get(o.sectionId) ?? 'termin',
+      });
+    }
+  }
 
   const mat = materialize({
     sections: matSections,

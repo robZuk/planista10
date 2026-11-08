@@ -3,6 +3,7 @@ import {
   formatMinutes,
   gridBreaks,
   gridTime,
+  mapRangeByTime,
   minutesOverlap,
   numberBlocks,
   toMinutes,
@@ -140,5 +141,22 @@ describe('dni zajec siatki', () => {
         'x',
       ]).map((d) => d.day),
     ).toEqual(['THURSDAY', 'SUNDAY']);
+  });
+});
+
+describe('mapRangeByTime (zajecia laczone miedzy siatkami)', () => {
+  it('ta sama godzina startu i konca -> numery blokow w drugiej siatce', () => {
+    // siatka 60 min, bloki 3-4 = 09:00-11:00 -> siatka z blokami od 08:00 na pozycjach 2-3
+    const target: GridBlock[] = [
+      { order: 1, startTime: '08:00', endTime: '09:00' },
+      { order: 2, startTime: '09:00', endTime: '10:00' },
+      { order: 3, startTime: '10:00', endTime: '11:00' },
+    ];
+    expect(mapRangeByTime(gridTime(g60), gridTime(target), 3, 4)).toEqual({ startOrder: 2, endOrder: 3 });
+  });
+
+  it('godziny nie istnieja w drugiej siatce -> null', () => {
+    expect(mapRangeByTime(gridTime(g60), gridTime(g45), 3, 3)).toBeNull(); // 09:00-10:00 vs siatka 45 min
+    expect(mapRangeByTime(gridTime(g60), gridTime(g45), 99, 99)).toBeNull();
   });
 });

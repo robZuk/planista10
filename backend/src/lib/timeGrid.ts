@@ -134,6 +134,11 @@ const DAY_LABEL: Record<WeekdayName, string> = {
   SUNDAY: 'niedziela',
 };
 
+/** Polska nazwa dnia tygodnia (bez diakrytykow) do komunikatow. */
+export function weekdayLabel(day: WeekdayName): string {
+  return DAY_LABEL[day];
+}
+
 export const WEEK_ORDER: WeekdayName[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 
 /** Domyslne dni = dotychczasowa regula: stacjonarne pn-pt; niestacjonarne pt od 15:00, sob, nd. */
@@ -170,4 +175,17 @@ export function dayWindowProblem(days: GridDay[], day: WeekdayName, startMinute:
   if (entry.from && startMinute < toMinutes(entry.from)) return `${DAY_LABEL[day]}: zajecia od ${entry.from}`;
   if (entry.to && endMinute > toMinutes(entry.to)) return `${DAY_LABEL[day]}: zajecia do ${entry.to}`;
   return null;
+}
+
+/**
+ * Zakres blokow z innej siatki przeniesiony po godzinach: blok startu o tej samej godzinie
+ * rozpoczecia i blok konca o tej samej godzinie zakonczenia; null, gdy godziny nie pasuja.
+ * Uzywane przy zajeciach laczonych miedzy wydzialami o roznych siatkach.
+ */
+export function mapRangeByTime(from: GridTime, to: GridTime, startOrder: number, endOrder: number): { startOrder: number; endOrder: number } | null {
+  const range = from.range(startOrder, endOrder);
+  if (!range) return null;
+  const start = to.blocks.find((b) => to.range(b.order, b.order)!.startMinute === range.startMinute);
+  const end = to.blocks.find((b) => to.range(b.order, b.order)!.endMinute === range.endMinute);
+  return start && end && end.order >= start.order ? { startOrder: start.order, endOrder: end.order } : null;
 }

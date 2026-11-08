@@ -92,6 +92,13 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 - **Kolizje** sprawdzane na konkretnych datach (sala, prowadzący, grupy) w całej uczelni,
   **w minutach** — wydziały mają różne siatki godzin; odrzucenie zawiera listę dat.
   Typ i pojemność sali, dni i okno godzin z siatki.
+- **Jedna zajętość dla wzorca i terminów** (`services/plan.ts → termOccupancy`): wzorce całej
+  uczelni rozpisane na daty z naniesionymi przeniesieniami i odwołaniami oraz limitem godzin
+  (to, co dałoby generowanie), terminy ręczne i terminy po usuniętych umieszczeniach; przy
+  zmianie pojedynczego terminu dochodzą wygenerowane terminy. Używana przy zapisie umieszczenia,
+  podświetleniu, przeniesieniu terminu, terminie ręcznym i generowaniu.
+- **Zajęcia łączone między wydziałami** dzielą rzeczywisty czas: dołączenie wymaga tego samego
+  dnia i godzin, zmiana przenosi pozostałe umieszczenia do ich siatek po godzinach.
 - `Occurrence` — termin (bloki + rzeczywisty czas `startMinute/endMinute`). `DERIVED` powstają **tylko** przez „Generuj terminy"
   (`services/plan.ts → generate`, najpierw podgląd): godziny wyczerpywane w kolejności dat
   przez wszystkie umieszczenia zajęć, ostatni termin skracany, kolidujące pomijane i zgłaszane.

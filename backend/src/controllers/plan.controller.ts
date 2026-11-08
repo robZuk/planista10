@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import type { DayOfWeek } from '@prisma/client';
+import type { AcademicTerm, DayOfWeek } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
@@ -8,11 +8,21 @@ import { fromIsoDate, isIsoDate, toIsoDate } from '../lib/isoDate';
 import { parseTermKey } from '../lib/terms';
 import { findConflict, type BusySlot } from '../lib/materializer';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
-import { type GridTime } from '../lib/timeGrid';
-import { gridFor } from '../services/timeGrids';
+import { mapRangeByTime, type GridTime } from '../lib/timeGrid';
+import { gridFor, loadGrids, pickGrid } from '../services/timeGrids';
 import { toTreeGroup } from '../services/cohorts';
 import { activeCohorts } from '../services/sections';
-import { assertVersionApproved, availability, calendarFor, checkPlacement, generate, planView, type PlacementInput } from '../services/plan';
+import {
+  assertVersionApproved,
+  availability,
+  calendarFor,
+  checkPlacement,
+  generate,
+  planView,
+  termOccupancy,
+  type OccupancyOptions,
+  type PlacementInput,
+} from '../services/plan';
 
 /**
  * Plan semestru: umieszczenia (wzorzec) i terminy. Uklada wylacznie planista; terminy
@@ -124,16 +134,32 @@ export const updatePlacement = asyncHandler(async (req, res) => {
   const input = parsePlacement({ ...current, ...req.body, sectionId: current.sectionId });
   const check = await checkPlacement(current.term, input, current.id);
   rejectIfInvalid(check);
-  // Zajecia laczone: ten sam czas, sala i prowadzacy dla calej grupy umieszczen.
+  // Zajecia laczone: ten sam rzeczywisty czas, sala i rytm dla calej grupy umieszczen. Wydzialy
+  // moga miec rozne siatki — bloki pozostalych umieszczen przenosimy po godzinach (checkPlacement
+  // sprawdzil juz, ze te godziny istnieja w ich siatkach).
+  const joined = input.jointKey
+    ? await prisma.placement.findMany({
+        where: { termId: current.termId, jointKey: input.jointKey, id: { not: current.id } },
+        include: { section: { select: { cohort: { select: { program: { select: { studyMode: true } } } } } } },
+      })
+    : [];
+  const ownGrid = (await gridFor(current.facultyId, current.section.cohort.program.studyMode)).time;
+  const grids = joined.length ? await loadGrids() : new Map();
+  const moves = joined.map((j) => {
+    const other = pickGrid(grids, j.facultyId, j.section.cohort.program.studyMode);
+    const orders = other ? mapRangeByTime(ownGrid, other.time, input.startOrder, input.endOrder) : null;
+    if (!orders) throw new AppError(400, 'Zajecia laczone: godzin nie ma w siatce wydzialu polaczonych zajec');
+    return { id: j.id, ...orders };
+  });
   const data = await prisma.$transaction(async (tx) => {
     const updated = await tx.placement.update({ where: { id: current.id }, data: input });
-    if (input.jointKey) {
-      await tx.placement.updateMany({
-        where: { termId: current.termId, jointKey: input.jointKey, id: { not: current.id } },
+    for (const m of moves) {
+      await tx.placement.update({
+        where: { id: m.id },
         data: {
           dayOfWeek: input.dayOfWeek,
-          startOrder: input.startOrder,
-          endOrder: input.endOrder,
+          startOrder: m.startOrder,
+          endOrder: m.endOrder,
           roomId: input.roomId,
           cycle: input.cycle,
           pattern: input.pattern,
@@ -223,19 +249,13 @@ export const listOccurrences = asyncHandler(async (req, res) => {
   });
 });
 
-/** Kolizje terminu na konkretnej dacie z pozostalymi terminami calej uczelni. */
-async function occurrenceConflicts(slot: Omit<BusySlot, 'label'>, excludeId?: string) {
-  const others = await prisma.occurrence.findMany({
-    where: { date: fromIsoDate(slot.date), status: { not: 'CANCELLED' }, ...(excludeId ? { id: { not: excludeId } } : {}) },
-    include: { section: { select: { programEntry: { select: { subject: { select: { name: true } } } } } } },
-  });
+/** Kolizje terminu na konkretnej dacie z zajetoscia calej uczelni (bez niego samego). */
+async function occurrenceConflicts(term: AcademicTerm, slot: Omit<BusySlot, 'label'>, opts: OccupancyOptions) {
+  // Wspolna zajetosc uczelni (wzorce z wyjatkami, terminy reczne i wygenerowane) na te date.
+  const busy = (await termOccupancy(term, { ...opts, includeGenerated: true })).filter((b) => b.date === slot.date);
   const groups = await prisma.studentGroup.findMany();
   const index = indexGroups(groups.map(toTreeGroup));
-  return findConflict(
-    slot,
-    others.map((o) => ({ ...o, date: toIsoDate(o.date), label: o.section.programEntry.subject.name })),
-    (a, b) => groupsOverlap(a, b, index),
-  );
+  return findConflict(slot, busy, (a, b) => groupsOverlap(a, b, index));
 }
 
 /**
@@ -334,9 +354,12 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
   };
   if (next.endOrder < next.startOrder) throw new AppError(400, 'Nieprawidlowy zakres godzin');
   const time = minutesOf(grid, next.startOrder, next.endOrder);
+  const occTerm = await prisma.academicTerm.findUniqueOrThrow({ where: { id: occ.termId } });
   const conflict = await occurrenceConflicts(
+    occTerm,
     { date: next.date, ...time, roomId: next.roomId, instructorId: next.instructorId, groupId: occ.groupId, jointKey: occ.jointKey },
-    occ.id,
+    // Bez niego samego: termin wzorca (placement + data z wzorca) albo termin reczny/osierocony.
+    derived ? { excludePatternKey: `${occ.placementId}|${toIsoDate(occ.originalDate!)}`, excludeOccurrenceId: occ.id } : { excludeOccurrenceId: occ.id },
   );
   if (conflict) throw new AppError(409, `Kolizja (${conflict.reason}): ${conflict.with}`);
   await prisma.$transaction([
@@ -387,14 +410,11 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
     throw new AppError(400, 'Podaj date i godziny');
   }
   const time = minutesOf(grid, body.startOrder, body.endOrder);
-  const conflict = await occurrenceConflicts({
-    date: body.date,
-    ...time,
-    roomId: body.roomId,
-    instructorId: body.instructorId ?? null,
-    groupId: section.groupId,
-    jointKey: null,
-  });
+  const conflict = await occurrenceConflicts(
+    term,
+    { date: body.date, ...time, roomId: body.roomId, instructorId: body.instructorId ?? null, groupId: section.groupId, jointKey: null },
+    {},
+  );
   if (conflict) throw new AppError(409, `Kolizja (${conflict.reason}): ${conflict.with}`);
   const data = await prisma.occurrence.create({
     data: {
