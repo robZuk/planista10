@@ -552,6 +552,9 @@ export interface PlanSection {
   placements: PlanPlacement[];
 }
 
+/** Powod nieaktualnych terminow: zmiana wzorca, zmiana godzin zajec, usuniete umieszczenie. */
+export type StaleReason = 'PLACEMENTS' | 'SECTIONS' | 'DELETED';
+
 export interface PlanView {
   cohort: {
     id: string;
@@ -577,7 +580,7 @@ export interface PlanView {
   /** Siatka godzin wydzialu i trybu rocznika: bloki planu, przerwy (odstepy) i dni zajec. */
   timeGrid: { id: string; studyMode: StudyMode; days: GridDay[]; blocks: TimeBlock[] };
   stale: boolean;
-  staleReasons: ('PLACEMENTS' | 'SECTIONS')[];
+  staleReasons: StaleReason[];
   generatedOccurrences: number;
   sections: PlanSection[];
 }

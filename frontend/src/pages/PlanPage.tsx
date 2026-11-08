@@ -20,6 +20,7 @@ import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGr
 import { earlyEndWeeks, formatDayMonth } from '@/lib/planHours';
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { describeDays } from '@/lib/timeGrid';
+import { staleMessage } from '@/lib/planStaleness';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 import type { DayOfWeek, PlanPlacement, PlanSection } from '@/types';
@@ -281,11 +282,7 @@ export default function PlanPage() {
           <TriangleAlert />
           <AlertTitle>Kalendarz nieaktualny</AlertTitle>
           <AlertDescription>
-            {plan.staleReasons.includes('PLACEMENTS') && plan.staleReasons.includes('SECTIONS')
-              ? 'Wzorzec i godziny zajec zmienily sie po ostatnim generowaniu.'
-              : plan.staleReasons.includes('SECTIONS')
-                ? 'Godziny zajec zmienily sie po ostatnim generowaniu (synchronizacja z programem).'
-                : 'Wzorzec zmienil sie po ostatnim generowaniu.'}{' '}
+            {staleMessage(plan.staleReasons)}{' '}
             Terminy w kalendarzu sa jeszcze stare — uzyj „Generuj terminy”, gdy skonczysz zmiany.
           </AlertDescription>
         </Alert>

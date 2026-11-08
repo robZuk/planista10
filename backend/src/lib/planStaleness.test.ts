@@ -2,6 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { staleReasons } from './planStaleness';
 
 describe('staleReasons', () => {
+  it('umieszczenie usuniete po generowaniu: jego terminy wciaz w planie', () => {
+    expect(staleReasons({ lastPlacementChange: 100, lastSectionChange: 90, generatedAt: 200, lastDeletion: 300 })).toEqual(['DELETED']);
+  });
+
+  it('terminy bez umieszczenia sprzed generowania (przeszlosc przy generowaniu od daty) nie unieaktualniaja', () => {
+    expect(staleReasons({ lastPlacementChange: 100, lastSectionChange: 90, generatedAt: 200, lastDeletion: 150 })).toEqual([]);
+  });
+
   it('nic nie zmienione od generowania -> aktualne', () => {
     expect(staleReasons({ lastPlacementChange: 100, lastSectionChange: 90, generatedAt: 200 })).toEqual([]);
   });

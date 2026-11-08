@@ -68,7 +68,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
   const cohortIds = contexts.map((c) => c.cohort.id);
   // Liczniki wszystkich rocznikow zbiorczo (kilka zapytan zamiast kilku na rocznik).
   const active = { termId: term.id, cohortId: { in: cohortIds }, status: 'ACTIVE' as const };
-  const [cohortCalendars, sectionRows, placedRows, vacancyRows, termSections, occurrenceRows, changeRows] = await Promise.all([
+  const [cohortCalendars, sectionRows, placedRows, vacancyRows, termSections, occurrenceRows, changeRows, deletionRows] = await Promise.all([
     calendarsFor(term, contexts),
     prisma.classSection.groupBy({ by: ['cohortId'], where: active, _count: { _all: true } }),
     prisma.classSection.groupBy({ by: ['cohortId'], where: { ...active, placements: { some: {} } }, _count: { _all: true } }),
@@ -80,6 +80,12 @@ export const setupStatus = asyncHandler(async (req, res) => {
     prisma.classSection.findMany({ where: { termId: term.id, cohortId: { in: cohortIds } }, select: { id: true, cohortId: true } }),
     prisma.occurrence.groupBy({ by: ['sectionId'], where: { termId: term.id, section: { cohortId: { in: cohortIds } } }, _count: { _all: true } }),
     prisma.placement.groupBy({ by: ['sectionId'], where: { termId: term.id, section: { cohortId: { in: cohortIds } } }, _max: { updatedAt: true } }),
+    // Terminy odlaczone od usunietych umieszczen: updatedAt = chwila usuniecia (tez unieaktualnia).
+    prisma.occurrence.groupBy({
+      by: ['sectionId'],
+      where: { termId: term.id, kind: 'DERIVED', placementId: null, section: { cohortId: { in: cohortIds } } },
+      _max: { updatedAt: true },
+    }),
   ]);
   const countOf = (rows: { cohortId: string; _count: { _all: number } }[]) => new Map(rows.map((r) => [r.cohortId, r._count._all]));
   const sectionCount = countOf(sectionRows);
@@ -92,7 +98,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
     if (cohortId) occurrenceCount.set(cohortId, (occurrenceCount.get(cohortId) ?? 0) + r._count._all);
   }
   const lastChangeOf = new Map<string, Date>();
-  for (const r of changeRows) {
+  for (const r of [...changeRows, ...deletionRows]) {
     const cohortId = cohortOfSection.get(r.sectionId);
     const at = r._max.updatedAt;
     if (!cohortId || !at) continue;

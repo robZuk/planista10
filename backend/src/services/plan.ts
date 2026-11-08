@@ -564,7 +564,13 @@ export async function planView(term: AcademicTerm, cohortId: string) {
     .filter((s) => s.placements.length > 0 || manualHours.has(s.id))
     .map((s) => s.updatedAt.getTime())
     .reduce((a, b) => Math.max(a, b), 0);
-  const reasons = staleReasons({ lastPlacementChange, lastSectionChange, generatedAt });
+  // Terminy odlaczone od usunietych umieszczen (updatedAt = chwila usuniecia).
+  const deleted = await prisma.occurrence.aggregate({
+    where: { termId: term.id, kind: 'DERIVED', placementId: null, section: { cohortId } },
+    _max: { updatedAt: true },
+  });
+  const lastDeletion = deleted._max.updatedAt?.getTime() ?? 0;
+  const reasons = staleReasons({ lastPlacementChange, lastSectionChange, generatedAt, lastDeletion });
 
   return {
     cohort: {
