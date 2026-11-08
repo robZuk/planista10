@@ -211,11 +211,19 @@ async function main() {
   const facultyOfField = new Map(FACULTIES.flatMap((f) => f.fields.map((fd) => [fd.short, f.short] as const)));
 
   // ── Semestry ──
+  // Tylko potrzebne semestry: biezacy rok akademicki i nabory rocznikow (zakladane przy pierwszym uzyciu),
+  // zeby przelacznik semestru nie pokazywal pustych dawnych semestrow.
   const terms = new Map<string, AcademicTerm>();
-  for (let y = 2021; y <= 2026; y++) {
-    for (const type of ['WINTER', 'SUMMER'] as const) terms.set(`${y}-${type}`, await prisma.academicTerm.create({ data: { startYear: y, type } }));
-  }
-  const term = terms.get(`${TARGET.startYear}-${TARGET.type}`)!;
+  const termOf = async (key: string): Promise<AcademicTerm> => {
+    const found = terms.get(key);
+    if (found) return found;
+    const [startYear, type] = key.split('-') as [string, 'WINTER' | 'SUMMER'];
+    const created = await prisma.academicTerm.create({ data: { startYear: Number(startYear), type } });
+    terms.set(key, created);
+    return created;
+  };
+  const term = await termOf(`${TARGET.startYear}-${TARGET.type}`);
+  await termOf(`${TARGET.startYear}-SUMMER`);
 
   // ── Kalendarze semestru zimowego 2026/27 ──
   log('Kalendarze...');
@@ -337,7 +345,7 @@ async function main() {
       data: {
         programId: v.programId,
         programVersionId: v.versionId,
-        startTermId: terms.get(c.startKey)!.id,
+        startTermId: (await termOf(c.startKey)).id,
         lectureMode: c.size > 320 ? 'SEPARATE' : 'JOINT',
       },
     });
