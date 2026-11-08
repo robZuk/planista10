@@ -108,13 +108,28 @@ const manualRow = {
   section: { cohortId: 'c1', groupId: 'g1', classType: 'LAB', programEntry: { subject: { name: 'Chemia' } } },
 };
 
-function setup(exceptions: unknown[] = [], manual: unknown[] = []) {
+// Termin z usunietego umieszczenia (placementId -> null, zyje do ponownego generowania).
+const orphanRow = (id: string, cohortId: string, roomId: string) => ({
+  ...manualRow,
+  id,
+  kind: 'DERIVED',
+  sectionId: `s-${id}`,
+  date: d('2026-10-05'),
+  startOrder: 2,
+  endOrder: 3,
+  startMinute: 480,
+  endMinute: 600,
+  roomId,
+  section: { ...manualRow.section, cohortId },
+});
+
+function setup(exceptions: unknown[] = [], manual: unknown[] = [], orphans: unknown[] = []) {
   prismaMock.cohort.findMany.mockResolvedValue([cohort]);
   prismaMock.termCalendar.findMany.mockResolvedValue([calendar]);
   prismaMock.timeGrid.findMany.mockResolvedValue([grid]);
   prismaMock.classSection.findMany.mockResolvedValue([section(exceptions)]);
   prismaMock.occurrence.findMany.mockImplementation((args: { where: { kind: string } }) =>
-    Promise.resolve(args.where.kind === 'MANUAL' ? manual : []),
+    Promise.resolve(args.where.kind === 'MANUAL' ? manual : orphans),
   );
 }
 
@@ -199,6 +214,24 @@ describe('termOccupancy — wspolna zajetosc wzorca i terminow', () => {
     // Terminy reczne bez filtra — zuzywaja godziny zajec, ktore rozpisujemy (limit godzin).
     const manual = prismaMock.occurrence.findMany.mock.calls.find((c) => c[0].where.kind === 'MANUAL')![0];
     expect(manual.where.OR).toBeUndefined();
+  });
+
+  it('wzorzec rocznika: jego terminy z usunietych umieszczen nie blokuja (znikna przy generowaniu)', async () => {
+    const orphans = [orphanRow('o-own', 'c1', 'r7'), orphanRow('o-other', 'c2', 'r8')];
+    setup([], [], orphans);
+    // Bez opcji (np. przeniesienie terminu): oba osierocone terminy sa zajetoscia.
+    const all = await termOccupancy(term);
+    expect(all.filter((b) => ['r7', 'r8'].includes(b.roomId ?? '')).map((b) => b.roomId)).toEqual(['r7', 'r8']);
+    // Sprawdzanie wzorca rocznika c1: pomijamy tylko jego wlasne; innego rocznika zostaje.
+    setup([], [], orphans);
+    const pattern = await termOccupancy(term, { patternOfCohortId: 'c1' });
+    expect(pattern.filter((b) => ['r7', 'r8'].includes(b.roomId ?? '')).map((b) => b.roomId)).toEqual(['r8']);
+  });
+
+  it('wzorzec rocznika: terminy reczne rocznika dalej blokuja (generowanie ich nie usuwa)', async () => {
+    setup([], [manualRow]);
+    const busy = await termOccupancy(term, { patternOfCohortId: 'c1' });
+    expect(busy.some((b) => b.roomId === 'r5')).toBe(true);
   });
 
   it('relevantTo bez sali i prowadzacego: tylko wlasny rocznik', async () => {

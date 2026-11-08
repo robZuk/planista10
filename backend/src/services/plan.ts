@@ -212,6 +212,14 @@ export interface OccupancyOptions {
    * kilkadziesiat zajec zamiast wszystkich w uczelni.
    */
   relevantTo?: { cohortId: string; roomId?: string | null; instructorId?: string | null };
+  /**
+   * Sprawdzanie wzorca tego rocznika (zapis umieszczenia, podpowiedz): pomin jego terminy
+   * z usunietych umieszczen. "Generuj terminy" usuwa wszystkie wygenerowane terminy rocznika
+   * i tworzy je od nowa z wzorca, wiec te terminy znikna, zanim nowy wzorzec da terminy —
+   * nie moga z nim kolidowac (inaczej usuniete umieszczenie blokuje wlasne miejsce).
+   * Terminy z usunietych umieszczen innych rocznikow dalej sa zajetoscia.
+   */
+  patternOfCohortId?: string;
 }
 
 /**
@@ -326,6 +334,7 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
     if (o.id === opts.excludeOccurrenceId) continue;
     if (o.placementId && o.originalDate && `${o.placementId}|${toIsoDate(o.originalDate)}` === opts.excludePatternKey) continue;
     if (o.placementId && o.placementId === opts.excludePlacementId) continue;
+    if (opts.patternOfCohortId && o.kind === 'DERIVED' && !o.placementId && o.section.cohortId === opts.patternOfCohortId) continue;
     busy.push({
       date: toIsoDate(o.date),
       startMinute: o.startMinute,
@@ -340,13 +349,16 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
   return busy;
 }
 
-/** Zajetosc do sprawdzania umieszczenia (bez jego poprzedniej wersji) — tylko to, co moze z nim kolidowac. */
+/**
+ * Zajetosc do sprawdzania umieszczenia (bez jego poprzedniej wersji) — tylko to, co moze z nim
+ * kolidowac, i bez terminow rocznika z usunietych umieszczen (znikna przy generowaniu).
+ */
 async function placementBusy(
   term: AcademicTerm,
   relevantTo: NonNullable<OccupancyOptions['relevantTo']>,
   excludePlacementId?: string,
 ): Promise<BusySlot[]> {
-  return termOccupancy(term, { excludePlacementId, relevantTo });
+  return termOccupancy(term, { excludePlacementId, relevantTo, patternOfCohortId: relevantTo.cohortId });
 }
 
 // ─── Walidacja umieszczenia ──────────────────────────────────
