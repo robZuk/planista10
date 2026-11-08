@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { expandDates, TeachingCalendar, validateCalendar, type CalendarInput } from './teachingCalendar';
+import { expandDates, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
+import { eachDay } from './isoDate';
 
 /** Zima 2024/25 jak w danych: start we wtorek 1.10, bez przerw. */
 const winter2024: CalendarInput = {
@@ -148,5 +149,86 @@ describe('validateCalendar', () => {
 
   it('poprawny kalendarz nie ma problemow', () => {
     expect(validateCalendar(winter2024)).toEqual([]);
+  });
+});
+
+describe('expandDates — szybka wersja daje to samo co sprawdzanie kazdego dnia', () => {
+  // Wzorzec: dotychczasowy algorytm (kazdy dzien semestru przez dayInfo).
+  function reference(calendar: TeachingCalendar, slot: SlotPattern): ExpandedDate[] {
+    const weekdayNum: Record<string, number> = { SUNDAY: 0, MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3, THURSDAY: 4, FRIDAY: 5, SATURDAY: 6 };
+    const result: ExpandedDate[] = [];
+    for (const date of eachDay(calendar.input.startDate, calendar.input.endDate)) {
+      const info = calendar.dayInfo(date);
+      if (!info.teaching || info.effectiveWeekday !== weekdayNum[slot.dayOfWeek]) continue;
+      if (info.closedFromBlockOrder !== null && slot.endOrder !== undefined && slot.endOrder >= info.closedFromBlockOrder) continue;
+      const index = slot.cycle === 'WEEK' ? calendar.weekIndexOf(date) : calendar.zjazdIndexOf(date);
+      if (index === null) continue;
+      if (slot.pattern === 'EVEN' && index % 2 !== 0) continue;
+      if (slot.pattern === 'ODD' && index % 2 !== 1) continue;
+      if (slot.pattern === 'LIST' && !(slot.numbers ?? []).includes(index)) continue;
+      if (slot.fromIndex != null && index < slot.fromIndex) continue;
+      if (slot.toIndex != null && index > slot.toIndex) continue;
+      result.push({ date, index });
+    }
+    return result;
+  }
+
+  const weekly = new TeachingCalendar({
+    kind: 'WEEKLY',
+    studyMode: 'FULL_TIME',
+    startDate: '2026-10-01',
+    endDate: '2027-02-05',
+    breaks: [{ name: 'Swieta', startDate: '2026-12-22', endDate: '2027-01-02' }],
+    days: [
+      { date: '2026-10-14', kind: 'DAY_OFF', name: 'Rektorski' },
+      { date: '2026-11-13', kind: 'FOLLOWS_WEEKDAY', followsWeekday: 'MONDAY' },
+      { date: '2026-12-04', kind: 'CLOSED_FROM', closedFromBlockOrder: 7 },
+    ],
+    zjazdy: [],
+  });
+  const zjazdy = new TeachingCalendar({
+    kind: 'ZJAZD',
+    studyMode: 'PART_TIME',
+    startDate: '2026-10-01',
+    endDate: '2027-02-07',
+    breaks: [],
+    days: [{ date: '2026-10-17', kind: 'CLOSED_FROM', closedFromBlockOrder: 5 }],
+    zjazdy: [
+      { number: 1, startDate: '2026-10-01', endDate: '2026-10-04' }, // od czwartku
+      { number: 2, startDate: '2026-10-16', endDate: '2026-10-18' },
+      { number: 3, startDate: '2026-11-06', endDate: '2026-11-08' },
+      { number: 4, startDate: '2026-11-20', endDate: '2026-11-22' },
+    ],
+  });
+
+  const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'] as const;
+  const variants: Omit<SlotPattern, 'dayOfWeek' | 'cycle'>[] = [
+    { pattern: 'ALL' },
+    { pattern: 'EVEN' },
+    { pattern: 'ODD', endOrder: 8 },
+    { pattern: 'LIST', numbers: [1, 3, 4] },
+    { pattern: 'ALL', fromIndex: 2, toIndex: 7, endOrder: 4 },
+    { pattern: 'ALL', endOrder: 9 }, // odciete przez godziny rektorskie od bloku 7/5
+  ];
+
+  it('kalendarz tygodniowy i zjazdowy: wszystkie dni, rytmy i zakresy', () => {
+    let compared = 0;
+    for (const [calendar, cycle] of [
+      [weekly, 'WEEK'],
+      [zjazdy, 'ZJAZD'],
+      [zjazdy, 'WEEK'],
+    ] as const) {
+      for (const dayOfWeek of DAYS) {
+        for (const v of variants) {
+          const slot: SlotPattern = { dayOfWeek, cycle, ...v };
+          expect(expandDates(calendar, slot)).toEqual(reference(calendar, slot));
+          compared++;
+        }
+      }
+    }
+    expect(compared).toBe(3 * 7 * variants.length);
+    // kontrola sensu: zamiana dni dodaje piatek 13.11 do poniedzialkow, zjazd 1 ma czwartek
+    expect(expandDates(weekly, { dayOfWeek: 'MONDAY', cycle: 'WEEK', pattern: 'ALL' }).map((d) => d.date)).toContain('2026-11-13');
+    expect(expandDates(zjazdy, { dayOfWeek: 'THURSDAY', cycle: 'ZJAZD', pattern: 'ALL' }).map((d) => d.date)).toEqual(['2026-10-01']);
   });
 });

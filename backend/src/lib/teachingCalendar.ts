@@ -89,6 +89,14 @@ export interface DayInfo {
   closedFromBlockOrder: number | null;
 }
 
+/** Dzien zajec z gotowymi numerami tygodnia i zjazdu — material dla expandDates. */
+interface TeachingDay {
+  date: IsoDate;
+  closedFromBlockOrder: number | null;
+  week: number | null;
+  zjazd: number | null;
+}
+
 /**
  * Indeks kalendarza z prekomputowanymi wyszukiwaniami. Budujemy go raz na kalendarz
  * i odpytujemy dla wielu dat (generowanie terminow siega kilkuset dni x setek zajec).
@@ -98,6 +106,7 @@ export class TeachingCalendar {
   private readonly overrides: Map<IsoDate, CalendarDayInput>;
   private readonly startMonday: IsoDate;
   private readonly weekIndexCache = new Map<IsoDate, number | null>();
+  private teachingDaysCache: Map<number, TeachingDay[]> | null = null;
 
   constructor(readonly input: CalendarInput) {
     this.holidays = new Map(holidaysInRange(input.startDate, input.endDate).map((h) => [h.date, h.name]));
@@ -191,6 +200,26 @@ export class TeachingCalendar {
     return this.zjazdOf(date)?.number ?? null;
   }
 
+  /**
+   * Dni zajec semestru pogrupowane wg efektywnego dnia tygodnia (po zamianach dni), w kolejnosci
+   * dat, z numerem tygodnia i zjazdu. Liczone raz na kalendarz: setki umieszczen dzieli kilka
+   * kalendarzy i piec-siedem dni tygodnia, wiec expandDates tylko filtruje gotowa liste
+   * zamiast sprawdzac kazdy dzien semestru dla kazdego umieszczenia.
+   */
+  teachingDaysByWeekday(): Map<number, TeachingDay[]> {
+    if (this.teachingDaysCache) return this.teachingDaysCache;
+    const byWeekday = new Map<number, TeachingDay[]>();
+    for (const date of eachDay(this.input.startDate, this.input.endDate)) {
+      const info = this.dayInfo(date);
+      if (!info.teaching) continue;
+      const list = byWeekday.get(info.effectiveWeekday) ?? [];
+      list.push({ date, closedFromBlockOrder: info.closedFromBlockOrder, week: this.weekIndexOf(date), zjazd: this.zjazdIndexOf(date) });
+      byWeekday.set(info.effectiveWeekday, list);
+    }
+    this.teachingDaysCache = byWeekday;
+    return byWeekday;
+  }
+
   /** Tygodnie zajec z numerami — do podgladu kalendarza i przelicznikow godzin. */
   teachingWeeks(): TeachingWeek[] {
     const weeks: TeachingWeek[] = [];
@@ -247,20 +276,13 @@ export interface ExpandedDate {
  * przy generowaniu terminow, bo dotyczy sumy wszystkich umieszczen jednych zajec.
  */
 export function expandDates(calendar: TeachingCalendar, slot: SlotPattern): ExpandedDate[] {
-  const target = WEEKDAY_NUM[slot.dayOfWeek];
   const result: ExpandedDate[] = [];
-  const { startDate, endDate } = calendar.input;
-  for (const date of eachDay(startDate, endDate)) {
-    const info = calendar.dayInfo(date);
-    if (!info.teaching || info.effectiveWeekday !== target) continue;
-    if (
-      info.closedFromBlockOrder !== null &&
-      slot.endOrder !== undefined &&
-      slot.endOrder >= info.closedFromBlockOrder
-    ) {
+  for (const day of calendar.teachingDaysByWeekday().get(WEEKDAY_NUM[slot.dayOfWeek]) ?? []) {
+    const date = day.date;
+    if (day.closedFromBlockOrder !== null && slot.endOrder !== undefined && slot.endOrder >= day.closedFromBlockOrder) {
       continue;
     }
-    const index = slot.cycle === 'WEEK' ? calendar.weekIndexOf(date) : calendar.zjazdIndexOf(date);
+    const index = slot.cycle === 'WEEK' ? day.week : day.zjazd;
     if (index === null) continue;
     if (slot.pattern === 'EVEN' && index % 2 !== 0) continue;
     if (slot.pattern === 'ODD' && index % 2 !== 1) continue;
