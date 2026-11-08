@@ -91,7 +91,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `groupTree.ts` — drzewo grup: reguła nakładania i nazwy liczone
   - `demand.ts` — zajęcia wynikające z programu i grup
   - `materializer.ts` — terminy z umieszczeń (limit godzin, wyjątki, kolizje)
-  - `scheduleTime.ts` — nakładanie bloków, typy sal, okna trybu studiów
+  - `timeGrid.ts` — siatki godzin: walidacja bloków, bloki → minuty, przerwy, dni z oknem godzin, kolizje w minutach
+  - `scheduleTime.ts` — typy sal dla form zajęć
   - `facultyScope.ts` — zakres wydziału wywołującego (`assertFacultyScope`)
 - `src/middleware/authenticate.ts` — weryfikacja JWT; role w enumie `Role`
 - `prisma/schema.prisma` — źródło prawdy o modelu danych (opis: `docs/model-danych.md`)
@@ -138,8 +139,13 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
     historia zostaje liniowa, bez pustych `Merge branch 'x'`.
   - **kilka commitów tworzących jeden feature** → `--no-ff` (merge-commit grupuje
     całość, umożliwia `revert -m`), albo `--squash` gdy ma zostać jeden wpis w `main`.
-- **Czas w planie:** wyrażany blokami 1-godzinnymi (`TimeBlock.order`), nie
-  stringami godzin. Konflikt czasu = nakładanie zakresów `order` (`rangesOverlap`).
+- **Czas w planie:** każdy wydział ma **dwie siatki godzin** (`TimeGrid`: stacjonarna
+  i niestacjonarna) — bloki o dowolnym starcie i długości (1 blok = 1 godzina programu,
+  przerwy to odstępy) oraz dni zajęć z oknem godzin (np. czwartek od 16:00). Umieszczenia
+  wskazują bloki (`startOrder..endOrder`) siatki wydziału i trybu rocznika. **Kolizje
+  liczymy w minutach** (`lib/timeGrid.ts → minutesOverlap`, przedziały półotwarte), bo
+  wydziały mają różne siatki; terminy niosą rzeczywisty czas (`Occurrence.startMinute/endMinute`).
+  Bloków siatki nie zmienia się, gdy wydział ma plan w tym trybie w bieżącym semestrze.
 - **Daty:** dni jako tekst `YYYY-MM-DD` (`lib/isoDate.ts`), kolumny `@db.Date`; nigdy
   arytmetyka na `Date` w strefie lokalnej.
 - **TypeScript:** `strict` po obu stronach; backend CommonJS, frontend ESM.

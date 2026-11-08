@@ -617,6 +617,9 @@ export interface OccurrenceRow {
   originalDate: string | null;
   startOrder: number;
   endOrder: number;
+  /** Rzeczywisty czas terminu (minuty od polnocy). */
+  startMinute: number;
+  endMinute: number;
   subject: string;
   classType: ClassType;
   group: string;
@@ -687,6 +690,9 @@ export interface MyPlanRow {
   date: string;
   startOrder: number;
   endOrder: number;
+  /** Rzeczywisty czas terminu — plan moze laczyc wydzialy z roznymi siatkami godzin. */
+  startMinute: number;
+  endMinute: number;
   subject: string;
   classType: ClassType;
   program: string;

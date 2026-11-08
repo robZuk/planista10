@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/PageHeader';
 import { fetchMyPlan } from '@/api/plan';
-import { fetchTimeBlocks } from '@/api/timeBlocks';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
+import { formatMinutes } from '@/lib/timeGrid';
 import { addDaysKey } from './calendar/calendarUtils';
 
 const WEEKDAY = ['Niedziela', 'Poniedzialek', 'Wtorek', 'Sroda', 'Czwartek', 'Piatek', 'Sobota'];
@@ -26,16 +26,11 @@ export default function MyPlanPage() {
   const { term } = useCurrentTerm();
   const [monday, setMonday] = useState(() => mondayOf(new Date().toISOString().slice(0, 10)));
   const sunday = addDaysKey(monday, 6);
-  const { data: blocks } = useQuery({ queryKey: ['time-blocks'], queryFn: fetchTimeBlocks });
   const { data, isPending } = useQuery({
     queryKey: ['my-plan', term?.key, monday],
     queryFn: () => fetchMyPlan(term!.key, monday, sunday),
     enabled: !!term,
   });
-  const time = (order: number, end = false) => {
-    const b = blocks?.find((x) => x.order === order);
-    return b ? (end ? b.endTime : b.startTime) : '';
-  };
   const byDay = useMemo(() => {
     const map = new Map<string, NonNullable<typeof data>>();
     for (const row of data ?? []) map.set(row.date, [...(map.get(row.date) ?? []), row]);
@@ -77,7 +72,7 @@ export default function MyPlanPage() {
               {rows.map((r) => (
                 <li key={r.id} className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 text-sm ${r.status === 'CANCELLED' ? 'text-muted-foreground line-through' : ''}`}>
                   <span className="w-28 tabular-nums">
-                    {time(r.startOrder)}–{time(r.endOrder, true)}
+                    {formatMinutes(r.startMinute)}–{formatMinutes(r.endMinute)}
                   </span>
                   <span className="font-medium">{r.subject}</span>
                   <Badge variant="outline">{CLASS_FULL_LABELS[r.classType]}</Badge>

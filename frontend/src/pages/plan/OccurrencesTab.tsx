@@ -23,6 +23,7 @@ import { changeOccurrence, createManualOccurrence, deleteManualOccurrence, fetch
 import { fetchBuildings } from '@/api/buildings';
 import { getErrorMessage } from '@/lib/errors';
 import { CLASS_LABELS } from '@/lib/scheduleDisplay';
+import { formatMinutes } from '@/lib/timeGrid';
 import type { OccurrenceRow, PlanSection, TimeBlock } from '@/types';
 
 const WEEKDAY = ['nd', 'pn', 'wt', 'sr', 'cz', 'pt', 'sb'];
@@ -53,10 +54,6 @@ export function OccurrencesTab({
   const [editing, setEditing] = useState<OccurrenceRow | null>(null);
   const [adding, setAdding] = useState(false);
 
-  const time = (order: number, end = false) => {
-    const b = blocks.find((x) => x.order === order);
-    return b ? (end ? b.endTime : b.startTime) : '?';
-  };
   const refresh = async () => {
     setEditing(null);
     setAdding(false);
@@ -128,7 +125,7 @@ export function OccurrencesTab({
                   )}
                 </TableCell>
                 <TableCell className="whitespace-nowrap tabular-nums">
-                  {time(o.startOrder)}–{time(o.endOrder, true)}
+                  {formatMinutes(o.startMinute)}–{formatMinutes(o.endMinute)}
                 </TableCell>
                 <TableCell>
                   {CLASS_LABELS[o.classType]} · {o.subject}

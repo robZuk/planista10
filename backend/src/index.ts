@@ -6,7 +6,6 @@ import authRoutes from './routes/auth';
 import facultiesRoutes from './routes/faculties';
 import buildingsRoutes from './routes/buildings';
 import instructorsRoutes from './routes/instructors';
-import timeBlocksRoutes from './routes/timeBlocks';
 import timeGridsRoutes from './routes/timeGrids';
 import fieldsOfStudyRoutes from './routes/fieldsOfStudy';
 import specializationsRoutes from './routes/specializations';
@@ -66,7 +65,6 @@ export function createApp(): Express {
   app.use('/api/faculties', facultiesRoutes);
   app.use('/api/buildings', buildingsRoutes);
   app.use('/api/instructors', instructorsRoutes);
-  app.use('/api/time-blocks', timeBlocksRoutes);
   app.use('/api/time-grids', timeGridsRoutes);
   app.use('/api/fields-of-study', fieldsOfStudyRoutes);
   app.use('/api/specializations', specializationsRoutes);

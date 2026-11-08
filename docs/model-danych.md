@@ -31,6 +31,12 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   status `PLANNING → PUBLISHED → ARCHIVED`. Archiwum = tylko odczyt.
 - `CalendarBreak` (przerwy), `CalendarDay` (dzień wolny, „zajęcia wg planu dnia X",
   godziny rektorskie od bloku), `Zjazd` (numer + daty).
+- `TimeGrid(wydział, tryb)` — **siatka godzin**: każdy wydział ma stacjonarną
+  i niestacjonarną. `TimeBlock` o dowolnym starcie i długości (np. 08:00–08:45),
+  numerowane `order` wg godziny; 1 blok = 1 godzina programu, przerwy = odstępy.
+  `days` — dni zajęć z oknem godzin (np. niestacjonarne: czw i pt od 16:00, sob, nd);
+  zastępują sztywną regułę trybu studiów przy walidacji umieszczeń. Bloki zablokowane,
+  gdy wydział ma umieszczenia w tym trybie w semestrze spoza archiwum.
 - **Święta ustawowe są liczone**, nie przechowywane (`lib/holidays.ts`, 24.12 od 2025).
 - **Numer tygodnia zajęć** liczony od poniedziałku tygodnia startu, z pominięciem
   tygodni w całości w przerwie — wspólna parzystość dla wszystkich dni (`lib/teachingCalendar.ts`).
@@ -77,15 +83,16 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 
 ## 6. Plan i terminy
 
-- `Placement` — dzień, bloki `startOrder..endOrder`, sala, prowadzący z obsady (null = NN),
+- `Placement` — dzień, bloki `startOrder..endOrder` (siatki wydziału i trybu rocznika), sala, prowadzący z obsady (null = NN),
   rytm: `WEEK` (ALL / EVEN / ODD / LIST tygodni, od–do) albo `ZJAZD` (ALL / LIST zjazdów).
   Zajęcia łączone między kierunkami: wspólny `jointKey` (ten sam czas i sala, bez kolizji).
 - **Nic nie układa planu automatycznie.** Planista umieszcza zajęcia ręcznie; opcjonalne
   „Przenieś plan z zeszłego roku" działa na żądanie, z podglądem, a każde przeniesione
   umieszczenie przechodzi tę samą walidację co ręczne.
-- **Kolizje** sprawdzane na konkretnych datach (sala, prowadzący, grupy) w całej uczelni;
-  odrzucenie zawiera listę dat. Typ i pojemność sali, okno trybu studiów.
-- `Occurrence` — termin. `DERIVED` powstają **tylko** przez „Generuj terminy"
+- **Kolizje** sprawdzane na konkretnych datach (sala, prowadzący, grupy) w całej uczelni,
+  **w minutach** — wydziały mają różne siatki godzin; odrzucenie zawiera listę dat.
+  Typ i pojemność sali, dni i okno godzin z siatki.
+- `Occurrence` — termin (bloki + rzeczywisty czas `startMinute/endMinute`). `DERIVED` powstają **tylko** przez „Generuj terminy"
   (`services/plan.ts → generate`, najpierw podgląd): godziny wyczerpywane w kolejności dat
   przez wszystkie umieszczenia zajęć, ostatni termin skracany, kolidujące pomijane i zgłaszane.
   W opublikowanym semestrze generowanie od wybranej daty.

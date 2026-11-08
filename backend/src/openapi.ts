@@ -252,15 +252,12 @@ export const openApiDocument = {
       delete: { tags: ['Zasoby'], summary: 'Usun prowadzacego (ADMIN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniety'), 409: errResp('W planie'), ...authErrors } },
     },
 
-    // ─── Zasoby: Bloki czasowe ───────────────────────────────
+    // ─── Zasoby: Siatki godzin ───────────────────────────────
     '/api/time-grids': {
       get: { tags: ['Zasoby'], summary: 'Siatki godzin wydzialow (stacjonarna i niestacjonarna): bloki, przerwy, dni z oknem godzin', security: bearer, responses: { 200: dataResp('Siatki'), ...authErrors } },
     },
     '/api/time-grids/{id}': {
       put: { tags: ['Zasoby'], summary: 'Zmien bloki i/lub dni siatki (ADMIN); bloki zablokowane, gdy wydzial ma plan w biezacym semestrze', security: bearer, parameters: [pathId()], requestBody: jsonBody('TimeGridUpdate'), responses: { 200: dataResp('Zapisana'), 400: errResp('Zle bloki'), 409: errResp('Plan istnieje'), ...authErrors } },
-    },
-    '/api/time-blocks': {
-      get: { tags: ['Zasoby'], summary: 'Bloki pierwszej siatki stacjonarnej (tylko odczyt)', security: bearer, responses: { 200: dataResp('Bloki'), ...authErrors } },
     },
 
     // ─── Program: Kierunki / specjalnosci / przedmioty ───────
