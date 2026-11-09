@@ -9,7 +9,15 @@ process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn().mockResolvedValue({ facultyId: 'wm' }) },
   programVersion: { findUnique: vi.fn() },
-  programEntry: { findMany: vi.fn().mockResolvedValue([]), aggregate: vi.fn(), create: vi.fn() },
+  programEntry: {
+    findMany: vi.fn().mockResolvedValue([]),
+    findUnique: vi.fn(),
+    aggregate: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn().mockResolvedValue({}),
+    delete: vi.fn().mockResolvedValue({}),
+  },
+  classSection: { count: vi.fn() },
   specialization: { findUnique: vi.fn() },
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
@@ -89,5 +97,56 @@ describe('API — programy studiow', () => {
       .set('Authorization', `Bearer ${dean}`)
       .send({ ...entry, hoursLab: -5 });
     expect(res.status).toBe(400);
+  });
+});
+
+describe('API — pozycja programu, z ktorej powstaly zajecia', () => {
+  const stored = { id: 'e1', ...entry, hoursExercise: 0, hoursLab: 0, hoursProject: 0, hoursSeminar: 0, version: version('wm', 'DRAFT') };
+  const putEntry = (body: unknown) =>
+    request(app).put('/api/program-entries/e1').set('Authorization', `Bearer ${dean}`).send(body);
+
+  it('zmiana przedmiotu -> 409 z liczba zajec, bez zapisu', async () => {
+    prismaMock.programEntry.findUnique.mockResolvedValueOnce(stored);
+    prismaMock.classSection.count.mockResolvedValueOnce(4);
+    prismaMock.programEntry.update.mockClear();
+    const res = await putEntry({ ...entry, subjectId: 's2' });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/zajecia \(4\) — nie zmienia sie: przedmiot/);
+    expect(prismaMock.programEntry.update).not.toHaveBeenCalled();
+  });
+
+  it('zmiana samych godzin przy zajeciach — zapisana', async () => {
+    prismaMock.programEntry.findUnique.mockResolvedValueOnce(stored);
+    prismaMock.classSection.count.mockClear();
+    const res = await putEntry({ ...entry, hoursLecture: 45 });
+    expect(res.status).toBe(200);
+    // Bez zmiany tozsamosci nie trzeba nawet liczyc zajec.
+    expect(prismaMock.classSection.count).not.toHaveBeenCalled();
+  });
+
+  it('zmiana semestru pozycji bez zajec — zapisana', async () => {
+    prismaMock.programEntry.findUnique.mockResolvedValueOnce(stored);
+    prismaMock.classSection.count.mockResolvedValueOnce(0);
+    prismaMock.programEntry.aggregate.mockResolvedValueOnce({ _max: { orderInSemester: 2 } });
+    const res = await putEntry({ ...entry, semester: 2 });
+    expect(res.status).toBe(200);
+  });
+
+  it('usuniecie pozycji z zajeciami -> 409, bez usuwania', async () => {
+    prismaMock.programEntry.findUnique.mockResolvedValueOnce(stored);
+    prismaMock.classSection.count.mockResolvedValueOnce(2);
+    prismaMock.programEntry.delete.mockClear();
+    const res = await request(app).delete('/api/program-entries/e1').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/nie mozna jej usunac/);
+    expect(prismaMock.programEntry.delete).not.toHaveBeenCalled();
+  });
+
+  it('usuniecie pozycji bez zajec — usunieta', async () => {
+    prismaMock.programEntry.findUnique.mockResolvedValueOnce(stored);
+    prismaMock.classSection.count.mockResolvedValueOnce(0);
+    const res = await request(app).delete('/api/program-entries/e1').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(200);
+    expect(prismaMock.programEntry.delete).toHaveBeenCalledWith({ where: { id: 'e1' } });
   });
 });

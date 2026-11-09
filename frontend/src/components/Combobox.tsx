@@ -28,6 +28,7 @@ interface Props {
   emptyText?: string;
   id?: string;
   invalid?: boolean;
+  disabled?: boolean;
 }
 
 /**
@@ -44,6 +45,7 @@ export function Combobox({
   emptyText = 'Brak wynikow.',
   id,
   invalid,
+  disabled,
 }: Props) {
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => option.value === value);
@@ -57,6 +59,7 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           aria-invalid={invalid}
+          disabled={disabled}
           className="w-full justify-between font-normal"
         >
           <span className={cn('truncate', !selected && 'text-muted-foreground')}>

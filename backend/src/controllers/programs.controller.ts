@@ -4,6 +4,7 @@ import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { assertFacultyScope } from '../lib/facultyScope';
 import type { ProgramEntryInput } from '../schemas/program';
+import { lockedEntryChanges, lockedEntryDeleteMessage, lockedEntryMessage } from '../lib/programEntryLock';
 import { cohortLabel } from '../services/cohorts';
 
 /**
@@ -197,6 +198,8 @@ export const getVersion = asyncHandler(async (req, res) => {
         include: {
           subject: { select: { id: true, name: true, code: true } },
           specialization: { select: { id: true, shortName: true, name: true } },
+          // Pozycje z zajeciami: UI blokuje zmiane przedmiotu/specjalnosci/semestru i usuwanie.
+          _count: { select: { sections: true } },
         },
         orderBy: [{ semester: 'asc' }, { orderInSemester: 'asc' }],
       },
@@ -308,6 +311,12 @@ export const updateEntry = asyncHandler(async (req, res) => {
   if (input.semester > version.totalSemesters) {
     throw new AppError(400, `Semestr musi byc w zakresie 1-${version.totalSemesters}`);
   }
+  // Pozycja z zajeciami: przedmiot, specjalnosc i semestr sa czescia historii planu.
+  const changes = lockedEntryChanges(entry, input);
+  if (changes.length > 0) {
+    const sections = await prisma.classSection.count({ where: { programEntryId: entry.id } });
+    if (sections > 0) throw new AppError(409, lockedEntryMessage(changes, sections));
+  }
   await assertSpecialization(version.program.fieldOfStudyId, input.specializationId);
   await assertNoOverlap(version.id, input, entry.id);
   const data: Prisma.ProgramEntryUncheckedUpdateInput = { ...input };
@@ -326,6 +335,8 @@ export const deleteEntry = asyncHandler(async (req, res) => {
   const entry = await loadEntry(String(req.params.id));
   await assertFacultyScope(req, entry.version.program.fieldOfStudy.facultyId);
   assertDraft(entry.version.status);
+  const sections = await prisma.classSection.count({ where: { programEntryId: entry.id } });
+  if (sections > 0) throw new AppError(409, lockedEntryDeleteMessage(sections));
   await prisma.programEntry.delete({ where: { id: entry.id } });
   res.json({ message: 'Przedmiot usuniety z programu' });
 });

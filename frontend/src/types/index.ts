@@ -338,6 +338,8 @@ export interface ProgramEntry {
   assessmentType: AssessmentType;
   subject: { id: string; name: string; code: string | null };
   specialization: { id: string; shortName: string; name: string } | null;
+  /** Zajecia utworzone z tej pozycji: > 0 blokuje zmiane przedmiotu, specjalnosci, semestru i usuwanie. */
+  _count: { sections: number };
 }
 
 export interface ProgramVersionDetail {
