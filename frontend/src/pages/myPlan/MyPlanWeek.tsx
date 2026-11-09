@@ -15,7 +15,18 @@ const HEADER = 36;
  * zajecia rownolegle obok siebie, odwolane przekreslone, odrobienia oznaczone.
  * `showInstructor` — student widzi prowadzacego, prowadzacy nie widzi samego siebie.
  */
-export function MyPlanWeek({ monday, rows, showInstructor }: { monday: string; rows: MyPlanRow[]; showInstructor: boolean }) {
+export function MyPlanWeek({
+  monday,
+  rows,
+  daysOff,
+  showInstructor,
+}: {
+  monday: string;
+  rows: MyPlanRow[];
+  /** Data -> nazwa swieta, przerwy albo dnia wolnego uczelni (kolumna zakreskowana z opisem). */
+  daysOff: Record<string, string>;
+  showInstructor: boolean;
+}) {
   const days = weekColumns(monday, rows);
   const { from, to } = hourRange(rows);
   const lanes = weekLanes(rows);
@@ -31,7 +42,12 @@ export function MyPlanWeek({ monday, rows, showInstructor }: { monday: string; r
           {hours.map((m) => (
             <div
               key={m}
-              style={{ position: 'absolute', top: (m - from) * PX_PER_MINUTE, left: 0, right: 0 }}
+              style={{
+                position: 'absolute',
+                top: (m - from) * PX_PER_MINUTE,
+                left: 0,
+                right: 0,
+              }}
               className="px-1 pt-0.5 text-right text-xs text-muted-foreground tabular-nums"
             >
               {formatMinutes(m)}
@@ -54,10 +70,20 @@ export function MyPlanWeek({ monday, rows, showInstructor }: { monday: string; r
               {hours.map((m) => (
                 <div
                   key={m}
-                  style={{ position: 'absolute', top: (m - from) * PX_PER_MINUTE, left: 0, right: 0 }}
+                  style={{
+                    position: 'absolute',
+                    top: (m - from) * PX_PER_MINUTE,
+                    left: 0,
+                    right: 0,
+                  }}
                   className="border-t border-border/60 first:border-transparent"
                 />
               ))}
+              {daysOff[date] && (
+                <div className="absolute inset-0 flex items-start justify-center bg-[repeating-linear-gradient(135deg,var(--muted)_0_8px,transparent_8px_16px)] pt-4 text-center text-xs font-medium text-muted-foreground">
+                  <span className="rounded bg-background/90 px-2 py-1">{daysOff[date]}</span>
+                </div>
+              )}
               {dayRows.map((r) => {
                 const lane = lanes.get(r.id) ?? { lane: 0, span: 1, lanes: 1 };
                 const width = 100 / lane.lanes;
@@ -68,7 +94,13 @@ export function MyPlanWeek({ monday, rows, showInstructor }: { monday: string; r
                 return (
                   <div
                     key={r.id}
-                    title={[`${time} ${CLASS_LABELS[r.classType]} · ${r.subject}`, who, ...lines, ...(status ? [status] : []), ...(r.note ? [r.note] : [])].join('\n')}
+                    title={[
+                      `${time} ${CLASS_LABELS[r.classType]} · ${r.subject}`,
+                      who,
+                      ...lines,
+                      ...(status ? [status] : []),
+                      ...(r.note ? [r.note] : []),
+                    ].join('\n')}
                     style={{
                       position: 'absolute',
                       top: (r.startMinute - from) * PX_PER_MINUTE + 1,

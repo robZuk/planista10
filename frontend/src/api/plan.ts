@@ -104,7 +104,8 @@ export async function fetchSetup(termKey: string, facultyId?: string): Promise<S
   return res.data.data;
 }
 
-export async function fetchMyPlan(termKey: string, from: string, to: string): Promise<MyPlanRow[]> {
+/** Plan osobisty tygodnia: terminy i dni wolne (data -> nazwa swieta/przerwy). */
+export async function fetchMyPlan(termKey: string, from: string, to: string): Promise<{ rows: MyPlanRow[]; daysOff: Record<string, string> }> {
   const res = await api.get(`/terms/${termKey}/my-plan`, { params: { from, to } });
-  return res.data.data;
+  return { rows: res.data.data, daysOff: res.data.daysOff ?? {} };
 }

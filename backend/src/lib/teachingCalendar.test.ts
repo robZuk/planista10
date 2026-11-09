@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calendarDatesKey, calendarPeriods, expandDates, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
+import { calendarDatesKey, calendarPeriods, expandDates, personalDaysOff, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
 import { eachDay } from './isoDate';
 
 /** Zima 2024/25 jak w danych: start we wtorek 1.10, bez przerw. */
@@ -314,5 +314,36 @@ describe('calendarDatesKey', () => {
   it('pola nieuzywane przez rodzaj dnia sa pomijane', () => {
     const withNoise = { ...base, days: base.days.map((d) => ({ ...d, followsWeekday: 'MONDAY' as const, closedFromBlockOrder: 3 })) };
     expect(calendarDatesKey(withNoise)).toBe(calendarDatesKey(base));
+  });
+});
+
+describe('personalDaysOff', () => {
+  const weekly = (over: Partial<CalendarInput> = {}): TeachingCalendar =>
+    new TeachingCalendar({ kind: 'WEEKLY', studyMode: 'FULL_TIME', startDate: '2026-10-01', endDate: '2027-01-31', breaks: [], days: [], zjazdy: [], ...over });
+  const zjazdy = new TeachingCalendar({
+    kind: 'ZJAZD',
+    studyMode: 'PART_TIME',
+    startDate: '2026-10-01',
+    endDate: '2027-01-31',
+    breaks: [],
+    days: [],
+    zjazdy: [{ number: 1, startDate: '2026-11-13', endDate: '2026-11-15' }],
+  });
+  const week = ['2026-11-09', '2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13'];
+
+  it('swieto ustawowe — takze gdy drugi kalendarz (zjazdy) po prostu nie ma tego dnia zajec', () => {
+    expect(personalDaysOff(week, [weekly(), zjazdy])).toEqual({ '2026-11-11': 'Narodowe Swieto Niepodleglosci' });
+  });
+
+  it('przerwa jednego wydzialu nie jest dniem wolnym, gdy w drugim sa zajecia', () => {
+    const wm = weekly({ breaks: [{ name: 'Dni rektorskie WM', startDate: '2026-11-09', endDate: '2026-11-10' }] });
+    expect(personalDaysOff(week, [wm, weekly()])['2026-11-09']).toBeUndefined();
+    expect(personalDaysOff(week, [wm])['2026-11-09']).toBe('Dni rektorskie WM');
+  });
+
+  it('dzien wolny uczelni z wlasna nazwa; bez kalendarzy — same swieta', () => {
+    const cal = weekly({ days: [{ date: '2026-11-10', kind: 'DAY_OFF', name: 'Dzien sportu' }] });
+    expect(personalDaysOff(week, [cal])['2026-11-10']).toBe('Dzien sportu');
+    expect(personalDaysOff(week, [])).toEqual({ '2026-11-11': 'Narodowe Swieto Niepodleglosci' });
   });
 });

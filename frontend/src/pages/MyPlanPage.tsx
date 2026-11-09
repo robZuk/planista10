@@ -12,6 +12,7 @@ import { formatMinutes } from '@/lib/timeGrid';
 import { useAuthStore } from '@/store/authStore';
 import { addDaysKey } from './calendar/calendarUtils';
 import { MyPlanWeek } from './myPlan/MyPlanWeek';
+import type { MyPlanRow } from '@/types';
 
 const WEEKDAY = ['Niedziela', 'Poniedzialek', 'Wtorek', 'Sroda', 'Czwartek', 'Piatek', 'Sobota'];
 
@@ -36,11 +37,14 @@ export default function MyPlanPage() {
     queryFn: () => fetchMyPlan(term!.key, monday, sunday),
     enabled: !!term,
   });
+  const rows = useMemo(() => data?.rows ?? [], [data]);
+  const daysOff = useMemo(() => data?.daysOff ?? {}, [data]);
+  // Dni z zajeciami i dni wolne (swieto, przerwa) — na liscie dzien wolny ma wlasny wpis.
   const byDay = useMemo(() => {
-    const map = new Map<string, NonNullable<typeof data>>();
-    for (const row of data ?? []) map.set(row.date, [...(map.get(row.date) ?? []), row]);
+    const map = new Map<string, MyPlanRow[]>(Object.keys(daysOff).map((d) => [d, []]));
+    for (const row of rows) map.set(row.date, [...(map.get(row.date) ?? []), row]);
     return [...map.entries()].sort(([a], [b]) => a.localeCompare(b));
-  }, [data]);
+  }, [rows, daysOff]);
 
   return (
     <>
@@ -50,10 +54,20 @@ export default function MyPlanPage() {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex rounded-md border p-0.5" role="group" aria-label="Widok planu">
-              <Button size="sm" variant={view === 'week' ? 'secondary' : 'ghost'} aria-pressed={view === 'week'} onClick={() => setView('week')}>
+              <Button
+                size="sm"
+                variant={view === 'week' ? 'secondary' : 'ghost'}
+                aria-pressed={view === 'week'}
+                onClick={() => setView('week')}
+              >
                 <CalendarDays /> Tydzien
               </Button>
-              <Button size="sm" variant={view === 'list' ? 'secondary' : 'ghost'} aria-pressed={view === 'list'} onClick={() => setView('list')}>
+              <Button
+                size="sm"
+                variant={view === 'list' ? 'secondary' : 'ghost'}
+                aria-pressed={view === 'list'}
+                onClick={() => setView('list')}
+              >
                 <List /> Lista
               </Button>
             </div>
@@ -70,39 +84,48 @@ export default function MyPlanPage() {
         }
       />
       {isPending && term && <Skeleton className="h-48 w-full" />}
-      {data && view === 'week' && byDay.length > 0 && <MyPlanWeek monday={monday} rows={data} showInstructor={showInstructor} />}
+      {data && view === 'week' && byDay.length > 0 && (
+        <MyPlanWeek monday={monday} rows={rows} daysOff={daysOff} showInstructor={showInstructor} />
+      )}
       {data && byDay.length === 0 && (
         <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
           W tym tygodniu brak zajec (albo plan nie jest jeszcze opublikowany).
         </p>
       )}
       <div className="space-y-4">
-        {view === 'list' && byDay.map(([date, rows]) => (
-          <section key={date} className="space-y-1">
-            <h3 className="font-medium">
-              {WEEKDAY[new Date(`${date}T12:00:00Z`).getUTCDay()]} {date}
-            </h3>
-            <ul className="divide-y rounded-lg border">
-              {rows.map((r) => (
-                <li key={r.id} className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 text-sm ${r.status === 'CANCELLED' ? 'text-muted-foreground line-through' : ''}`}>
-                  <span className="w-28 tabular-nums">
-                    {formatMinutes(r.startMinute)}–{formatMinutes(r.endMinute)}
-                  </span>
-                  <span className="font-medium">{r.subject}</span>
-                  <Badge variant="outline">{CLASS_FULL_LABELS[r.classType]}</Badge>
-                  <span>
-                    {r.program} · {r.group}
-                  </span>
-                  <span className="text-muted-foreground">{r.room}</span>
-                  {showInstructor && <span className="text-muted-foreground">{r.instructor}</span>}
-                  {r.status === 'CANCELLED' && <Badge variant="destructive">odwolane</Badge>}
-                  {r.status === 'MAKEUP' && <Badge>odrobienie</Badge>}
-                  {r.note && <span className="text-xs text-muted-foreground">{r.note}</span>}
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+        {view === 'list' &&
+          byDay.map(([date, dayRows]) => (
+            <section key={date} className="space-y-1">
+              <h3 className="flex flex-wrap items-center gap-2 font-medium">
+                {WEEKDAY[new Date(`${date}T12:00:00Z`).getUTCDay()]} {date}
+                {daysOff[date] && <Badge variant="secondary">{daysOff[date]}</Badge>}
+              </h3>
+              {dayRows.length > 0 && (
+                <ul className="divide-y rounded-lg border">
+                  {dayRows.map((r) => (
+                    <li
+                      key={r.id}
+                      className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 text-sm ${r.status === 'CANCELLED' ? 'text-muted-foreground line-through' : ''}`}
+                    >
+                      <span className="w-28 tabular-nums">
+                        {formatMinutes(r.startMinute)}–{formatMinutes(r.endMinute)}
+                      </span>
+                      <span className="font-medium">{r.subject}</span>
+                      <Badge variant="outline">{CLASS_FULL_LABELS[r.classType]}</Badge>
+                      <span>
+                        {r.program} · {r.group}
+                      </span>
+                      <span className="text-muted-foreground">{r.room}</span>
+                      {showInstructor && <span className="text-muted-foreground">{r.instructor}</span>}
+                      {r.status === 'CANCELLED' && <Badge variant="destructive">odwolane</Badge>}
+                      {r.status === 'MAKEUP' && <Badge>odrobienie</Badge>}
+                      {r.note && <span className="text-xs text-muted-foreground">{r.note}</span>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          ))}
       </div>
     </>
   );

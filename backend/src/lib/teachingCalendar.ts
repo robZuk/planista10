@@ -420,3 +420,28 @@ export function calendarDatesKey(input: Omit<CalendarInput, 'studyMode'>): strin
     zjazdy: sorted(input.zjazdy.map((z) => [z.number, z.startDate, z.endDate])),
   });
 }
+
+/** Powody, ktore planista nazywa "dniem wolnym" (a nie po prostu dniem bez zajec trybu). */
+const DAY_OFF_REASONS: DayBlockReason[] = ['HOLIDAY', 'BREAK', 'DAY_OFF'];
+
+/**
+ * Dni wolne w planie osobistym (student, prowadzacy) — opis do kolumny kalendarza tygodnia.
+ * Osoba moze miec zajecia wg kilku kalendarzy (prowadzacy na kilku wydzialach), wiec dzien jest
+ * wolny tylko wtedy, gdy w ZADNYM z nich nie ma zajec, a co najmniej jeden podaje powod (swieto,
+ * przerwa, dzien wolny uczelni). Bez kalendarzy — same swieta ustawowe.
+ */
+export function personalDaysOff(dates: IsoDate[], calendars: TeachingCalendar[]): Record<IsoDate, string> {
+  const result: Record<IsoDate, string> = {};
+  for (const date of dates) {
+    if (calendars.length === 0) {
+      const holiday = holidaysInRange(date, date)[0];
+      if (holiday) result[date] = holiday.name;
+      continue;
+    }
+    const infos = calendars.map((c) => c.dayInfo(date));
+    if (infos.some((i) => i.teaching)) continue;
+    const labels = [...new Set(infos.filter((i) => i.reason && DAY_OFF_REASONS.includes(i.reason)).map((i) => i.label ?? 'Dzien wolny'))];
+    if (labels.length > 0) result[date] = labels.join(' / ');
+  }
+  return result;
+}

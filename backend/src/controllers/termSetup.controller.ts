@@ -1,9 +1,12 @@
 import type { Request } from 'express';
+import type { AcademicTerm } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { getCallerScope } from '../lib/facultyScope';
-import { fromIsoDate, isIsoDate, toIsoDate } from '../lib/isoDate';
+import { addDays, fromIsoDate, isIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
+import { personalDaysOff, TeachingCalendar } from '../lib/teachingCalendar';
+import { toCalendarInput } from '../services/termCalendars';
 import { parseTermKey } from '../lib/terms';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
 import { activeCohorts } from '../services/sections';
@@ -173,17 +176,26 @@ export const myPlan = asyncHandler(async (req, res) => {
   const visible = new Set(published.map((c) => `${c.facultyId}|${c.studyMode}`));
 
   let groupFilter: string[] | null = null;
+  // Roczniki, wg ktorych kalendarzy osoba ma zajecia — do dni wolnych w kalendarzu tygodnia.
+  let personCohortIds: string[] = [];
   if (user.role === 'STUDENT') {
     const memberGroups = user.studentGroups.filter((g) => g.cohortId);
     const cohortIds = [...new Set(memberGroups.map((g) => g.cohortId!))];
+    personCohortIds = cohortIds;
     const groups = await prisma.studentGroup.findMany({ where: { cohortId: { in: cohortIds } } });
     const index = indexGroups(groups.map(toTreeGroup));
     groupFilter = groups.filter((g) => memberGroups.some((m) => groupsOverlap(m.id, g.id, index))).map((g) => g.id);
   } else if (user.role === 'INSTRUCTOR') {
     if (!user.instructorId) {
-      res.json({ data: [] });
+      res.json({ data: [], daysOff: {} });
       return;
     }
+    const taught = await prisma.classSection.findMany({
+      where: { termId: term.id, occurrences: { some: { instructorId: user.instructorId } } },
+      select: { cohortId: true },
+      distinct: ['cohortId'],
+    });
+    personCohortIds = taught.map((t) => t.cohortId);
   } else {
     throw new AppError(400, 'Plan osobisty jest dla studentow i prowadzacych — planisci uzywaja Ukladania planu');
   }
@@ -226,5 +238,21 @@ export const myPlan = asyncHandler(async (req, res) => {
       status: o.status,
       note: o.note,
     }));
-  res.json({ data });
+  res.json({ data, daysOff: from && to ? await personDaysOff(term, personCohortIds, visible, toIsoDate(from), toIsoDate(to)) : {} });
 });
+
+/**
+ * Dni wolne w zakresie planu osobistego (najwyzej 2 tygodnie) wg kalendarzy rocznikow osoby —
+ * tylko opublikowanych albo archiwalnych, jak same terminy. Regula: lib/teachingCalendar.personalDaysOff.
+ */
+async function personDaysOff(term: AcademicTerm, cohortIds: string[], visible: Set<string>, from: IsoDate, to: IsoDate) {
+  const dates: IsoDate[] = [];
+  for (let d = from; d <= to && dates.length < 14; d = addDays(d, 1)) dates.push(d);
+  const contexts = cohortIds.length > 0 ? await activeCohorts(term, null, cohortIds) : [];
+  const calendars = new Map<string, TeachingCalendar>();
+  for (const [, cal] of await calendarsFor(term, contexts)) {
+    if (cal.status === 'PLANNING' || !visible.has(`${cal.facultyId}|${cal.studyMode}`)) continue;
+    if (!calendars.has(cal.id)) calendars.set(cal.id, new TeachingCalendar(toCalendarInput(cal)));
+  }
+  return personalDaysOff(dates, [...calendars.values()]);
+}
