@@ -695,6 +695,9 @@ async function main() {
       },
     });
   }
+  await prisma.user.create({
+    data: { email: 'planista.wm@umg.edu.pl', password: hash('Planista1234!'), role: 'DEAN_OFFICE', name: 'Planista WM', facultyId: facultyId.get('WM')! },
+  });
   const busiest = [...load.entries()].sort((a, b) => b[1] - a[1])[0]![0];
   await prisma.user.create({
     data: { email: 'prowadzacy@umg.edu.pl', password: hash('Prowadzacy1234!'), role: 'INSTRUCTOR', name: 'Prowadzacy testowy', instructorId: busiest },

@@ -196,6 +196,7 @@ Skróty w `Makefile`: `make dev`, `make prod`, `make down`, `make logs` (`make` 
 |---|---|---|
 | ADMIN | admin@umg.edu.pl | `Admin1234!` |
 | Dziekanat | dziekanat@umg.edu.pl | `Dziekanat1234!` |
+| Dziekanat (planista WM) | planista.wm@umg.edu.pl | `Planista1234!` |
 | Prowadzący | prowadzacy@umg.edu.pl | `Prowadzacy1234!` |
 | Student | student@umg.edu.pl | `Student1234!` |
 
