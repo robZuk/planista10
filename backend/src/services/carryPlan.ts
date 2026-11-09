@@ -5,6 +5,7 @@ import { termLabel, termOrdinal } from '../lib/terms';
 import { toTreeGroup, cohortLabel } from './cohorts';
 import { activeCohorts, groupSignature } from './sections';
 import { calendarFor, checkPlacement, type PlacementInput } from './plan';
+import { conflictShort } from '../lib/conflictMessage';
 
 /**
  * "Przenies plan z zeszlego roku" — uruchamiane WYLACZNIE przyciskiem planisty, dla
@@ -123,8 +124,7 @@ export async function carryPlan(
             ...row,
             source: sourceLabel,
             problem:
-              check.errors.join('; ') ||
-              `kolizja w ${check.conflicts.length} terminach (np. ${check.conflicts[0]!.date}: ${check.conflicts[0]!.with})`,
+              check.errors.join('; ') || conflictShort(check.conflicts),
           });
           continue;
         }
