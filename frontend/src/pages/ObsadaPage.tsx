@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { CircleCheck, Download, FilterX, History, RefreshCw, Search, Upload } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CircleCheck, Download, FilterX, History, RefreshCw, Search, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,8 @@ import { AssignmentDialog, CarryDialog, ImportDialog, SyncDialog } from './obsad
  * z programow i grup rocznikow (synchronizacja); tu wpisuje sie tez, kto prowadzi ile
  * godzin. Obsade mozna przeniesc z poprzedniego roku albo wczytac z CSV od katedr.
  */
+const PAGE_SIZE = 50;
+
 export default function ObsadaPage() {
   const queryClient = useQueryClient();
   const me = useAuthStore((s) => s.user);
@@ -78,6 +80,15 @@ export default function ObsadaPage() {
           r.instructors.some((i) => i.name.toLowerCase().includes(q))),
     );
   }, [data, cohortFilter, onlyVacant, search]);
+
+  // Strony po 50 wierszy — semestr wydzialu to setki zajec (WM: ~900), cala uczelnia — tysiace.
+  // Zmiana filtra wraca na pierwsza strone (strona pamietana razem z kluczem filtrow).
+  const filterKey = `${cohortFilter}|${onlyVacant}|${search}|${facultyId}|${term?.key}`;
+  const [pageState, setPageState] = useState({ key: filterKey, page: 0 });
+  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const page = pageState.key === filterKey ? Math.min(pageState.page, pageCount - 1) : 0;
+  const setPage = (p: number) => setPageState({ key: filterKey, page: p });
+  const pageRows = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const summary = data?.summary;
   const filtersActive = cohortFilter !== 'all' || onlyVacant || search.trim() !== '';
@@ -207,69 +218,88 @@ export default function ObsadaPage() {
         )}
 
         {rows.length > 0 && (
-          <div className="overflow-x-auto rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Rocznik</TableHead>
-                  <TableHead>Przedmiot</TableHead>
-                  <TableHead>Forma</TableHead>
-                  <TableHead>Grupa</TableHead>
-                  <TableHead className="text-right">Godz.</TableHead>
-                  <TableHead>Obsada</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className={canEdit && !row.cohort.archived ? 'cursor-pointer' : undefined}
-                    title={row.cohort.archived ? 'Kalendarz rocznika w archiwum — obsada tylko do odczytu' : undefined}
-                    onClick={() => canEdit && !row.cohort.archived && setEditing(row)}
-                  >
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {row.cohort.code} · s{row.cohort.semester}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {row.subject.name}
-                      {row.specialization && (
-                        <Badge
-                          variant="outline"
-                          className="ml-2 cursor-help"
-                          title={`Przedmiot specjalnosci ${row.specialization}${row.specializationName ? ` (${row.specializationName})` : ''} — tylko dla jej studentow`}
-                        >
-                          {row.specialization}
-                        </Badge>
-                      )}
-                      {row.status === 'ORPHANED' && (
-                        <Badge variant="destructive" className="ml-2">
-                          osierocone
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{CLASS_FULL_LABELS[row.classType]}</TableCell>
-                    <TableCell className="whitespace-nowrap">{row.group.name}</TableCell>
-                    <TableCell className="text-right tabular-nums">{row.hours}</TableCell>
-                    <TableCell>
-                      {row.instructors.length === 0 ? (
-                        <Badge variant="destructive">brak obsady</Badge>
-                      ) : (
-                        <div className="flex flex-wrap gap-1">
-                          {row.instructors.map((i) => (
-                            <Badge key={i.id} variant={i.instructorId ? 'secondary' : 'destructive'}>
-                              {i.name} · {i.hours} h
-                            </Badge>
-                          ))}
-                          {row.assignedHours < row.hours && (
-                            <Badge variant="outline">brakuje {row.hours - row.assignedHours} h</Badge>
-                          )}
-                        </div>
-                      )}
-                    </TableCell>
+          <div className="min-w-0 space-y-2">
+            <div className="overflow-x-auto rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Rocznik</TableHead>
+                    <TableHead>Przedmiot</TableHead>
+                    <TableHead>Forma</TableHead>
+                    <TableHead>Grupa</TableHead>
+                    <TableHead className="text-right">Godz.</TableHead>
+                    <TableHead>Obsada</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {pageRows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      className={canEdit && !row.cohort.archived ? 'cursor-pointer' : undefined}
+                      title={row.cohort.archived ? 'Kalendarz rocznika w archiwum — obsada tylko do odczytu' : undefined}
+                      onClick={() => canEdit && !row.cohort.archived && setEditing(row)}
+                    >
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {row.cohort.code} · s{row.cohort.semester}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {row.subject.name}
+                        {row.specialization && (
+                          <Badge
+                            variant="outline"
+                            className="ml-2 cursor-help"
+                            title={`Przedmiot specjalnosci ${row.specialization}${row.specializationName ? ` (${row.specializationName})` : ''} — tylko dla jej studentow`}
+                          >
+                            {row.specialization}
+                          </Badge>
+                        )}
+                        {row.status === 'ORPHANED' && (
+                          <Badge variant="destructive" className="ml-2">
+                            osierocone
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{CLASS_FULL_LABELS[row.classType]}</TableCell>
+                      <TableCell className="whitespace-nowrap">{row.group.name}</TableCell>
+                      <TableCell className="text-right tabular-nums">{row.hours}</TableCell>
+                      <TableCell>
+                        {row.instructors.length === 0 ? (
+                          <Badge variant="destructive">brak obsady</Badge>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {row.instructors.map((i) => (
+                              <Badge key={i.id} variant={i.instructorId ? 'secondary' : 'destructive'}>
+                                {i.name} · {i.hours} h
+                              </Badge>
+                            ))}
+                            {row.assignedHours < row.hours && (
+                              <Badge variant="outline">brakuje {row.hours - row.assignedHours} h</Badge>
+                            )}
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {pageCount > 1 && (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-muted-foreground">
+                  Strona {page + 1} z {pageCount} (wiersze {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, rows.length)} z {rows.length})
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 0}>
+                    <ChevronLeft />
+                    Poprzednia
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page >= pageCount - 1}>
+                    Nastepna
+                    <ChevronRight />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
