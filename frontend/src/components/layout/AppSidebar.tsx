@@ -28,7 +28,7 @@ export function AppSidebar() {
   const role = useAuthStore((s) => s.user?.role);
   const { pathname } = useLocation();
   const groups = visibleGroups(role);
-  const { isMobile, setOpenMobile } = useSidebar();
+  const { isMobile, setOpenMobile, state } = useSidebar();
 
   // Na mobile panel to wysuwany Sheet — po wyborze pozycji zamykamy go,
   // zeby nie zaslanial tresci. Na desktopie no-op (Sheet nie jest widoczny).
@@ -67,8 +67,13 @@ export function AppSidebar() {
                     item.to === '/' ? pathname === '/' : pathname.startsWith(item.to);
                   return (
                     <SidebarMenuItem key={item.to}>
-                      <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-                        <NavLink to={item.to} onClick={closeOnMobile}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        {/* Dymek natywny tylko przy zwinietym menu — rozwiniete pokazuje nazwe. */}
+                        <NavLink
+                          to={item.to}
+                          onClick={closeOnMobile}
+                          title={state === 'collapsed' && !isMobile ? item.label : undefined}
+                        >
                           <item.icon />
                           <span>{item.label}</span>
                         </NavLink>

@@ -10,7 +10,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
 import { fetchTermCohorts } from '@/api/cohorts';
@@ -239,10 +238,8 @@ export default function PlanPage() {
         actions={
           <>
             {plan && !locked && (
-              <Tooltip open={blockedReason ? undefined : false}>
-                <TooltipTrigger asChild>
-                  {/* span: wylaczony przycisk nie emituje zdarzen, a podpowiedz ma sie pokazac */}
-                  <span tabIndex={blockedReason ? 0 : -1} className="inline-flex gap-2">
+              // Dymek natywny na spanie: wylaczony przycisk nie reaguje na najechanie, a powod ma byc widoczny.
+              <span title={blockedReason ?? undefined} className="inline-flex gap-2">
                     <Button variant="outline" disabled={!!blockedReason} onClick={() => setCarrying(true)}>
                       <History /> Przenies plan z zeszlego roku
                     </Button>
@@ -253,10 +250,7 @@ export default function PlanPage() {
                     >
                       <CalendarCheck /> Generuj terminy
                     </Button>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>{blockedReason}</TooltipContent>
-              </Tooltip>
+              </span>
             )}
           </>
         }
@@ -267,21 +261,7 @@ export default function PlanPage() {
         <div className="flex flex-wrap items-center gap-3 text-sm">
           {isAdmin && <FacultySelector />}
           <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} />
-          <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
-          <NativeSelect
-            value={cohortId}
-            onChange={(e) => { setCohortId(e.target.value); setSelected(null); setZjazd(null); setGroupFilter('all'); }}
-            className="w-64"
-            aria-label="Rocznik"
-            title={cohorts.find((c) => c.id === cohortId)?.program.name}
-            disabled={cohorts.length === 0}
-          >
-            {cohorts.map((c) => (
-              <NativeSelectOption key={c.id} value={c.id}>
-                {c.program.code} · sem. {c.semester} · nabor {c.startTermLabel}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
+          {/* Licznik i czyszczenie przed strzalka: dotycza filtrow po lewej, nie wyboru rocznika. */}
           <span className="text-muted-foreground">
             {cohortFilter.facetsActive ? `${cohorts.length} z ${allCohorts.length} rocznikow` : `${allCohorts.length} rocznikow`}
           </span>
@@ -290,6 +270,24 @@ export default function PlanPage() {
               <FilterX /> Wyczysc filtry
             </Button>
           )}
+          {/* Strzalka i rocznik zawijaja sie razem (strzalka nie zostaje sama na koncu linii). */}
+          <div className="flex shrink-0 items-center gap-3">
+            <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
+            <NativeSelect
+              value={cohortId}
+              onChange={(e) => { setCohortId(e.target.value); setSelected(null); setZjazd(null); setGroupFilter('all'); }}
+              className="w-64"
+              aria-label="Rocznik"
+              title={cohorts.find((c) => c.id === cohortId)?.program.name}
+              disabled={cohorts.length === 0}
+            >
+              {cohorts.map((c) => (
+                <NativeSelectOption key={c.id} value={c.id}>
+                  {c.program.code} · sem. {c.semester} · nabor {c.startTermLabel}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+          </div>
         </div>
       )}
 

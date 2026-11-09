@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import App from './App';
 import { initSentry, Sentry } from './lib/sentry';
@@ -31,12 +30,10 @@ createRoot(document.getElementById('root')!, {
     {/* attribute="class" -> next-themes dopisuje klase .dark do <html>, czego oczekuje Tailwind */}
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider delayDuration={200}>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-          <Toaster position="bottom-right" richColors />
-        </TooltipProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+        <Toaster position="bottom-right" richColors />
       </QueryClientProvider>
     </ThemeProvider>
   </StrictMode>,

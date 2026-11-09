@@ -24,7 +24,6 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PageHeader } from '@/components/PageHeader';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Combobox } from '@/components/Combobox';
@@ -333,12 +332,9 @@ export default function ProgramVersionPage() {
                           <TableHead>Dla</TableHead>
                           {HOUR_FIELDS.map((f) => (
                             <TableHead key={f.key} className="w-12 text-right">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="cursor-help">{f.short}</span>
-                                </TooltipTrigger>
-                                <TooltipContent>{f.full}</TooltipContent>
-                              </Tooltip>
+                              <span className="cursor-help" title={f.full}>
+                                {f.short}
+                              </span>
                             </TableHead>
                           ))}
                           <TableHead className="w-16 text-right">Razem</TableHead>

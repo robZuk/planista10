@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
 import { downloadSectionsCsv, fetchSections, fetchWorkload } from '@/api/sections';
@@ -227,17 +226,13 @@ export default function ObsadaPage() {
                     <TableCell className="font-medium">
                       {row.subject.name}
                       {row.specialization && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge variant="outline" className="ml-2 cursor-help">
-                              {row.specialization}
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            Przedmiot specjalnosci {row.specialization}
-                            {row.specializationName && ` (${row.specializationName})`} — tylko dla jej studentow
-                          </TooltipContent>
-                        </Tooltip>
+                        <Badge
+                          variant="outline"
+                          className="ml-2 cursor-help"
+                          title={`Przedmiot specjalnosci ${row.specialization}${row.specializationName ? ` (${row.specializationName})` : ''} — tylko dla jej studentow`}
+                        >
+                          {row.specialization}
+                        </Badge>
                       )}
                       {row.status === 'ORPHANED' && (
                         <Badge variant="destructive" className="ml-2">
