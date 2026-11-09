@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircle2, Circle, CircleAlert } from 'lucide-react';
+import { CheckCircle2, Circle, CircleAlert, EyeOff } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,6 +66,8 @@ export default function TermSetupPage() {
   const rows = sortSetupCohorts(data?.cohorts ?? []).map((c) => ({ c, issues: setupIssues(c) }));
   const withIssues = rows.filter((r) => r.issues.size > 0).length;
   const visibleRows = onlyIssues ? rows.filter((r) => r.issues.size > 0) : rows;
+  // Plan widza studenci i prowadzacy tylko z kalendarzy opublikowanych lub w archiwum (services/visibility).
+  const unpublished = (data?.calendars ?? []).filter((c) => c.status === 'PLANNING');
   const warn = (on: boolean) => (on ? 'font-semibold text-amber-600 dark:text-amber-400' : undefined);
   return (
     <>
@@ -109,6 +112,24 @@ export default function TermSetupPage() {
               {t.published > 0 ? `opublikowane kalendarze: ${t.published}` : 'nic nie opublikowano'}
             </Step>
           </div>
+
+          {unpublished.length > 0 && (
+            <Alert>
+              <EyeOff />
+              <AlertTitle>Studenci i prowadzacy nie widza jeszcze planu</AlertTitle>
+              <AlertDescription>
+                <p>
+                  {unpublished.length === 1 ? 'Kalendarz w przygotowaniu' : 'Kalendarze w przygotowaniu'}:{' '}
+                  {unpublished.map((c) => `${STUDY_MODE_LABELS[c.studyMode]} · ${c.name}`).join('; ')}. Plan rocznikow wg{' '}
+                  {unpublished.length === 1 ? 'tego kalendarza' : 'tych kalendarzy'} widzi tylko dziekanat — opublikuj go w{' '}
+                  <Link to={`/calendar/${key}`} className="font-medium text-primary underline-offset-4 hover:underline">
+                    Kalendarzu semestru
+                  </Link>
+                  , gdy plan bedzie gotowy.
+                </p>
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <label className="flex items-center gap-2">
@@ -189,13 +210,6 @@ export default function TermSetupPage() {
               </TableBody>
             </Table>
           </div>
-          {data.calendars.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              Kalendarze:{' '}
-              {data.calendars.map((c) => `${STUDY_MODE_LABELS[c.studyMode]} · ${c.name} (${CALENDAR_STATUS_LABELS[c.status].toLowerCase()})`).join('; ')}
-              . Studenci i prowadzacy widza plan dopiero po zmianie statusu kalendarza na „Opublikowany”.
-            </p>
-          )}
         </>
       )}
     </>
