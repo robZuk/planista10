@@ -107,7 +107,9 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 - `PlacementException(placement, originalDate)` — odwołanie albo przeniesienie pojedynczego
   terminu; **przeżywa ponowne generowanie**. Wyjątek bez daty we wzorcu trafia do raportu.
 - `Occurrence.kind = MANUAL` — odrobienia i terminy jednorazowe; liczą się do godzin, nie znikają.
-- Zmiana wzorca po generowaniu → „terminy nieaktualne" (`TermCalendar.lastGeneratedAt`).
+- Zmiana wzorca po generowaniu → „terminy nieaktualne" — liczone per rocznik od jego ostatniego
+  generowania (`CohortGeneration`, nie od kalendarza, który dzieli wiele roczników);
+  jedno źródło dla planu i „Przygotowania semestru" (`services/staleness.ts`).
 
 ## 7. Widoczność i uprawnienia
 

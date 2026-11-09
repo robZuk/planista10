@@ -692,6 +692,8 @@ export interface SetupCohort {
   placedSections: number;
   occurrences: number;
   stale: boolean;
+  /** Powody nieaktualnych terminow — te same co w "Ukladaniu planu". */
+  staleReasons: StaleReason[];
 }
 
 export interface SetupStatus {

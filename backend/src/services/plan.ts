@@ -4,7 +4,6 @@ import { AppError } from '../lib/AppError';
 import { fromIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
 import { calendarPeriods, expandDates, TeachingCalendar } from '../lib/teachingCalendar';
 import { groupsOverlap, indexGroups, pathFromRoot } from '../lib/groupTree';
-import { staleReasons } from '../lib/planStaleness';
 import { roomTypeMap } from '../lib/scheduleTime';
 import { dayWindowProblem, formatMinutes, mapRangeByTime, minutesOverlap, weekdayLabel, type GridTime, type MinuteRange } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from './timeGrids';
@@ -19,6 +18,7 @@ import {
 import { calendarInclude, toCalendarInput } from './termCalendars';
 import { activeCohorts, type CohortContext } from './sections';
 import { cohortLabel, toTreeGroup } from './cohorts';
+import { staleReasonsByCohort } from './staleness';
 
 /**
  * Plan semestru (nowy model). Umieszczenia uklada planista; terminy powstaja tylko
@@ -583,24 +583,9 @@ export async function planView(term: AcademicTerm, cohortId: string) {
 
   const name = (i: { title: string | null; firstName: string; lastName: string } | null) =>
     i ? `${i.title ?? ''} ${i.firstName} ${i.lastName}`.trim() : 'NN';
-  const lastPlacementChange = sections
-    .flatMap((s) => s.placements.map((p) => p.updatedAt.getTime()))
-    .reduce((a, b) => Math.max(a, b), 0);
-  const generatedAt = calendar?.lastGeneratedAt?.getTime() ?? 0;
   const derivedCount = await prisma.occurrence.count({ where: { termId: term.id, kind: 'DERIVED', section: { cohortId } } });
-  // Zmiana zajec (godziny / status z synchronizacji) po generowaniu tez unieaktualnia terminy —
-  // liczymy tylko zajecia, ktore sa w planie (nowe zajecia bez umieszczen terminow nie zmieniaja).
-  const lastSectionChange = sections
-    .filter((s) => s.placements.length > 0 || manualHours.has(s.id))
-    .map((s) => s.updatedAt.getTime())
-    .reduce((a, b) => Math.max(a, b), 0);
-  // Terminy odlaczone od usunietych umieszczen (updatedAt = chwila usuniecia).
-  const deleted = await prisma.occurrence.aggregate({
-    where: { termId: term.id, kind: 'DERIVED', placementId: null, section: { cohortId } },
-    _max: { updatedAt: true },
-  });
-  const lastDeletion = deleted._max.updatedAt?.getTime() ?? 0;
-  const reasons = staleReasons({ lastPlacementChange, lastSectionChange, generatedAt, lastDeletion });
+  // Terminy nieaktualne: ta sama funkcja co w "Przygotowaniu semestru" (services/staleness).
+  const reasons = (await staleReasonsByCohort(term, [cohortId])).get(cohortId) ?? [];
 
   return {
     cohort: {
@@ -832,6 +817,7 @@ export async function generate(
 
   if (!opts.dryRun) {
     const sectionById = new Map(sections.map((s) => [s.id, s]));
+    const now = new Date();
     await prisma.$transaction([
       prisma.occurrence.deleteMany({
         where: { sectionId: { in: sectionIds }, kind: 'DERIVED', ...(from ? { date: { gte: from } } : {}) },
@@ -858,8 +844,17 @@ export async function generate(
       }),
       prisma.termCalendar.updateMany({
         where: { id: { in: [...new Set(ctxs.map((c) => scope.calendars.get(c.cohort.id)!.id))] } },
-        data: { lastGeneratedAt: new Date() },
+        data: { lastGeneratedAt: now },
       }),
+      // "Terminy nieaktualne" liczymy per rocznik: czas tylko dla rocznikow przeliczonych teraz,
+      // nie dla wszystkich rocznikow kalendarza (generowanie z planu dotyczy jednego rocznika).
+      ...cohortIds.map((cohortId) =>
+        prisma.cohortGeneration.upsert({
+          where: { cohortId_termId: { cohortId, termId: term.id } },
+          create: { cohortId, termId: term.id, generatedAt: now },
+          update: { generatedAt: now },
+        }),
+      ),
     ]);
   }
   return report;

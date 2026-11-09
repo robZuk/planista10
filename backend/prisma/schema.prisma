@@ -241,16 +241,17 @@ model TimeBlock {
 // ═══════════════════════════════════════════════════════════════
 
 model AcademicTerm {
-  id             String         @id @default(uuid())
+  id             String             @id @default(uuid())
   startYear      Int // 2026 -> rok akademicki 2026/2027
   type           SemesterType // WINTER = zimowy, SUMMER = letni
   calendars      TermCalendar[]
   startedCohorts Cohort[]
   cohortTerms    CohortTerm[]
+  generations    CohortGeneration[]
   sections       ClassSection[]
   placements     Placement[]
   occurrences    Occurrence[]
-  createdAt      DateTime       @default(now())
+  createdAt      DateTime           @default(now())
 
   @@unique([startYear, type])
 }
@@ -276,7 +277,8 @@ model TermCalendar {
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  // Kiedy ostatnio wygenerowano terminy z tego kalendarza (znacznik "kalendarz nieaktualny").
+  // Kiedy ostatnio generowano terminy wg tego kalendarza (dowolnego rocznika) — informacyjnie.
+  // "Terminy nieaktualne" liczymy per rocznik z CohortGeneration.
   lastGeneratedAt DateTime?
 
   @@unique([termId, facultyId, studyMode, name])
@@ -368,21 +370,22 @@ model StudentGroup {
 // ═══════════════════════════════════════════════════════════════
 
 model Cohort {
-  id               String            @id @default(uuid())
-  program          Program           @relation(fields: [programId], references: [id])
+  id               String             @id @default(uuid())
+  program          Program            @relation(fields: [programId], references: [id])
   programId        String
-  programVersion   ProgramVersion    @relation(fields: [programVersionId], references: [id])
+  programVersion   ProgramVersion     @relation(fields: [programVersionId], references: [id])
   programVersionId String
-  startTerm        AcademicTerm      @relation(fields: [startTermId], references: [id])
+  startTerm        AcademicTerm       @relation(fields: [startTermId], references: [id])
   startTermId      String
   name             String? // opcjonalna wlasna nazwa; domyslnie liczona
   // Wyklady przedmiotow wspolnych: razem dla calego rocznika czy osobno per specjalnosc.
-  lectureMode      CohortLectureMode @default(SEPARATE)
+  lectureMode      CohortLectureMode  @default(SEPARATE)
   groups           StudentGroup[]
   terms            CohortTerm[]
+  generations      CohortGeneration[]
   sections         ClassSection[]
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
   @@unique([programId, startTermId])
 }
@@ -540,6 +543,21 @@ model CohortTerm {
   semester   Int
   calendar   TermCalendar? @relation(fields: [calendarId], references: [id], onDelete: SetNull)
   calendarId String?
+
+  @@unique([cohortId, termId])
+}
+
+// Ostatnie "Generuj terminy" rocznika w semestrze — od niego liczymy "terminy nieaktualne"
+// (lib/planStaleness). Osobno dla kazdego rocznika: kalendarz dzieli wiele rocznikow, a
+// generowanie z planu przelicza tylko jeden, wiec znacznik na kalendarzu falszywie
+// "odswiezal" pozostale roczniki.
+model CohortGeneration {
+  id          String       @id @default(uuid())
+  cohort      Cohort       @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  cohortId    String
+  term        AcademicTerm @relation(fields: [termId], references: [id])
+  termId      String
+  generatedAt DateTime
 
   @@unique([cohortId, termId])
 }

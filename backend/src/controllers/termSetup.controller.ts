@@ -10,6 +10,7 @@ import { activeCohorts } from '../services/sections';
 import { cohortLabel, toTreeGroup } from '../services/cohorts';
 import { calendarsFor } from '../services/plan';
 import { carryPlan } from '../services/carryPlan';
+import { staleReasonsByCohort } from '../services/staleness';
 
 async function findTerm(key: string) {
   const ref = parseTermKey(key);
@@ -59,7 +60,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
   });
   const calendars = await prisma.termCalendar.findMany({
     where: { termId: term.id, ...facultyWhere },
-    select: { id: true, facultyId: true, studyMode: true, name: true, kind: true, status: true, lastGeneratedAt: true },
+    select: { id: true, facultyId: true, studyMode: true, name: true, kind: true, status: true },
   });
   const neededModes = new Set(programs.map((p) => `${p.fieldOfStudy.facultyId}|${p.studyMode}`));
   const missingCalendars = [...neededModes].filter((k) => !calendars.some((c) => `${c.facultyId}|${c.studyMode}` === k)).length;
@@ -68,7 +69,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
   const cohortIds = contexts.map((c) => c.cohort.id);
   // Liczniki wszystkich rocznikow zbiorczo (kilka zapytan zamiast kilku na rocznik).
   const active = { termId: term.id, cohortId: { in: cohortIds }, status: 'ACTIVE' as const };
-  const [cohortCalendars, sectionRows, placedRows, vacancyRows, termSections, occurrenceRows, changeRows, deletionRows] = await Promise.all([
+  const [cohortCalendars, sectionRows, placedRows, vacancyRows, termSections, occurrenceRows, staleByCohort] = await Promise.all([
     calendarsFor(term, contexts),
     prisma.classSection.groupBy({ by: ['cohortId'], where: active, _count: { _all: true } }),
     prisma.classSection.groupBy({ by: ['cohortId'], where: { ...active, placements: { some: {} } }, _count: { _all: true } }),
@@ -79,13 +80,8 @@ export const setupStatus = asyncHandler(async (req, res) => {
     }),
     prisma.classSection.findMany({ where: { termId: term.id, cohortId: { in: cohortIds } }, select: { id: true, cohortId: true } }),
     prisma.occurrence.groupBy({ by: ['sectionId'], where: { termId: term.id, section: { cohortId: { in: cohortIds } } }, _count: { _all: true } }),
-    prisma.placement.groupBy({ by: ['sectionId'], where: { termId: term.id, section: { cohortId: { in: cohortIds } } }, _max: { updatedAt: true } }),
-    // Terminy odlaczone od usunietych umieszczen: updatedAt = chwila usuniecia (tez unieaktualnia).
-    prisma.occurrence.groupBy({
-      by: ['sectionId'],
-      where: { termId: term.id, kind: 'DERIVED', placementId: null, section: { cohortId: { in: cohortIds } } },
-      _max: { updatedAt: true },
-    }),
+    // Terminy nieaktualne: ta sama funkcja co w "Ukladaniu planu" (services/staleness).
+    staleReasonsByCohort(term, cohortIds),
   ]);
   const countOf = (rows: { cohortId: string; _count: { _all: number } }[]) => new Map(rows.map((r) => [r.cohortId, r._count._all]));
   const sectionCount = countOf(sectionRows);
@@ -97,14 +93,6 @@ export const setupStatus = asyncHandler(async (req, res) => {
     const cohortId = cohortOfSection.get(r.sectionId);
     if (cohortId) occurrenceCount.set(cohortId, (occurrenceCount.get(cohortId) ?? 0) + r._count._all);
   }
-  const lastChangeOf = new Map<string, Date>();
-  for (const r of [...changeRows, ...deletionRows]) {
-    const cohortId = cohortOfSection.get(r.sectionId);
-    const at = r._max.updatedAt;
-    if (!cohortId || !at) continue;
-    const prev = lastChangeOf.get(cohortId);
-    if (!prev || at > prev) lastChangeOf.set(cohortId, at);
-  }
 
   const cohorts = [];
   for (const ctx of contexts) {
@@ -113,7 +101,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
     const withPlacement = placedCount.get(ctx.cohort.id) ?? 0;
     const vacancies = vacancyCount.get(ctx.cohort.id) ?? 0;
     const occurrences = occurrenceCount.get(ctx.cohort.id) ?? 0;
-    const changed = lastChangeOf.get(ctx.cohort.id);
+    const reasons = staleByCohort.get(ctx.cohort.id) ?? [];
     cohorts.push({
       id: ctx.cohort.id,
       label: cohortLabel(ctx.cohort),
@@ -126,7 +114,8 @@ export const setupStatus = asyncHandler(async (req, res) => {
       vacancies,
       placedSections: withPlacement,
       occurrences,
-      stale: !!changed && (!calendar?.lastGeneratedAt || changed > calendar.lastGeneratedAt),
+      stale: reasons.length > 0,
+      staleReasons: reasons,
     });
   }
 

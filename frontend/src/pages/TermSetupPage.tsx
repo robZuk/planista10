@@ -10,6 +10,7 @@ import { FacultySelector } from '@/components/FacultySelector';
 import { fetchSetup } from '@/api/plan';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { CALENDAR_STATUS_LABELS, STUDY_MODE_LABELS } from '@/lib/labels';
+import { staleMessage } from '@/lib/planStaleness';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 
@@ -139,7 +140,15 @@ export default function TermSetupPage() {
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {c.occurrences}
-                      {c.stale && <Badge variant="outline" className="ml-1">nieaktualne</Badge>}
+                      {c.stale && (
+                        <Badge
+                          variant="outline"
+                          className="ml-1 cursor-help"
+                          title={`${staleMessage(c.staleReasons)} Uzyj „Generuj terminy” w Ukladaniu planu.`}
+                        >
+                          nieaktualne
+                        </Badge>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

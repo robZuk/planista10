@@ -84,7 +84,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - `src/controllers/*` — obsługa żądań (walidacja wejścia, wywołanie logiki, odpowiedź)
 - `src/services/*` — logika domenowa z bazą: `termCalendars`, `cohorts`, `sections`
   (synchronizacja zajęć, przenoszenie obsady), `plan` (walidacja umieszczeń, dostępność,
-  generowanie terminów), `carryPlan`, `visibility`
+  generowanie terminów), `carryPlan`, `staleness` (terminy nieaktualne per rocznik), `visibility`
 - `src/lib/*` — czyste funkcje domeny (bez bazy, testowane jednostkowo):
   - `prisma.ts` — **singleton PrismaClient**; nigdy nie rób `new PrismaClient()`, importuj `prisma` stąd
   - `isoDate.ts` — daty jako tekst `YYYY-MM-DD` (arytmetyka w UTC)
