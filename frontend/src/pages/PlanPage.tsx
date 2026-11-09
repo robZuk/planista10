@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarCheck, ChevronRight, Copy, FilterX, History, TriangleAlert, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -89,6 +89,29 @@ export default function PlanPage() {
       setGroupFilter('all');
     }
   }, [cohortIds, cohortId]);
+
+  // Wejscie z linku (np. "Przygotowanie semestru"): /plan/2026-Z?cohort=<id> wybiera ten rocznik.
+  // Gdy filtry rocznikow go ukrywaja, czyscimy je — inaczej link otworzylby inny rocznik.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedCohort = searchParams.get('cohort');
+  const { clearFacets } = cohortFilter;
+  useEffect(() => {
+    if (!requestedCohort || allCohorts.length === 0) return;
+    if (allCohorts.some((c) => c.id === requestedCohort)) {
+      if (!cohortIds.split(',').includes(requestedCohort)) clearFacets();
+      setCohortId(requestedCohort);
+      setSelected(null);
+      setZjazd(null);
+      setGroupFilter('all');
+    }
+    setSearchParams(
+      (params) => {
+        params.delete('cohort');
+        return params;
+      },
+      { replace: true },
+    );
+  }, [requestedCohort, allCohorts, cohortIds, clearFacets, setSearchParams]);
 
   const { data: plan, isPending } = useQuery({
     queryKey: ['plan', term?.key, cohortId],
