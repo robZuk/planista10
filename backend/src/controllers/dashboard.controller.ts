@@ -19,9 +19,9 @@ const occurrenceInclude = {
 };
 
 /**
- * Statystyki dashboardu (nowy model). Liczby uczelni dla planistow, a "dzis" i "ten
- * tydzien" — przyciete do roli: student i prowadzacy widza tylko swoje, opublikowane
- * terminy; dziekanat — swoj wydzial.
+ * Statystyki dashboardu (nowy model). Wszystko przyciete do roli: administrator widzi uczelnie,
+ * dziekanat — swoj wydzial (kafelki tez, inaczej mieszaly sie z wykresem i "dzis" wydzialu),
+ * student i prowadzacy — swoje, opublikowane terminy.
  */
 export const getStats = asyncHandler(async (req, res) => {
   const today = todayIso();
@@ -33,6 +33,10 @@ export const getStats = asyncHandler(async (req, res) => {
     select: { id: true, role: true, instructorId: true, facultyId: true },
   });
   const scope = user ? await occurrenceScope(user) : null;
+  // Kafelki dziekanatu: tylko jego wydzial. Konto bez wydzialu nie widzi niczego.
+  const dean = user?.role === 'DEAN_OFFICE';
+  const fid = dean ? (user!.facultyId ?? '__none__') : null;
+  const faculty = fid ? await prisma.faculty.findUnique({ where: { id: fid }, select: { name: true, shortName: true } }) : null;
 
   const [
     usersByRole,
@@ -50,13 +54,15 @@ export const getStats = asyncHandler(async (req, res) => {
     weekRows,
   ] = await Promise.all([
     prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
-    prisma.instructor.count(),
-    prisma.studentGroup.count(),
-    prisma.user.count({ where: { role: 'STUDENT' } }),
-    prisma.room.count(),
-    prisma.building.count(),
-    prisma.placement.count(),
-    prisma.occurrence.groupBy({ by: ['status'], _count: { _all: true } }),
+    prisma.instructor.count({ where: fid ? { facultyId: fid } : {} }),
+    prisma.studentGroup.count({ where: fid ? { cohort: { program: { fieldOfStudy: { facultyId: fid } } } } : {} }),
+    prisma.user.count({
+      where: { role: 'STUDENT', ...(fid ? { studentGroups: { some: { cohort: { program: { fieldOfStudy: { facultyId: fid } } } } } } : {}) },
+    }),
+    prisma.room.count({ where: fid ? { building: { facultyId: fid } } : {} }),
+    prisma.building.count({ where: fid ? { facultyId: fid } : {} }),
+    prisma.placement.count({ where: fid ? { facultyId: fid } : {} }),
+    prisma.occurrence.groupBy({ by: ['status'], where: fid ? { facultyId: fid } : {}, _count: { _all: true } }),
     prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       take: 5,
@@ -125,6 +131,8 @@ export const getStats = asyncHandler(async (req, res) => {
       faculties: { total: facultyCount },
       subjects: { total: subjectCount },
       calendars: { total: calendarCount },
+      // Zakres liczb na kafelkach: cala uczelnia albo wydzial dziekanatu.
+      scope: faculty ? { kind: 'FACULTY', name: faculty.name, shortName: faculty.shortName } : { kind: 'ALL' },
       todayEntries,
       weekEntries: week,
       upcomingHolidays: holidaysInRange(today, addDays(today, 7)).map((h) => ({ id: h.date, ...h })),

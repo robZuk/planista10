@@ -120,7 +120,10 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title={`Witaj, ${user?.name ?? ''}`} description={greeting} />
+      <PageHeader
+        title={`Witaj, ${user?.name ?? ''}`}
+        description={stats?.scope.kind === 'FACULTY' ? `${greeting} · liczby dla wydzialu: ${stats.scope.name}` : greeting}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {isAdmin && (
@@ -181,7 +184,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <TodayCard entries={stats?.todayEntries} loading={isPending} />
+        <TodayCard entries={stats?.todayEntries} loading={isPending} limit={12} />
 
         <Card>
           <CardHeader>

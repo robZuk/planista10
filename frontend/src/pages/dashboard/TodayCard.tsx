@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '@/components/ui/item';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CLASS_FULL_LABELS, STATUS_LABELS } from '@/lib/scheduleDisplay';
+import { sortByTime, todayShortlist } from '@/lib/todayEntries';
 import type { ClassType, EntryStatus } from '@/types';
 
 /**
@@ -29,13 +30,19 @@ export function TodayCard({
   loading,
   title = 'Dzisiejsze zajecia',
   emptyText = 'Dzis nie ma zadnych zajec.',
+  limit,
 }: {
   entries: TodayEntry[] | undefined;
   loading?: boolean;
   title?: string;
   emptyText?: string;
+  /** Planisci (setki zajec dziennie): tylko trwajace i najblizsze, z licznikiem pozostalych. */
+  limit?: number;
 }) {
-  const sorted = [...(entries ?? [])].sort((a, b) => a.startBlock.order - b.startBlock.order);
+  const now = new Date().toTimeString().slice(0, 5);
+  // Bez limitu (student, prowadzacy) — caly dzien; z limitem — trwajace i najblizsze.
+  const { shown: sorted, total } =
+    limit === undefined ? { shown: sortByTime(entries ?? []), total: entries?.length ?? 0 } : todayShortlist(entries ?? [], now, limit);
 
   return (
     <Card>
@@ -50,6 +57,7 @@ export function TodayCard({
             day: 'numeric',
             month: 'long',
           })}
+          {limit !== undefined && total > sorted.length && ` · trwajace i najblizsze: ${sorted.length} z ${total}`}
         </CardDescription>
       </CardHeader>
       <CardContent>

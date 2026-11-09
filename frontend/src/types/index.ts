@@ -167,6 +167,8 @@ export interface DashboardStats {
   faculties: { total: number };
   subjects: { total: number };
   calendars: { total: number };
+  /** Zakres kafelkow: cala uczelnia (admin) albo wydzial dziekanatu. */
+  scope: { kind: 'ALL' } | { kind: 'FACULTY'; name: string; shortName: string };
   todayEntries: DashboardEntry[];
   /** Biezacy tydzien (pon-nd), przyciety do roli: student/prowadzacy — tylko swoje, opublikowane. */
   weekEntries: DashboardEntry[];
