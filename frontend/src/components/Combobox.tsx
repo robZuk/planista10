@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { matchesAllWords } from '@/lib/searchMatch';
 
 export interface ComboboxOption {
   value: string;
@@ -69,7 +70,8 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
-        <Command>
+        {/* Dopasowanie fragmentow slow (lib/searchMatch) zamiast rozmytego cmdk. */}
+        <Command filter={(value, search) => (matchesAllWords(value, search) ? 1 : 0)}>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
