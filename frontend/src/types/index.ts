@@ -554,6 +554,15 @@ export interface PlanSection {
   status: 'ACTIVE' | 'ORPHANED';
   instructors: { instructorId: string | null; name: string; hours: number }[];
   placements: PlanPlacement[];
+  /** Niezgodnosci powstale po umieszczeniu (obsada, sala, grupa, godziny) — backend lib/planIssues. */
+  issues: PlanIssue[];
+}
+
+export interface PlanIssue {
+  kind: 'INSTRUCTOR_NOT_STAFFED' | 'ROOM_TYPE' | 'ROOM_CAPACITY' | 'GROUP_INACTIVE' | 'STAFF_HOURS';
+  /** null = problem zajec (grupa, obsada), nie jednego umieszczenia. */
+  placementId: string | null;
+  message: string;
 }
 
 /** Powod nieaktualnych terminow: zmiana wzorca, zmiana godzin zajec, usuniete umieszczenie. */

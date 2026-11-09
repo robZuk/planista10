@@ -25,6 +25,8 @@ export interface GridItem {
   cancelled?: boolean;
   /** Krotkie oznaczenie przy tytule ("przeniesiony", "reczny"). */
   marker?: string;
+  /** Niezgodnosc umieszczenia (lib/planIssues): znacznik "!" i opis w dymku. */
+  warning?: string | null;
 }
 
 const DAY_SHORT: Record<string, string> = {
@@ -154,7 +156,11 @@ export function WeekGrid({
                     key={item.id}
                     type="button"
                     onClick={() => onItemClick?.(item.id)}
-                    title={[item.marker ? `${title} (${item.marker})` : title, ...item.lines].join('\n')}
+                    title={[
+                      item.marker ? `${title} (${item.marker})` : title,
+                      ...item.lines,
+                      ...(item.warning ? ['', `Uwaga: ${item.warning}`] : []),
+                    ].join('\n')}
                     style={{
                       position: 'absolute',
                       top: span.top + 1,
@@ -168,9 +174,15 @@ export function WeekGrid({
                       item.muted && 'opacity-40',
                       item.cancelled && 'line-through opacity-50 grayscale',
                       passThrough && 'pointer-events-none opacity-45',
+                      item.warning && 'ring-2 ring-amber-500 ring-inset',
                     )}
                   >
                     <div className={cn('font-semibold', titleLines === 1 ? 'truncate' : 'line-clamp-2')}>
+                      {item.warning && (
+                        <span className="mr-1 rounded bg-amber-500 px-1 text-white" aria-label="Niezgodnosc w planie">
+                          !
+                        </span>
+                      )}
                       {item.marker && <span className="mr-1 rounded bg-background/70 px-1 font-normal no-underline">{item.marker}</span>}
                       {title}
                     </div>

@@ -21,6 +21,7 @@ import { earlyEndWeeks, formatDayMonth, MAX_SUGGESTED_LENGTH, suggestedLength } 
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { describeDays } from '@/lib/timeGrid';
 import { staleMessage } from '@/lib/planStaleness';
+import { issueRows, placementWarning } from '@/lib/planIssues';
 import { copyCandidates, inZjazd, zjazdyDiffer } from '@/lib/zjazdView';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
@@ -190,6 +191,8 @@ export default function PlanPage() {
     .filter((e): e is { section: PlanSection; weeks: number } => e.weeks !== null);
 
   const visiblePlacement = (p: PlanPlacement) => !zjazd || inZjazd(p, zjazd);
+  // Niezgodnosci zajec widocznych w filtrze grupy (lib/planIssues).
+  const issues = issueRows(sections.filter(inView));
 
   const items: GridItem[] = sections.filter((s) => showOtherGroups || inView(s)).flatMap((s) =>
     s.placements.filter(visiblePlacement).map((p) => ({
@@ -201,6 +204,7 @@ export default function PlanPage() {
       title: s.subject.name,
       lines: [s.group.name, p.room?.label ?? 'ON-LINE', `${p.instructor?.name ?? 'NN'} · ${patternLabel(p)}`],
       muted: !inView(s),
+      warning: placementWarning(s, p.id),
     })),
   );
   const placementOwner = new Map(sections.flatMap((s) => s.placements.map((p) => [p.id, { section: s, placement: p }] as const)));
@@ -561,6 +565,38 @@ export default function PlanPage() {
                     <p className="text-muted-foreground">
                       Rytm wyczerpuje godziny wczesniej. Jesli to niezamierzone, zmniejsz liczbe umieszczen albo ustaw
                       „Od/Do tygodnia”.
+                    </p>
+                  </div>
+                )}
+                {issues.length > 0 && (
+                  <div className="space-y-1 rounded-md border border-amber-500/40 bg-amber-500/5 p-2 text-xs">
+                    <div className="font-medium text-amber-700 dark:text-amber-400">Niezgodnosci w planie ({issues.length})</div>
+                    <ul className="space-y-1">
+                      {issues.map((row) => {
+                        const placement = row.placementId ? row.section.placements.find((p) => p.id === row.placementId) : null;
+                        const label = `${CLASS_LABELS[row.section.classType]} · ${row.section.subject.name} · ${row.section.group.name}`;
+                        return (
+                          <li key={row.key}>
+                            {placement && !readOnly ? (
+                              <button
+                                type="button"
+                                className="text-left font-medium underline-offset-2 hover:underline"
+                                onClick={() =>
+                                  setTarget({ section: row.section, placement, day: placement.dayOfWeek, startOrder: placement.startOrder, zjazd })
+                                }
+                              >
+                                {label}
+                              </button>
+                            ) : (
+                              <span className="font-medium">{label}</span>
+                            )}
+                            <div className="text-muted-foreground">{row.message}</div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <p className="text-muted-foreground">
+                      Zmiany obsady, sal lub grup po umieszczeniu zajec. Kliknij zajecia, zeby poprawic umieszczenie.
                     </p>
                   </div>
                 )}

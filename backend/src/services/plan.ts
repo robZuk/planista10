@@ -20,6 +20,7 @@ import { calendarFor, calendarsFor, type CalendarRow } from './cohortCalendar';
 import { activeCohorts, type CohortContext } from './sections';
 import { cohortLabel, toTreeGroup } from './cohorts';
 import { staleReasonsByCohort } from './staleness';
+import { sectionIssues } from '../lib/planIssues';
 
 /**
  * Plan semestru (nowy model). Umieszczenia uklada planista; terminy powstaja tylko
@@ -519,7 +520,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
     include: {
       programEntry: { select: { orderInSemester: true, subject: { select: { id: true, name: true } }, specialization: { select: { shortName: true } } } },
       instructors: { include: { instructor: { select: { id: true, title: true, firstName: true, lastName: true } } } },
-      placements: { include: { room: { select: { id: true, number: true, building: { select: { name: true } } } }, instructor: { select: { id: true, title: true, firstName: true, lastName: true } }, _count: { select: { exceptions: true } } } },
+      placements: { include: { room: { select: { id: true, number: true, type: true, capacity: true, building: { select: { name: true } } } }, instructor: { select: { id: true, title: true, firstName: true, lastName: true } }, _count: { select: { exceptions: true } } } },
     },
   });
   const manual = await prisma.occurrence.groupBy({
@@ -560,6 +561,27 @@ export async function planView(term: AcademicTerm, cohortId: string) {
   const derivedCount = await prisma.occurrence.count({ where: { termId: term.id, kind: 'DERIVED', section: { cohortId } } });
   // Terminy nieaktualne: ta sama funkcja co w "Przygotowaniu semestru" (services/staleness).
   const reasons = (await staleReasonsByCohort(term, [ctx])).get(cohortId) ?? [];
+  // Niezgodnosci powstale po umieszczeniu (obsada, sala, grupa, godziny) — lib/planIssues.
+  const groupById = new Map(ctx.cohort.groups.map((g) => [g.id, g]));
+  const issuesOf = (s: (typeof sections)[number]) => {
+    const group = groupById.get(s.groupId);
+    if (!group) return [];
+    return sectionIssues(
+      {
+        classType: s.classType,
+        hours: s.hours,
+        group,
+        instructors: s.instructors,
+        placements: s.placements.map((p) => ({
+          id: p.id,
+          instructorId: p.instructorId,
+          instructorName: p.instructorId ? name(p.instructor) : undefined,
+          room: p.room,
+        })),
+      },
+      ctx.semester,
+    );
+  };
 
   return {
     cohort: {
@@ -630,6 +652,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
           jointKey: p.jointKey,
           exceptionCount: p._count.exceptions,
         })),
+        issues: issuesOf(s),
       }))
       .sort((a, b) => a.order - b.order || a.subject.name.localeCompare(b.subject.name) || a.classType.localeCompare(b.classType) || a.group.name.localeCompare(b.group.name)),
   };
