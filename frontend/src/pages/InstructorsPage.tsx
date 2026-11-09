@@ -202,7 +202,7 @@ export default function InstructorsPage() {
     <>
       <PageHeader
         title="Prowadzacy"
-        description="Kadra dydaktyczna — przypisywana do przedmiotow w siatce godzin i do zajec w planie."
+        description="Kadra dydaktyczna — przypisywana do zajec w obsadzie („Zajecia i obsada”), a stamtad do umieszczen w planie."
         actions={
           canEdit && (
             <Button onClick={openCreate}>
