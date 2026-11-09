@@ -43,7 +43,7 @@ import type {
   TermCalendar,
 } from '@/types';
 import { CalendarPreviewPanel } from './CalendarPreviewPanel';
-import { addDaysKey, useDebouncedValue } from './calendarUtils';
+import { addDaysKey, proposalNote, useDebouncedValue } from './calendarUtils';
 
 const dateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Wybierz date');
 
@@ -235,15 +235,8 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
         {target?.mode === 'create' && (
           <Alert>
             <Info />
-            <AlertTitle>
-              {target.proposal.source
-                ? `Propozycja na podstawie: ${target.proposal.source.termLabel} (${target.proposal.source.name})`
-                : 'Brak wczesniejszego kalendarza tego typu — domyslne daty'}
-            </AlertTitle>
-            <AlertDescription>
-              Daty semestru i przerw przeniesione o rok, zjazdy wyrownane do tych samych dni tygodnia.
-              Jednorazowe dni wolne i zamiany dni trzeba dodac na nowo. Sprawdz wszystko przed zapisem.
-            </AlertDescription>
+            <AlertTitle>{proposalNote(target.proposal).title}</AlertTitle>
+            <AlertDescription>{proposalNote(target.proposal).description}</AlertDescription>
           </Alert>
         )}
 
