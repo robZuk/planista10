@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, UserPlus, Users } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, UserPlus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
 import { createCohort, fetchTermCohorts, setCohortTerm, updateCohort } from '@/api/cohorts';
@@ -178,14 +179,39 @@ export default function CohortsPage() {
                     )}
                   </label>
                   {cohort.program.fieldOfStudy.specializations.length > 1 && (
-                    <label className="flex items-center gap-2">
-                      <Checkbox
-                        checked={cohort.lectureMode === 'JOINT'}
-                        disabled={!editable || lectureMutation.isPending}
-                        onCheckedChange={(v) => lectureMutation.mutate({ cohort, joint: v === true })}
-                      />
-                      Wyklady przedmiotow wspolnych razem dla calego rocznika
-                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <label className="flex items-center gap-2">
+                        <Checkbox
+                          checked={cohort.lectureMode === 'JOINT'}
+                          disabled={!editable || lectureMutation.isPending}
+                          onCheckedChange={(v) => lectureMutation.mutate({ cohort, joint: v === true })}
+                        />
+                        Wyklady przedmiotow wspolnych razem dla calego rocznika
+                      </label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label="Co oznacza ta opcja?"
+                            className="cursor-help text-muted-foreground hover:text-foreground"
+                          >
+                            <Info className="size-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="block space-y-1.5 text-left">
+                          <p>
+                            Dotyczy tylko wykladow przedmiotow wspolnych dla wszystkich specjalnosci rocznika.
+                          </p>
+                          <p>
+                            <strong>Zaznaczone:</strong> jeden wyklad dla calego rocznika.
+                            <br />
+                            <strong>Odznaczone:</strong> osobny wyklad dla kazdej specjalnosci.
+                          </p>
+                          <p>Cwiczenia, laboratoria i przedmioty specjalnosciowe sie nie zmieniaja.</p>
+                          <p>Zmiana obejmie zajecia po „Synchronizuj zajecia” w „Zajecia i obsada”.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                   )}
                 </div>
                 {open && <GroupTreePanel cohort={cohort} canEdit={editable} />}
