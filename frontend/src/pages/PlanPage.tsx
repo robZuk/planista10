@@ -333,6 +333,20 @@ export default function PlanPage() {
           )}
         </p>
       )}
+      {plan?.calendar?.status === 'ARCHIVED' && (isAdmin || me?.role === 'DEAN_OFFICE') && (
+        <Alert>
+          <TriangleAlert />
+          <AlertTitle>Kalendarz w archiwum — plan tylko do odczytu</AlertTitle>
+          <AlertDescription>
+            <p>
+              Plan, terminy, zajecia i obsada tego rocznika to zapis tego, co sie odbylo — nie da sie ich zmienic.
+              {isAdmin
+                ? ' Jesli to pomylka, przywroc kalendarz w „Kalendarz semestru” (zmien status).'
+                : ' Z archiwum moze go przywrocic tylko administrator.'}
+            </p>
+          </AlertDescription>
+        </Alert>
+      )}
       {plan && draftVersion && (
         <Alert variant="destructive">
           <TriangleAlert />

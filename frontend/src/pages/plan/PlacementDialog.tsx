@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Spinner } from '@/components/ui/spinner';
 import { Combobox } from '@/components/Combobox';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { AssignmentDialog } from '@/pages/obsada/ObsadaDialogs';
 import { createPlacement, deletePlacement, updatePlacement } from '@/api/plan';
 import { fetchBuildings } from '@/api/buildings';
@@ -75,6 +76,7 @@ export function PlacementDialog({
   const staff = section.instructors.filter((i) => i.instructorId);
   const [instructorId, setInstructorId] = useState(placement?.instructor?.id ?? staff[0]?.instructorId ?? '');
   const [assigning, setAssigning] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const [pickAfterAssign, setPickAfterAssign] = useState(false);
   // Po przypisaniu obsady z tego okna wybierz od razu pierwsza osobe (jesli dotad bylo NN).
   useEffect(() => {
@@ -289,7 +291,7 @@ export function PlacementDialog({
         </p>
         <DialogFooter className="sm:justify-between">
           {placement ? (
-            <Button variant="ghost" className="text-destructive" onClick={() => remove.mutate()} disabled={remove.isPending}>
+            <Button variant="ghost" className="text-destructive" onClick={() => setConfirmRemove(true)} disabled={remove.isPending}>
               <Trash2 /> Usun z planu
             </Button>
           ) : (
@@ -306,6 +308,15 @@ export function PlacementDialog({
           </div>
         </DialogFooter>
       </DialogContent>
+      <ConfirmDialog
+        open={confirmRemove}
+        onOpenChange={setConfirmRemove}
+        title="Usunac zajecia z planu?"
+        description={`${section.subject.name} (${CLASS_FULL_LABELS[section.classType].toLowerCase()}) · ${section.group.name}${placement ? ` · ${WEEKDAY_LABELS[placement.dayOfWeek].toLowerCase()}` : ''}. Wygenerowane terminy tego umieszczenia znikna przy kolejnym „Generuj terminy”.`}
+        confirmLabel="Usun z planu"
+        isPending={remove.isPending}
+        onConfirm={() => remove.mutate()}
+      />
       {assigning && (
         <AssignmentDialog
           section={section}
