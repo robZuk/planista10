@@ -396,3 +396,27 @@ export function validateCalendar(input: CalendarInput): string[] {
   }
   return problems;
 }
+
+/**
+ * Klucz dat kalendarza — wszystko, od czego zaleza terminy: rodzaj, daty semestru, przerwy,
+ * dni wyjatkowe i zjazdy. Bez nazw (przerw, dni) i kolejnosci na liscie. Rozne klucze =
+ * terminy wygenerowane wg starej wersji kalendarza sa nieaktualne.
+ */
+export function calendarDatesKey(input: Omit<CalendarInput, 'studyMode'>): string {
+  const sorted = <T>(rows: T[]) => rows.map((r) => JSON.stringify(r)).sort();
+  return JSON.stringify({
+    kind: input.kind,
+    startDate: input.startDate,
+    endDate: input.endDate,
+    breaks: sorted(input.breaks.map((b) => [b.startDate, b.endDate])),
+    days: sorted(
+      input.days.map((d) => [
+        d.date,
+        d.kind,
+        d.kind === 'FOLLOWS_WEEKDAY' ? (d.followsWeekday ?? null) : null,
+        d.kind === 'CLOSED_FROM' ? (d.closedFromBlockOrder ?? null) : null,
+      ]),
+    ),
+    zjazdy: sorted(input.zjazdy.map((z) => [z.number, z.startDate, z.endDate])),
+  });
+}

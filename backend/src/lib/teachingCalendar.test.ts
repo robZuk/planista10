@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calendarPeriods, expandDates, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
+import { calendarDatesKey, calendarPeriods, expandDates, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
 import { eachDay } from './isoDate';
 
 /** Zima 2024/25 jak w danych: start we wtorek 1.10, bez przerw. */
@@ -274,5 +274,45 @@ describe('calendarPeriods — okresy widoku tygodnia terminow', () => {
       ['SATURDAY', true],
       ['SUNDAY', true],
     ]);
+  });
+});
+
+describe('calendarDatesKey', () => {
+  const base = {
+    kind: 'ZJAZD' as const,
+    startDate: '2026-10-01',
+    endDate: '2027-01-31',
+    breaks: [
+      { name: 'Przerwa swiateczna', startDate: '2026-12-23', endDate: '2027-01-01' },
+      { name: 'Dni rektorskie', startDate: '2026-11-02', endDate: '2026-11-03' },
+    ],
+    days: [{ date: '2026-11-12', kind: 'DAY_OFF' as const, name: 'Dzien rektorski', followsWeekday: null, closedFromBlockOrder: null }],
+    zjazdy: [
+      { number: 1, startDate: '2026-10-03', endDate: '2026-10-04' },
+      { number: 2, startDate: '2026-10-17', endDate: '2026-10-18' },
+    ],
+  };
+
+  it('nazwy i kolejnosc na liscie nie zmieniaja klucza', () => {
+    const renamed = {
+      ...base,
+      breaks: [...base.breaks].reverse().map((b) => ({ ...b, name: 'inna nazwa' })),
+      days: base.days.map((d) => ({ ...d, name: null })),
+      zjazdy: [...base.zjazdy].reverse(),
+    };
+    expect(calendarDatesKey(renamed)).toBe(calendarDatesKey(base));
+  });
+
+  it('nowa przerwa, przesuniety zjazd, inny koniec semestru i rodzaj — inny klucz', () => {
+    const key = calendarDatesKey(base);
+    expect(calendarDatesKey({ ...base, breaks: [...base.breaks, { name: 'X', startDate: '2026-11-20', endDate: '2026-11-20' }] })).not.toBe(key);
+    expect(calendarDatesKey({ ...base, zjazdy: [base.zjazdy[0]!, { number: 2, startDate: '2026-10-24', endDate: '2026-10-25' }] })).not.toBe(key);
+    expect(calendarDatesKey({ ...base, endDate: '2027-02-07' })).not.toBe(key);
+    expect(calendarDatesKey({ ...base, kind: 'WEEKLY' })).not.toBe(key);
+  });
+
+  it('pola nieuzywane przez rodzaj dnia sa pomijane', () => {
+    const withNoise = { ...base, days: base.days.map((d) => ({ ...d, followsWeekday: 'MONDAY' as const, closedFromBlockOrder: 3 })) };
+    expect(calendarDatesKey(withNoise)).toBe(calendarDatesKey(base));
   });
 });

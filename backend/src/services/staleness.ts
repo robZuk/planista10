@@ -1,6 +1,8 @@
 import type { AcademicTerm } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { staleReasons, type StaleReason } from '../lib/planStaleness';
+import { calendarsFor } from './cohortCalendar';
+import type { CohortContext } from './sections';
 
 /**
  * "Terminy nieaktualne" dla wielu rocznikow naraz — JEDNO zrodlo dla "Ukladania planu"
@@ -10,9 +12,10 @@ import { staleReasons, type StaleReason } from '../lib/planStaleness';
  * kalendarz dzieli wiele rocznikow, a generowanie z planu przelicza tylko jeden.
  * Reguly powodow: lib/planStaleness.ts.
  */
-export async function staleReasonsByCohort(term: AcademicTerm, cohortIds: string[]): Promise<Map<string, StaleReason[]>> {
+export async function staleReasonsByCohort(term: AcademicTerm, contexts: CohortContext[]): Promise<Map<string, StaleReason[]>> {
   const result = new Map<string, StaleReason[]>();
-  if (cohortIds.length === 0) return result;
+  if (contexts.length === 0) return result;
+  const cohortIds = contexts.map((c) => c.cohort.id);
   const ofCohorts = { termId: term.id, section: { cohortId: { in: cohortIds } } };
 
   const [sections, placementChanges, manualSections, deletions, generations] = await Promise.all([
@@ -35,6 +38,16 @@ export async function staleReasonsByCohort(term: AcademicTerm, cohortIds: string
     }),
     prisma.cohortGeneration.findMany({ where: { termId: term.id, cohortId: { in: cohortIds } } }),
   ]);
+  // Kalendarz rocznika: zmiana jego dat albo ustawien rocznika w semestrze (wybor kalendarza,
+  // numer semestru — CohortTerm) po generowaniu tez unieaktualnia terminy.
+  const calendars = await calendarsFor(term, contexts);
+  const calendarChange = new Map(
+    contexts.map((c) => {
+      const datesAt = calendars.get(c.cohort.id)?.datesChangedAt.getTime() ?? 0;
+      const settingsAt = c.cohort.terms.find((t) => t.termId === term.id)?.changedAt?.getTime() ?? 0;
+      return [c.cohort.id, Math.max(datesAt, settingsAt)];
+    }),
+  );
 
   const cohortOf = new Map(sections.map((s) => [s.id, s.cohortId]));
   const placementAt = new Map(placementChanges.map((p) => [p.sectionId, p._max.updatedAt?.getTime() ?? 0]));
@@ -68,6 +81,7 @@ export async function staleReasonsByCohort(term: AcademicTerm, cohortIds: string
         lastSectionChange: e.sections,
         generatedAt: generatedAt.get(cohortId) ?? 0,
         lastDeletion: e.deletion,
+        lastCalendarChange: calendarChange.get(cohortId) ?? 0,
       }),
     );
   }

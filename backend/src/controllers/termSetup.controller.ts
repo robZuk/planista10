@@ -81,7 +81,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
     prisma.classSection.findMany({ where: { termId: term.id, cohortId: { in: cohortIds } }, select: { id: true, cohortId: true } }),
     prisma.occurrence.groupBy({ by: ['sectionId'], where: { termId: term.id, section: { cohortId: { in: cohortIds } } }, _count: { _all: true } }),
     // Terminy nieaktualne: ta sama funkcja co w "Ukladaniu planu" (services/staleness).
-    staleReasonsByCohort(term, cohortIds),
+    staleReasonsByCohort(term, contexts),
   ]);
   const countOf = (rows: { cohortId: string; _count: { _all: number } }[]) => new Map(rows.map((r) => [r.cohortId, r._count._all]));
   const sectionCount = countOf(sectionRows);

@@ -10,7 +10,7 @@ const prismaMock = vi.hoisted(() => ({
   academicTerm: { findUnique: vi.fn().mockResolvedValue({ id: 't1', startYear: 2026, type: 'SUMMER' }) },
   cohort: { findUnique: vi.fn(), findMany: vi.fn() },
   termCalendar: { findMany: vi.fn(), findUnique: vi.fn() },
-  cohortTerm: { upsert: vi.fn().mockResolvedValue({}) },
+  cohortTerm: { upsert: vi.fn().mockResolvedValue({}), findUnique: vi.fn().mockResolvedValue(null) },
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
 
@@ -72,5 +72,25 @@ describe('API — rocznik w semestrze', () => {
     const res = await put({ calendarId: 'cal2' });
     expect(res.status).toBe(200);
     expect(prismaMock.cohortTerm.upsert).toHaveBeenCalledTimes(1);
+  });
+
+  it('zmiana kalendarza zapisuje czas zmiany (terminy nieaktualne); ten sam stan — bez znacznika', async () => {
+    prismaMock.cohort.findUnique.mockResolvedValueOnce(cohortRow);
+    prismaMock.cohort.findMany.mockResolvedValueOnce([cohortRow]);
+    prismaMock.termCalendar.findMany.mockResolvedValueOnce([calendarRow('PUBLISHED')]);
+    prismaMock.termCalendar.findUnique.mockResolvedValueOnce({ ...calendarRow('PLANNING'), id: 'cal2', name: 'Wariant B' });
+    prismaMock.cohortTerm.findUnique.mockResolvedValueOnce({ semester: 4, calendarId: 'cal1' });
+    prismaMock.cohortTerm.upsert.mockClear();
+    expect((await put({ calendarId: 'cal2' })).status).toBe(200);
+    expect(prismaMock.cohortTerm.upsert.mock.calls[0]![0].update).toMatchObject({ calendarId: 'cal2', changedAt: expect.any(Date) });
+
+    prismaMock.cohort.findUnique.mockResolvedValueOnce(cohortRow);
+    prismaMock.cohort.findMany.mockResolvedValueOnce([cohortRow]);
+    prismaMock.termCalendar.findMany.mockResolvedValueOnce([calendarRow('PUBLISHED')]);
+    prismaMock.termCalendar.findUnique.mockResolvedValueOnce({ ...calendarRow('PUBLISHED'), id: 'cal1' });
+    prismaMock.cohortTerm.findUnique.mockResolvedValueOnce({ semester: 4, calendarId: 'cal1' });
+    prismaMock.cohortTerm.upsert.mockClear();
+    expect((await put({ calendarId: 'cal1' })).status).toBe(200);
+    expect(prismaMock.cohortTerm.upsert.mock.calls[0]![0].update).not.toHaveProperty('changedAt');
   });
 });

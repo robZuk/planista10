@@ -279,10 +279,15 @@ export const setCohortTerm = asyncHandler(async (req, res) => {
   if (semester < 1 || semester > cohort.programVersion.totalSemesters) {
     throw new AppError(400, `Semestr musi byc w zakresie 1-${cohort.programVersion.totalSemesters}`);
   }
+  // Zmiana semestru albo kalendarza unieaktualnia wygenerowane terminy rocznika (staleness).
+  const existing = await prisma.cohortTerm.findUnique({ where: { cohortId_termId: { cohortId: cohort.id, termId: term.id } } });
+  const calendarId = body.calendarId !== undefined ? body.calendarId : (existing?.calendarId ?? null);
+  const changed = semester !== (existing?.semester ?? computed) || calendarId !== (existing?.calendarId ?? null);
+  const changedAt = changed ? { changedAt: new Date() } : {};
   const data = await prisma.cohortTerm.upsert({
     where: { cohortId_termId: { cohortId: cohort.id, termId: term.id } },
-    create: { cohortId: cohort.id, termId: term.id, semester, calendarId: body.calendarId ?? null },
-    update: { semester, ...(body.calendarId !== undefined ? { calendarId: body.calendarId } : {}) },
+    create: { cohortId: cohort.id, termId: term.id, semester, calendarId, ...changedAt },
+    update: { semester, calendarId, ...changedAt },
   });
   res.json({ data, message: 'Zapisano ustawienia rocznika w semestrze' });
 });

@@ -559,7 +559,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
     i ? `${i.title ?? ''} ${i.firstName} ${i.lastName}`.trim() : 'NN';
   const derivedCount = await prisma.occurrence.count({ where: { termId: term.id, kind: 'DERIVED', section: { cohortId } } });
   // Terminy nieaktualne: ta sama funkcja co w "Przygotowaniu semestru" (services/staleness).
-  const reasons = (await staleReasonsByCohort(term, [cohortId])).get(cohortId) ?? [];
+  const reasons = (await staleReasonsByCohort(term, [ctx])).get(cohortId) ?? [];
 
   return {
     cohort: {

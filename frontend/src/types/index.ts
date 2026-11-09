@@ -557,7 +557,7 @@ export interface PlanSection {
 }
 
 /** Powod nieaktualnych terminow: zmiana wzorca, zmiana godzin zajec, usuniete umieszczenie. */
-export type StaleReason = 'PLACEMENTS' | 'SECTIONS' | 'DELETED';
+export type StaleReason = 'PLACEMENTS' | 'SECTIONS' | 'DELETED' | 'CALENDAR';
 
 export interface PlanView {
   cohort: {

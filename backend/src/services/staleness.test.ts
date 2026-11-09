@@ -9,10 +9,12 @@ const prismaMock = vi.hoisted(() => ({
   placement: { groupBy: vi.fn() },
   occurrence: { groupBy: vi.fn() },
   cohortGeneration: { findMany: vi.fn() },
+  termCalendar: { findMany: vi.fn() },
 }));
 vi.mock('../lib/prisma', () => ({ prisma: prismaMock }));
 
 import { staleReasonsByCohort } from './staleness';
+import type { CohortContext } from './sections';
 
 const term = { id: 't-2026Z' } as AcademicTerm;
 const at = (hhmm: string) => new Date(`2026-11-09T${hhmm}:00Z`);
@@ -37,7 +39,27 @@ function given(data: {
   prismaMock.cohortGeneration.findMany.mockResolvedValue((data.generations ?? []).map((g) => ({ cohortId: g.cohortId, generatedAt: g.at })));
 }
 
-beforeEach(() => vi.clearAllMocks());
+/** Rocznik wydzialu wm (stacjonarny); `changedAt` — zmiana semestru/kalendarza rocznika w semestrze. */
+function ctx(id: string, changedAt: Date | null = null): CohortContext {
+  return {
+    cohort: {
+      id,
+      program: { studyMode: 'FULL_TIME', fieldOfStudy: { facultyId: 'wm' } },
+      terms: changedAt ? [{ termId: term.id, calendarId: null, changedAt }] : [],
+    },
+  } as unknown as CohortContext;
+}
+const ctxs = (...ids: string[]) => ids.map((id) => ctx(id));
+
+/** Kalendarz "Podstawowy" wydzialu wm z czasem ostatniej zmiany dat. */
+function calendar(datesChangedAt: Date) {
+  return { id: 'cal1', termId: term.id, facultyId: 'wm', studyMode: 'FULL_TIME', name: 'Podstawowy', status: 'PUBLISHED', datesChangedAt };
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  prismaMock.termCalendar.findMany.mockResolvedValue([calendar(at('07:00'))]);
+});
 
 describe('staleReasonsByCohort', () => {
   it('generowanie jednego rocznika nie odswieza drugiego z tego samego kalendarza', async () => {
@@ -56,7 +78,7 @@ describe('staleReasonsByCohort', () => {
         { cohortId: 'B', at: at('09:00') },
       ],
     });
-    const r = await staleReasonsByCohort(term, ['A', 'B']);
+    const r = await staleReasonsByCohort(term, ctxs('A', 'B'));
     expect(r.get('A')).toEqual([]);
     expect(r.get('B')).toEqual(['PLACEMENTS']);
   });
@@ -76,7 +98,7 @@ describe('staleReasonsByCohort', () => {
         { cohortId: 'C', at: at('09:00') },
       ],
     });
-    const r = await staleReasonsByCohort(term, ['A', 'B', 'C']);
+    const r = await staleReasonsByCohort(term, ctxs('A', 'B', 'C'));
     expect(r.get('A')).toEqual(['SECTIONS']);
     expect(r.get('B')).toEqual(['SECTIONS']); // zajecia z terminami recznymi tez sa w planie
     expect(r.get('C')).toEqual([]); // nowe zajecia bez umieszczen nie unieaktualniaja terminow
@@ -92,7 +114,7 @@ describe('staleReasonsByCohort', () => {
       deletions: [{ sectionId: 'sa', at: at('10:00') }],
       generations: [{ cohortId: 'A', at: at('09:00') }],
     });
-    const r = await staleReasonsByCohort(term, ['A', 'N', 'pusty']);
+    const r = await staleReasonsByCohort(term, ctxs('A', 'N', 'pusty'));
     expect(r.get('A')).toEqual(['DELETED']);
     expect(r.get('N')).toEqual(['PLACEMENTS']);
     expect(r.get('pusty')).toEqual([]);
@@ -101,5 +123,40 @@ describe('staleReasonsByCohort', () => {
   it('pusta lista rocznikow — bez zapytan', async () => {
     expect((await staleReasonsByCohort(term, [])).size).toBe(0);
     expect(prismaMock.classSection.findMany).not.toHaveBeenCalled();
+  });
+
+  it('zmiana dat kalendarza po generowaniu -> CALENDAR; przed generowaniem albo bez generowania — nie', async () => {
+    given({
+      sections: [
+        { id: 'sa', cohortId: 'A', updatedAt: at('08:00') },
+        { id: 'sb', cohortId: 'B', updatedAt: at('08:00') },
+        { id: 'sn', cohortId: 'N', updatedAt: at('08:00') },
+      ],
+      generations: [
+        { cohortId: 'A', at: at('09:00') },
+        { cohortId: 'B', at: at('11:00') },
+      ],
+    });
+    prismaMock.termCalendar.findMany.mockResolvedValue([calendar(at('10:00'))]);
+    const r = await staleReasonsByCohort(term, ctxs('A', 'B', 'N'));
+    expect(r.get('A')).toEqual(['CALENDAR']);
+    expect(r.get('B')).toEqual([]); // wygenerowano juz po zmianie kalendarza
+    expect(r.get('N')).toEqual([]); // nigdy nie generowano — nie ma terminow do unieaktualnienia
+  });
+
+  it('zmiana semestru albo kalendarza rocznika po generowaniu -> CALENDAR tylko temu rocznikowi', async () => {
+    given({
+      sections: [
+        { id: 'sa', cohortId: 'A', updatedAt: at('08:00') },
+        { id: 'sb', cohortId: 'B', updatedAt: at('08:00') },
+      ],
+      generations: [
+        { cohortId: 'A', at: at('09:00') },
+        { cohortId: 'B', at: at('09:00') },
+      ],
+    });
+    const r = await staleReasonsByCohort(term, [ctx('A', at('10:00')), ctx('B', at('08:30'))]);
+    expect(r.get('A')).toEqual(['CALENDAR']);
+    expect(r.get('B')).toEqual([]);
   });
 });

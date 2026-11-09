@@ -277,6 +277,9 @@ model TermCalendar {
 
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  // Ostatnia zmiana dat (rodzaj, daty semestru, przerwy, dni, zjazdy) — nie nazwy ani statusu.
+  // Pozniejsza niz generowanie rocznika = jego terminy nieaktualne (services/staleness).
+  datesChangedAt  DateTime  @default(now())
   // Kiedy ostatnio generowano terminy wg tego kalendarza (dowolnego rocznika) — informacyjnie.
   // "Terminy nieaktualne" liczymy per rocznik z CohortGeneration.
   lastGeneratedAt DateTime?
@@ -543,6 +546,9 @@ model CohortTerm {
   semester   Int
   calendar   TermCalendar? @relation(fields: [calendarId], references: [id], onDelete: SetNull)
   calendarId String?
+  // Ostatnia zmiana numeru semestru albo kalendarza (null = nie zmieniano). Pozniejsza niz
+  // generowanie rocznika = jego terminy nieaktualne (services/staleness).
+  changedAt  DateTime?
 
   @@unique([cohortId, termId])
 }

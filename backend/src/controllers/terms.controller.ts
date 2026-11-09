@@ -5,7 +5,7 @@ import { asyncHandler } from '../middleware/asyncHandler';
 import { assertFacultyScope, getCallerScope } from '../lib/facultyScope';
 import { fromIsoDate, isIsoDate, todayIso } from '../lib/isoDate';
 import { holidaysInRange } from '../lib/holidays';
-import { validateCalendar } from '../lib/teachingCalendar';
+import { calendarDatesKey, validateCalendar } from '../lib/teachingCalendar';
 import { academicYearOf, parseTermKey, termKey, termLabel, termOrdinal, type TermRef } from '../lib/terms';
 import {
   bodyToInput,
@@ -15,6 +15,7 @@ import {
   preview,
   proposeCalendar,
   serializeCalendar,
+  toCalendarInput,
 } from '../services/termCalendars';
 import type { CalendarBody } from '../schemas/termCalendar';
 import { calendarUsage, type CalendarUsage } from '../services/plan';
@@ -245,6 +246,9 @@ export const updateCalendar = asyncHandler(async (req, res) => {
   }
 
   const children = childrenData(body);
+  // Zmiana dat (nie nazwy) unieaktualnia terminy rocznikow tego kalendarza (services/staleness).
+  const datesChanged =
+    calendarDatesKey(toCalendarInput(current)) !== calendarDatesKey(bodyToInput(body, current.studyMode));
   const [, , , , updated] = await prisma.$transaction([
     prisma.calendarBreak.deleteMany({ where: { calendarId: current.id } }),
     prisma.calendarDay.deleteMany({ where: { calendarId: current.id } }),
@@ -259,6 +263,7 @@ export const updateCalendar = asyncHandler(async (req, res) => {
         breaks: { create: children.breaks },
         days: { create: children.days },
         zjazdy: { create: children.zjazdy },
+        ...(datesChanged ? { datesChangedAt: new Date() } : {}),
       },
     }),
     prisma.termCalendar.findUniqueOrThrow({ where: { id: current.id }, include: calendarInclude }),

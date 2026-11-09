@@ -13,5 +13,11 @@ describe('staleMessage', () => {
     );
   });
 
+  it('zmiana kalendarza rocznika', () => {
+    expect(staleMessage(['CALENDAR'])).toBe(
+      'Po ostatnim generowaniu zmienil sie kalendarz rocznika (daty, przerwy, dni wolne, zjazdy albo wybor kalendarza).',
+    );
+  });
+
   it('brak powodow', () => expect(staleMessage([])).toBe(''));
 });
