@@ -1,28 +1,32 @@
 import type { Request } from 'express';
-import type { AcademicTerm, DayOfWeek } from '@prisma/client';
+import type { DayOfWeek } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { assertFacultyScope, getCallerScope } from '../lib/facultyScope';
 import { fromIsoDate, isIsoDate, toIsoDate } from '../lib/isoDate';
 import { parseTermKey } from '../lib/terms';
-import { findConflict, type BusySlot } from '../lib/materializer';
-import { groupsOverlap, indexGroups } from '../lib/groupTree';
-import { mapRangeByTime, type GridTime } from '../lib/timeGrid';
+import { mapRangeByTime } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from '../services/timeGrids';
-import { toTreeGroup } from '../services/cohorts';
 import { activeCohorts } from '../services/sections';
-import { conflictMessage, singleConflictMessage } from '../lib/conflictMessage';
+import { conflictMessage } from '../lib/conflictMessage';
+import { notifyClassChange } from '../services/changeRequests';
+import {
+  assertPlanEditable,
+  cancelOccurrence,
+  createManualOccurrence as createManual,
+  moveOccurrence,
+  restoreOccurrence,
+  type ManualInput,
+  type MoveInput,
+} from '../services/occurrenceChanges';
 import {
   assertCohortTermWritable,
   assertVersionApproved,
   availability,
-  calendarFor,
   checkPlacement,
   generate,
   planView,
-  termOccupancy,
-  type OccupancyOptions,
   type PlacementInput,
 } from '../services/plan';
 
@@ -256,39 +260,6 @@ export const listOccurrences = asyncHandler(async (req, res) => {
   });
 });
 
-/** Kolizje terminu na konkretnej dacie z zajetoscia calej uczelni (bez niego samego). */
-async function occurrenceConflicts(term: AcademicTerm, slot: Omit<BusySlot, 'label'>, opts: OccupancyOptions) {
-  // Wspolna zajetosc uczelni (wzorce z wyjatkami, terminy reczne i wygenerowane) na te date —
-  // zawezona do rocznika grupy, sali i prowadzacego terminu (tylko one moga z nim kolidowac).
-  const group = await prisma.studentGroup.findUniqueOrThrow({ where: { id: slot.groupId }, select: { cohortId: true } });
-  const relevantTo = { cohortId: group.cohortId, roomId: slot.roomId, instructorId: slot.instructorId };
-  const busy = (await termOccupancy(term, { ...opts, includeGenerated: true, relevantTo })).filter((b) => b.date === slot.date);
-  const groups = await prisma.studentGroup.findMany({ where: { cohortId: group.cohortId } });
-  const index = indexGroups(groups.map(toTreeGroup));
-  return findConflict(slot, busy, (a, b) => groupsOverlap(a, b, index));
-}
-
-/**
- * Terminy rocznika wolno zmieniac: kalendarz nie w archiwum i wersja programu zatwierdzona.
- * Zwraca siatke godzin wydzialu i trybu rocznika — bloki terminu zamieniamy na rzeczywisty czas.
- */
-async function assertPlanEditable(termId: string, cohortId: string): Promise<GridTime> {
-  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: termId } });
-  const [ctx] = await activeCohorts(term, null, [cohortId]);
-  const calendar = ctx ? await calendarFor(term, ctx) : null;
-  if (!ctx || !calendar) throw new AppError(409, 'Rocznik nie ma kalendarza w tym semestrze');
-  if (calendar.status === 'ARCHIVED') throw new AppError(409, 'Kalendarz w archiwum — terminy tylko do odczytu');
-  assertVersionApproved(ctx.cohort);
-  return (await gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode)).time;
-}
-
-/** Zakres blokow -> minuty; blok spoza siatki kalendarza to blad wejscia. */
-function minutesOf(grid: GridTime, startOrder: number, endOrder: number) {
-  const time = grid.range(startOrder, endOrder);
-  if (!time) throw new AppError(400, 'Godziny poza siatka godzin wydzialu');
-  return time;
-}
-
 /**
  * Zmiana pojedynczego terminu: odwolanie, przeniesienie (data/godziny/sala/prowadzacy)
  * albo przywrocenie wg wzorca. Dla terminow z wzorca zapisujemy wyjatek, ktory przezyje
@@ -299,157 +270,36 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
   if (!occ) throw new AppError(404, 'Termin nie znaleziony');
   await assertFacultyScope(req, occ.facultyId);
   const grid = await assertPlanEditable(occ.termId, occ.section.cohortId);
-  const body = req.body as {
-    action: 'CANCEL' | 'MODIFY' | 'RESTORE';
-    date?: string;
-    startOrder?: number;
-    endOrder?: number;
-    roomId?: string;
-    /** true = przenies na online (bez sali); false + roomId = do sali. */
-    online?: boolean;
-    instructorId?: string | null;
-    note?: string;
-  };
-  const derived = occ.kind === 'DERIVED' && occ.placement && occ.originalDate;
+  const body = req.body as { action: 'CANCEL' | 'MODIFY' | 'RESTORE' } & MoveInput;
+  const before = { date: occ.date, startMinute: occ.startMinute, endMinute: occ.endMinute };
 
   if (body.action === 'RESTORE') {
-    if (!derived) throw new AppError(400, 'Przywracac mozna tylko terminy z wzorca');
-    const p = occ.placement!;
-    const length = occ.endOrder - occ.startOrder + 1;
-    const endOrder = Math.min(p.endOrder, p.startOrder + length - 1);
-    const time = minutesOf(grid, p.startOrder, endOrder);
-    await prisma.$transaction([
-      prisma.placementException.deleteMany({ where: { placementId: p.id, originalDate: occ.originalDate! } }),
-      prisma.occurrence.update({
-        where: { id: occ.id },
-        data: {
-          date: occ.originalDate!,
-          startOrder: p.startOrder,
-          endOrder,
-          ...time,
-          roomId: p.roomId,
-          instructorId: p.instructorId,
-          status: 'SCHEDULED',
-        },
-      }),
-    ]);
+    await restoreOccurrence(occ, grid);
+    await notifyClassChange(occ.id, 'CLASS_CHANGED', req.user!.id, before);
     res.json({ message: 'Termin przywrocony wg wzorca' });
     return;
   }
-
   if (body.action === 'CANCEL') {
-    await prisma.$transaction([
-      ...(derived
-        ? [
-            prisma.placementException.upsert({
-              where: { placementId_originalDate: { placementId: occ.placementId!, originalDate: occ.originalDate! } },
-              create: { placementId: occ.placementId!, originalDate: occ.originalDate!, action: 'CANCEL', note: body.note ?? null },
-              update: { action: 'CANCEL', note: body.note ?? null },
-            }),
-          ]
-        : []),
-      prisma.occurrence.update({ where: { id: occ.id }, data: { status: 'CANCELLED', note: body.note ?? occ.note } }),
-    ]);
+    await cancelOccurrence(occ, body.note ?? null);
+    await notifyClassChange(occ.id, 'CLASS_CANCELLED', req.user!.id, before);
     res.json({ message: 'Termin odwolany' });
     return;
   }
-
-  // MODIFY
-  const date = body.date ?? toIsoDate(occ.date);
-  if (!isIsoDate(date)) throw new AppError(400, 'Nieprawidlowa data');
-  const next = {
-    date,
-    startOrder: body.startOrder ?? occ.startOrder,
-    endOrder: body.endOrder ?? occ.endOrder,
-    roomId: body.online ? null : (body.roomId ?? occ.roomId),
-    instructorId: body.instructorId === undefined ? occ.instructorId : body.instructorId,
-  };
-  if (next.endOrder < next.startOrder) throw new AppError(400, 'Nieprawidlowy zakres godzin');
-  if (body.online === false && !next.roomId) throw new AppError(400, 'Wybierz sale (albo zostaw zajecia online)');
-  const time = minutesOf(grid, next.startOrder, next.endOrder);
-  const occTerm = await prisma.academicTerm.findUniqueOrThrow({ where: { id: occ.termId } });
-  const conflict = await occurrenceConflicts(
-    occTerm,
-    { date: next.date, ...time, roomId: next.roomId, instructorId: next.instructorId, groupId: occ.groupId, jointKey: occ.jointKey },
-    // Bez niego samego: termin wzorca (placement + data z wzorca) albo termin reczny/osierocony.
-    derived ? { excludePatternKey: `${occ.placementId}|${toIsoDate(occ.originalDate!)}`, excludeOccurrenceId: occ.id } : { excludeOccurrenceId: occ.id },
-  );
-  if (conflict) throw new AppError(409, singleConflictMessage(conflict));
-  await prisma.$transaction([
-    ...(derived
-      ? [
-          prisma.placementException.upsert({
-            where: { placementId_originalDate: { placementId: occ.placementId!, originalDate: occ.originalDate! } },
-            create: {
-              placementId: occ.placementId!,
-              originalDate: occ.originalDate!,
-              action: 'MODIFY',
-              newDate: fromIsoDate(next.date),
-              newStartOrder: next.startOrder,
-              newEndOrder: next.endOrder,
-              newRoomId: next.roomId,
-              newOnline: next.roomId === null ? true : null,
-              newInstructorId: next.instructorId,
-              note: body.note ?? null,
-            },
-            update: {
-              action: 'MODIFY',
-              newDate: fromIsoDate(next.date),
-              newStartOrder: next.startOrder,
-              newEndOrder: next.endOrder,
-              newRoomId: next.roomId,
-              newOnline: next.roomId === null ? true : null,
-              newInstructorId: next.instructorId,
-              note: body.note ?? null,
-            },
-          }),
-        ]
-      : []),
-    prisma.occurrence.update({
-      where: { id: occ.id },
-      data: { ...next, ...time, date: fromIsoDate(next.date), status: 'SCHEDULED', note: body.note ?? occ.note },
-    }),
-  ]);
+  await moveOccurrence(occ, grid, body);
+  await notifyClassChange(occ.id, 'CLASS_CHANGED', req.user!.id, before);
   res.json({ message: 'Termin zmieniony' });
 });
 
 /** Termin reczny (odrobienie, zajecia jednorazowe) — liczy sie do godzin i nie znika przy generowaniu. */
 export const createManualOccurrence = asyncHandler(async (req, res) => {
   const term = await findTerm(String(req.params.key));
-  const body = req.body as { sectionId: string; date: string; startOrder: number; endOrder: number; roomId?: string | null; online?: boolean; instructorId?: string | null; note?: string };
-  const roomId = body.online ? null : (body.roomId ?? null);
+  const body = req.body as { sectionId: string } & ManualInput;
   const section = await prisma.classSection.findUnique({ where: { id: body.sectionId } });
   if (!section || section.termId !== term.id) throw new AppError(400, 'Zajecia nie naleza do tego semestru');
   await assertFacultyScope(req, section.facultyId);
   const grid = await assertPlanEditable(term.id, section.cohortId);
-  if (!isIsoDate(body.date) || !Number.isInteger(body.startOrder) || !Number.isInteger(body.endOrder) || body.endOrder < body.startOrder) {
-    throw new AppError(400, 'Podaj date i godziny');
-  }
-  if (!body.online && !roomId) throw new AppError(400, 'Wybierz sale (albo zaznacz zajecia online)');
-  const time = minutesOf(grid, body.startOrder, body.endOrder);
-  const conflict = await occurrenceConflicts(
-    term,
-    { date: body.date, ...time, roomId, instructorId: body.instructorId ?? null, groupId: section.groupId, jointKey: null },
-    {},
-  );
-  if (conflict) throw new AppError(409, singleConflictMessage(conflict));
-  const data = await prisma.occurrence.create({
-    data: {
-      termId: term.id,
-      facultyId: section.facultyId,
-      sectionId: section.id,
-      date: fromIsoDate(body.date),
-      startOrder: body.startOrder,
-      endOrder: body.endOrder,
-      ...time,
-      roomId,
-      instructorId: body.instructorId ?? null,
-      groupId: section.groupId,
-      kind: 'MANUAL',
-      status: 'MAKEUP',
-      note: body.note ?? null,
-    },
-  });
+  const data = await createManual(term, section, grid, body);
+  await notifyClassChange(data.id, 'MAKEUP_SCHEDULED', req.user!.id);
   res.status(201).json({ data, message: 'Termin reczny dodany' });
 });
 

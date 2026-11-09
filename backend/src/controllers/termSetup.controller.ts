@@ -6,6 +6,7 @@ import { asyncHandler } from '../middleware/asyncHandler';
 import { getCallerScope } from '../lib/facultyScope';
 import { addDays, fromIsoDate, isIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
 import { personalDaysOff, TeachingCalendar } from '../lib/teachingCalendar';
+import { occurrenceKey } from '../lib/occurrenceKey';
 import { toCalendarInput } from '../services/termCalendars';
 import { parseTermKey } from '../lib/terms';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
@@ -221,6 +222,17 @@ export const myPlan = asyncHandler(async (req, res) => {
   const cohortIds = [...new Set(shown.map((o) => o.section.cohortId))];
   const contexts = cohortIds.length > 0 ? await activeCohorts(term, null, cohortIds) : [];
   const nameOf = new Map(contexts.map((c) => [c.cohort.id, c.nameOf]));
+  // Prowadzacy: zgloszenia czekajace na dziekanat — kafelek pokazuje "zgloszono odwolanie" itp.
+  const keyOfRow = (o: (typeof shown)[number]) =>
+    occurrenceKey({ id: o.id, kind: o.kind, placementId: o.placementId, originalDate: o.originalDate ? toIsoDate(o.originalDate) : null });
+  const pending =
+    user.role === 'INSTRUCTOR' && shown.length > 0
+      ? await prisma.changeRequest.findMany({
+          where: { instructorId: user.instructorId!, status: 'PENDING', occurrenceKey: { in: shown.map(keyOfRow) } },
+          select: { occurrenceKey: true, kind: true },
+        })
+      : [];
+  const pendingByKey = new Map(pending.map((p) => [p.occurrenceKey, p.kind]));
   const data = shown
     .map((o) => ({
       id: o.id,
@@ -237,6 +249,7 @@ export const myPlan = asyncHandler(async (req, res) => {
       instructor: o.instructor ? `${o.instructor.title ?? ''} ${o.instructor.firstName} ${o.instructor.lastName}`.trim() : 'NN',
       status: o.status,
       note: o.note,
+      pendingRequest: pendingByKey.get(keyOfRow(o)) ?? null,
     }));
   res.json({ data, daysOff: from && to ? await personDaysOff(term, personCohortIds, visible, toIsoDate(from), toIsoDate(to)) : {} });
 });

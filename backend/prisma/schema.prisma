@@ -26,11 +26,12 @@ model Faculty {
 
   // Wydzial jest jednostka organizacyjna planu: kalendarze semestru, zajecia,
   // umieszczenia i terminy naleza do konkretnego wydzialu.
-  termCalendars TermCalendar[]
-  timeGrids     TimeGrid[]
-  classSections ClassSection[]
-  placements    Placement[]
-  occurrences   Occurrence[]
+  termCalendars  TermCalendar[]
+  timeGrids      TimeGrid[]
+  classSections  ClassSection[]
+  placements     Placement[]
+  occurrences    Occurrence[]
+  changeRequests ChangeRequest[]
 
   createdAt DateTime @default(now())
 }
@@ -160,16 +161,17 @@ model Building {
 }
 
 model Room {
-  id              String         @id @default(uuid())
+  id              String          @id @default(uuid())
   number          String
   type            RoomType
   capacity        Int
-  building        Building       @relation(fields: [buildingId], references: [id])
+  building        Building        @relation(fields: [buildingId], references: [id])
   buildingId      String
   placements      Placement[]
   occurrences     Occurrence[]
   preferredGroups StudentGroup[]
-  createdAt       DateTime       @default(now())
+  changeRequests  ChangeRequest[]
+  createdAt       DateTime        @default(now())
 
   @@unique([number, buildingId])
 }
@@ -190,6 +192,7 @@ model Instructor {
   sectionAssignments SectionInstructor[]
   placements         Placement[]
   occurrences        Occurrence[]
+  changeRequests     ChangeRequest[]
   createdAt          DateTime            @default(now())
 }
 
@@ -251,6 +254,7 @@ model AcademicTerm {
   sections       ClassSection[]
   placements     Placement[]
   occurrences    Occurrence[]
+  changeRequests ChangeRequest[]
   createdAt      DateTime           @default(now())
 
   @@unique([startYear, type])
@@ -421,6 +425,7 @@ model ClassSection {
   instructors    SectionInstructor[]
   placements     Placement[]
   occurrences    Occurrence[]
+  changeRequests ChangeRequest[]
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
 
@@ -526,6 +531,11 @@ model Occurrence {
   status       EntryStatus    @default(SCHEDULED)
   jointKey     String?
   note         String?
+  // Odrobienie (MANUAL, MAKEUP) za odwolany termin — jego trwaly klucz (lib/occurrenceKey):
+  // "p:<umieszczenie>|<data z wzorca>" albo "o:<id terminu recznego>". Terminy z wzorca dostaja
+  // nowe id przy kazdym "Generuj terminy", wiec nie wskazujemy ich kluczem obcym. Odrobienie
+  // z kluczem nie zuzywa godzin drugi raz — odwolany termin juz je zuzyl.
+  makeupOfKey  String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
@@ -533,6 +543,7 @@ model Occurrence {
   @@index([date, roomId])
   @@index([date, instructorId])
   @@index([sectionId])
+  @@index([makeupOfKey])
 }
 
 // Rocznik w konkretnym semestrze: numer semestru programu (wyliczany, wyjatkowo do
@@ -591,6 +602,10 @@ model User {
   studentGroups StudentGroup[] @relation("StudentGroupMembers")
 
   refreshTokens RefreshToken[]
+
+  requestsMade    ChangeRequest[] @relation("RequestAuthor")
+  requestsDecided ChangeRequest[] @relation("RequestDecider")
+  notifications   Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -721,4 +736,94 @@ enum Role {
   DEAN_OFFICE
   INSTRUCTOR
   STUDENT
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ZGLOSZENIA ZMIAN I POWIADOMIENIA
+// ═══════════════════════════════════════════════════════════════
+
+// Prowadzacy prosi dziekanat o odwolanie albo przeniesienie swojego terminu, albo proponuje
+// termin odrobienia odwolanych zajec. Dziekanat zatwierdza (zmiana wykonuje sie wtedy,
+// z pelnym sprawdzeniem kolizji) albo odrzuca z uzasadnieniem.
+model ChangeRequest {
+  id                  String              @id @default(uuid())
+  term                AcademicTerm        @relation(fields: [termId], references: [id])
+  termId              String
+  faculty             Faculty             @relation(fields: [facultyId], references: [id])
+  facultyId           String
+  section             ClassSection        @relation(fields: [sectionId], references: [id])
+  sectionId           String
+  instructor          Instructor          @relation(fields: [instructorId], references: [id])
+  instructorId        String
+  requestedBy         User?               @relation("RequestAuthor", fields: [requestedById], references: [id], onDelete: SetNull)
+  requestedById       String?
+  kind                ChangeRequestKind
+  status              ChangeRequestStatus @default(PENDING)
+  // Termin, ktorego dotyczy: trwaly klucz (lib/occurrenceKey) i jego stan w chwili zgloszenia
+  // (do wyswietlania, gdyby termin zniknal przy ponownym generowaniu).
+  occurrenceKey       String
+  originalDate        DateTime            @db.Date
+  originalStartMinute Int
+  originalEndMinute   Int
+  // Propozycja (MOVE, MAKEUP): data i bloki siatki rocznika; sala albo online.
+  newDate             DateTime?           @db.Date
+  newStartOrder       Int?
+  newEndOrder         Int?
+  newRoom             Room?               @relation(fields: [newRoomId], references: [id], onDelete: SetNull)
+  newRoomId           String?
+  newOnline           Boolean             @default(false)
+  reason              String
+  decidedBy           User?               @relation("RequestDecider", fields: [decidedById], references: [id], onDelete: SetNull)
+  decidedById         String?
+  decidedAt           DateTime?
+  decisionNote        String?
+  notifications       Notification[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([facultyId, status])
+  @@index([instructorId, status])
+  @@index([occurrenceKey])
+}
+
+// Powiadomienie w aplikacji (dzwonek w naglowku). Tworza je zgloszenia i zmiany terminow
+// prowadzacego wprowadzone przez dziekanat.
+model Notification {
+  id        String           @id @default(uuid())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  kind      NotificationKind
+  title     String
+  body      String
+  // Sciezka w aplikacji, np. "/requests/2026-Z".
+  link      String?
+  request   ChangeRequest?   @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  requestId String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
+}
+
+enum ChangeRequestKind {
+  CANCEL // odwolanie terminu
+  MOVE // przeniesienie terminu
+  MAKEUP // termin odrobienia odwolanych zajec
+}
+
+enum ChangeRequestStatus {
+  PENDING // czeka na dziekanat
+  APPROVED // zatwierdzone i wykonane
+  REJECTED // odrzucone (z uzasadnieniem)
+  WITHDRAWN // wycofane przez prowadzacego
+}
+
+enum NotificationKind {
+  REQUEST_CREATED // do dziekanatu: nowe zgloszenie
+  REQUEST_WITHDRAWN // do dziekanatu: prowadzacy wycofal zgloszenie
+  REQUEST_APPROVED // do prowadzacego
+  REQUEST_REJECTED // do prowadzacego
+  CLASS_CANCELLED // do prowadzacego: dziekanat odwolal jego zajecia
+  CLASS_CHANGED // do prowadzacego: dziekanat przeniosl / przywrocil jego zajecia
+  MAKEUP_SCHEDULED // do prowadzacego: dziekanat dodal termin (odrobienie) z jego udzialem
 }
