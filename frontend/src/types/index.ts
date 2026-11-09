@@ -683,6 +683,13 @@ export interface SetupCohort {
   id: string;
   label: string;
   code: string;
+  program: {
+    code: string;
+    name: string;
+    studyMode: StudyMode;
+    degreeLevel: DegreeLevel;
+    fieldOfStudy: { id: string; name: string; shortName: string };
+  };
   semester: number;
   programVersion: { id: string; label: string; status: ProgramVersionStatus };
   calendar: { name: string; status: CalendarStatus } | null;

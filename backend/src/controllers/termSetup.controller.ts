@@ -106,6 +106,18 @@ export const setupStatus = asyncHandler(async (req, res) => {
       id: ctx.cohort.id,
       label: cohortLabel(ctx.cohort),
       code: ctx.cohort.program.code,
+      // Do filtrow rocznikow (tryb, kierunek, stopien) — jak w Rocznikach i Planie.
+      program: {
+        code: ctx.cohort.program.code,
+        name: ctx.cohort.program.name,
+        studyMode: ctx.cohort.program.studyMode,
+        degreeLevel: ctx.cohort.program.degreeLevel,
+        fieldOfStudy: {
+          id: ctx.cohort.program.fieldOfStudy.id,
+          name: ctx.cohort.program.fieldOfStudy.name,
+          shortName: ctx.cohort.program.fieldOfStudy.shortName,
+        },
+      },
       semester: ctx.semester,
       programVersion: { id: ctx.cohort.programVersion.id, label: ctx.cohort.programVersion.label, status: ctx.cohort.programVersion.status },
       calendar: calendar ? { name: calendar.name, status: calendar.status } : null,
