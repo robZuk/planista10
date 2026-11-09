@@ -396,7 +396,6 @@ export interface TermCohort extends CohortDto {
   semester: number;
   studyYear: number;
   semesterOverridden: boolean;
-  isNewIntake: boolean;
   calendar: { id: string; name: string; kind: CalendarKind } | null;
   calendarIsDefault: boolean;
   availableCalendars: { id: string; name: string; kind: CalendarKind }[];
@@ -685,7 +684,6 @@ export interface SetupCohort {
   label: string;
   code: string;
   semester: number;
-  isNewIntake: boolean;
   programVersion: { id: string; label: string; status: ProgramVersionStatus };
   calendar: { name: string; status: CalendarStatus } | null;
   groups: number;

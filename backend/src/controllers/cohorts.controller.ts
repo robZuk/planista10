@@ -95,7 +95,6 @@ export const listTermCohorts = asyncHandler(async (req, res) => {
       semester,
       studyYear: studyYearOf(semester),
       semesterOverridden: !!override,
-      isNewIntake: semester === 1,
       calendar,
       calendarIsDefault: !override?.calendar,
       availableCalendars: own,

@@ -193,7 +193,6 @@ export default function CohortsPage() {
                   <Badge variant="secondary">
                     semestr {cohort.semester} · rok {cohort.studyYear}
                   </Badge>
-                  {cohort.isNewIntake && <Badge>nowy nabor</Badge>}
                   <span className="text-sm font-normal text-muted-foreground">nabor {cohort.startTermLabel}</span>
                 </CardTitle>
                 <CardDescription>

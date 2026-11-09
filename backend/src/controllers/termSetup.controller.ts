@@ -119,7 +119,6 @@ export const setupStatus = asyncHandler(async (req, res) => {
       label: cohortLabel(ctx.cohort),
       code: ctx.cohort.program.code,
       semester: ctx.semester,
-      isNewIntake: ctx.semester === 1,
       programVersion: { id: ctx.cohort.programVersion.id, label: ctx.cohort.programVersion.label, status: ctx.cohort.programVersion.status },
       calendar: calendar ? { name: calendar.name, status: calendar.status } : null,
       groups: ctx.tree.length,

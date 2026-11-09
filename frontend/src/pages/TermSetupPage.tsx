@@ -116,7 +116,7 @@ export default function TermSetupPage() {
                 {data.cohorts.map((c) => (
                   <TableRow key={c.id}>
                     <TableCell className="font-medium">
-                      {c.code} · semestr {c.semester} {c.isNewIntake && <Badge className="ml-1">nowy nabor</Badge>}
+                      {c.code} · semestr {c.semester}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       <Link to={`/curriculum/program/${c.programVersion.id}`} className="underline-offset-4 hover:underline">
