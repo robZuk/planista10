@@ -745,6 +745,8 @@ export interface MyPlanRow {
   subject: string;
   classType: ClassType;
   program: string;
+  /** Nazwa grupy na semestr rocznika (jak w Ukladaniu planu), np. "DUT-1-C-A". */
+  group: string;
   room: string;
   instructor: string;
   status: EntryStatus;

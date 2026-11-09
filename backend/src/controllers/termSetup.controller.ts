@@ -195,15 +195,21 @@ export const myPlan = asyncHandler(async (req, res) => {
       ...(from || to ? { date: { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) } } : {}),
     },
     include: {
-      section: { select: { classType: true, programEntry: { select: { subject: { select: { name: true } } } }, cohort: { select: { program: { select: { studyMode: true, code: true } } } } } },
+      section: { select: { cohortId: true, classType: true, programEntry: { select: { subject: { select: { name: true } } } }, cohort: { select: { program: { select: { studyMode: true, code: true } } } } } },
       room: { select: { number: true, building: { select: { name: true } } } },
       instructor: { select: { title: true, firstName: true, lastName: true } },
       group: { select: { id: true } },
     },
     orderBy: [{ date: 'asc' }, { startMinute: 'asc' }],
   });
-  const data = rows
-    .filter((o) => visible.has(`${o.facultyId}|${o.section.cohort.program.studyMode}`))
+  const shown = rows.filter((o) => visible.has(`${o.facultyId}|${o.section.cohort.program.studyMode}`));
+  // Nazwy grup liczone na semestr rocznika (jak w Ukladaniu planu) — prowadzacy rozroznia
+  // ten sam przedmiot w roznych grupach tego samego dnia.
+  // Pusta lista rocznikow w activeCohorts znaczy "wszystkie" — tydzien bez zajec nie pyta o nic.
+  const cohortIds = [...new Set(shown.map((o) => o.section.cohortId))];
+  const contexts = cohortIds.length > 0 ? await activeCohorts(term, null, cohortIds) : [];
+  const nameOf = new Map(contexts.map((c) => [c.cohort.id, c.nameOf]));
+  const data = shown
     .map((o) => ({
       id: o.id,
       date: toIsoDate(o.date),
@@ -214,6 +220,7 @@ export const myPlan = asyncHandler(async (req, res) => {
       subject: o.section.programEntry.subject.name,
       classType: o.section.classType,
       program: o.section.cohort.program.code,
+      group: nameOf.get(o.section.cohortId)?.(o.groupId) ?? '',
       room: o.room ? `${o.room.number} (${o.room.building.name})` : 'ON-LINE',
       instructor: o.instructor ? `${o.instructor.title ?? ''} ${o.instructor.firstName} ${o.instructor.lastName}`.trim() : 'NN',
       status: o.status,
