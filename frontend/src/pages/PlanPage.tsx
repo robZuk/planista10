@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -59,6 +60,8 @@ export default function PlanPage() {
   const [target, setTarget] = useState<PlacementTarget | null>(null);
   const [zjazdChoice, setZjazd] = useState<number | null>(null);
   const [groupFilter, setGroupFilter] = useState('all');
+  // Przy filtrze grupy zajecia innych grup sa domyslnie ukryte — kafelki wybranej grupy maja wtedy pelna szerokosc.
+  const [showOtherGroups, setShowOtherGroups] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [carrying, setCarrying] = useState(false);
   const [copyTo, setCopyTo] = useState('');
@@ -152,7 +155,7 @@ export default function PlanPage() {
 
   const visiblePlacement = (p: PlanPlacement) => !zjazd || inZjazd(p, zjazd);
 
-  const items: GridItem[] = sections.flatMap((s) =>
+  const items: GridItem[] = sections.filter((s) => showOtherGroups || inView(s)).flatMap((s) =>
     s.placements.filter(visiblePlacement).map((p) => ({
       id: p.id,
       dayOfWeek: p.dayOfWeek,
@@ -334,6 +337,15 @@ export default function PlanPage() {
                   </NativeSelectOption>
                 ))}
               </NativeSelect>
+              {groupFilter !== 'all' && (
+                <label
+                  className="flex items-center gap-2 text-sm"
+                  title="Zajecia grup, na ktore wybrana grupa nie chodzi — wyszarzone, zajmuja miejsce w siatce"
+                >
+                  <Checkbox checked={showOtherGroups} onCheckedChange={(v) => setShowOtherGroups(v === true)} />
+                  Pokaz inne grupy
+                </label>
+              )}
               {zjazdCalendar && !zjazdyVary && (
                 <span
                   className="text-sm text-muted-foreground"
