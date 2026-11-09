@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { assignLanes } from '@/lib/gridLanes';
 import { cn } from '@/lib/utils';
 import { CLASS_COLORS, CLASS_LABELS, fitGridLines } from '@/lib/scheduleDisplay';
 import { gridLayout } from '@/lib/timeGrid';
@@ -36,36 +37,12 @@ const DAY_SHORT: Record<string, string> = {
   SUNDAY: 'Niedziela',
 };
 
-/** Tory dla zajec rownoleglych: kazdy blok dostaje kolumne, w ktorej nie nachodzi na inne. */
-function assignLanes(items: GridItem[]): Map<string, { lane: number; lanes: number }> {
-  const result = new Map<string, { lane: number; lanes: number }>();
-  const sorted = [...items].sort((a, b) => a.startOrder - b.startOrder || a.endOrder - b.endOrder);
-  const laneEnds: number[] = [];
-  const assigned: { item: GridItem; lane: number }[] = [];
-  for (const item of sorted) {
-    let lane = laneEnds.findIndex((end) => end < item.startOrder);
-    if (lane === -1) {
-      lane = laneEnds.length;
-      laneEnds.push(item.endOrder);
-    } else laneEnds[lane] = item.endOrder;
-    assigned.push({ item, lane });
-  }
-  // Szerokosc: liczba torow w grupie nakladajacych sie blokow.
-  for (const { item, lane } of assigned) {
-    const overlapping = assigned.filter(
-      (o) => o.item.startOrder <= item.endOrder && item.startOrder <= o.item.endOrder,
-    );
-    const lanes = Math.max(...overlapping.map((o) => o.lane)) + 1;
-    result.set(item.id, { lane, lanes });
-  }
-  return result;
-}
-
 /**
  * Siatka wzorca: dni x bloki siatki godzin kalendarza rocznika, na osi minut — blok 45 min
  * jest nizszy niz 60 min, a przerwy miedzy blokami maja wlasny pas. Zajecia rownolegle
- * (rozne grupy w tym samym czasie) stoja obok siebie. `availability` cieniuje komorki,
- * gdy planista wybral zajecia do umieszczenia (zielone — wolne, czerwone — kolizja).
+ * (rozne grupy w tym samym czasie) stoja obok siebie — tory wg `lib/gridLanes`.
+ * `availability` cieniuje komorki, gdy planista wybral zajecia do umieszczenia
+ * (zielone — wolne, czerwone — kolizja).
  */
 export function WeekGrid({
   days,
@@ -163,7 +140,7 @@ export function WeekGrid({
                 );
               })}
               {dayItems.map((item) => {
-                const lane = lanes.get(item.id) ?? { lane: 0, lanes: 1 };
+                const lane = lanes.get(item.id) ?? { lane: 0, span: 1, lanes: 1 };
                 const width = 100 / lane.lanes;
                 const span = layout.span(item.startOrder, item.endOrder);
                 if (!span) return null;
@@ -183,7 +160,7 @@ export function WeekGrid({
                       top: span.top + 1,
                       height,
                       left: `calc(${lane.lane * width}% + 2px)`,
-                      width: `calc(${width}% - 4px)`,
+                      width: `calc(${width * lane.span}% - 4px)`,
                     }}
                     className={cn(
                       'flex flex-col justify-start overflow-hidden rounded-md border-l-4 px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm',
