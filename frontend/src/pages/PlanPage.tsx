@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarCheck, Copy, History, TriangleAlert, X } from 'lucide-react';
+import { CalendarCheck, ChevronRight, Copy, FilterX, History, TriangleAlert, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +27,8 @@ import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 import type { DayOfWeek, PlanPlacement, PlanSection } from '@/types';
 import { WeekGrid, type GridItem } from './plan/WeekGrid';
+import { CohortFacetFilters } from './cohorts/CohortFacetFilters';
+import { useCohortFilters } from './cohorts/useCohortFilters';
 import { PlacementDialog, type PlacementTarget } from './plan/PlacementDialog';
 import { GenerateTermsDialog } from './plan/GenerateTermsDialog';
 import { OccurrencesTab } from './plan/OccurrencesTab';
@@ -71,10 +73,22 @@ export default function PlanPage() {
     queryFn: () => fetchTermCohorts(term!.key, facultyParam),
     enabled: !!term,
   });
-  const cohorts = useMemo(() => cohortsData?.cohorts ?? [], [cohortsData]);
+  const allCohorts = useMemo(() => cohortsData?.cohorts ?? [], [cohortsData]);
+
+  // Filtry rocznikow wspolne z "Rocznikami i grupami" (tryb globalny, reszta zapamietana).
+  const cohortFilter = useCohortFilters(allCohorts);
+  const cohorts = cohortFilter.visible;
+  const cohortIds = cohorts.map((c) => c.id).join(',');
+  // Wybrany rocznik wypadl z filtra -> pierwszy pasujacy; nic nie pasuje -> brak wyboru.
   useEffect(() => {
-    if (cohorts.length > 0 && !cohorts.some((c) => c.id === cohortId)) setCohortId(cohorts[0]!.id);
-  }, [cohorts, cohortId]);
+    const ids = cohortIds ? cohortIds.split(',') : [];
+    if (!ids.includes(cohortId)) {
+      setCohortId(ids[0] ?? '');
+      setSelected(null);
+      setZjazd(null);
+      setGroupFilter('all');
+    }
+  }, [cohortIds, cohortId]);
 
   const { data: plan, isPending } = useQuery({
     queryKey: ['plan', term?.key, cohortId],
@@ -201,14 +215,6 @@ export default function PlanPage() {
         description={term ? `Semestr ${term.label}. Zajecia umieszczasz recznie; terminy powstaja po „Generuj terminy”.` : 'Wybierz semestr w naglowku.'}
         actions={
           <>
-            {isAdmin && <FacultySelector />}
-            <NativeSelect value={cohortId} onChange={(e) => { setCohortId(e.target.value); setSelected(null); setZjazd(null); setGroupFilter('all'); }} className="w-72" aria-label="Rocznik">
-              {cohorts.map((c) => (
-                <NativeSelectOption key={c.id} value={c.id}>
-                  {c.program.code} · semestr {c.semester} (nabor {c.startTermLabel})
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
             {plan && !locked && (
               <Tooltip open={blockedReason ? undefined : false}>
                 <TooltipTrigger asChild>
@@ -233,8 +239,44 @@ export default function PlanPage() {
         }
       />
 
-      {cohortsData && cohorts.length === 0 && (
+      {/* Filtry w kolejnosci zaleznosci: wydzial -> tryb, kierunek, stopien, semestr -> rocznik. */}
+      {term && (
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          {isAdmin && <FacultySelector />}
+          <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} />
+          <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
+          <NativeSelect
+            value={cohortId}
+            onChange={(e) => { setCohortId(e.target.value); setSelected(null); setZjazd(null); setGroupFilter('all'); }}
+            className="w-64"
+            aria-label="Rocznik"
+            title={cohorts.find((c) => c.id === cohortId)?.program.name}
+            disabled={cohorts.length === 0}
+          >
+            {cohorts.map((c) => (
+              <NativeSelectOption key={c.id} value={c.id}>
+                {c.program.code} · sem. {c.semester} · nabor {c.startTermLabel}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+          <span className="text-muted-foreground">
+            {cohortFilter.facetsActive ? `${cohorts.length} z ${allCohorts.length} rocznikow` : `${allCohorts.length} rocznikow`}
+          </span>
+          {cohortFilter.facetsActive && (
+            <Button variant="ghost" size="sm" onClick={cohortFilter.clearFacets}>
+              <FilterX /> Wyczysc filtry
+            </Button>
+          )}
+        </div>
+      )}
+
+      {cohortsData && allCohorts.length === 0 && (
         <p className="text-sm text-muted-foreground">W tym semestrze nie ma rocznikow — sprawdz Roczniki i grupy.</p>
+      )}
+      {allCohorts.length > 0 && cohorts.length === 0 && (
+        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+          Zaden rocznik nie pasuje do wybranych filtrow — zmien je albo wyczysc.
+        </p>
       )}
       {isPending && cohortId && <Skeleton className="h-96 w-full" />}
 
