@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, History, RefreshCw, Search, Upload } from 'lucide-react';
+import { CircleCheck, Download, FilterX, History, RefreshCw, Search, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -80,6 +81,14 @@ export default function ObsadaPage() {
   }, [data, cohortFilter, onlyVacant, search]);
 
   const summary = data?.summary;
+  const filtersActive = cohortFilter !== 'all' || onlyVacant || search.trim() !== '';
+  const clearFilters = () => {
+    setCohortFilter('all');
+    setOnlyVacant(false);
+    setSearch('');
+  };
+  // Pusty wynik samego "Tylko braki" przy braku brakow to dobra wiadomosc, nie "nic nie znaleziono".
+  const allStaffed = onlyVacant && cohortFilter === 'all' && search.trim() === '' && summary?.vacancies === 0;
 
   return (
     <>
@@ -157,13 +166,41 @@ export default function ObsadaPage() {
             <Checkbox checked={onlyVacant} onCheckedChange={(v) => setOnlyVacant(v === true)} />
             Tylko braki (NN / niepelna obsada)
           </label>
-          <span className="text-sm text-muted-foreground">{rows.length} pozycji</span>
+          <span className="text-sm text-muted-foreground">
+            {filtersActive ? `${rows.length} z ${data.rows.length} pozycji` : `${rows.length} pozycji`}
+          </span>
+          {filtersActive && (
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <FilterX /> Wyczysc filtry
+            </Button>
+          )}
         </div>
       )}
 
       {isPending && term && <Skeleton className="h-64 w-full" />}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
+        {/* Lewa kolumna zostaje takze przy pustym wyniku filtra — inaczej karta obciazenia
+            zajmowala cala szerokosc i wygladala jak wynik filtra. */}
+        {data && data.rows.length > 0 && rows.length === 0 && (
+          <Empty className="h-fit border">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">{allStaffed ? <CircleCheck /> : <FilterX />}</EmptyMedia>
+              <EmptyTitle>{allStaffed ? 'Brak brakow w obsadzie' : 'Brak zajec dla tych filtrow'}</EmptyTitle>
+              <EmptyDescription>
+                {allStaffed
+                  ? 'Wszystkie zajecia semestru maja pelna obsade — nie ma NN ani niepelnych godzin.'
+                  : 'Zadne zajecia nie pasuja do wybranego rocznika, wyszukiwania lub filtra brakow.'}
+              </EmptyDescription>
+            </EmptyHeader>
+            {filtersActive && (
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                <FilterX /> {allStaffed ? 'Pokaz wszystkie zajecia' : 'Wyczysc filtry'}
+              </Button>
+            )}
+          </Empty>
+        )}
+
         {rows.length > 0 && (
           <div className="overflow-x-auto rounded-lg border">
             <Table>
@@ -238,13 +275,16 @@ export default function ObsadaPage() {
           <Card className="h-fit">
             <CardHeader>
               <CardTitle className="text-base">Obciazenie prowadzacych</CardTitle>
+              <CardDescription>Caly semestr — niezaleznie od filtrow listy.</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-1 text-sm">
                 {workload.map((w) => (
                   <li key={w.id} className="flex justify-between gap-2">
-                    <span className="truncate">{w.name}</span>
-                    <span className="tabular-nums">
+                    <span className="min-w-0 truncate" title={w.name}>
+                      {w.name}
+                    </span>
+                    <span className="shrink-0 whitespace-nowrap tabular-nums">
                       {w.here} h{w.total !== w.here && <span className="text-muted-foreground"> / {w.total}</span>}
                     </span>
                   </li>
