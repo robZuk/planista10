@@ -20,7 +20,7 @@ import { carryInstructors, importSectionsCsv, setSectionInstructors, syncSection
 import { fetchInstructors } from '@/api/instructors';
 import { getErrorMessage } from '@/lib/errors';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
-import { groupSyncProblems } from '@/lib/syncProblems';
+import { groupSyncProblems, splitArchivedProblems } from '@/lib/syncProblems';
 import type { CarryRow, ClassSectionRow, SyncReport, SyncRow } from '@/types';
 
 const NN = '__nn__';
@@ -80,7 +80,8 @@ export function SyncDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const problemGroups = report ? groupSyncProblems(report.problems) : [];
+  const { archived: archivedCohorts, rest: otherProblems } = splitArchivedProblems(report?.problems ?? []);
+  const problemGroups = groupSyncProblems(otherProblems);
   const changes = report
     ? report.created.length + report.hoursChanged.length + report.reactivated.length + report.orphaned.length + report.deleted.length
     : 0;
@@ -128,6 +129,15 @@ export function SyncDialog({
               <section>
                 <h4 className="font-medium">Osierocone (maja obsade lub sa w planie)</h4>
                 <RowList rows={report.orphaned} />
+              </section>
+            )}
+            {archivedCohorts.length > 0 && (
+              <section className="space-y-1 text-sm">
+                <h4 className="font-medium">Pominiete — kalendarz w archiwum ({archivedCohorts.length})</h4>
+                <p className="text-muted-foreground">
+                  Zajecia tych rocznikow to zapis tego, co sie odbylo — synchronizacja ich nie zmienia:{' '}
+                  {archivedCohorts.join('; ')}.
+                </p>
               </section>
             )}
             {problemGroups.length > 0 && (
