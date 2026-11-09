@@ -14,6 +14,7 @@ import { toTreeGroup } from '../services/cohorts';
 import { activeCohorts } from '../services/sections';
 import { conflictMessage, singleConflictMessage } from '../lib/conflictMessage';
 import {
+  assertCohortTermWritable,
   assertVersionApproved,
   availability,
   calendarFor,
@@ -178,6 +179,7 @@ export const deletePlacement = asyncHandler(async (req, res) => {
   const current = await loadPlacement(String(req.params.id));
   await assertFacultyScope(req, current.facultyId);
   assertVersionApproved(current.section.cohort);
+  await assertCohortTermWritable(current.term, current.section.cohort.id, 'plan');
   // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania. Odlaczamy je
   // jawnie (a nie przez ON DELETE SET NULL), zeby updatedAt zapisal chwile usuniecia — po niej
   // plan pokazuje "terminy nieaktualne", dopoki terminow nie wygeneruje sie od nowa.

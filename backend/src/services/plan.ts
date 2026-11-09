@@ -15,7 +15,8 @@ import {
   type MatPlacement,
   type MatSection,
 } from '../lib/materializer';
-import { calendarInclude, toCalendarInput } from './termCalendars';
+import { toCalendarInput } from './termCalendars';
+import { calendarFor, calendarsFor, type CalendarRow } from './cohortCalendar';
 import { activeCohorts, type CohortContext } from './sections';
 import { cohortLabel, toTreeGroup } from './cohorts';
 import { staleReasonsByCohort } from './staleness';
@@ -30,7 +31,8 @@ const CLASS_LETTER: Record<string, string> = { LECTURE: 'W', EXERCISE: 'C', LAB:
 
 // ─── Kalendarz rocznika ──────────────────────────────────────
 
-export type CalendarRow = TermCalendar & Prisma.TermCalendarGetPayload<{ include: typeof calendarInclude }>;
+// Kalendarz rocznika: services/cohortCalendar (uzywany tez przez zajecia).
+export { calendarFor, calendarsFor, type CalendarRow } from './cohortCalendar';
 
 /**
  * Plan uklada sie tylko z zatwierdzonej wersji programu. Wersja w projekcie (takze cofnieta
@@ -50,46 +52,18 @@ export function assertVersionApproved(cohort: {
   }
 }
 
-/** Wybor kalendarza rocznika z kalendarzy semestru: wybrany w Rocznikach albo domyslny wydzialu. */
-function pickCalendar(term: AcademicTerm, ctx: CohortContext, calendars: CalendarRow[]): CalendarRow | null {
-  const chosen = ctx.cohort.terms.find((t) => t.termId === term.id)?.calendarId;
-  const candidates = calendars.filter(
-    (c) => c.facultyId === ctx.cohort.program.fieldOfStudy.facultyId && c.studyMode === ctx.cohort.program.studyMode,
-  );
-  return (
-    candidates.find((c) => c.id === chosen) ??
-    candidates.find((c) => c.name === 'Podstawowy') ??
-    candidates[0] ??
-    null
-  );
-}
-
-/** Kalendarz, wg ktorego rocznik ma zajecia: wybrany w Rocznikach albo domyslny wydzialu. */
-export async function calendarFor(term: AcademicTerm, ctx: CohortContext): Promise<CalendarRow | null> {
-  const candidates = await prisma.termCalendar.findMany({
-    where: {
-      termId: term.id,
-      facultyId: ctx.cohort.program.fieldOfStudy.facultyId,
-      studyMode: ctx.cohort.program.studyMode,
-    },
-    include: calendarInclude,
-  });
-  return pickCalendar(term, ctx, candidates);
-}
-
 /**
- * Kalendarze wielu rocznikow jednym zapytaniem (zamiast calendarFor w petli — N+1).
- * Klucz: id rocznika; brak wpisu = rocznik bez kalendarza.
+ * Zajecia, obsada i plan rocznika w semestrze sa tylko do odczytu, gdy jego kalendarz jest
+ * w archiwum. Rocznik spoza semestru albo bez kalendarza — nie ma czego chronic.
+ * `what` konczy komunikat: "... jest w archiwum — obsada tylko do odczytu".
  */
-export async function calendarsFor(term: AcademicTerm, contexts: CohortContext[]): Promise<Map<string, CalendarRow>> {
-  const out = new Map<string, CalendarRow>();
-  if (contexts.length === 0) return out;
-  const calendars = await prisma.termCalendar.findMany({ where: { termId: term.id }, include: calendarInclude });
-  for (const ctx of contexts) {
-    const calendar = pickCalendar(term, ctx, calendars);
-    if (calendar) out.set(ctx.cohort.id, calendar);
+export async function assertCohortTermWritable(term: AcademicTerm, cohortId: string, what: string): Promise<void> {
+  const [ctx] = await activeCohorts(term, null, [cohortId]);
+  if (!ctx) return;
+  const calendar = await calendarFor(term, ctx);
+  if (calendar?.status === 'ARCHIVED') {
+    throw new AppError(409, `Kalendarz rocznika ${cohortLabel(ctx.cohort)} jest w archiwum — ${what} tylko do odczytu`);
   }
-  return out;
 }
 
 /** Ile planu stoi na kalendarzu: roczniki, ktore z niego korzystaja, ich umieszczenia i terminy. */

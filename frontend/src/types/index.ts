@@ -396,9 +396,9 @@ export interface TermCohort extends CohortDto {
   semester: number;
   studyYear: number;
   semesterOverridden: boolean;
-  calendar: { id: string; name: string; kind: CalendarKind } | null;
+  calendar: { id: string; name: string; kind: CalendarKind; status: CalendarStatus } | null;
   calendarIsDefault: boolean;
-  availableCalendars: { id: string; name: string; kind: CalendarKind }[];
+  availableCalendars: { id: string; name: string; kind: CalendarKind; status: CalendarStatus }[];
   groupCount: number;
   size: number;
 }
@@ -437,7 +437,8 @@ export interface SectionAssignment {
 
 export interface ClassSectionRow {
   id: string;
-  cohort: { id: string; label: string; code: string; semester: number };
+  /** archived: kalendarz rocznika w archiwum — zajecia i obsada tylko do odczytu. */
+  cohort: { id: string; label: string; code: string; semester: number; archived: boolean };
   subject: { id: string; name: string; code: string | null };
   order: number;
   /** Skrot specjalnosci przedmiotu (null = przedmiot wspolny dla kierunku). */
@@ -458,6 +459,8 @@ export interface SectionsSummary {
   assignedHours: number;
   vacancies: number;
   orphaned: number;
+  /** Wszystkie roczniki widoku maja kalendarz w archiwum — akcje masowe niedostepne. */
+  archived: boolean;
 }
 
 export interface SyncRow {
@@ -487,7 +490,7 @@ export interface SyncProblem {
   /** Semestr programu rocznika w synchronizowanym semestrze. */
   semester: number;
   subject: string;
-  kind: 'NO_ROOT_GROUP' | 'MISSING_SPECIALIZATION_GROUP' | 'DRAFT_PROGRAM_VERSION';
+  kind: 'NO_ROOT_GROUP' | 'MISSING_SPECIALIZATION_GROUP' | 'DRAFT_PROGRAM_VERSION' | 'ARCHIVED_CALENDAR';
   specialization: { id: string; shortName: string; name: string } | null;
   /** Wersja programu rocznika (DRAFT_PROGRAM_VERSION). */
   programVersion: { id: string; label: string } | null;

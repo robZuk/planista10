@@ -221,13 +221,14 @@ export default function CohortsPage() {
                       <NativeSelect
                         aria-label="Kalendarz rocznika"
                         className="w-64"
-                        disabled={!editable || calendarMutation.isPending}
+                        disabled={!editable || calendarMutation.isPending || cohort.calendar?.status === 'ARCHIVED'}
+                        title={cohort.calendar?.status === 'ARCHIVED' ? 'Kalendarz w archiwum — semestr tylko do odczytu' : undefined}
                         value={cohort.calendar?.id ?? ''}
                         onChange={(e) => calendarMutation.mutate({ cohort, calendarId: e.target.value })}
                       >
                         {cohort.availableCalendars.map((c) => (
-                          <NativeSelectOption key={c.id} value={c.id}>
-                            {c.name} ({CALENDAR_KIND_LABELS[c.kind].toLowerCase()})
+                          <NativeSelectOption key={c.id} value={c.id} disabled={c.status === 'ARCHIVED' && c.id !== cohort.calendar?.id}>
+                            {c.name} ({CALENDAR_KIND_LABELS[c.kind].toLowerCase()}){c.status === 'ARCHIVED' ? ' · archiwum' : ''}
                           </NativeSelectOption>
                         ))}
                       </NativeSelect>

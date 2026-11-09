@@ -101,7 +101,7 @@ export default function ObsadaPage() {
         actions={
           <>
             {isAdmin && <FacultySelector />}
-            {canEdit && term && (
+            {canEdit && term && !summary?.archived && (
               <>
                 <Button variant="outline" onClick={() => setDialog('sync')}>
                   <RefreshCw /> Synchronizuj zajecia
@@ -123,6 +123,12 @@ export default function ObsadaPage() {
           </>
         }
       />
+
+      {summary?.archived && (
+        <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+          Kalendarze rocznikow sa w archiwum — zajecia i obsada tego semestru sa tylko do odczytu.
+        </p>
+      )}
 
       {summary && (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
@@ -217,8 +223,9 @@ export default function ObsadaPage() {
                 {rows.map((row) => (
                   <TableRow
                     key={row.id}
-                    className={canEdit ? 'cursor-pointer' : undefined}
-                    onClick={() => canEdit && setEditing(row)}
+                    className={canEdit && !row.cohort.archived ? 'cursor-pointer' : undefined}
+                    title={row.cohort.archived ? 'Kalendarz rocznika w archiwum — obsada tylko do odczytu' : undefined}
+                    onClick={() => canEdit && !row.cohort.archived && setEditing(row)}
                   >
                     <TableCell className="whitespace-nowrap text-muted-foreground">
                       {row.cohort.code} · s{row.cohort.semester}

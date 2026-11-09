@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { assertFacultyScope } from '../lib/facultyScope';
+import { assertCohortTermWritable } from '../services/plan';
 import { cohortSemesterInTerm, parseTermKey, termOfDate, termOrdinal, type TermRef } from '../lib/terms';
 import { nextCodes, ROOT, SPEC } from '../lib/groupTree';
 import {
@@ -62,7 +63,7 @@ export const listTermCohorts = asyncHandler(async (req, res) => {
     where: facultyId ? { program: { fieldOfStudy: { facultyId } } } : {},
     include: {
       ...cohortInclude,
-      terms: { where: { termId: term.id }, include: { calendar: { select: { id: true, name: true, kind: true } } } },
+      terms: { where: { termId: term.id }, include: { calendar: { select: { id: true, name: true, kind: true, status: true } } } },
       groups: { select: { fromSemester: true, toSemester: true, size: true, partitionKey: true } },
     },
   });
@@ -79,7 +80,7 @@ export const listTermCohorts = asyncHandler(async (req, res) => {
   // Kalendarze wydzialow w tym semestrze — domyslny = "Podstawowy" w trybie programu.
   const calendars = await prisma.termCalendar.findMany({
     where: { termId: term.id },
-    select: { id: true, facultyId: true, studyMode: true, name: true, kind: true },
+    select: { id: true, facultyId: true, studyMode: true, name: true, kind: true, status: true },
   });
 
   const data = active.map(({ cohort, override, semester }) => {
@@ -259,6 +260,8 @@ export const setCohortTerm = asyncHandler(async (req, res) => {
   const cohort = await requireCohort(String(req.params.cohortId));
   await assertFacultyScope(req, cohort.program.fieldOfStudy.facultyId);
   const body = req.body as { semester?: number | null; calendarId?: string | null };
+  // Semestr w archiwum: numer semestru i kalendarz rocznika sa czescia zapisu, co sie odbylo.
+  await assertCohortTermWritable(term, cohort.id, 'ustawienia rocznika w semestrze');
   if (body.calendarId) {
     const calendar = await prisma.termCalendar.findUnique({ where: { id: body.calendarId } });
     if (!calendar || calendar.termId !== term.id || calendar.facultyId !== cohort.program.fieldOfStudy.facultyId) {
@@ -266,6 +269,9 @@ export const setCohortTerm = asyncHandler(async (req, res) => {
     }
     if (calendar.studyMode !== cohort.program.studyMode) {
       throw new AppError(400, 'Kalendarz jest dla innego trybu studiow');
+    }
+    if (calendar.status === 'ARCHIVED') {
+      throw new AppError(409, 'Kalendarz jest w archiwum — wybierz kalendarz, ktory nie jest w archiwum');
     }
   }
   const computed = semesterOf(cohort, term as TermRef);

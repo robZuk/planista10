@@ -5,6 +5,7 @@ import type { AcademicTerm } from '@prisma/client';
 // a ktore tylko oznaczane jako ORPHANED (obsada, umieszczenia, terminy).
 const prismaMock = vi.hoisted(() => ({
   cohort: { findMany: vi.fn() },
+  termCalendar: { findMany: vi.fn() },
   programEntry: { findMany: vi.fn() },
   classSection: {
     findMany: vi.fn(),
@@ -66,7 +67,13 @@ beforeEach(() => {
   vi.clearAllMocks();
   prismaMock.cohort.findMany.mockResolvedValue([cohort]);
   prismaMock.programEntry.findMany.mockResolvedValue([]);
+  prismaMock.termCalendar.findMany.mockResolvedValue([calendar('PUBLISHED')]);
 });
+
+/** Kalendarz wydzialu i trybu rocznika (domyslny "Podstawowy"). */
+function calendar(status: 'PLANNING' | 'PUBLISHED' | 'ARCHIVED') {
+  return { id: 'cal1', termId: term.id, facultyId: 'wm', studyMode: 'PART_TIME', name: 'Podstawowy', status };
+}
 
 describe('syncSections — zbedne zajecia', () => {
   it('usuwa tylko zajecia bez obsady, umieszczen i terminow; reszte oznacza jako osierocone', async () => {
@@ -174,6 +181,22 @@ describe('syncSections — wersja programu w projekcie', () => {
       }),
     ]);
     // Ani program, ani zajecia rocznika nie sa czytane — nic nie powstaje i nic nie znika.
+    expect(prismaMock.programEntry.findMany).not.toHaveBeenCalled();
+    expect(report.deleted).toEqual([]);
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+});
+
+describe('syncSections — kalendarz w archiwum', () => {
+  it('rocznik pominiety: zajecia bez zmian, problem ARCHIVED_CALENDAR', async () => {
+    prismaMock.termCalendar.findMany.mockResolvedValue([calendar('ARCHIVED')]);
+    prismaMock.classSection.findMany.mockResolvedValue([stale('wolne', {})]);
+
+    const report = await syncSections(term, { facultyId: null, dryRun: false });
+
+    expect(report.problems).toEqual([
+      expect.objectContaining({ cohortId: 'c1', semester: 5, kind: 'ARCHIVED_CALENDAR', message: expect.stringContaining('w archiwum') }),
+    ]);
     expect(prismaMock.programEntry.findMany).not.toHaveBeenCalled();
     expect(report.deleted).toEqual([]);
     expect(prismaMock.$transaction).not.toHaveBeenCalled();

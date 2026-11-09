@@ -6,6 +6,8 @@ import { assertFacultyScope, getCallerScope } from '../lib/facultyScope';
 import { parseTermKey } from '../lib/terms';
 import { activeCohorts, carryInstructors, syncSections } from '../services/sections';
 import { cohortLabel } from '../services/cohorts';
+import { archivedCohortIds } from '../services/cohortCalendar';
+import { assertCohortTermWritable } from '../services/plan';
 
 /**
  * Zajecia semestru i obsada. Dziekanat dziala na swoim wydziale, admin na wybranym
@@ -41,6 +43,8 @@ export const listSections = asyncHandler(async (req, res) => {
   const facultyId = await facultyOf(req);
   const contexts = await activeCohorts(term, facultyId);
   const ctxById = new Map(contexts.map((c) => [c.cohort.id, c]));
+  // Roczniki z kalendarzem w archiwum: ich zajecia i obsada sa tylko do odczytu.
+  const archived = await archivedCohortIds(term, contexts);
   const cohortFilter = typeof req.query.cohortId === 'string' ? req.query.cohortId : null;
 
   const sections = await prisma.classSection.findMany({
@@ -74,6 +78,7 @@ export const listSections = asyncHandler(async (req, res) => {
           label: ctx ? cohortLabel(ctx.cohort) : '',
           code: ctx?.cohort.program.code ?? '',
           semester: ctx?.semester ?? 0,
+          archived: archived.has(s.cohortId),
         },
         subject: s.programEntry.subject,
         order: s.programEntry.orderInSemester,
@@ -111,6 +116,8 @@ export const listSections = asyncHandler(async (req, res) => {
       assignedHours: data.reduce((s, x) => s + Math.min(x.assignedHours, x.hours), 0),
       vacancies: data.filter((x) => x.hasVacancy).length,
       orphaned: data.filter((x) => x.status === 'ORPHANED').length,
+      // Caly widok w archiwum (zwykle caly semestr): akcje masowe nie maja czego zmieniac.
+      archived: contexts.length > 0 && contexts.every((c) => archived.has(c.cohort.id)),
     },
   });
 });
@@ -137,7 +144,8 @@ export const carry = asyncHandler(async (req, res) => {
     data: report,
     message: dryRun
       ? 'Podglad przeniesienia obsady'
-      : `Obsada przeniesiona dla ${report.matched.length} zajec; bez dopasowania: ${report.unmatched.length}`,
+      : `Obsada przeniesiona dla ${report.matched.length} zajec; bez dopasowania: ${report.unmatched.length}` +
+        (report.archivedCohorts > 0 ? `; pominieto rocznikow w archiwum: ${report.archivedCohorts}` : ''),
   });
 });
 
@@ -146,6 +154,8 @@ export const setInstructors = asyncHandler(async (req, res) => {
   const section = await prisma.classSection.findUnique({ where: { id: String(req.params.id) } });
   if (!section) throw new AppError(404, 'Zajecia nie znalezione');
   await assertFacultyScope(req, section.facultyId);
+  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: section.termId } });
+  await assertCohortTermWritable(term, section.cohortId, 'obsada');
   const { assignments } = req.body as { assignments?: { instructorId: string | null; hours: number }[] };
   if (!Array.isArray(assignments)) throw new AppError(400, 'Podaj liste obsady');
   for (const a of assignments) {
@@ -280,12 +290,17 @@ export const importCsv = asyncHandler(async (req, res) => {
     where: { id: { in: [...grouped.keys()] }, termId: term.id, ...(facultyId ? { facultyId } : {}) },
   });
   const known = new Map(sections.map((s) => [s.id, s]));
+  const archived = await archivedCohortIds(term, await activeCohorts(term, facultyId));
   let applied = 0;
   const ops = [];
   for (const [sectionId, assignments] of grouped) {
     const section = known.get(sectionId);
     if (!section) {
       errors.push(`Zajecia ${sectionId} nie naleza do tego semestru/wydzialu`);
+      continue;
+    }
+    if (archived.has(section.cohortId)) {
+      errors.push(`Zajecia ${sectionId}: kalendarz rocznika w archiwum — obsada tylko do odczytu`);
       continue;
     }
     const total = assignments.reduce((s, a) => s + a.hours, 0);
