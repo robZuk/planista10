@@ -74,7 +74,7 @@ describe('API — plan', () => {
     expect(res.body.error).toMatch(/Wersja programu "Wersja 1" .* jest w projekcie/);
   });
 
-  it('usuniecie umieszczenia odlacza jego terminy jawnie (czas usuniecia -> kalendarz nieaktualny)', async () => {
+  it('usuniecie umieszczenia odlacza jego terminy jawnie (czas usuniecia -> terminy nieaktualne)', async () => {
     prismaMock.placement.findUnique.mockResolvedValueOnce({
       id: 'p1',
       facultyId: 'wm',

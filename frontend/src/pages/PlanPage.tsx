@@ -47,7 +47,7 @@ function patternLabel(p: PlanPlacement): string {
 /**
  * Ukladanie planu rocznika — RECZNIE. Planista wybiera zajecia z panelu "do zaplanowania"
  * (siatka podswietla wolne/zajete godziny) i klika godzine, w ktorej je umiescic.
- * Terminy w kalendarzu powstaja dopiero po "Generuj terminy" (z podgladem).
+ * Terminy (konkretne daty) powstaja dopiero po "Generuj terminy" (z podgladem).
  */
 export default function PlanPage() {
   const queryClient = useQueryClient();
@@ -348,10 +348,10 @@ export default function PlanPage() {
       {plan?.stale && (
         <Alert>
           <TriangleAlert />
-          <AlertTitle>Kalendarz nieaktualny</AlertTitle>
+          <AlertTitle>Terminy nieaktualne</AlertTitle>
           <AlertDescription>
             {staleMessage(plan.staleReasons)}{' '}
-            Terminy w kalendarzu sa jeszcze stare — uzyj „Generuj terminy”, gdy skonczysz zmiany.
+            Zakladka „Terminy” pokazuje jeszcze stan sprzed tych zmian — uzyj „Generuj terminy”, gdy skonczysz zmiany.
           </AlertDescription>
         </Alert>
       )}

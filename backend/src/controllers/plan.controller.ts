@@ -182,7 +182,7 @@ export const deletePlacement = asyncHandler(async (req, res) => {
   assertVersionApproved(current.section.cohort);
   // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania. Odlaczamy je
   // jawnie (a nie przez ON DELETE SET NULL), zeby updatedAt zapisal chwile usuniecia — po niej
-  // plan pokazuje "kalendarz nieaktualny", dopoki terminow nie wygeneruje sie od nowa.
+  // plan pokazuje "terminy nieaktualne", dopoki terminow nie wygeneruje sie od nowa.
   await prisma.$transaction([
     prisma.occurrence.updateMany({ where: { placementId: current.id }, data: { placementId: null } }),
     prisma.placement.delete({ where: { id: current.id } }),

@@ -119,7 +119,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   akcje („Przenieś plan z zeszłego roku", „Kopiuj zjazd", synchronizacja zajęć, obsada
   z poprzedniego roku) są uruchamiane przyciskiem i zawsze mają podgląd (`dryRun`).
 - **Terminy powstają tylko z „Generuj terminy"** (`services/plan.ts → generate`). Zmiana
-  wzorca NIE przelicza terminów — plan pokazuje wtedy „kalendarz nieaktualny".
+  wzorca NIE przelicza terminów — plan pokazuje wtedy „terminy nieaktualne".
   Ręczne poprawki terminów to `PlacementException` i przeżywają ponowne generowanie;
   terminy ręczne (`Occurrence.kind = MANUAL`) nie znikają.
 - **Kolizje sprawdzamy na konkretnych datach** w całej uczelni (sala, prowadzący, grupy wg

@@ -629,7 +629,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
           periods: calendarPeriods(cal!),
         }
       : null,
-    // Kalendarz nieaktualny: umieszczenia zmienione po ostatnim generowaniu.
+    // Terminy nieaktualne: umieszczenia zmienione po ostatnim generowaniu.
     // Siatka godzin wydzialu i trybu rocznika: bloki planu, przerwy (odstepy) i dni zajec.
     timeGrid: { id: facultyGrid.id, studyMode: facultyGrid.studyMode, days: facultyGrid.days, blocks: facultyGrid.blocks },
     stale: reasons.length > 0,

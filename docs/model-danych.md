@@ -107,7 +107,7 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 - `PlacementException(placement, originalDate)` — odwołanie albo przeniesienie pojedynczego
   terminu; **przeżywa ponowne generowanie**. Wyjątek bez daty we wzorcu trafia do raportu.
 - `Occurrence.kind = MANUAL` — odrobienia i terminy jednorazowe; liczą się do godzin, nie znikają.
-- Zmiana wzorca po generowaniu → „kalendarz nieaktualny" (`TermCalendar.lastGeneratedAt`).
+- Zmiana wzorca po generowaniu → „terminy nieaktualne" (`TermCalendar.lastGeneratedAt`).
 
 ## 7. Widoczność i uprawnienia
 

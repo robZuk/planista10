@@ -275,7 +275,7 @@ export function PlacementDialog({
         </div>
         <p className="text-xs text-muted-foreground">
           Zajecia laczone: wpisz ten sam klucz w umieszczeniach innych kierunkow/trybow — beda w tym samym czasie i sali,
-          bez kolizji miedzy soba. Terminy w kalendarzu zmienia sie dopiero po „Generuj terminy”.
+          bez kolizji miedzy soba. Terminy (zakladka „Terminy”) zmienia sie dopiero po „Generuj terminy”.
         </p>
         <DialogFooter className="sm:justify-between">
           {placement ? (
