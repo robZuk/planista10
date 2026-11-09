@@ -87,6 +87,10 @@ export function PlacementDialog({
   useEffect(() => {
     if (instructorId && !staff.some((i) => i.instructorId === instructorId)) setInstructorId('');
   }, [staff, instructorId]);
+  // Zapisany prowadzacy umieszczenia, ktorego juz nie ma w obsadzie: pole pokazuje NN, wiec mowimy
+  // wprost, kto byl i ze zapis go zdejmie — inaczej zmiana na NN przy edycji np. sali bylaby niezauwazona.
+  const droppedInstructor =
+    placement?.instructor && !staff.some((i) => i.instructorId === placement.instructor!.id) ? placement.instructor : null;
   const [pattern, setPattern] = useState<PlacementPattern>(
     placement?.pattern ?? (zjazdCalendar && target.zjazd ? 'LIST' : 'ALL'),
   );
@@ -210,6 +214,12 @@ export function PlacementDialog({
               <UserPlus /> {staff.length === 0 ? 'Przypisz prowadzacego' : 'Zmien obsade'}
             </Button>
           </Field>
+          {droppedInstructor && !instructorId && (
+            <p role="alert" className="rounded-md border border-amber-500/40 bg-amber-500/5 p-2 text-xs text-amber-700 sm:col-span-3 dark:text-amber-400">
+              Prowadzacy tego umieszczenia ({droppedInstructor.name}) nie jest juz w obsadzie zajec. Zapis ustawi NN — wybierz
+              prowadzacego z obsady albo dodaj go z powrotem przyciskiem „{staff.length === 0 ? 'Przypisz prowadzacego' : 'Zmien obsade'}”.
+            </p>
+          )}
           {staff.length === 0 && (
             <p className="text-xs text-muted-foreground sm:col-span-3">
               Zajecia nie maja obsady, wiec do wyboru jest tylko NN. Przypisz prowadzacego tutaj albo na stronie{' '}
