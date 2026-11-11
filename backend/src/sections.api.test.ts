@@ -127,7 +127,18 @@ describe('API — import obsady z CSV', () => {
     expect(res.body.message).toBe('Do wczytania: 1 zajecia');
     expect(res.body.data.errors).toEqual([
       'Wiersz 3: nie ma prowadzacego literowka@umg.edu.pl',
-      'Zajecia s1: pominiete w calosci — popraw bledne wiersze (3), obsada zostaje bez zmian',
+      'Wiersze 2, 3 (P · wyklad · G): zajecia pominiete w calosci — popraw bledne wiersze (3), obsada zostaje bez zmian',
+    ]);
+  });
+
+  it('za duzo godzin i zajecia spoza semestru — komunikat z wierszem i opisem z pliku, nie z id', async () => {
+    prismaMock.classSection.findMany.mockResolvedValueOnce([section('s1')]);
+    const csv = [header, 's1;X;1;Nawigacja;laboratorium;NAW-1-L-E1;30;jan@umg.edu.pl;40', 'obce;X;1;Fizyka;wyklad;F-1-W;30;NN;30'].join('\n');
+    const res = await request(app).post('/api/terms/2026-L/sections/import').set('Authorization', `Bearer ${dean}`).send({ csv, dryRun: true });
+    expect(res.body.data.applied).toBe(0);
+    expect(res.body.data.errors).toEqual([
+      'Wiersz 2 (Nawigacja · laboratorium · NAW-1-L-E1): suma godzin prowadzacych 40 h przekracza godziny zajec (30 h)',
+      'Wiersz 3 (Fizyka · wyklad · F-1-W): zajecia nie naleza do tego semestru/wydzialu',
     ]);
   });
 });

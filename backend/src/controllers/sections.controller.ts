@@ -278,9 +278,21 @@ export const importCsv = asyncHandler(async (req, res) => {
   // Zajecia z choc jednym blednym wierszem pomijamy w calosci — inaczej literowka w e-mailu
   // po cichu odebralaby komus godziny (obsada z pliku zastepuje dotychczasowa).
   const brokenRows = new Map<string, number[]>();
+  // Komunikaty o zajeciach wskazuja wiersze pliku i opis z pliku, nie id (UUID nic nie mowi).
+  const rowsOf = new Map<string, number[]>();
+  const labelOf = new Map<string, string>();
+  const where = (sectionId: string) => {
+    const rows = rowsOf.get(sectionId) ?? [];
+    const label = labelOf.get(sectionId);
+    return `${rows.length === 1 ? 'Wiersz' : 'Wiersze'} ${rows.join(', ')}${label ? ` (${label})` : ''}`;
+  };
   lines.slice(1).forEach((line, n) => {
     const cols = parseCsvLine(line);
-    const [sectionId, , , , , , , email = '', hoursRaw = ''] = cols;
+    const [sectionId, , , subject = '', form = '', group = '', , email = '', hoursRaw = ''] = cols;
+    if (sectionId) {
+      rowsOf.set(sectionId, [...(rowsOf.get(sectionId) ?? []), n + 2]);
+      if (!labelOf.has(sectionId)) labelOf.set(sectionId, [subject, form, group].filter(Boolean).join(' · '));
+    }
     const hours = Number(hoursRaw);
     const fail = (message: string) => {
       errors.push(`Wiersz ${n + 2}: ${message}`);
@@ -294,7 +306,7 @@ export const importCsv = asyncHandler(async (req, res) => {
   });
   for (const [sectionId, rows] of brokenRows) {
     if (!grouped.delete(sectionId)) continue;
-    errors.push(`Zajecia ${sectionId}: pominiete w calosci — popraw bledne wiersze (${rows.join(', ')}), obsada zostaje bez zmian`);
+    errors.push(`${where(sectionId)}: zajecia pominiete w calosci — popraw bledne wiersze (${rows.join(', ')}), obsada zostaje bez zmian`);
   }
 
   const sections = await prisma.classSection.findMany({
@@ -307,16 +319,16 @@ export const importCsv = asyncHandler(async (req, res) => {
   for (const [sectionId, assignments] of grouped) {
     const section = known.get(sectionId);
     if (!section) {
-      errors.push(`Zajecia ${sectionId} nie naleza do tego semestru/wydzialu`);
+      errors.push(`${where(sectionId)}: zajecia nie naleza do tego semestru/wydzialu`);
       continue;
     }
     if (archived.has(section.cohortId)) {
-      errors.push(`Zajecia ${sectionId}: kalendarz rocznika w archiwum — obsada tylko do odczytu`);
+      errors.push(`${where(sectionId)}: kalendarz rocznika w archiwum — obsada tylko do odczytu`);
       continue;
     }
     const total = assignments.reduce((s, a) => s + a.hours, 0);
     if (total > section.hours) {
-      errors.push(`Zajecia ${sectionId}: suma ${total} h > ${section.hours} h`);
+      errors.push(`${where(sectionId)}: suma godzin prowadzacych ${total} h przekracza godziny zajec (${section.hours} h)`);
       continue;
     }
     applied++;
