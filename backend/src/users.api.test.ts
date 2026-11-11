@@ -12,7 +12,7 @@ const prismaMock = vi.hoisted(() => ({
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
 
 import { createApp } from './index';
-import { signAccessToken } from './lib/jwt';
+import { signAccessToken, verifyAccessToken } from './lib/jwt';
 
 const app = createApp();
 let admin: string;
@@ -91,5 +91,40 @@ describe('API — konta: zajety e-mail i prowadzacy z kontem', () => {
     const res = await request(app).put('/api/users/u1').set('Authorization', `Bearer ${admin}`).send({ email: instr.email, instructorId: 'i1' });
     expect(res.status).toBe(200);
     expect(prismaMock.user.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ NOT: { id: 'u1' } }) }));
+  });
+});
+
+describe('API — podglad (impersonacja) jest tylko do odczytu', () => {
+  it('token podgladu niesie admina; odczyt dziala, zapis -> 403 bez zmian', async () => {
+    prismaMock.user.findUnique.mockResolvedValueOnce({ ...user, id: 'u-instr', role: 'INSTRUCTOR', facultyId: null });
+    const started = await request(app).post('/api/users/u-instr/impersonate').set('Authorization', `Bearer ${admin}`);
+    expect(started.status).toBe(200);
+    const token = started.body.data.accessToken as string;
+    expect(verifyAccessToken(token)).toMatchObject({ sub: 'u-instr', role: 'INSTRUCTOR', imp: 'u-admin' });
+
+    // Odczyt w podgladzie przechodzi przez uwierzytelnienie (dalej decyduje juz rola).
+    const read = await request(app).get('/api/users').set('Authorization', `Bearer ${token}`);
+    expect(read.status).toBe(403);
+    expect(read.body.error).toBe('Brak uprawnien do tej operacji');
+
+    prismaMock.user.update.mockClear();
+    for (const call of [
+      request(app).post('/api/notifications/read-all').set('Authorization', `Bearer ${token}`),
+      request(app).put('/api/users/u1').set('Authorization', `Bearer ${token}`).send({ name: 'X' }),
+      request(app).delete('/api/users/u1').set('Authorization', `Bearer ${token}`),
+    ]) {
+      const res = await call;
+      expect(res.status).toBe(403);
+      expect(res.body.error).toMatch(/Podglad jest tylko do odczytu/);
+    }
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+
+  it('zwykly token (bez podgladu) zapisuje normalnie', async () => {
+    prismaMock.user.findUnique.mockResolvedValueOnce({ id: 'u1', role: 'DEAN_OFFICE', facultyId: 'wm' });
+    prismaMock.faculty.findUnique.mockResolvedValueOnce({ id: 'wm' });
+    prismaMock.user.update.mockResolvedValueOnce(user);
+    const res = await request(app).put('/api/users/u1').set('Authorization', `Bearer ${admin}`).send({ name: 'Nowa nazwa' });
+    expect(res.status).toBe(200);
   });
 });

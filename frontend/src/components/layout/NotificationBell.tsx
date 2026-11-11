@@ -9,6 +9,8 @@ import { timeAgo } from '@/lib/requestLabels';
 import { cn } from '@/lib/utils';
 import type { AppNotification } from '@/types';
 import { plural } from '@/lib/setupSteps';
+import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/errors';
 
 /**
  * Dzwonek powiadomien w naglowku: zgloszenia zmian (dziekanat) i decyzje / zmiany terminow
@@ -21,8 +23,10 @@ export function NotificationBell() {
   const queryClient = useQueryClient();
   const { data } = useQuery({ queryKey: ['notifications'], queryFn: fetchNotifications, refetchInterval: 60_000 });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['notifications'] });
-  const readOne = useMutation({ mutationFn: markNotificationRead, onSuccess: refresh });
-  const readAll = useMutation({ mutationFn: markAllNotificationsRead, onSuccess: refresh });
+  // Blad (np. podglad tylko do odczytu) mowimy wprost — inaczej klikniecie nic by nie zrobilo.
+  const onError = (e: unknown) => toast.error(getErrorMessage(e));
+  const readOne = useMutation({ mutationFn: markNotificationRead, onSuccess: refresh, onError });
+  const readAll = useMutation({ mutationFn: markAllNotificationsRead, onSuccess: refresh, onError });
   const unread = data?.unread ?? 0;
 
   const openItem = (n: AppNotification) => {

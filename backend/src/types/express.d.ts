@@ -11,6 +11,8 @@ declare global {
       user?: {
         id: string;
         role: Role;
+        /** Id administratora, gdy to sesja podgladu (impersonacja) — tylko do odczytu. */
+        impersonatedBy?: string;
       };
     }
   }

@@ -10,6 +10,7 @@ import { signAccessToken } from '../lib/jwt';
  *
  * Impersonacja = admin dostaje krotki access token wystawiony na innego
  * uzytkownika, aby zobaczyc system jego oczami (diagnostyka uprawnien/planu).
+ * Token jest tylko do odczytu (middleware authenticate odrzuca zapisy).
  * Token niesie tylko { sub, role } — reszta (instructorId, grupy) i tak jest
  * dociagana z bazy po stronie backendu, wiec podszycie sie pod role wystarcza.
  *
@@ -156,7 +157,8 @@ export const impersonate = asyncHandler(async (req, res) => {
   const target = await prisma.user.findUnique({ where: { id: req.params.id }, select: userSelect });
   if (!target) throw new AppError(404, 'Uzytkownik nie znaleziony');
 
-  // Krotki token (2h) — sesja podgladowa, nieodnawialna (brak refresh tokenu).
-  const accessToken = signAccessToken({ sub: target.id, role: target.role }, '2h');
+  // Krotki token (2h) — sesja podgladowa, nieodnawialna (brak refresh tokenu) i tylko do
+  // odczytu (`imp` -> authenticate odrzuca zapisy).
+  const accessToken = signAccessToken({ sub: target.id, role: target.role, imp: req.user!.id }, '2h');
   res.json({ data: { accessToken, user: withGroupNames(target) } });
 });

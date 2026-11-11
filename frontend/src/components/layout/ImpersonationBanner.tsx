@@ -35,7 +35,7 @@ export function ImpersonationBanner() {
       <Eye className="size-4 shrink-0" />
       <span>
         Podglad jako <strong>{user.name}</strong> ({ROLE_LABELS[user.role]}). Widzisz system tak,
-        jak ta osoba.
+        jak ta osoba — <strong>tylko do odczytu</strong>, zmiany zapiszesz po powrocie do swojego konta.
       </span>
       <Button size="sm" variant="outline" className="ml-auto bg-background" onClick={onReturn}>
         <Undo2 />

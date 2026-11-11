@@ -32,6 +32,8 @@ function refreshSecret(): string {
 export interface AccessPayload {
   sub: string; // id uzytkownika
   role: Role;
+  /** Podglad (impersonacja): id administratora, ktory go otworzyl. Taki token jest tylko do odczytu. */
+  imp?: string;
 }
 
 /** Zawartosc refresh tokenu. */
