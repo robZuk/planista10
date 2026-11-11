@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronRight, Flag, Plus, Trash2, TriangleAlert } from 'lucide-react';
+import { ChevronRight, Flag, Plus, Trash2, TriangleAlert, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,6 +59,8 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
   });
   const [addTarget, setAddTarget] = useState<AddTarget>(null);
   const [deleting, setDeleting] = useState<CohortGroup | null>(null);
+  // Zakonczenie grupy po biezacym semestrze — z potwierdzeniem (zmienia zajecia kolejnych semestrow).
+  const [ending, setEnding] = useState<CohortGroup | null>(null);
 
   const syncHint = useSyncHint();
   const refresh = async () => {
@@ -71,6 +73,10 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
       updateCohortGroup(id, input),
     onSuccess: async (_data, vars) => {
       if (vars.input.size !== undefined) toast.success('Liczebnosc zapisana');
+      if (vars.input.toSemester !== undefined) {
+        syncHint(vars.input.toSemester === null ? 'Grupa trwa dalej (bez daty konca)' : `Grupa konczy sie po semestrze ${vars.input.toSemester}`);
+        setEnding(null);
+      }
       await refresh();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -164,18 +170,30 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
                 <Button variant="ghost" size="sm" onClick={() => setAddTarget({ parent: group, mode: 'sub' })}>
                   <Plus /> Podgrupy
                 </Button>
-                {!isRoot && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7"
-                    title={`Zakoncz grupe po semestrze ${cohort.semester} (od kolejnego juz jej nie ma)`}
-                    aria-label="Zakoncz po tym semestrze"
-                    onClick={() => update.mutate({ id: group.id, input: { toSemester: cohort.semester } })}
-                  >
-                    <Flag />
-                  </Button>
-                )}
+                {!isRoot &&
+                  (group.toSemester === cohort.semester ? (
+                    // Zakonczona wlasnie na tym semestrze — cofniecie od razu, bez szukania jej w kolejnym semestrze.
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      title="Grupa ma trwac dalej — usun date konca"
+                      disabled={update.isPending}
+                      onClick={() => update.mutate({ id: group.id, input: { toSemester: null } })}
+                    >
+                      <Undo2 /> Nie koncz
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7"
+                      title={`Zakoncz grupe po semestrze ${cohort.semester} (od kolejnego juz jej nie ma)`}
+                      aria-label="Zakoncz po tym semestrze"
+                      onClick={() => setEnding(group)}
+                    >
+                      <Flag />
+                    </Button>
+                  ))}
                 {!isRoot && group.childCount === 0 && !group.usedInPlan && group.memberCount === 0 && (
                   <Button
                     variant="ghost"
@@ -219,6 +237,15 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
           </ul>
         </details>
       )}
+      <ConfirmDialog
+        open={!!ending}
+        onOpenChange={(open) => !open && setEnding(null)}
+        title={`Zakonczyc grupe ${ending?.name ?? ''} po semestrze ${cohort.semester}?`}
+        description={`Od semestru ${cohort.semester + 1} tej grupy juz nie bedzie — jej zajecia w kolejnych semestrach znikna po „Synchronizuj zajecia”. Do czasu synchronizacji mozna to cofnac przyciskiem „Nie koncz”.`}
+        confirmLabel="Zakoncz"
+        isPending={update.isPending}
+        onConfirm={() => update.mutate({ id: ending!.id, input: { toSemester: cohort.semester } })}
+      />
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(open) => !open && setDeleting(null)}

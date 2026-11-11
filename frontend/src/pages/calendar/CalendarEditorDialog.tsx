@@ -470,7 +470,13 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
           <Button type="button" variant="outline" onClick={onClose}>
             Anuluj
           </Button>
-          <Button type="submit" form="calendar-editor" disabled={saveMutation.isPending}>
+          <Button
+            type="submit"
+            form="calendar-editor"
+            // Problemy z podgladu (np. nachodzace zjazdy) i tak odrzuci serwer — od razu blokujemy zapis.
+            disabled={saveMutation.isPending || (preview?.problems.length ?? 0) > 0}
+            title={(preview?.problems.length ?? 0) > 0 ? 'Popraw problemy wskazane w podgladzie' : undefined}
+          >
             {saveMutation.isPending && <Spinner />}
             Zapisz kalendarz
           </Button>

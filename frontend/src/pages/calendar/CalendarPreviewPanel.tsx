@@ -51,7 +51,7 @@ export function CalendarPreviewPanel({ preview, kind, loading }: Props) {
               <Badge variant={z.teachingDays === 0 ? 'destructive' : 'secondary'} className="ml-auto">
                 {z.teachingDays} dni zajec
               </Badge>
-              {z.notes.length > 0 && <span className="w-full text-xs text-muted-foreground">{z.notes.join('; ')}</span>}
+              {z.notes.length > 0 && <span className="w-full text-xs text-muted-foreground">{z.notes.map((n) => `${formatDayKey(n.slice(0, 10))}${n.slice(10)}`).join('; ')}</span>}
             </li>
           ))}
           {preview.zjazdy?.length === 0 && <li className="text-muted-foreground">Brak zjazdow</li>}
