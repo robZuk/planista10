@@ -19,6 +19,7 @@ import { Combobox } from '@/components/Combobox';
 import { carryInstructors, importSectionsCsv, setSectionInstructors, syncSections } from '@/api/sections';
 import { fetchInstructors } from '@/api/instructors';
 import { getErrorMessage } from '@/lib/errors';
+import { plural } from '@/lib/setupSteps';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
 import { groupSyncProblems, splitArchivedProblems } from '@/lib/syncProblems';
 import type { CarryRow, ClassSectionRow, SyncReport, SyncRow } from '@/types';
@@ -448,8 +449,13 @@ export function ImportDialog({
         {result && (
           <div className="space-y-2 text-sm">
             <p>
-              Do wczytania: <b>{result.applied}</b> zajec
+              Do wczytania: <b>{plural(result.applied, 'zajecia', 'zajecia', 'zajec')}</b>
             </p>
+            {result.errors.length > 0 && (
+              <p className="text-muted-foreground">
+                Zajecia z blednymi wierszami sa pominiete w calosci — ich obsada zostaje bez zmian. Popraw plik i wczytaj ponownie.
+              </p>
+            )}
             {result.errors.length > 0 && (
               <ul className="max-h-40 overflow-y-auto text-destructive">
                 {result.errors.map((e, i) => (
@@ -465,7 +471,7 @@ export function ImportDialog({
           </Button>
           <Button onClick={() => apply.mutate()} disabled={!result || result.applied === 0 || apply.isPending}>
             {apply.isPending && <Spinner />}
-            Wczytaj
+            {result && result.errors.length > 0 ? `Wczytaj poprawne (${result.applied})` : 'Wczytaj'}
           </Button>
         </DialogFooter>
       </DialogContent>
