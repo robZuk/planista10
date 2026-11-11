@@ -117,7 +117,12 @@ export async function fetchSetup(termKey: string, facultyId?: string): Promise<S
 }
 
 /** Plan osobisty tygodnia: terminy i dni wolne (data -> nazwa swieta/przerwy). */
-export async function fetchMyPlan(termKey: string, from: string, to: string): Promise<{ rows: MyPlanRow[]; daysOff: Record<string, string> }> {
+/** Plan osobisty tygodnia; `range` — zakres semestru wg opublikowanych kalendarzy osoby (null = planu jeszcze nie ma). */
+export async function fetchMyPlan(
+  termKey: string,
+  from: string,
+  to: string,
+): Promise<{ rows: MyPlanRow[]; daysOff: Record<string, string>; range: { start: string; end: string } | null }> {
   const res = await api.get(`/terms/${termKey}/my-plan`, { params: { from, to } });
-  return { rows: res.data.data, daysOff: res.data.daysOff ?? {} };
+  return { rows: res.data.data, daysOff: res.data.daysOff ?? {}, range: res.data.range ?? null };
 }

@@ -191,7 +191,7 @@ export const myPlan = asyncHandler(async (req, res) => {
     groupFilter = groups.filter((g) => memberGroups.some((m) => groupsOverlap(m.id, g.id, index))).map((g) => g.id);
   } else if (user.role === 'INSTRUCTOR') {
     if (!user.instructorId) {
-      res.json({ data: [], daysOff: {} });
+      res.json({ data: [], daysOff: {}, range: null });
       return;
     }
     const taught = await prisma.classSection.findMany({
@@ -256,21 +256,37 @@ export const myPlan = asyncHandler(async (req, res) => {
       note: o.note,
       pendingRequest: pendingByKey.get(keyOfRow(o)) ?? null,
     }));
-  res.json({ data, daysOff: from && to ? await personDaysOff(term, personCohortIds, toIsoDate(from), toIsoDate(to)) : {} });
+  const calendars = await personCalendars(term, personCohortIds);
+  // Zakres semestru wg opublikowanych kalendarzy osoby — front przestawia tydzien albo mowi,
+  // ze planu jeszcze nie ma (zamiast pustego tygodnia z samym swietem spoza semestru).
+  const range =
+    calendars.length > 0
+      ? {
+          start: calendars.map((c) => c.input.startDate).sort()[0]!,
+          end: calendars.map((c) => c.input.endDate).sort().at(-1)!,
+        }
+      : null;
+  res.json({ data, daysOff: from && to ? personDaysOff(calendars, toIsoDate(from), toIsoDate(to)) : {}, range });
 });
 
+/** Kalendarze rocznikow osoby w semestrze — tylko opublikowane albo archiwalne, jak same terminy. */
+async function personCalendars(term: AcademicTerm, cohortIds: string[]) {
+  const contexts = cohortIds.length > 0 ? await activeCohorts(term, null, cohortIds) : [];
+  const calendars = new Map<string, { input: ReturnType<typeof toCalendarInput>; teaching: TeachingCalendar }>();
+  for (const [, cal] of await calendarsFor(term, contexts)) {
+    if (!cal || cal.status === 'PLANNING' || calendars.has(cal.id)) continue;
+    const input = toCalendarInput(cal);
+    calendars.set(cal.id, { input, teaching: new TeachingCalendar(input) });
+  }
+  return [...calendars.values()];
+}
+
 /**
- * Dni wolne w zakresie planu osobistego (najwyzej 2 tygodnie) wg kalendarzy rocznikow osoby —
- * tylko opublikowanych albo archiwalnych, jak same terminy. Regula: lib/teachingCalendar.personalDaysOff.
+ * Dni wolne w zakresie planu osobistego (najwyzej 2 tygodnie) wg kalendarzy rocznikow osoby.
+ * Regula: lib/teachingCalendar.personalDaysOff.
  */
-async function personDaysOff(term: AcademicTerm, cohortIds: string[], from: IsoDate, to: IsoDate) {
+function personDaysOff(calendars: { teaching: TeachingCalendar }[], from: IsoDate, to: IsoDate) {
   const dates: IsoDate[] = [];
   for (let d = from; d <= to && dates.length < 14; d = addDays(d, 1)) dates.push(d);
-  const contexts = cohortIds.length > 0 ? await activeCohorts(term, null, cohortIds) : [];
-  const calendars = new Map<string, TeachingCalendar>();
-  for (const [, cal] of await calendarsFor(term, contexts)) {
-    if (!cal || cal.status === 'PLANNING') continue;
-    if (!calendars.has(cal.id)) calendars.set(cal.id, new TeachingCalendar(toCalendarInput(cal)));
-  }
-  return personalDaysOff(dates, [...calendars.values()]);
+  return personalDaysOff(dates, calendars.map((c) => c.teaching));
 }

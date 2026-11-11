@@ -44,8 +44,12 @@ export default function MyPlanPage() {
     queryFn: () => fetchMyPlan(term!.key, monday, sunday),
     enabled: !!term,
   });
-  const rows = useMemo(() => data?.rows ?? [], [data]);
-  const daysOff = useMemo(() => data?.daysOff ?? {}, [data]);
+  const range = data?.range ?? null;
+  // Tydzien poza semestrem (np. po przelaczeniu na semestr letni w listopadzie) albo semestr bez
+  // opublikowanego planu: zamiast pustego tygodnia z samym swietem — wyjasnienie i skok do semestru.
+  const outside = !!data && (!range || sunday < range.start || monday > range.end);
+  const rows = useMemo(() => (outside ? [] : (data?.rows ?? [])), [data, outside]);
+  const daysOff = useMemo(() => (outside ? {} : (data?.daysOff ?? {})), [data, outside]);
   // Dni z zajeciami i dni wolne (swieto, przerwa) — na liscie dzien wolny ma wlasny wpis.
   const byDay = useMemo(() => {
     const map = new Map<string, MyPlanRow[]>(Object.keys(daysOff).map((d) => [d, []]));
@@ -98,9 +102,24 @@ export default function MyPlanPage() {
       {data && view === 'week' && byDay.length > 0 && (
         <MyPlanWeek monday={monday} rows={rows} daysOff={daysOff} showInstructor={showInstructor} onSelect={onSelect} />
       )}
-      {data && byDay.length === 0 && (
+      {data && !range && (
         <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-          W tym tygodniu brak zajec (albo plan nie jest jeszcze opublikowany).
+          Plan na semestr {term?.label} nie jest jeszcze opublikowany{isInstructor ? ' albo nie masz w nim zajec' : ''}.
+        </p>
+      )}
+      {data && range && outside && (
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+          <p>
+            Ten tydzien jest poza semestrem {term?.label} ({formatDayMonth(range.start)} – {formatDayMonth(range.end)}).
+          </p>
+          <Button variant="outline" size="sm" onClick={() => setMonday(mondayOf(monday > range.end ? range.end : range.start))}>
+            {monday > range.end ? 'Przejdz do ostatniego tygodnia' : 'Przejdz do pierwszego tygodnia'}
+          </Button>
+        </div>
+      )}
+      {data && !outside && byDay.length === 0 && (
+        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+          W tym tygodniu brak zajec.
         </p>
       )}
       <div className="space-y-4">
