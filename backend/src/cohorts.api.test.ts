@@ -11,6 +11,11 @@ const prismaMock = vi.hoisted(() => ({
   cohort: { findUnique: vi.fn(), findMany: vi.fn() },
   termCalendar: { findMany: vi.fn(), findUnique: vi.fn() },
   cohortTerm: { upsert: vi.fn().mockResolvedValue({}), findUnique: vi.fn().mockResolvedValue(null) },
+  studentGroup: {
+    findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    create: vi.fn((args: { data: object }) => Promise.resolve({ id: 'g-new', ...args.data })),
+  },
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
 
@@ -92,5 +97,36 @@ describe('API — rocznik w semestrze', () => {
     prismaMock.cohortTerm.upsert.mockClear();
     expect((await put({ calendarId: 'cal1' })).status).toBe(200);
     expect(prismaMock.cohortTerm.upsert.mock.calls[0]![0].update).not.toHaveProperty('changedAt');
+  });
+});
+
+describe('API — nowa grupa: liczebnosc i zakres semestrow', () => {
+  const post = (body: object) =>
+    request(app).post('/api/cohorts/c1/groups').set('Authorization', `Bearer ${dean}`).send({ parentId: 'root', partitionKey: 'C', ...body });
+  const arrange = () => {
+    prismaMock.cohort.findUnique.mockResolvedValueOnce(cohortRow);
+    prismaMock.studentGroup.findUnique.mockResolvedValueOnce({ id: 'root', cohortId: 'c1', partitionKey: 'ROOT', code: null, specializationId: null });
+    prismaMock.studentGroup.create.mockClear();
+  };
+
+  it.each([
+    [{ size: 30, fromSemester: 0 }, /poczatku grupy musi byc w zakresie 1-7/],
+    [{ size: 30, fromSemester: 9 }, /poczatku grupy musi byc w zakresie 1-7/],
+    [{ size: -5, fromSemester: 1 }, /Liczebnosc/],
+    [{ size: 12.5, fromSemester: 1 }, /Liczebnosc/],
+    [{ size: 30, fromSemester: 3, toSemester: 8 }, /konca grupy musi byc w zakresie 3-7/],
+  ])('%o -> 400 bez zapisu', async (body, message) => {
+    arrange();
+    const res = await post(body);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(message);
+    expect(prismaMock.studentGroup.create).not.toHaveBeenCalled();
+  });
+
+  it('poprawna grupa jest zapisana', async () => {
+    arrange();
+    const res = await post({ size: 30, fromSemester: 3 });
+    expect(res.status).toBe(201);
+    expect(prismaMock.studentGroup.create).toHaveBeenCalledTimes(1);
   });
 });
