@@ -7,10 +7,13 @@ import { Toaster } from '@/components/ui/sonner';
 import App from './App';
 import { initSentry, Sentry } from './lib/sentry';
 import { createServerWatch } from './lib/serverStatus';
+import { installPolishZodErrors } from './lib/zodErrors';
 import './index.css';
 
 // Error-tracking startujemy przed renderem (no-op gdy brak VITE_SENTRY_DSN).
 initSentry();
+// Komunikaty walidacji formularzy bez wlasnego tekstu — po polsku zamiast domyslnych angielskich.
+installPolishZodErrors();
 
 /**
  * Jeden klient React Query na cala aplikacje.

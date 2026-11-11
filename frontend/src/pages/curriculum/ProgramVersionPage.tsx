@@ -65,7 +65,11 @@ const entrySchema = z.object({
   hoursSeminar: z.number().int().min(0).max(1000),
   ects: z.number().int().min(0).max(60),
   assessmentType: z.enum(ASSESSMENT_TYPES as [AssessmentType, ...AssessmentType[]]),
-});
+}).refine(
+  // Bez godzin, ale z ECTS — dozwolone (praktyka, dyplom); bez godzin i bez ECTS nic nie wnosi.
+  (v) => v.hoursLecture + v.hoursExercise + v.hoursLab + v.hoursProject + v.hoursSeminar > 0 || v.ects > 0,
+  { path: ['ects'], message: 'Podaj godziny zajec albo punkty ECTS — pozycja bez nich nic nie wnosi do programu' },
+);
 type EntryValues = z.infer<typeof entrySchema>;
 
 function totalHours(e: Pick<ProgramEntry, 'hoursLecture' | 'hoursExercise' | 'hoursLab' | 'hoursProject' | 'hoursSeminar'>) {
