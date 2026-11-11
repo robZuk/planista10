@@ -1,5 +1,5 @@
 import type { SemesterType } from '@prisma/client';
-import { addDays, isoDate, mondayOf, weekdayOf, yearOf, type IsoDate } from './isoDate';
+import { addDays, daysBetween, isoDate, mondayOf, weekdayOf, yearOf, type IsoDate } from './isoDate';
 
 /**
  * Semestr kalendarzowy (AcademicTerm) — jedyny kontekst czasowy planowania.
@@ -91,6 +91,19 @@ export function shiftDateByYears(date: IsoDate, years: number): IsoDate {
   if (diff > 3) diff -= 7;
   if (diff < -3) diff += 7;
   return addDays(normalized, diff);
+}
+
+/**
+ * Daty semestru z kalendarza sprzed `years` lat do propozycji nowego kalendarza.
+ * Semestr zaczynany w poniedzialek (typowo letni: "16.02.2026, poniedzialek") zaczyna sie znow
+ * w poniedzialku najblizej tej daty i trwa tyle samo dni — inaczej 16.02.2027 wypadaloby we
+ * wtorek. Inne poczatki to daty stale (zima: 1 pazdziernika) — zostaja dzien w dzien.
+ */
+export function shiftTermDates(startDate: IsoDate, endDate: IsoDate, years: number): { startDate: IsoDate; endDate: IsoDate } {
+  const sameDate = (date: IsoDate) => addDays(isoDate(yearOf(date) + years, Number(date.slice(5, 7)), Number(date.slice(8, 10))), 0);
+  if (weekdayOf(startDate) !== 1) return { startDate: sameDate(startDate), endDate: sameDate(endDate) };
+  const start = shiftDateByYears(startDate, years);
+  return { startDate: start, endDate: addDays(start, daysBetween(startDate, endDate)) };
 }
 
 /**

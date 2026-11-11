@@ -5,6 +5,7 @@ import {
   defaultTermDates,
   parseTermKey,
   shiftDateByYears,
+  shiftTermDates,
   shiftTerm,
   termKey,
   termLabel,
@@ -71,6 +72,16 @@ describe('daty', () => {
     expect(weekdayOf(shifted)).toBe(weekdayOf('2024-10-01'));
     expect(shifted).toBe('2026-09-29'); // wtorek najblizej 1.10.2026 (czwartku)
     expect(Math.abs(daysBetween('2026-10-01', shifted))).toBeLessThanOrEqual(3);
+  });
+
+  it('daty semestru: start w poniedzialek zostaje w poniedzialek, dlugosc ta sama', () => {
+    const shifted = shiftTermDates('2026-02-16', '2026-06-15', 1); // pon 16.02.2026
+    expect(shifted).toEqual({ startDate: '2027-02-15', endDate: '2027-06-14' });
+    expect(weekdayOf(shifted.startDate)).toBe(1);
+  });
+
+  it('daty semestru: staly poczatek (1 pazdziernika) przenoszony dzien w dzien', () => {
+    expect(shiftTermDates('2025-10-01', '2026-01-31', 1)).toEqual({ startDate: '2026-10-01', endDate: '2027-01-31' });
   });
 
   it('29 lutego przechodzi na poprawna date', () => {

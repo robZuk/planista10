@@ -48,7 +48,7 @@ export function proposalNote(proposal: CalendarProposal, termKey?: string): { ti
     return {
       title: `Propozycja na podstawie: ${source.termLabel} (${source.name})`,
       description:
-        `Daty semestru i przerw przeniesione z ${source.termLabel} na ten semestr, zjazdy wyrownane do tych samych dni tygodnia. ` +
+        `Daty semestru i przerw przeniesione z ${source.termLabel} na ten semestr (semestr zaczynany w poniedzialek znow zaczyna sie w poniedzialek), zjazdy wyrownane do tych samych dni tygodnia. ` +
         'Jednorazowe dni wolne i zamiany dni trzeba dodac na nowo. Sprawdz wszystko przed zapisem.',
     };
   }

@@ -22,6 +22,7 @@ import { TeachingCalendar, type CalendarInput } from '../lib/teachingCalendar';
 import {
   defaultTermDates,
   shiftDateByYears,
+  shiftTermDates,
   termKey,
   termLabel,
   termOfDate,
@@ -257,8 +258,7 @@ export async function proposeCalendar(
     calendar: {
       name,
       kind: source.kind,
-      startDate: sameDateShifted(input.startDate, years),
-      endDate: sameDateShifted(input.endDate, years),
+      ...shiftTermDates(input.startDate, input.endDate, years),
       breaks: input.breaks.map((b) => ({
         name: b.name ?? 'Przerwa',
         startDate: sameDateShifted(b.startDate, years),
