@@ -8,6 +8,7 @@ import { fetchNotifications, markAllNotificationsRead, markNotificationRead } fr
 import { timeAgo } from '@/lib/requestLabels';
 import { cn } from '@/lib/utils';
 import type { AppNotification } from '@/types';
+import { plural } from '@/lib/setupSteps';
 
 /**
  * Dzwonek powiadomien w naglowku: zgloszenia zmian (dziekanat) i decyzje / zmiany terminow
@@ -39,7 +40,7 @@ export function NotificationBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label={unread ? `Powiadomienia (${unread} nowych)` : 'Powiadomienia'}>
+        <Button variant="ghost" size="icon" className="relative" aria-label={unread ? `Powiadomienia (${plural(unread, 'nowe', 'nowe', 'nowych')})` : 'Powiadomienia'}>
           <Bell />
           {unread > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] leading-4 font-semibold text-white tabular-nums">
