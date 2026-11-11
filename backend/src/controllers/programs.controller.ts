@@ -100,11 +100,29 @@ export const listPrograms = asyncHandler(async (req, res) => {
   res.json({ data });
 });
 
+/** Kod programu (cala uczelnia) i etykieta wersji (w programie) sa unikalne — czytelny 409. */
+async function assertProgramCodeFree(code: string | undefined, exceptId?: string) {
+  if (!code) return;
+  const other = await prisma.program.findFirst({
+    where: { code: { equals: code.trim(), mode: 'insensitive' }, ...(exceptId ? { NOT: { id: exceptId } } : {}) },
+  });
+  if (other) throw new AppError(409, `Kod ${other.code} ma juz program „${other.name}”`);
+}
+
+async function assertVersionLabelFree(programId: string, label: string | undefined, exceptId?: string) {
+  if (!label) return;
+  const other = await prisma.programVersion.findFirst({
+    where: { programId, label: { equals: label.trim(), mode: 'insensitive' }, ...(exceptId ? { NOT: { id: exceptId } } : {}) },
+  });
+  if (other) throw new AppError(409, `Program ma juz wersje „${other.label}” — wybierz inna etykiete`);
+}
+
 export const createProgram = asyncHandler(async (req, res) => {
   const body = req.body as { code: string; name: string; fieldOfStudyId: string; degreeLevel: DegreeLevel; studyMode: StudyMode };
   const field = await prisma.fieldOfStudy.findUnique({ where: { id: body.fieldOfStudyId } });
   if (!field) throw new AppError(400, 'Kierunek nie istnieje');
   await assertFacultyScope(req, field.facultyId);
+  await assertProgramCodeFree(body.code);
   const data = await prisma.program.create({ data: body, include: programInclude });
   res.status(201).json({ data, message: 'Program utworzony' });
 });
@@ -112,6 +130,7 @@ export const createProgram = asyncHandler(async (req, res) => {
 export const updateProgram = asyncHandler(async (req, res) => {
   const program = await loadProgram(String(req.params.id));
   await assertFacultyScope(req, program.fieldOfStudy.facultyId);
+  await assertProgramCodeFree((req.body as { code?: string }).code, program.id);
   const data = await prisma.program.update({
     where: { id: program.id },
     data: req.body as { code: string; name: string },
@@ -150,6 +169,7 @@ export const createVersion = asyncHandler(async (req, res) => {
   }
   const totalSemesters = body.totalSemesters ?? source?.totalSemesters;
   if (!totalSemesters) throw new AppError(400, 'Podaj liczbe semestrow');
+  await assertVersionLabelFree(program.id, body.label);
 
   const data = await prisma.programVersion.create({
     data: {
@@ -251,6 +271,7 @@ export const updateVersion = asyncHandler(async (req, res) => {
     totalSemesters?: number;
     defaultStartType?: SemesterType;
   };
+  await assertVersionLabelFree(version.programId, body.label, version.id);
   if (body.totalSemesters !== undefined && body.totalSemesters < version.totalSemesters) {
     const beyond = await prisma.programEntry.count({
       where: { versionId: version.id, semester: { gt: body.totalSemesters } },

@@ -2,6 +2,7 @@ import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { defaultGridsCreate } from '../services/timeGrids';
+import { foldName } from '../lib/foldName';
 
 export const getAll = asyncHandler(async (_req, res) => {
   const data = await prisma.faculty.findMany({ orderBy: { name: 'asc' } });
@@ -17,8 +18,24 @@ export const getOne = asyncHandler(async (req, res) => {
   res.json({ data });
 });
 
+/** Nazwa i skrot wydzialu sa unikalne — czytelny 409 zamiast ogolnego bledu bazy. */
+async function assertFacultyFree(name: string | undefined, shortName: string | undefined, exceptId?: string) {
+  const notMe = exceptId ? { NOT: { id: exceptId } } : {};
+  if (name) {
+    // Wydzialow jest kilka — porownanie w JS, bez polskich znakow ("Wydzial" == "Wydział").
+    const all = await prisma.faculty.findMany({ where: notMe, select: { name: true } });
+    const other = all.find((f) => foldName(f.name) === foldName(name));
+    if (other) throw new AppError(409, `Wydzial „${other.name}” juz istnieje`);
+  }
+  if (shortName) {
+    const other = await prisma.faculty.findFirst({ where: { shortName: { equals: shortName.trim(), mode: 'insensitive' }, ...notMe } });
+    if (other) throw new AppError(409, `Skrot ${other.shortName} ma juz wydzial „${other.name}”`);
+  }
+}
+
 export const create = asyncHandler(async (req, res) => {
   const { name, shortName } = req.body as { name: string; shortName: string };
+  await assertFacultyFree(name, shortName);
   // Nowy wydzial od razu dostaje siatki godzin (stacjonarna i niestacjonarna) do dopasowania.
   const data = await prisma.faculty.create({ data: { name, shortName, timeGrids: { create: defaultGridsCreate() } } });
   res.status(201).json({ data, message: 'Wydzial utworzony' });
@@ -26,6 +43,7 @@ export const create = asyncHandler(async (req, res) => {
 
 export const update = asyncHandler(async (req, res) => {
   const { name, shortName } = req.body as { name?: string; shortName?: string };
+  await assertFacultyFree(name, shortName, String(req.params.id));
   const data = await prisma.faculty.update({
     where: { id: req.params.id },
     data: { name, shortName },

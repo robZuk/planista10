@@ -3,8 +3,26 @@ import { prisma } from '../lib/prisma';
 import { plural } from '../lib/plural';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
+import { foldName } from '../lib/foldName';
 
 // ─── Budynki ─────────────────────────────────────────────────
+
+/** Nazwa budynku i numer sali w budynku sa unikalne — czytelny 409 zamiast ogolnego bledu bazy. */
+async function assertBuildingFree(name: string | undefined, exceptId?: string) {
+  if (!name) return;
+  // Budynkow jest kilkanascie — porownanie w JS, bez polskich znakow i wielkosci liter.
+  const all = await prisma.building.findMany({ where: exceptId ? { NOT: { id: exceptId } } : {}, select: { name: true } });
+  const other = all.find((b) => foldName(b.name) === foldName(name));
+  if (other) throw new AppError(409, `Budynek „${other.name}” juz istnieje`);
+}
+
+async function assertRoomFree(buildingId: string, number: string | undefined, exceptId?: string) {
+  if (!number) return;
+  const other = await prisma.room.findFirst({
+    where: { buildingId, number: { equals: number.trim(), mode: 'insensitive' }, ...(exceptId ? { NOT: { id: exceptId } } : {}) },
+  });
+  if (other) throw new AppError(409, `Sala ${other.number} juz jest w tym budynku`);
+}
 
 export const getAll = asyncHandler(async (_req, res) => {
   const data = await prisma.building.findMany({
@@ -29,6 +47,7 @@ export const create = asyncHandler(async (req, res) => {
     address?: string;
     facultyId?: string;
   };
+  await assertBuildingFree(name);
   const data = await prisma.building.create({ data: { name, address, facultyId } });
   res.status(201).json({ data, message: 'Budynek utworzony' });
 });
@@ -39,6 +58,7 @@ export const update = asyncHandler(async (req, res) => {
     address?: string;
     facultyId?: string;
   };
+  await assertBuildingFree(name, String(req.params.id));
   const data = await prisma.building.update({
     where: { id: req.params.id },
     data: { name, address, facultyId },
@@ -73,6 +93,7 @@ export const createRoom = asyncHandler(async (req, res) => {
     type: RoomType;
     capacity: number;
   };
+  await assertRoomFree(String(req.params.id), number);
   const data = await prisma.room.create({
     data: { number, type, capacity, buildingId: req.params.id },
   });
@@ -85,6 +106,9 @@ export const updateRoom = asyncHandler(async (req, res) => {
     type?: RoomType;
     capacity?: number;
   };
+  const current = await prisma.room.findUnique({ where: { id: String(req.params.roomId) }, select: { buildingId: true } });
+  if (!current) throw new AppError(404, 'Sala nie znaleziona');
+  await assertRoomFree(current.buildingId, number, String(req.params.roomId));
   const data = await prisma.room.update({
     where: { id: req.params.roomId },
     data: { number, type, capacity },
