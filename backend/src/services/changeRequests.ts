@@ -363,8 +363,16 @@ export async function listRequests(term: AcademicTerm, scope: { instructorId?: s
       newRoom: { select: { number: true, building: { select: { name: true } } } },
       section: { select: { classType: true, cohortId: true, groupId: true, programEntry: { select: { subject: { select: { name: true } } } }, cohort: { select: { program: { select: { code: true } } } } } },
     },
-    orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+    orderBy: { createdAt: 'desc' },
   });
+  // Najpierw czekajace (od najnowszego zgloszenia), potem rozpatrzone od ostatniej zmiany stanu:
+  // decyzja dziekanatu albo — dla wycofanych/nieaktualnych bez decyzji — ostatnia aktualizacja.
+  const changedAt = (r: (typeof rows)[number]) => (r.decidedAt ?? r.updatedAt).getTime();
+  rows.sort((a, b) =>
+    a.status === 'PENDING' || b.status === 'PENDING'
+      ? Number(b.status === 'PENDING') - Number(a.status === 'PENDING') || b.createdAt.getTime() - a.createdAt.getTime()
+      : changedAt(b) - changedAt(a),
+  );
   const contexts = await activeCohorts(term, null, [...new Set(rows.map((r) => r.section.cohortId))].filter(Boolean));
   const nameOf = new Map(contexts.map((c) => [c.cohort.id, c.nameOf]));
   // Bloki -> godziny propozycji wg siatki wydzialu i trybu rocznika.

@@ -17,6 +17,26 @@ export function formatMinutes(minutes: number): string {
   return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 }
 
+/**
+ * Problemy z blokami (jak backend lib/timeGrid.validateBlocks): blok konczacy sie przed
+ * startem i bloki nachodzace na siebie. Edytor pokazuje je od razu i blokuje zapis.
+ */
+export function blockProblems(blocks: BlockTimes[]): string[] {
+  const problems: string[] = [];
+  for (const b of blocks) {
+    if (toMinutes(b.startTime) >= toMinutes(b.endTime)) problems.push(`Blok ${b.startTime}-${b.endTime} konczy sie przed startem`);
+  }
+  const sorted = [...blocks].sort((a, b) => toMinutes(a.startTime) - toMinutes(b.startTime));
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = sorted[i - 1]!;
+    const cur = sorted[i]!;
+    if (toMinutes(cur.startTime) < toMinutes(prev.endTime)) {
+      problems.push(`Bloki ${prev.startTime}-${prev.endTime} i ${cur.startTime}-${cur.endTime} nachodza na siebie`);
+    }
+  }
+  return problems;
+}
+
 /** Odstepy miedzy kolejnymi blokami (bloki w kolejnosci godzin). */
 export function breaksBetween(blocks: BlockTimes[]): { afterIndex: number; start: string; end: string; minutes: number }[] {
   const out = [];

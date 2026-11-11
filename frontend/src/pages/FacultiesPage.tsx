@@ -180,7 +180,7 @@ export default function FacultiesPage() {
           <DialogHeader>
             <DialogTitle>{editing ? 'Edytuj wydzial' : 'Nowy wydzial'}</DialogTitle>
             <DialogDescription>
-              Skrot pojawia sie w nazwach grup i na planie, wiec trzymaj go krotkim.
+              Skrot widac przy budynkach, siatkach godzin i wyborze wydzialu, wiec trzymaj go krotkim.
             </DialogDescription>
           </DialogHeader>
 

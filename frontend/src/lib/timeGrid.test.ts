@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blocksWord, breaksBetween, describeDays, describeGrid, gridLayout, formatMinutes, generateBlocks, toMinutes } from './timeGrid';
+import { blocksWord, breaksBetween, describeDays, describeGrid, gridLayout, formatMinutes, generateBlocks, toMinutes, blockProblems } from './timeGrid';
 
 describe('generateBlocks', () => {
   it('45 min z przerwa 15 min co 2 bloki', () => {
@@ -79,5 +79,17 @@ describe('describeDays', () => {
       ]),
     ).toBe('czw od 16:00 · sob · nd od 08:00 do 18:00');
     expect(describeDays([])).toBe('brak dni zajec');
+  });
+});
+
+describe('blockProblems', () => {
+  it('poprawne bloki — bez uwag', () => {
+    expect(blockProblems([{ startTime: '08:00', endTime: '08:45' }, { startTime: '08:50', endTime: '09:35' }])).toEqual([]);
+  });
+  it('nachodzace bloki i blok konczacy sie przed startem', () => {
+    expect(blockProblems([{ startTime: '08:00', endTime: '09:00' }, { startTime: '08:50', endTime: '09:35' }])).toEqual([
+      'Bloki 08:00-09:00 i 08:50-09:35 nachodza na siebie',
+    ]);
+    expect(blockProblems([{ startTime: '10:00', endTime: '09:00' }])).toEqual(['Blok 10:00-09:00 konczy sie przed startem']);
   });
 });

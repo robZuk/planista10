@@ -24,7 +24,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { fetchTimeGrids, updateTimeGrid } from '@/api/timeGrids';
 import { getErrorMessage } from '@/lib/errors';
 import { STUDY_MODE_LABELS, WEEKDAY_LABELS } from '@/lib/labels';
-import { breaksBetween, describeDays, describeGrid, formatMinutes, generateBlocks, toMinutes, type BlockTimes } from '@/lib/timeGrid';
+import { breaksBetween, describeDays, describeGrid, formatMinutes, generateBlocks, toMinutes, type BlockTimes, blockProblems } from '@/lib/timeGrid';
 import type { DayOfWeek, GridDay, TimeGrid } from '@/types';
 
 const WEEK: DayOfWeek[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
@@ -151,6 +151,7 @@ function GridEditor({ grid, onClose, onSaved }: { grid: TimeGrid; onClose: () =>
   const [gen, setGen] = useState({ start: '08:00', length: '45', count: '12', breakEvery: '1', breakMinutes: '5' });
 
   const sorted = [...blocks].filter((b) => b.startTime && b.endTime).sort((a, b) => toMinutes(a.startTime) - toMinutes(b.startTime));
+  const problems = locked ? [] : blockProblems(sorted);
   const dayList: GridDay[] = WEEK.filter((d) => days[d]!.on).map((day) => ({ day, from: days[day]!.from || null, to: days[day]!.to || null }));
 
   const save = useMutation({
@@ -298,6 +299,13 @@ function GridEditor({ grid, onClose, onSaved }: { grid: TimeGrid; onClose: () =>
               {describeGrid(sorted)} · dni: {describeDays(dayList)}
             </p>
             <GridTimeline blocks={sorted} />
+            {problems.length > 0 && (
+              <ul className="text-sm text-destructive">
+                {problems.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
+            )}
           </section>
         </div>
 
@@ -305,7 +313,11 @@ function GridEditor({ grid, onClose, onSaved }: { grid: TimeGrid; onClose: () =>
           <Button variant="outline" onClick={onClose}>
             Anuluj
           </Button>
-          <Button onClick={() => save.mutate()} disabled={sorted.length === 0 || dayList.length === 0 || save.isPending}>
+          <Button
+            onClick={() => save.mutate()}
+            disabled={sorted.length === 0 || dayList.length === 0 || problems.length > 0 || save.isPending}
+            title={problems.length > 0 ? 'Popraw bloki wskazane w podgladzie' : undefined}
+          >
             {save.isPending && <Spinner />}
             Zapisz
           </Button>
