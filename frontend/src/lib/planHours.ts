@@ -33,3 +33,19 @@ export function earlyEndWeeks(section: SectionHours, semesterEnd: string | null 
   const gap = daysBetween(section.endsOn, semesterEnd);
   return gap > EARLY_END_DAYS ? Math.floor(gap / 7) : null;
 }
+
+/** Najdluzszy blok proponowany w podpowiedzi wolnych godzin. */
+export const MAX_SUGGESTED_LENGTH = 6;
+
+/**
+ * Domyslna dlugosc zajec (w blokach) dla podpowiedzi wolnych godzin i nowego umieszczenia:
+ * brakujace godziny rozlozone na wszystkie tygodnie (albo zjazdy) semestru, w gore —
+ * 15 h w 16 tygodniach -> 1 h, 30 h -> 2 h. Bez kalendarza: 2 h (jak dotad).
+ */
+export function suggestedLength(section: { hours: number; plannedHours: number }, periods: number): number {
+  const missing = section.hours - section.plannedHours;
+  const hours = missing > 0 ? missing : section.hours;
+  if (hours <= 0) return 1;
+  const perPeriod = periods > 0 ? Math.ceil(hours / periods) : 2;
+  return Math.max(1, Math.min(perPeriod, hours, MAX_SUGGESTED_LENGTH));
+}

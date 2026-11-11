@@ -5,7 +5,7 @@ import { asyncHandler } from '../middleware/asyncHandler';
 import { assertFacultyScope, getCallerScope } from '../lib/facultyScope';
 import { fromIsoDate, isIsoDate, todayIso } from '../lib/isoDate';
 import { holidaysInRange } from '../lib/holidays';
-import { validateCalendar } from '../lib/teachingCalendar';
+import { calendarDatesKey, validateCalendar } from '../lib/teachingCalendar';
 import { academicYearOf, parseTermKey, termKey, termLabel, termOrdinal, type TermRef } from '../lib/terms';
 import {
   bodyToInput,
@@ -15,8 +15,10 @@ import {
   preview,
   proposeCalendar,
   serializeCalendar,
+  toCalendarInput,
 } from '../services/termCalendars';
 import type { CalendarBody } from '../schemas/termCalendar';
+import { calendarUsage, type CalendarUsage } from '../services/plan';
 
 /** Semestr z klucza URL ("2026-Z") albo 404. */
 async function findTerm(key: string) {
@@ -244,6 +246,9 @@ export const updateCalendar = asyncHandler(async (req, res) => {
   }
 
   const children = childrenData(body);
+  // Zmiana dat (nie nazwy) unieaktualnia terminy rocznikow tego kalendarza (services/staleness).
+  const datesChanged =
+    calendarDatesKey(toCalendarInput(current)) !== calendarDatesKey(bodyToInput(body, current.studyMode));
   const [, , , , updated] = await prisma.$transaction([
     prisma.calendarBreak.deleteMany({ where: { calendarId: current.id } }),
     prisma.calendarDay.deleteMany({ where: { calendarId: current.id } }),
@@ -258,6 +263,7 @@ export const updateCalendar = asyncHandler(async (req, res) => {
         breaks: { create: children.breaks },
         days: { create: children.days },
         zjazdy: { create: children.zjazdy },
+        ...(datesChanged ? { datesChangedAt: new Date() } : {}),
       },
     }),
     prisma.termCalendar.findUniqueOrThrow({ where: { id: current.id }, include: calendarInclude }),
@@ -284,10 +290,38 @@ export const setCalendarStatus = asyncHandler(async (req, res) => {
   res.json({ data: serializeCalendar(updated), message: 'Status kalendarza zmieniony' });
 });
 
+/** Liczba z rzeczownikiem w polskiej odmianie: 1 rocznik, 2 roczniki, 5 rocznikow. */
+function countOf(n: number, one: string, few: string, many: string): string {
+  const word = n === 1 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? few : many;
+  return `${n} ${word}`;
+}
+
+/** Powod, dla ktorego kalendarza nie wolno usunac (null = mozna). */
+export function calendarDeleteBlock(usage: CalendarUsage): string | null {
+  if (usage.placements === 0 && usage.occurrences === 0) return null;
+  const parts = [
+    usage.placements > 0 && countOf(usage.placements, 'umieszczenie', 'umieszczenia', 'umieszczen'),
+    usage.occurrences > 0 && countOf(usage.occurrences, 'termin', 'terminy', 'terminow'),
+  ].filter(Boolean);
+  return (
+    `Wedlug tego kalendarza ${countOf(usage.cohortsWithPlan, 'rocznik ma', 'roczniki maja', 'rocznikow ma')} ${parts.join(' i ')}. ` +
+    'Usuniecie zostawiloby ich plan bez kalendarza — najpierw usun umieszczenia tych rocznikow ' +
+    'albo przypisz roczniki do innego wariantu kalendarza (Roczniki i grupy).'
+  );
+}
+
+export const getCalendarUsage = asyncHandler(async (req, res) => {
+  const current = await loadCalendar(String(req.params.id));
+  const usage = await calendarUsage(current);
+  res.json({ data: { ...usage, deleteBlock: calendarDeleteBlock(usage) } });
+});
+
 export const deleteCalendar = asyncHandler(async (req, res) => {
   const current = await loadCalendar(String(req.params.id));
   await assertFacultyScope(req, current.facultyId);
   assertEditable(current.status);
+  const block = calendarDeleteBlock(await calendarUsage(current));
+  if (block) throw new AppError(409, block);
   await prisma.termCalendar.delete({ where: { id: current.id } });
   res.json({ message: 'Kalendarz usuniety' });
 });

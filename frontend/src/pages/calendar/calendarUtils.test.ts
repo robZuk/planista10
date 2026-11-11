@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { addDaysKey, formatDayKey, formatRange } from './calendarUtils';
+import type { CalendarProposal } from '@/types';
+import { addDaysKey, formatDayKey, formatRange, proposalNote } from './calendarUtils';
 
 describe('calendarUtils', () => {
   it('dodawanie dni przez koniec miesiaca i roku', () => {
@@ -11,5 +12,30 @@ describe('calendarUtils', () => {
     expect(formatDayKey('2026-10-09')).toBe('9.10');
     expect(formatRange('2026-10-01', '2027-01-31')).toBe('1.10.2026 – 31.01.2027');
     expect(formatRange('2027-02-19', '2027-02-21')).toBe('19.02 – 21.02.2027');
+  });
+});
+
+describe('proposalNote', () => {
+  const calendar: CalendarProposal['calendar'] = { name: 'Podstawowy', kind: 'WEEKLY', startDate: '2027-02-15', endDate: '2027-06-15', breaks: [], days: [], zjazdy: [] };
+
+  it('kopia z zeszlego roku', () => {
+    const note = proposalNote({ source: { termKey: '2025-L', termLabel: '2025/26 letni', facultyName: 'WM', name: 'Podstawowy' }, calendar });
+    expect(note.title).toBe('Propozycja na podstawie: 2025/26 letni (Podstawowy)');
+    expect(note.description).toContain('przeniesione z 2025/26 letni na ten semestr');
+  });
+
+  it('bez zrodla: domyslne daty i co dodac recznie', () => {
+    const note = proposalNote({ source: null, calendar: { ...calendar, kind: 'ZJAZD' } });
+    expect(note.title).toContain('domyslne daty');
+    expect(note.description).not.toContain('przeniesione');
+    expect(note.description).toContain('(15.02 – 15.06.2027), bez przerw');
+    expect(note.description).toContain('Dodaj recznie: zjazdy, przerwy, dni wolne uczelni');
+  });
+
+  it('bez zrodla, zimowy z przerwa swiateczna', () => {
+    const winter = { ...calendar, startDate: '2027-10-01', endDate: '2028-01-31', breaks: [{ name: 'Przerwa swiateczna', startDate: '2027-12-23', endDate: '2028-01-01' }] };
+    const note = proposalNote({ source: null, calendar: winter });
+    expect(note.description).toContain('przerwa: Przerwa swiateczna');
+    expect(note.description).toContain('Dodaj recznie: pozostale przerwy, dni wolne uczelni');
   });
 });

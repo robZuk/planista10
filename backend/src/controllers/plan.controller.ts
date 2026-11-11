@@ -12,7 +12,9 @@ import { mapRangeByTime, type GridTime } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from '../services/timeGrids';
 import { toTreeGroup } from '../services/cohorts';
 import { activeCohorts } from '../services/sections';
+import { conflictMessage, singleConflictMessage } from '../lib/conflictMessage';
 import {
+  assertCohortTermWritable,
   assertVersionApproved,
   availability,
   calendarFor,
@@ -77,13 +79,10 @@ function parsePlacement(body: Record<string, unknown>): PlacementInput {
   };
 }
 
-/** Bledy -> 400, kolizje -> 409 z pelna lista dat. */
+/** Bledy -> 400, kolizje -> 409 z kolizjami pogrupowanymi wg przyczyny i zajec (lib/conflictMessage). */
 function rejectIfInvalid(check: Awaited<ReturnType<typeof checkPlacement>>) {
   if (check.errors.length > 0) throw new AppError(400, check.errors.join('; '));
-  if (check.conflicts.length > 0) {
-    const first = check.conflicts.slice(0, 5).map((c) => `${c.date}: ${c.with}`).join('; ');
-    throw new AppError(409, `Kolizja w ${check.conflicts.length} terminach (${first}${check.conflicts.length > 5 ? '…' : ''})`);
-  }
+  if (check.conflicts.length > 0) throw new AppError(409, conflictMessage(check.conflicts));
 }
 
 export const getPlan = asyncHandler(async (req, res) => {
@@ -180,8 +179,14 @@ export const deletePlacement = asyncHandler(async (req, res) => {
   const current = await loadPlacement(String(req.params.id));
   await assertFacultyScope(req, current.facultyId);
   assertVersionApproved(current.section.cohort);
-  // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania.
-  await prisma.placement.delete({ where: { id: current.id } });
+  await assertCohortTermWritable(current.term, current.section.cohort.id, 'plan');
+  // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania. Odlaczamy je
+  // jawnie (a nie przez ON DELETE SET NULL), zeby updatedAt zapisal chwile usuniecia — po niej
+  // plan pokazuje "terminy nieaktualne", dopoki terminow nie wygeneruje sie od nowa.
+  await prisma.$transaction([
+    prisma.occurrence.updateMany({ where: { placementId: current.id }, data: { placementId: null } }),
+    prisma.placement.delete({ where: { id: current.id } }),
+  ]);
   res.json({ message: 'Umieszczenie usuniete — jego terminy znikna przy kolejnym "Generuj terminy"' });
 });
 
@@ -253,9 +258,12 @@ export const listOccurrences = asyncHandler(async (req, res) => {
 
 /** Kolizje terminu na konkretnej dacie z zajetoscia calej uczelni (bez niego samego). */
 async function occurrenceConflicts(term: AcademicTerm, slot: Omit<BusySlot, 'label'>, opts: OccupancyOptions) {
-  // Wspolna zajetosc uczelni (wzorce z wyjatkami, terminy reczne i wygenerowane) na te date.
-  const busy = (await termOccupancy(term, { ...opts, includeGenerated: true })).filter((b) => b.date === slot.date);
-  const groups = await prisma.studentGroup.findMany();
+  // Wspolna zajetosc uczelni (wzorce z wyjatkami, terminy reczne i wygenerowane) na te date —
+  // zawezona do rocznika grupy, sali i prowadzacego terminu (tylko one moga z nim kolidowac).
+  const group = await prisma.studentGroup.findUniqueOrThrow({ where: { id: slot.groupId }, select: { cohortId: true } });
+  const relevantTo = { cohortId: group.cohortId, roomId: slot.roomId, instructorId: slot.instructorId };
+  const busy = (await termOccupancy(term, { ...opts, includeGenerated: true, relevantTo })).filter((b) => b.date === slot.date);
+  const groups = await prisma.studentGroup.findMany({ where: { cohortId: group.cohortId } });
   const index = indexGroups(groups.map(toTreeGroup));
   return findConflict(slot, busy, (a, b) => groupsOverlap(a, b, index));
 }
@@ -366,7 +374,7 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
     // Bez niego samego: termin wzorca (placement + data z wzorca) albo termin reczny/osierocony.
     derived ? { excludePatternKey: `${occ.placementId}|${toIsoDate(occ.originalDate!)}`, excludeOccurrenceId: occ.id } : { excludeOccurrenceId: occ.id },
   );
-  if (conflict) throw new AppError(409, `Kolizja (${conflict.reason}): ${conflict.with}`);
+  if (conflict) throw new AppError(409, singleConflictMessage(conflict));
   await prisma.$transaction([
     ...(derived
       ? [
@@ -424,7 +432,7 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
     { date: body.date, ...time, roomId, instructorId: body.instructorId ?? null, groupId: section.groupId, jointKey: null },
     {},
   );
-  if (conflict) throw new AppError(409, `Kolizja (${conflict.reason}): ${conflict.with}`);
+  if (conflict) throw new AppError(409, singleConflictMessage(conflict));
   const data = await prisma.occurrence.create({
     data: {
       termId: term.id,

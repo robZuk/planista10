@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { expandDates, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
+import { calendarDatesKey, calendarPeriods, expandDates, personalDaysOff, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
 import { eachDay } from './isoDate';
 
 /** Zima 2024/25 jak w danych: start we wtorek 1.10, bez przerw. */
@@ -230,5 +230,120 @@ describe('expandDates — szybka wersja daje to samo co sprawdzanie kazdego dnia
     // kontrola sensu: zamiana dni dodaje piatek 13.11 do poniedzialkow, zjazd 1 ma czwartek
     expect(expandDates(weekly, { dayOfWeek: 'MONDAY', cycle: 'WEEK', pattern: 'ALL' }).map((d) => d.date)).toContain('2026-11-13');
     expect(expandDates(zjazdy, { dayOfWeek: 'THURSDAY', cycle: 'ZJAZD', pattern: 'ALL' }).map((d) => d.date)).toEqual(['2026-10-01']);
+  });
+});
+
+describe('calendarPeriods — okresy widoku tygodnia terminow', () => {
+  it('kalendarz tygodniowy: tygodnie pn-nd z numerami, swietami i przerwa', () => {
+    const cal = new TeachingCalendar({
+      ...winter2024,
+      breaks: [{ name: 'Przerwa swiateczna', startDate: '2024-12-23', endDate: '2025-01-01' }],
+      days: [{ date: '2024-11-16', kind: 'FOLLOWS_WEEKDAY', followsWeekday: 'MONDAY' }],
+    });
+    const periods = calendarPeriods(cal);
+    expect(periods[0]).toMatchObject({ index: 1, label: 'Tydzien 1', from: '2024-09-30', to: '2024-10-06' });
+    expect(periods[0]!.days).toHaveLength(7);
+    // 30.09 przed startem semestru — nie jest dniem zajec, bez etykiety.
+    expect(periods[0]!.days[0]).toMatchObject({ date: '2024-09-30', dayOfWeek: 'MONDAY', teaching: false, label: null });
+    const nov = periods.find((p) => p.from === '2024-11-11')!;
+    expect(nov.days[0]).toMatchObject({ dayOfWeek: 'MONDAY', teaching: false, label: 'Narodowe Swieto Niepodleglosci' });
+    // Sobota wg planu poniedzialku.
+    expect(nov.days[5]).toMatchObject({ dayOfWeek: 'SATURDAY', teaching: true, followsWeekday: 'MONDAY' });
+    const xmas = periods.find((p) => p.from === '2024-12-23')!;
+    expect(xmas).toMatchObject({ index: null, label: 'Przerwa: Przerwa swiateczna' });
+    expect(xmas.days[0]).toMatchObject({ teaching: false, label: 'Przerwa swiateczna' });
+  });
+
+  it('kalendarz zjazdowy: okres = zjazd z jego dniami', () => {
+    const cal = new TeachingCalendar({
+      ...winter2024,
+      kind: 'ZJAZD',
+      studyMode: 'PART_TIME',
+      zjazdy: [
+        { number: 2, startDate: '2024-10-18', endDate: '2024-10-20' },
+        { number: 1, startDate: '2024-10-04', endDate: '2024-10-06' },
+      ],
+    });
+    const periods = calendarPeriods(cal);
+    expect(periods.map((p) => [p.label, p.from, p.to])).toEqual([
+      ['Zjazd 1', '2024-10-04', '2024-10-06'],
+      ['Zjazd 2', '2024-10-18', '2024-10-20'],
+    ]);
+    expect(periods[0]!.days.map((d) => [d.dayOfWeek, d.teaching])).toEqual([
+      ['FRIDAY', true],
+      ['SATURDAY', true],
+      ['SUNDAY', true],
+    ]);
+  });
+});
+
+describe('calendarDatesKey', () => {
+  const base = {
+    kind: 'ZJAZD' as const,
+    startDate: '2026-10-01',
+    endDate: '2027-01-31',
+    breaks: [
+      { name: 'Przerwa swiateczna', startDate: '2026-12-23', endDate: '2027-01-01' },
+      { name: 'Dni rektorskie', startDate: '2026-11-02', endDate: '2026-11-03' },
+    ],
+    days: [{ date: '2026-11-12', kind: 'DAY_OFF' as const, name: 'Dzien rektorski', followsWeekday: null, closedFromBlockOrder: null }],
+    zjazdy: [
+      { number: 1, startDate: '2026-10-03', endDate: '2026-10-04' },
+      { number: 2, startDate: '2026-10-17', endDate: '2026-10-18' },
+    ],
+  };
+
+  it('nazwy i kolejnosc na liscie nie zmieniaja klucza', () => {
+    const renamed = {
+      ...base,
+      breaks: [...base.breaks].reverse().map((b) => ({ ...b, name: 'inna nazwa' })),
+      days: base.days.map((d) => ({ ...d, name: null })),
+      zjazdy: [...base.zjazdy].reverse(),
+    };
+    expect(calendarDatesKey(renamed)).toBe(calendarDatesKey(base));
+  });
+
+  it('nowa przerwa, przesuniety zjazd, inny koniec semestru i rodzaj — inny klucz', () => {
+    const key = calendarDatesKey(base);
+    expect(calendarDatesKey({ ...base, breaks: [...base.breaks, { name: 'X', startDate: '2026-11-20', endDate: '2026-11-20' }] })).not.toBe(key);
+    expect(calendarDatesKey({ ...base, zjazdy: [base.zjazdy[0]!, { number: 2, startDate: '2026-10-24', endDate: '2026-10-25' }] })).not.toBe(key);
+    expect(calendarDatesKey({ ...base, endDate: '2027-02-07' })).not.toBe(key);
+    expect(calendarDatesKey({ ...base, kind: 'WEEKLY' })).not.toBe(key);
+  });
+
+  it('pola nieuzywane przez rodzaj dnia sa pomijane', () => {
+    const withNoise = { ...base, days: base.days.map((d) => ({ ...d, followsWeekday: 'MONDAY' as const, closedFromBlockOrder: 3 })) };
+    expect(calendarDatesKey(withNoise)).toBe(calendarDatesKey(base));
+  });
+});
+
+describe('personalDaysOff', () => {
+  const weekly = (over: Partial<CalendarInput> = {}): TeachingCalendar =>
+    new TeachingCalendar({ kind: 'WEEKLY', studyMode: 'FULL_TIME', startDate: '2026-10-01', endDate: '2027-01-31', breaks: [], days: [], zjazdy: [], ...over });
+  const zjazdy = new TeachingCalendar({
+    kind: 'ZJAZD',
+    studyMode: 'PART_TIME',
+    startDate: '2026-10-01',
+    endDate: '2027-01-31',
+    breaks: [],
+    days: [],
+    zjazdy: [{ number: 1, startDate: '2026-11-13', endDate: '2026-11-15' }],
+  });
+  const week = ['2026-11-09', '2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13'];
+
+  it('swieto ustawowe — takze gdy drugi kalendarz (zjazdy) po prostu nie ma tego dnia zajec', () => {
+    expect(personalDaysOff(week, [weekly(), zjazdy])).toEqual({ '2026-11-11': 'Narodowe Swieto Niepodleglosci' });
+  });
+
+  it('przerwa jednego wydzialu nie jest dniem wolnym, gdy w drugim sa zajecia', () => {
+    const wm = weekly({ breaks: [{ name: 'Dni rektorskie WM', startDate: '2026-11-09', endDate: '2026-11-10' }] });
+    expect(personalDaysOff(week, [wm, weekly()])['2026-11-09']).toBeUndefined();
+    expect(personalDaysOff(week, [wm])['2026-11-09']).toBe('Dni rektorskie WM');
+  });
+
+  it('dzien wolny uczelni z wlasna nazwa; bez kalendarzy — same swieta', () => {
+    const cal = weekly({ days: [{ date: '2026-11-10', kind: 'DAY_OFF', name: 'Dzien sportu' }] });
+    expect(personalDaysOff(week, [cal])['2026-11-10']).toBe('Dzien sportu');
+    expect(personalDaysOff(week, [])).toEqual({ '2026-11-11': 'Narodowe Swieto Niepodleglosci' });
   });
 });

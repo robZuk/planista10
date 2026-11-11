@@ -63,6 +63,20 @@ export async function setTermCalendarStatus(id: string, status: CalendarStatus):
   return res.data.data;
 }
 
+/** Ile planu stoi na kalendarzu; deleteBlock = powod, dla ktorego nie mozna go usunac. */
+export interface CalendarUsage {
+  cohorts: number;
+  cohortsWithPlan: number;
+  placements: number;
+  occurrences: number;
+  deleteBlock: string | null;
+}
+
+export async function fetchCalendarUsage(id: string): Promise<CalendarUsage> {
+  const res = await api.get(`/term-calendars/${id}/usage`);
+  return res.data.data;
+}
+
 export async function deleteTermCalendar(id: string): Promise<void> {
   await api.delete(`/term-calendars/${id}`);
 }

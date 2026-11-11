@@ -167,6 +167,8 @@ export interface DashboardStats {
   faculties: { total: number };
   subjects: { total: number };
   calendars: { total: number };
+  /** Zakres kafelkow: cala uczelnia (admin) albo wydzial dziekanatu. */
+  scope: { kind: 'ALL' } | { kind: 'FACULTY'; name: string; shortName: string };
   todayEntries: DashboardEntry[];
   /** Biezacy tydzien (pon-nd), przyciety do roli: student/prowadzacy — tylko swoje, opublikowane. */
   weekEntries: DashboardEntry[];
@@ -338,6 +340,8 @@ export interface ProgramEntry {
   assessmentType: AssessmentType;
   subject: { id: string; name: string; code: string | null };
   specialization: { id: string; shortName: string; name: string } | null;
+  /** Zajecia utworzone z tej pozycji: > 0 blokuje zmiane przedmiotu, specjalnosci, semestru i usuwanie. */
+  _count: { sections: number };
 }
 
 export interface ProgramVersionDetail {
@@ -396,10 +400,9 @@ export interface TermCohort extends CohortDto {
   semester: number;
   studyYear: number;
   semesterOverridden: boolean;
-  isNewIntake: boolean;
-  calendar: { id: string; name: string; kind: CalendarKind } | null;
+  calendar: { id: string; name: string; kind: CalendarKind; status: CalendarStatus } | null;
   calendarIsDefault: boolean;
-  availableCalendars: { id: string; name: string; kind: CalendarKind }[];
+  availableCalendars: { id: string; name: string; kind: CalendarKind; status: CalendarStatus }[];
   groupCount: number;
   size: number;
 }
@@ -438,7 +441,8 @@ export interface SectionAssignment {
 
 export interface ClassSectionRow {
   id: string;
-  cohort: { id: string; label: string; code: string; semester: number };
+  /** archived: kalendarz rocznika w archiwum — zajecia i obsada tylko do odczytu. */
+  cohort: { id: string; label: string; code: string; semester: number; archived: boolean };
   subject: { id: string; name: string; code: string | null };
   order: number;
   /** Skrot specjalnosci przedmiotu (null = przedmiot wspolny dla kierunku). */
@@ -459,6 +463,8 @@ export interface SectionsSummary {
   assignedHours: number;
   vacancies: number;
   orphaned: number;
+  /** Wszystkie roczniki widoku maja kalendarz w archiwum — akcje masowe niedostepne. */
+  archived: boolean;
 }
 
 export interface SyncRow {
@@ -488,7 +494,7 @@ export interface SyncProblem {
   /** Semestr programu rocznika w synchronizowanym semestrze. */
   semester: number;
   subject: string;
-  kind: 'NO_ROOT_GROUP' | 'MISSING_SPECIALIZATION_GROUP' | 'DRAFT_PROGRAM_VERSION';
+  kind: 'NO_ROOT_GROUP' | 'MISSING_SPECIALIZATION_GROUP' | 'DRAFT_PROGRAM_VERSION' | 'ARCHIVED_CALENDAR';
   specialization: { id: string; shortName: string; name: string } | null;
   /** Wersja programu rocznika (DRAFT_PROGRAM_VERSION). */
   programVersion: { id: string; label: string } | null;
@@ -550,7 +556,19 @@ export interface PlanSection {
   status: 'ACTIVE' | 'ORPHANED';
   instructors: { instructorId: string | null; name: string; hours: number }[];
   placements: PlanPlacement[];
+  /** Niezgodnosci powstale po umieszczeniu (obsada, sala, grupa, godziny) — backend lib/planIssues. */
+  issues: PlanIssue[];
 }
+
+export interface PlanIssue {
+  kind: 'INSTRUCTOR_NOT_STAFFED' | 'ROOM_TYPE' | 'ROOM_CAPACITY' | 'GROUP_INACTIVE' | 'STAFF_HOURS';
+  /** null = problem zajec (grupa, obsada), nie jednego umieszczenia. */
+  placementId: string | null;
+  message: string;
+}
+
+/** Powod nieaktualnych terminow: zmiana wzorca, zmiana godzin zajec, usuniete umieszczenie. */
+export type StaleReason = 'PLACEMENTS' | 'SECTIONS' | 'DELETED' | 'CALENDAR';
 
 export interface PlanView {
   cohort: {
@@ -571,11 +589,13 @@ export interface PlanView {
     endDate: string;
     teachingWeeks: number;
     zjazdy: { number: number; startDate: string; endDate: string }[];
+    /** Tygodnie (pn-nd) albo zjazdy z dniami wolnymi — widok tygodnia w "Terminach". */
+    periods: CalendarPeriod[];
   } | null;
   /** Siatka godzin wydzialu i trybu rocznika: bloki planu, przerwy (odstepy) i dni zajec. */
   timeGrid: { id: string; studyMode: StudyMode; days: GridDay[]; blocks: TimeBlock[] };
   stale: boolean;
-  staleReasons: ('PLACEMENTS' | 'SECTIONS')[];
+  staleReasons: StaleReason[];
   generatedOccurrences: number;
   sections: PlanSection[];
 }
@@ -609,6 +629,26 @@ export interface GenerateReport {
   calendarsMissing: string[];
   /** Roczniki pominiete, bo ich wersja programu jest w projekcie. */
   draftVersions: string[];
+}
+
+export interface PeriodDay {
+  date: string;
+  dayOfWeek: DayOfWeek;
+  teaching: boolean;
+  /** Swieto, przerwa, dzien wolny albo nazwa zmiany dnia. */
+  label: string | null;
+  /** Zajecia wg planu innego dnia tygodnia. */
+  followsWeekday: DayOfWeek | null;
+  closedFromBlockOrder: number | null;
+}
+
+export interface CalendarPeriod {
+  /** Numer tygodnia zajec / zjazdu; null = tydzien w przerwie. */
+  index: number | null;
+  label: string;
+  from: string;
+  to: string;
+  days: PeriodDay[];
 }
 
 export interface OccurrenceRow {
@@ -659,8 +699,14 @@ export interface SetupCohort {
   id: string;
   label: string;
   code: string;
+  program: {
+    code: string;
+    name: string;
+    studyMode: StudyMode;
+    degreeLevel: DegreeLevel;
+    fieldOfStudy: { id: string; name: string; shortName: string };
+  };
   semester: number;
-  isNewIntake: boolean;
   programVersion: { id: string; label: string; status: ProgramVersionStatus };
   calendar: { name: string; status: CalendarStatus } | null;
   groups: number;
@@ -669,6 +715,8 @@ export interface SetupCohort {
   placedSections: number;
   occurrences: number;
   stale: boolean;
+  /** Powody nieaktualnych terminow — te same co w "Ukladaniu planu". */
+  staleReasons: StaleReason[];
 }
 
 export interface SetupStatus {
@@ -699,6 +747,8 @@ export interface MyPlanRow {
   subject: string;
   classType: ClassType;
   program: string;
+  /** Nazwa grupy na semestr rocznika (jak w Ukladaniu planu), np. "DUT-1-C-A". */
+  group: string;
   room: string;
   instructor: string;
   status: EntryStatus;

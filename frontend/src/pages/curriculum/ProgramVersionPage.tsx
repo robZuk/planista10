@@ -24,7 +24,6 @@ import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PageHeader } from '@/components/PageHeader';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Combobox } from '@/components/Combobox';
@@ -84,6 +83,7 @@ export default function ProgramVersionPage() {
   const me = useAuthStore((s) => s.user);
   const [specFilter, setSpecFilter] = useState(ALL);
   const [dialog, setDialog] = useState<{ semester: number; entry: ProgramEntry | null } | null>(null);
+  const entryLocked = !!dialog?.entry && dialog.entry._count.sections > 0;
   const [deleting, setDeleting] = useState<ProgramEntry | null>(null);
   const [confirmRevert, setConfirmRevert] = useState(false);
 
@@ -104,10 +104,12 @@ export default function ProgramVersionPage() {
 
   const saveMutation = useMutation({
     mutationFn: (values: EntryValues) => {
+      // Pozycja z zajeciami: przedmiot, semestr i specjalnosc zostaja jak byly (pola sa wylaczone).
+      const kept = dialog?.entry && dialog.entry._count.sections > 0 ? dialog.entry : null;
       const input = {
-        subjectId: values.subjectId,
-        semester: values.semester,
-        specializationId: values.specialization === COMMON ? null : values.specialization,
+        subjectId: kept ? kept.subjectId : values.subjectId,
+        semester: kept ? kept.semester : values.semester,
+        specializationId: kept ? kept.specializationId : values.specialization === COMMON ? null : values.specialization,
         hoursLecture: values.hoursLecture,
         hoursExercise: values.hoursExercise,
         hoursLab: values.hoursLab,
@@ -333,12 +335,9 @@ export default function ProgramVersionPage() {
                           <TableHead>Dla</TableHead>
                           {HOUR_FIELDS.map((f) => (
                             <TableHead key={f.key} className="w-12 text-right">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="cursor-help">{f.short}</span>
-                                </TooltipTrigger>
-                                <TooltipContent>{f.full}</TooltipContent>
-                              </Tooltip>
+                              <span className="cursor-help" title={f.full}>
+                                {f.short}
+                              </span>
                             </TableHead>
                           ))}
                           <TableHead className="w-16 text-right">Razem</TableHead>
@@ -409,15 +408,25 @@ export default function ProgramVersionPage() {
                                   <Button variant="ghost" size="sm" onClick={() => openDialog(semester.semester, entry)}>
                                     Edytuj
                                   </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="size-8 text-destructive hover:text-destructive"
-                                    aria-label={`Usun ${entry.subject.name}`}
-                                    onClick={() => setDeleting(entry)}
+                                  {/* span: wylaczony przycisk nie pokazuje dymka, a powod ma byc widoczny */}
+                                  <span
+                                    title={
+                                      entry._count.sections > 0
+                                        ? `Z tej pozycji powstaly juz zajecia (${entry._count.sections}) — nie mozna jej usunac`
+                                        : undefined
+                                    }
                                   >
-                                    <Trash2 />
-                                  </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="size-8 text-destructive hover:text-destructive"
+                                      aria-label={`Usun ${entry.subject.name}`}
+                                      disabled={entry._count.sections > 0}
+                                      onClick={() => setDeleting(entry)}
+                                    >
+                                      <Trash2 />
+                                    </Button>
+                                  </span>
                                 </div>
                               </TableCell>
                             )}
@@ -439,7 +448,11 @@ export default function ProgramVersionPage() {
             <DialogTitle>
               {dialog?.entry ? `Edytuj: ${dialog.entry.subject.name}` : `Dodaj przedmiot — semestr ${dialog?.semester}`}
             </DialogTitle>
-            <DialogDescription>Godziny lacznie na caly semestr, osobno dla kazdej formy zajec.</DialogDescription>
+            <DialogDescription>
+              Godziny lacznie na caly semestr, osobno dla kazdej formy zajec.
+              {entryLocked &&
+                ` Z tej pozycji powstaly juz zajecia (${dialog!.entry!._count.sections}) — przedmiot, semestr i specjalnosc sa zablokowane; inna zmiane zrob w nowej wersji programu (klon). Zmiana godzin obejmie zajecia po „Synchronizuj zajecia”.`}
+            </DialogDescription>
           </DialogHeader>
           <form id="program-entry-form" onSubmit={form.handleSubmit((values) => saveMutation.mutate(values))} noValidate>
             <FieldGroup>
@@ -457,6 +470,7 @@ export default function ProgramVersionPage() {
                       placeholder="Wybierz przedmiot"
                       searchPlaceholder="Szukaj po nazwie lub kodzie…"
                       invalid={!!form.formState.errors.subjectId}
+                      disabled={entryLocked}
                     />
                   )}
                 />
@@ -465,7 +479,7 @@ export default function ProgramVersionPage() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="semester">Semestr</FieldLabel>
-                  <NativeSelect id="semester" {...form.register('semester', { valueAsNumber: true })}>
+                  <NativeSelect id="semester" disabled={entryLocked} {...form.register('semester', { valueAsNumber: true })}>
                     {semesters.map((s) => (
                       <NativeSelectOption key={s.semester} value={s.semester}>
                         Semestr {s.semester}
@@ -475,7 +489,7 @@ export default function ProgramVersionPage() {
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="specialization">Dla kogo</FieldLabel>
-                  <NativeSelect id="specialization" {...form.register('specialization')}>
+                  <NativeSelect id="specialization" disabled={entryLocked} {...form.register('specialization')}>
                     <NativeSelectOption value={COMMON}>Wspolny dla kierunku</NativeSelectOption>
                     {specializations.map((s) => (
                       <NativeSelectOption key={s.id} value={s.id}>

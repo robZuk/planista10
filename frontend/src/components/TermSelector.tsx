@@ -9,33 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 import { useTerms } from '@/hooks/useTerm';
 import { termKeyFromPath, termScopedItemFor } from '@/lib/navigation';
 import { useTermStore } from '@/store/termStore';
 import type { AcademicTerm } from '@/types';
-
-/** Krotki stan semestru z kalendarzy widocznych dla uzytkownika (kolor = stan). */
-function termState(term: AcademicTerm): { label: string; className: string } | null {
-  const statuses = new Set(term.calendars.map((c) => c.status));
-  if (statuses.size === 0) return null;
-  if (statuses.has('PLANNING'))
-    return { label: 'w przygotowaniu', className: 'border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-300' };
-  if (statuses.has('PUBLISHED'))
-    return { label: 'opublikowany', className: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' };
-  return { label: 'archiwum', className: 'border-border bg-muted text-muted-foreground' };
-}
-
-function StateBadge({ term }: { term: AcademicTerm }) {
-  const state = termState(term);
-  if (!state) return null;
-  return (
-    <Badge variant="outline" className={cn('text-[10px] font-medium', state.className)}>
-      {state.label}
-    </Badge>
-  );
-}
 
 /**
  * Przelacznik semestru w naglowku aplikacji — widoczny tylko na stronach dzialajacych
@@ -78,9 +55,6 @@ export function TermSelector() {
             <span className="flex items-center gap-2">
               <span className="hidden text-xs text-muted-foreground sm:inline">Semestr</span>
               <span className="text-base font-semibold">{currentTerm.label}</span>
-              <span className="hidden sm:inline-flex">
-                <StateBadge term={currentTerm} />
-              </span>
             </span>
           )}
         </SelectValue>
@@ -91,8 +65,7 @@ export function TermSelector() {
             <SelectLabel>Rok akademicki {year}</SelectLabel>
             {terms.map((term) => (
               <SelectItem key={term.key} value={term.key}>
-                <span>{term.label}</span>
-                <StateBadge term={term} />
+                {term.label}
               </SelectItem>
             ))}
           </SelectGroup>

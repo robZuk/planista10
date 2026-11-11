@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { CalendarDays, List, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,10 @@ import { fetchBuildings } from '@/api/buildings';
 import { getErrorMessage } from '@/lib/errors';
 import { CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { formatMinutes } from '@/lib/timeGrid';
-import type { OccurrenceRow, PlanSection, TimeBlock } from '@/types';
+import { formatDayMonth } from '@/lib/planHours';
+import { occurrenceMarker } from '@/lib/occurrenceWeek';
+import type { CalendarPeriod, DayOfWeek, OccurrenceRow, PlanSection, TimeBlock } from '@/types';
+import { OccurrencesWeek } from './OccurrencesWeek';
 
 const WEEKDAY = ['nd', 'pn', 'wt', 'sr', 'cz', 'pt', 'sb'];
 
@@ -39,12 +42,18 @@ export function OccurrencesTab({
   sections,
   blocks,
   readOnly,
+  periods,
+  modeDays,
 }: {
   termKey: string;
   cohortId: string;
   sections: PlanSection[];
   blocks: TimeBlock[];
   readOnly: boolean;
+  /** Tygodnie albo zjazdy kalendarza rocznika — nawigacja widoku tygodnia. */
+  periods: CalendarPeriod[];
+  /** Dni zajec siatki godzin rocznika (kolumny siatki). */
+  modeDays: DayOfWeek[];
 }) {
   const queryClient = useQueryClient();
   const { data, isPending } = useQuery({
@@ -54,10 +63,14 @@ export function OccurrencesTab({
   const [filter, setFilter] = useState('');
   const [editing, setEditing] = useState<OccurrenceRow | null>(null);
   const [adding, setAdding] = useState(false);
+  // Widok tygodnia (siatka jak wzorzec, z datami) albo lista wszystkich terminow semestru.
+  const [view, setView] = useState<'week' | 'list'>('week');
+  const [details, setDetails] = useState<OccurrenceRow | null>(null);
 
   const refresh = async () => {
     setEditing(null);
     setAdding(false);
+    setDetails(null);
     await queryClient.invalidateQueries({ queryKey: ['occurrences'] });
     await queryClient.invalidateQueries({ queryKey: ['plan'] });
   };
@@ -95,82 +108,153 @@ export function OccurrencesTab({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex rounded-md border p-0.5" role="group" aria-label="Widok terminow">
+          <Button size="sm" variant={view === 'week' ? 'secondary' : 'ghost'} aria-pressed={view === 'week'} onClick={() => setView('week')}>
+            <CalendarDays /> Tydzien
+          </Button>
+          <Button size="sm" variant={view === 'list' ? 'secondary' : 'ghost'} aria-pressed={view === 'list'} onClick={() => setView('list')}>
+            <List /> Lista
+          </Button>
+        </div>
         <Input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Przedmiot albo grupa…" className="w-72" />
-        <span className="text-sm text-muted-foreground">{rows.length} terminow</span>
+        {view === 'list' && <span className="text-sm text-muted-foreground">{rows.length} terminow</span>}
         {!readOnly && (
           <Button variant="outline" size="sm" className="ml-auto" onClick={() => setAdding(true)}>
             <Plus /> Termin reczny (odrobienie)
           </Button>
         )}
       </div>
-      <div className="max-h-[70vh] overflow-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Data</TableHead>
-              <TableHead>Godziny</TableHead>
-              <TableHead>Zajecia</TableHead>
-              <TableHead>Grupa</TableHead>
-              <TableHead>Sala</TableHead>
-              <TableHead>Prowadzacy</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((o) => (
-              <TableRow key={o.id} className={o.status === 'CANCELLED' ? 'text-muted-foreground line-through' : undefined}>
-                <TableCell className="whitespace-nowrap tabular-nums">
-                  {WEEKDAY[new Date(`${o.date}T12:00:00Z`).getUTCDay()]} {o.date}
-                  {o.originalDate && o.originalDate !== o.date && (
-                    <span className="ml-1 text-xs text-muted-foreground">(z {o.originalDate})</span>
-                  )}
-                </TableCell>
-                <TableCell className="whitespace-nowrap tabular-nums">
-                  {formatMinutes(o.startMinute)}–{formatMinutes(o.endMinute)}
-                </TableCell>
-                <TableCell>
-                  {CLASS_LABELS[o.classType]} · {o.subject}
-                  {o.kind === 'MANUAL' && <Badge className="ml-2">reczny</Badge>}
-                  {o.changed && o.status !== 'CANCELLED' && (
-                    <Badge variant="outline" className="ml-2">
-                      zmieniony
-                    </Badge>
-                  )}
-                </TableCell>
-                <TableCell className="whitespace-nowrap">{o.group}</TableCell>
-                <TableCell className="whitespace-nowrap">{o.room.label}</TableCell>
-                <TableCell>{o.instructor}</TableCell>
-                <TableCell>
-                  {!readOnly && (
-                    <div className="flex justify-end gap-1 no-underline">
-                      {o.status !== 'CANCELLED' && (
-                        <>
-                          <Button variant="ghost" size="sm" onClick={() => setEditing(o)}>
-                            Przenies
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => act.mutate({ id: o.id, action: 'CANCEL' })}>
-                            Odwolaj
-                          </Button>
-                        </>
-                      )}
-                      {o.kind === 'DERIVED' && (o.changed || o.status === 'CANCELLED') && (
-                        <Button variant="ghost" size="sm" onClick={() => act.mutate({ id: o.id, action: 'RESTORE' })}>
-                          Przywroc
-                        </Button>
-                      )}
-                      {o.kind === 'MANUAL' && (
-                        <Button variant="ghost" size="sm" className="text-destructive" onClick={() => remove.mutate(o.id)}>
-                          Usun
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </TableCell>
+      {view === 'week' && (
+        <OccurrencesWeek periods={periods} modeDays={modeDays} blocks={blocks} occurrences={rows} onSelect={setDetails} />
+      )}
+      {view === 'list' && (
+        <div className="max-h-[70vh] overflow-auto rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Godziny</TableHead>
+                <TableHead>Zajecia</TableHead>
+                <TableHead>Grupa</TableHead>
+                <TableHead>Sala</TableHead>
+                <TableHead>Prowadzacy</TableHead>
+                <TableHead />
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {rows.map((o) => (
+                <TableRow key={o.id} className={o.status === 'CANCELLED' ? 'text-muted-foreground line-through' : undefined}>
+                  <TableCell className="whitespace-nowrap tabular-nums">
+                    {WEEKDAY[new Date(`${o.date}T12:00:00Z`).getUTCDay()]} {o.date}
+                    {o.originalDate && o.originalDate !== o.date && (
+                      <span className="ml-1 text-xs text-muted-foreground">(z {o.originalDate})</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap tabular-nums">
+                    {formatMinutes(o.startMinute)}–{formatMinutes(o.endMinute)}
+                  </TableCell>
+                  <TableCell>
+                    {CLASS_LABELS[o.classType]} · {o.subject}
+                    {o.kind === 'MANUAL' && <Badge className="ml-2">reczny</Badge>}
+                    {o.changed && o.status !== 'CANCELLED' && (
+                      <Badge variant="outline" className="ml-2">
+                        zmieniony
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">{o.group}</TableCell>
+                  <TableCell className="whitespace-nowrap">{o.room.label}</TableCell>
+                  <TableCell>{o.instructor}</TableCell>
+                  <TableCell>
+                    {!readOnly && (
+                      <div className="flex justify-end gap-1 no-underline">
+                        {o.status !== 'CANCELLED' && (
+                          <>
+                            <Button variant="ghost" size="sm" onClick={() => setEditing(o)}>
+                              Przenies
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => act.mutate({ id: o.id, action: 'CANCEL' })}>
+                              Odwolaj
+                            </Button>
+                          </>
+                        )}
+                        {o.kind === 'DERIVED' && (o.changed || o.status === 'CANCELLED') && (
+                          <Button variant="ghost" size="sm" onClick={() => act.mutate({ id: o.id, action: 'RESTORE' })}>
+                            Przywroc
+                          </Button>
+                        )}
+                        {o.kind === 'MANUAL' && (
+                          <Button variant="ghost" size="sm" className="text-destructive" onClick={() => remove.mutate(o.id)}>
+                            Usun
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+      {details && (
+        <Dialog open onOpenChange={(open) => !open && setDetails(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {CLASS_LABELS[details.classType]} · {details.subject}
+              </DialogTitle>
+              <DialogDescription>
+                {WEEKDAY[new Date(`${details.date}T12:00:00Z`).getUTCDay()]} {formatDayMonth(details.date)}, {formatMinutes(details.startMinute)}–{formatMinutes(details.endMinute)}
+                {occurrenceMarker(details) && ` · ${occurrenceMarker(details)}`}
+              </DialogDescription>
+            </DialogHeader>
+            <dl className="grid grid-cols-[8rem_1fr] gap-x-3 gap-y-1 text-sm">
+              <dt className="text-muted-foreground">Grupa</dt>
+              <dd>{details.group}</dd>
+              <dt className="text-muted-foreground">Sala</dt>
+              <dd>{details.room.label}</dd>
+              <dt className="text-muted-foreground">Prowadzacy</dt>
+              <dd>{details.instructor}</dd>
+              {details.note && (
+                <>
+                  <dt className="text-muted-foreground">Uwaga</dt>
+                  <dd>{details.note}</dd>
+                </>
+              )}
+            </dl>
+            {!readOnly && (
+              <DialogFooter className="sm:justify-start">
+                {details.status !== 'CANCELLED' && (
+                  <>
+                    <Button
+                      onClick={() => {
+                        setEditing(details);
+                        setDetails(null);
+                      }}
+                    >
+                      Przenies
+                    </Button>
+                    <Button variant="outline" disabled={act.isPending} onClick={() => act.mutate({ id: details.id, action: 'CANCEL' })}>
+                      Odwolaj
+                    </Button>
+                  </>
+                )}
+                {details.kind === 'DERIVED' && (details.changed || details.status === 'CANCELLED') && (
+                  <Button variant="outline" disabled={act.isPending} onClick={() => act.mutate({ id: details.id, action: 'RESTORE' })}>
+                    Przywroc wg wzorca
+                  </Button>
+                )}
+                {details.kind === 'MANUAL' && (
+                  <Button variant="outline" className="text-destructive" disabled={remove.isPending} onClick={() => remove.mutate(details.id)}>
+                    Usun termin reczny
+                  </Button>
+                )}
+              </DialogFooter>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
       {editing && <MoveDialog occurrence={editing} blocks={blocks} onClose={() => setEditing(null)} onDone={refresh} />}
       {adding && (
         <ManualDialog termKey={termKey} sections={sections} blocks={blocks} onClose={() => setAdding(false)} onDone={refresh} />

@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+import { assignLanes } from '@/lib/gridLanes';
 import { cn } from '@/lib/utils';
 import { CLASS_COLORS, CLASS_LABELS, fitGridLines } from '@/lib/scheduleDisplay';
 import { gridLayout } from '@/lib/timeGrid';
@@ -19,6 +21,12 @@ export interface GridItem {
   title: string;
   lines: string[];
   muted?: boolean;
+  /** Termin odwolany: przekreslony i wyszarzony. */
+  cancelled?: boolean;
+  /** Krotkie oznaczenie przy tytule ("przeniesiony", "reczny"). */
+  marker?: string;
+  /** Niezgodnosc umieszczenia (lib/planIssues): znacznik "!" i opis w dymku. */
+  warning?: string | null;
 }
 
 const DAY_SHORT: Record<string, string> = {
@@ -31,36 +39,12 @@ const DAY_SHORT: Record<string, string> = {
   SUNDAY: 'Niedziela',
 };
 
-/** Tory dla zajec rownoleglych: kazdy blok dostaje kolumne, w ktorej nie nachodzi na inne. */
-function assignLanes(items: GridItem[]): Map<string, { lane: number; lanes: number }> {
-  const result = new Map<string, { lane: number; lanes: number }>();
-  const sorted = [...items].sort((a, b) => a.startOrder - b.startOrder || a.endOrder - b.endOrder);
-  const laneEnds: number[] = [];
-  const assigned: { item: GridItem; lane: number }[] = [];
-  for (const item of sorted) {
-    let lane = laneEnds.findIndex((end) => end < item.startOrder);
-    if (lane === -1) {
-      lane = laneEnds.length;
-      laneEnds.push(item.endOrder);
-    } else laneEnds[lane] = item.endOrder;
-    assigned.push({ item, lane });
-  }
-  // Szerokosc: liczba torow w grupie nakladajacych sie blokow.
-  for (const { item, lane } of assigned) {
-    const overlapping = assigned.filter(
-      (o) => o.item.startOrder <= item.endOrder && item.startOrder <= o.item.endOrder,
-    );
-    const lanes = Math.max(...overlapping.map((o) => o.lane)) + 1;
-    result.set(item.id, { lane, lanes });
-  }
-  return result;
-}
-
 /**
  * Siatka wzorca: dni x bloki siatki godzin kalendarza rocznika, na osi minut — blok 45 min
  * jest nizszy niz 60 min, a przerwy miedzy blokami maja wlasny pas. Zajecia rownolegle
- * (rozne grupy w tym samym czasie) stoja obok siebie. `availability` cieniuje komorki,
- * gdy planista wybral zajecia do umieszczenia (zielone — wolne, czerwone — kolizja).
+ * (rozne grupy w tym samym czasie) stoja obok siebie — tory wg `lib/gridLanes`.
+ * `availability` cieniuje komorki, gdy planista wybral zajecia do umieszczenia
+ * (zielone — wolne, czerwone — kolizja).
  */
 export function WeekGrid({
   days,
@@ -69,6 +53,9 @@ export function WeekGrid({
   availability,
   onCellClick,
   onItemClick,
+  dayHeader,
+  closedDays,
+  passThrough,
 }: {
   days: DayOfWeek[];
   blocks: TimeBlock[];
@@ -76,6 +63,15 @@ export function WeekGrid({
   availability?: Record<string, Record<number, string | null>> | null;
   onCellClick?: (day: DayOfWeek, order: number) => void;
   onItemClick?: (id: string) => void;
+  /** Wlasny naglowek dnia (np. z data) zamiast samej nazwy. */
+  dayHeader?: (day: DayOfWeek) => ReactNode;
+  /** Dni bez zajec (swieto, przerwa, dzien wolny) — kolumna wyszarzona z opisem. */
+  closedDays?: Partial<Record<DayOfWeek, string>>;
+  /**
+   * Umieszczanie zajec: karty polprzezroczyste i przepuszczaja klikniecie do komorki pod nimi —
+   * zajecia innej grupy w tej samej godzinie nie zaslaniaja wolnego miejsca.
+   */
+  passThrough?: boolean;
 }) {
   // Najkrotszy blok miesci tytul i trzy linie opisu; 60 min nie mniej niz ROW.
   const layout = gridLayout(blocks, { minBlockPx: 4 * LINE + PAD + 2, minPxPerMinute: ROW / 60 });
@@ -118,10 +114,15 @@ export function WeekGrid({
         return (
           <div key={day} className="min-w-40 flex-1 border-r last:border-r-0">
             <div style={{ height: HEADER }} className="flex items-center justify-center border-b text-sm font-medium">
-              {DAY_SHORT[day]}
+              {dayHeader ? dayHeader(day) : DAY_SHORT[day]}
             </div>
             <div className="relative" style={{ height: layout.totalHeight }}>
               {breakBands}
+              {closedDays?.[day] !== undefined && (
+                <div className="absolute inset-0 flex items-start justify-center bg-[repeating-linear-gradient(135deg,var(--muted)_0_8px,transparent_8px_16px)] pt-4 text-center text-xs font-medium text-muted-foreground">
+                  <span className="rounded bg-background/90 px-2 py-1">{closedDays[day] || 'Bez zajec'}</span>
+                </div>
+              )}
               {layout.rows.map((r) => {
                 const reason = availability?.[day]?.[r.order];
                 const state = availability ? (reason === null ? 'free' : reason === undefined ? undefined : 'busy') : undefined;
@@ -141,7 +142,7 @@ export function WeekGrid({
                 );
               })}
               {dayItems.map((item) => {
-                const lane = lanes.get(item.id) ?? { lane: 0, lanes: 1 };
+                const lane = lanes.get(item.id) ?? { lane: 0, span: 1, lanes: 1 };
                 const width = 100 / lane.lanes;
                 const span = layout.span(item.startOrder, item.endOrder);
                 if (!span) return null;
@@ -155,21 +156,36 @@ export function WeekGrid({
                     key={item.id}
                     type="button"
                     onClick={() => onItemClick?.(item.id)}
-                    title={[title, ...item.lines].join('\n')}
+                    title={[
+                      item.marker ? `${title} (${item.marker})` : title,
+                      ...item.lines,
+                      ...(item.warning ? ['', `Uwaga: ${item.warning}`] : []),
+                    ].join('\n')}
                     style={{
                       position: 'absolute',
                       top: span.top + 1,
                       height,
                       left: `calc(${lane.lane * width}% + 2px)`,
-                      width: `calc(${width}% - 4px)`,
+                      width: `calc(${width * lane.span}% - 4px)`,
                     }}
                     className={cn(
                       'flex flex-col justify-start overflow-hidden rounded-md border-l-4 px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm',
                       CLASS_COLORS[item.classType],
                       item.muted && 'opacity-40',
+                      item.cancelled && 'line-through opacity-50 grayscale',
+                      passThrough && 'pointer-events-none opacity-45',
+                      item.warning && 'ring-2 ring-amber-500 ring-inset',
                     )}
                   >
-                    <div className={cn('font-semibold', titleLines === 1 ? 'truncate' : 'line-clamp-2')}>{title}</div>
+                    <div className={cn('font-semibold', titleLines === 1 ? 'truncate' : 'line-clamp-2')}>
+                      {item.warning && (
+                        <span className="mr-1 rounded bg-amber-500 px-1 text-white" aria-label="Niezgodnosc w planie">
+                          !
+                        </span>
+                      )}
+                      {item.marker && <span className="mr-1 rounded bg-background/70 px-1 font-normal no-underline">{item.marker}</span>}
+                      {title}
+                    </div>
                     {lines.map((line, n) => (
                       <div key={n} className="truncate">
                         {line}

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Landmark } from 'lucide-react';
 import {
@@ -14,6 +15,14 @@ import { useFacultyFilterStore } from '@/store/facultyStore';
 export function FacultySelector() {
   const { facultyId, setFacultyId } = useFacultyFilterStore();
   const { data: faculties } = useQuery({ queryKey: ['faculties'], queryFn: fetchFaculties });
+
+  // Zapamietany wydzial moze nie istniec (usuniety, inna baza): bez resetu lista bylaby pusta,
+  // a przelacznik nie pokazalby, ze cokolwiek filtruje. Wracamy na "Wszystkie wydzialy".
+  useEffect(() => {
+    if (facultyId !== 'all' && faculties && !faculties.some((faculty) => faculty.id === facultyId)) {
+      setFacultyId('all');
+    }
+  }, [faculties, facultyId, setFacultyId]);
 
   return (
     <Select value={facultyId} onValueChange={setFacultyId}>

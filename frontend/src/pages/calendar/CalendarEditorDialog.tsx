@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
-import { createTermCalendar, previewTermCalendar, updateTermCalendar } from '@/api/terms';
+import { createTermCalendar, fetchCalendarUsage, previewTermCalendar, updateTermCalendar } from '@/api/terms';
 import { fetchTimeGrids } from '@/api/timeGrids';
 import { getErrorMessage } from '@/lib/errors';
 import {
@@ -43,7 +43,7 @@ import type {
   TermCalendar,
 } from '@/types';
 import { CalendarPreviewPanel } from './CalendarPreviewPanel';
-import { addDaysKey, useDebouncedValue } from './calendarUtils';
+import { addDaysKey, proposalNote, useDebouncedValue } from './calendarUtils';
 
 const dateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Wybierz date');
 
@@ -145,6 +145,13 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
 
   // Godziny rektorskie wskazuja blok siatki wydzialu i trybu tego kalendarza.
   const { data: grids } = useQuery({ queryKey: ['time-grids'], queryFn: fetchTimeGrids });
+  // Edycja kalendarza z wygenerowanymi terminami: zmiana dat oznaczy je jako nieaktualne.
+  const editedId = target?.mode === 'edit' ? target.calendar.id : null;
+  const { data: usage } = useQuery({
+    queryKey: ['calendar-usage', editedId],
+    queryFn: () => fetchCalendarUsage(editedId!),
+    enabled: !!editedId,
+  });
   const calendarFacultyId = target?.mode === 'create' ? target.facultyId : target?.calendar.facultyId;
   const timeBlocks = grids?.find((g) => g.faculty.id === calendarFacultyId && g.studyMode === studyMode)?.blocks;
 
@@ -235,14 +242,19 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
         {target?.mode === 'create' && (
           <Alert>
             <Info />
-            <AlertTitle>
-              {target.proposal.source
-                ? `Propozycja na podstawie: ${target.proposal.source.termLabel} (${target.proposal.source.name})`
-                : 'Brak wczesniejszego kalendarza tego typu — domyslne daty'}
-            </AlertTitle>
+            <AlertTitle>{proposalNote(target.proposal).title}</AlertTitle>
+            <AlertDescription>{proposalNote(target.proposal).description}</AlertDescription>
+          </Alert>
+        )}
+
+        {usage && usage.occurrences > 0 && (
+          <Alert>
+            <TriangleAlert />
+            <AlertTitle>Wedlug tego kalendarza sa juz wygenerowane terminy</AlertTitle>
             <AlertDescription>
-              Daty semestru i przerw przeniesione o rok, zjazdy wyrownane do tych samych dni tygodnia.
-              Jednorazowe dni wolne i zamiany dni trzeba dodac na nowo. Sprawdz wszystko przed zapisem.
+              Terminy: {usage.occurrences}, roczniki z planem: {usage.cohortsWithPlan}. Zmiana dat,
+              przerw, dni wolnych albo zjazdow oznaczy je jako nieaktualne — trzeba bedzie uzyc „Generuj terminy” w Ukladaniu planu. Sama
+              zmiana nazwy niczego nie unieaktualnia.
             </AlertDescription>
           </Alert>
         )}

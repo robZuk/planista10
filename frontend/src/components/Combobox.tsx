@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { matchesAllWords } from '@/lib/searchMatch';
 
 export interface ComboboxOption {
   value: string;
@@ -28,6 +29,7 @@ interface Props {
   emptyText?: string;
   id?: string;
   invalid?: boolean;
+  disabled?: boolean;
 }
 
 /**
@@ -44,6 +46,7 @@ export function Combobox({
   emptyText = 'Brak wynikow.',
   id,
   invalid,
+  disabled,
 }: Props) {
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => option.value === value);
@@ -57,6 +60,7 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           aria-invalid={invalid}
+          disabled={disabled}
           className="w-full justify-between font-normal"
         >
           <span className={cn('truncate', !selected && 'text-muted-foreground')}>
@@ -66,7 +70,8 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
-        <Command>
+        {/* Dopasowanie fragmentow slow (lib/searchMatch) zamiast rozmytego cmdk. */}
+        <Command filter={(value, search) => (matchesAllWords(value, search) ? 1 : 0)}>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>

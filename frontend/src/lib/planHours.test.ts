@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { earlyEndWeeks, formatDayMonth } from './planHours';
+import { suggestedLength, earlyEndWeeks, formatDayMonth } from './planHours';
 
 const END = '2027-01-31';
 
@@ -25,4 +25,27 @@ describe('earlyEndWeeks', () => {
 
 describe('formatDayMonth', () => {
   it('YYYY-MM-DD -> DD.MM', () => expect(formatDayMonth('2026-11-08')).toBe('08.11'));
+});
+
+describe('suggestedLength — dlugosc w podpowiedzi wolnych godzin', () => {
+  it('godziny rozlozone na tygodnie semestru, w gore', () => {
+    expect(suggestedLength({ hours: 15, plannedHours: 0 }, 16)).toBe(1);
+    expect(suggestedLength({ hours: 30, plannedHours: 0 }, 15)).toBe(2);
+    expect(suggestedLength({ hours: 45, plannedHours: 0 }, 15)).toBe(3);
+  });
+
+  it('liczy brakujace godziny, gdy czesc juz zaplanowana', () => {
+    expect(suggestedLength({ hours: 60, plannedHours: 30 }, 15)).toBe(2);
+  });
+
+  it('zjazdy: 18 h na 10 zjazdow -> 2 h; nie dluzej niz brakujace godziny i limit', () => {
+    expect(suggestedLength({ hours: 18, plannedHours: 0 }, 10)).toBe(2);
+    expect(suggestedLength({ hours: 3, plannedHours: 0 }, 1)).toBe(3);
+    expect(suggestedLength({ hours: 90, plannedHours: 0 }, 2)).toBe(6);
+  });
+
+  it('bez kalendarza: 2 h (najwyzej tyle, ile godzin)', () => {
+    expect(suggestedLength({ hours: 30, plannedHours: 0 }, 0)).toBe(2);
+    expect(suggestedLength({ hours: 1, plannedHours: 0 }, 0)).toBe(1);
+  });
 });

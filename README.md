@@ -196,8 +196,14 @@ Skróty w `Makefile`: `make dev`, `make prod`, `make down`, `make logs` (`make` 
 |---|---|---|
 | ADMIN | admin@umg.edu.pl | `Admin1234!` |
 | Dziekanat | dziekanat@umg.edu.pl | `Dziekanat1234!` |
+| Dziekanat (planista WM) | planista.wm@umg.edu.pl | `Planista1234!` |
 | Prowadzący | prowadzacy@umg.edu.pl | `Prowadzacy1234!` |
 | Student | student@umg.edu.pl | `Student1234!` |
+
+Pełna baza testowa (`planista9_pelne`, generator `backend/scripts/pelne-dane/generuj.ts`) nie ma
+konta `dziekanat@umg.edu.pl` — dziekanat ma konto na każdy wydział:
+`dziekanat.wm@umg.edu.pl`, `dziekanat.we@umg.edu.pl`, `dziekanat.wn@umg.edu.pl`,
+`dziekanat.wznj@umg.edu.pl` (hasło `Dziekanat1234!`). Pozostałe konta z tabeli są takie same.
 
 ## 🧪 Testy
 

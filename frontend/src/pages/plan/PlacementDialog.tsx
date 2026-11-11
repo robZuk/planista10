@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Spinner } from '@/components/ui/spinner';
 import { Combobox } from '@/components/Combobox';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { AssignmentDialog } from '@/pages/obsada/ObsadaDialogs';
 import { createPlacement, deletePlacement, updatePlacement } from '@/api/plan';
 import { fetchBuildings } from '@/api/buildings';
@@ -34,6 +35,8 @@ export interface PlacementTarget {
   startOrder: number;
   /** Zjazd wybrany w widoku (dla nowego umieszczenia: domyslnie tylko ten zjazd). */
   zjazd: number | null;
+  /** Dlugosc (bloki) nowego umieszczenia — ta, dla ktorej siatka pokazala wolne godziny. */
+  length?: number;
 }
 
 /**
@@ -66,13 +69,14 @@ export function PlacementDialog({
   const zjazdCalendar = plan.calendar?.kind === 'ZJAZD';
   const [day, setDay] = useState<DayOfWeek>(placement?.dayOfWeek ?? target.day);
   const [start, setStart] = useState(placement?.startOrder ?? target.startOrder);
-  const [length, setLength] = useState(placement ? placement.endOrder - placement.startOrder + 1 : Math.min(2, section.hours));
+  const [length, setLength] = useState(placement ? placement.endOrder - placement.startOrder + 1 : (target.length ?? Math.min(2, section.hours)));
   const [roomId, setRoomId] = useState(placement?.room?.id ?? '');
   // Zajecia online: bez sali — kolizje sal pomijane, grupy i prowadzacy dalej sprawdzani.
   const [online, setOnline] = useState(!!placement && !placement.room);
   const staff = section.instructors.filter((i) => i.instructorId);
   const [instructorId, setInstructorId] = useState(placement?.instructor?.id ?? staff[0]?.instructorId ?? '');
   const [assigning, setAssigning] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const [pickAfterAssign, setPickAfterAssign] = useState(false);
   // Po przypisaniu obsady z tego okna wybierz od razu pierwsza osobe (jesli dotad bylo NN).
   useEffect(() => {
@@ -85,6 +89,10 @@ export function PlacementDialog({
   useEffect(() => {
     if (instructorId && !staff.some((i) => i.instructorId === instructorId)) setInstructorId('');
   }, [staff, instructorId]);
+  // Zapisany prowadzacy umieszczenia, ktorego juz nie ma w obsadzie: pole pokazuje NN, wiec mowimy
+  // wprost, kto byl i ze zapis go zdejmie — inaczej zmiana na NN przy edycji np. sali bylaby niezauwazona.
+  const droppedInstructor =
+    placement?.instructor && !staff.some((i) => i.instructorId === placement.instructor!.id) ? placement.instructor : null;
   const [pattern, setPattern] = useState<PlacementPattern>(
     placement?.pattern ?? (zjazdCalendar && target.zjazd ? 'LIST' : 'ALL'),
   );
@@ -208,6 +216,12 @@ export function PlacementDialog({
               <UserPlus /> {staff.length === 0 ? 'Przypisz prowadzacego' : 'Zmien obsade'}
             </Button>
           </Field>
+          {droppedInstructor && !instructorId && (
+            <p role="alert" className="rounded-md border border-amber-500/40 bg-amber-500/5 p-2 text-xs text-amber-700 sm:col-span-3 dark:text-amber-400">
+              Prowadzacy tego umieszczenia ({droppedInstructor.name}) nie jest juz w obsadzie zajec. Zapis ustawi NN — wybierz
+              prowadzacego z obsady albo dodaj go z powrotem przyciskiem „{staff.length === 0 ? 'Przypisz prowadzacego' : 'Zmien obsade'}”.
+            </p>
+          )}
           {staff.length === 0 && (
             <p className="text-xs text-muted-foreground sm:col-span-3">
               Zajecia nie maja obsady, wiec do wyboru jest tylko NN. Przypisz prowadzacego tutaj albo na stronie{' '}
@@ -273,11 +287,11 @@ export function PlacementDialog({
         </div>
         <p className="text-xs text-muted-foreground">
           Zajecia laczone: wpisz ten sam klucz w umieszczeniach innych kierunkow/trybow — beda w tym samym czasie i sali,
-          bez kolizji miedzy soba. Terminy w kalendarzu zmienia sie dopiero po „Generuj terminy”.
+          bez kolizji miedzy soba. Terminy (zakladka „Terminy”) zmienia sie dopiero po „Generuj terminy”.
         </p>
         <DialogFooter className="sm:justify-between">
           {placement ? (
-            <Button variant="ghost" className="text-destructive" onClick={() => remove.mutate()} disabled={remove.isPending}>
+            <Button variant="ghost" className="text-destructive" onClick={() => setConfirmRemove(true)} disabled={remove.isPending}>
               <Trash2 /> Usun z planu
             </Button>
           ) : (
@@ -294,6 +308,15 @@ export function PlacementDialog({
           </div>
         </DialogFooter>
       </DialogContent>
+      <ConfirmDialog
+        open={confirmRemove}
+        onOpenChange={setConfirmRemove}
+        title="Usunac zajecia z planu?"
+        description={`${section.subject.name} (${CLASS_FULL_LABELS[section.classType].toLowerCase()}) · ${section.group.name}${placement ? ` · ${WEEKDAY_LABELS[placement.dayOfWeek].toLowerCase()}` : ''}. Wygenerowane terminy tego umieszczenia znikna przy kolejnym „Generuj terminy”.`}
+        confirmLabel="Usun z planu"
+        isPending={remove.isPending}
+        onConfirm={() => remove.mutate()}
+      />
       {assigning && (
         <AssignmentDialog
           section={section}

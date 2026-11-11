@@ -218,6 +218,9 @@ async function main() {
     data: { email: 'dziekanat@umg.edu.pl', password: hash('Dziekanat1234!'), role: 'DEAN_OFFICE', name: 'Dziekanat WM', facultyId: wm.id },
   });
   await prisma.user.create({
+    data: { email: 'planista.wm@umg.edu.pl', password: hash('Planista1234!'), role: 'DEAN_OFFICE', name: 'Planista WM', facultyId: wm.id },
+  });
+  await prisma.user.create({
     data: { email: 'prowadzacy@umg.edu.pl', password: hash('Prowadzacy1234!'), role: 'INSTRUCTOR', name: 'Jan Kowalski', instructorId: kowalski.id },
   });
   // Student nalezy do najmniejszej grupy — wyklady rocznika i cwiczenia wynikaja z drzewa grup.

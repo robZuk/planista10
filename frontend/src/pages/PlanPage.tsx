@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarCheck, Copy, History, TriangleAlert, X } from 'lucide-react';
+import { CalendarCheck, ChevronRight, Copy, FilterX, History, TriangleAlert, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
 import { fetchTermCohorts } from '@/api/cohorts';
@@ -17,13 +17,18 @@ import { fetchAvailability, fetchPlan, updatePlacement } from '@/api/plan';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage } from '@/lib/errors';
 import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGroupFilter';
-import { earlyEndWeeks, formatDayMonth } from '@/lib/planHours';
+import { earlyEndWeeks, formatDayMonth, MAX_SUGGESTED_LENGTH, suggestedLength } from '@/lib/planHours';
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { describeDays } from '@/lib/timeGrid';
+import { staleMessage } from '@/lib/planStaleness';
+import { issueRows, placementWarning } from '@/lib/planIssues';
+import { copyCandidates, inZjazd, zjazdyDiffer } from '@/lib/zjazdView';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 import type { DayOfWeek, PlanPlacement, PlanSection } from '@/types';
 import { WeekGrid, type GridItem } from './plan/WeekGrid';
+import { CohortFacetFilters } from './cohorts/CohortFacetFilters';
+import { useCohortFilters } from './cohorts/useCohortFilters';
 import { PlacementDialog, type PlacementTarget } from './plan/PlacementDialog';
 import { GenerateTermsDialog } from './plan/GenerateTermsDialog';
 import { OccurrencesTab } from './plan/OccurrencesTab';
@@ -42,7 +47,7 @@ function patternLabel(p: PlanPlacement): string {
 /**
  * Ukladanie planu rocznika — RECZNIE. Planista wybiera zajecia z panelu "do zaplanowania"
  * (siatka podswietla wolne/zajete godziny) i klika godzine, w ktorej je umiescic.
- * Terminy w kalendarzu powstaja dopiero po "Generuj terminy" (z podgladem).
+ * Terminy (konkretne daty) powstaja dopiero po "Generuj terminy" (z podgladem).
  */
 export default function PlanPage() {
   const queryClient = useQueryClient();
@@ -55,8 +60,10 @@ export default function PlanPage() {
   const [cohortId, setCohortId] = useState('');
   const [selected, setSelected] = useState<PlanSection | null>(null);
   const [target, setTarget] = useState<PlacementTarget | null>(null);
-  const [zjazd, setZjazd] = useState<number | null>(null);
+  const [zjazdChoice, setZjazd] = useState<number | null>(null);
   const [groupFilter, setGroupFilter] = useState('all');
+  // Przy filtrze grupy zajecia innych grup sa domyslnie ukryte — kafelki wybranej grupy maja wtedy pelna szerokosc.
+  const [showOtherGroups, setShowOtherGroups] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [carrying, setCarrying] = useState(false);
   const [copyTo, setCopyTo] = useState('');
@@ -66,10 +73,45 @@ export default function PlanPage() {
     queryFn: () => fetchTermCohorts(term!.key, facultyParam),
     enabled: !!term,
   });
-  const cohorts = useMemo(() => cohortsData?.cohorts ?? [], [cohortsData]);
+  const allCohorts = useMemo(() => cohortsData?.cohorts ?? [], [cohortsData]);
+
+  // Filtry rocznikow wspolne z "Rocznikami i grupami" (tryb globalny, reszta zapamietana).
+  const cohortFilter = useCohortFilters(allCohorts);
+  const cohorts = cohortFilter.visible;
+  const cohortIds = cohorts.map((c) => c.id).join(',');
+  // Wybrany rocznik wypadl z filtra -> pierwszy pasujacy; nic nie pasuje -> brak wyboru.
   useEffect(() => {
-    if (cohorts.length > 0 && !cohorts.some((c) => c.id === cohortId)) setCohortId(cohorts[0]!.id);
-  }, [cohorts, cohortId]);
+    const ids = cohortIds ? cohortIds.split(',') : [];
+    if (!ids.includes(cohortId)) {
+      setCohortId(ids[0] ?? '');
+      setSelected(null);
+      setZjazd(null);
+      setGroupFilter('all');
+    }
+  }, [cohortIds, cohortId]);
+
+  // Wejscie z linku (np. "Przygotowanie semestru"): /plan/2026-Z?cohort=<id> wybiera ten rocznik.
+  // Gdy filtry rocznikow go ukrywaja, czyscimy je — inaczej link otworzylby inny rocznik.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedCohort = searchParams.get('cohort');
+  const { clearFacets } = cohortFilter;
+  useEffect(() => {
+    if (!requestedCohort || allCohorts.length === 0) return;
+    if (allCohorts.some((c) => c.id === requestedCohort)) {
+      if (!cohortIds.split(',').includes(requestedCohort)) clearFacets();
+      setCohortId(requestedCohort);
+      setSelected(null);
+      setZjazd(null);
+      setGroupFilter('all');
+    }
+    setSearchParams(
+      (params) => {
+        params.delete('cohort');
+        return params;
+      },
+      { replace: true },
+    );
+  }, [requestedCohort, allCohorts, cohortIds, clearFacets, setSearchParams]);
 
   const { data: plan, isPending } = useQuery({
     queryKey: ['plan', term?.key, cohortId],
@@ -78,6 +120,18 @@ export default function PlanPage() {
   });
 
   const zjazdCalendar = plan?.calendar?.kind === 'ZJAZD';
+  // Filtr zjazdow i "kopiuj zjazd" tylko, gdy zjazdy sie roznia (lista zjazdow albo zakres od-do);
+  // gdy wszystko jest "kazdy zjazd", kazdy zjazd wyglada tak samo i wybor zjazdu nic nie daje.
+  const zjazdyVary = useMemo(
+    () =>
+      plan?.calendar?.kind === 'ZJAZD' &&
+      zjazdyDiffer(
+        plan.sections.flatMap((s) => s.placements),
+        plan.calendar.zjazdy.map((z) => z.number),
+      ),
+    [plan],
+  );
+  const zjazd = zjazdyVary ? zjazdChoice : null;
   // Bloki i dni zajec z siatki godzin wydzialu i trybu rocznika (np. niestacjonarne: czw-nd).
   const blocks = plan?.timeGrid.blocks;
   const days: DayOfWeek[] = plan?.timeGrid.days.map((d) => d.day) ?? [];
@@ -94,13 +148,23 @@ export default function PlanPage() {
       : null;
   const readOnly = locked || !plan?.calendar || draftVersion;
 
+  // Dlugosc zajec dla podpowiedzi: domyslnie godziny rozlozone na tygodnie/zjazdy semestru
+  // (15 h -> 1 h tygodniowo), planista moze ja zmienic przy "Umieszczasz".
+  const [lengthChoice, setLengthChoice] = useState<{ sectionId: string; length: number } | null>(null);
+  const periodsCount = zjazdCalendar ? (plan?.calendar?.zjazdy.length ?? 0) : (plan?.calendar?.teachingWeeks ?? 0);
+  const placeLength = selected
+    ? lengthChoice?.sectionId === selected.id
+      ? lengthChoice.length
+      : suggestedLength(selected, periodsCount)
+    : 1;
+
   // Podpowiedz dostepnosci dla wybranych zajec (grupa + prowadzacy z obsady).
   const { data: availability } = useQuery({
-    queryKey: ['availability', term?.key, selected?.id, zjazd],
+    queryKey: ['availability', term?.key, selected?.id, zjazd, placeLength],
     queryFn: () =>
       fetchAvailability(term!.key, {
         sectionId: selected!.id,
-        length: Math.min(2, selected!.hours),
+        length: placeLength,
         cycle: zjazdCalendar ? 'ZJAZD' : 'WEEK',
         numbers: zjazd ? [zjazd] : undefined,
       }),
@@ -126,10 +190,11 @@ export default function PlanPage() {
     .map((s) => ({ section: s, weeks: earlyEndWeeks(s, plan?.calendar?.endDate) }))
     .filter((e): e is { section: PlanSection; weeks: number } => e.weeks !== null);
 
-  const visiblePlacement = (p: PlanPlacement) =>
-    !zjazd || p.cycle !== 'ZJAZD' || p.pattern === 'ALL' || p.numbers.includes(zjazd);
+  const visiblePlacement = (p: PlanPlacement) => !zjazd || inZjazd(p, zjazd);
+  // Niezgodnosci zajec widocznych w filtrze grupy (lib/planIssues).
+  const issues = issueRows(sections.filter(inView));
 
-  const items: GridItem[] = sections.flatMap((s) =>
+  const items: GridItem[] = sections.filter((s) => showOtherGroups || inView(s)).flatMap((s) =>
     s.placements.filter(visiblePlacement).map((p) => ({
       id: p.id,
       dayOfWeek: p.dayOfWeek,
@@ -139,15 +204,17 @@ export default function PlanPage() {
       title: s.subject.name,
       lines: [s.group.name, p.room?.label ?? 'ON-LINE', `${p.instructor?.name ?? 'NN'} · ${patternLabel(p)}`],
       muted: !inView(s),
+      warning: placementWarning(s, p.id),
     })),
   );
   const placementOwner = new Map(sections.flatMap((s) => s.placements.map((p) => [p.id, { section: s, placement: p }] as const)));
 
   // Kopiowanie zjazdu k -> m: swiadoma akcja planisty, dopisuje numer m do umieszczen z zjazdu k.
+  const toCopy = zjazd && copyTo ? copyCandidates(sections.flatMap((s) => s.placements), zjazd, Number(copyTo)) : [];
   const copyZjazd = useMutation({
     mutationFn: async () => {
       const to = Number(copyTo);
-      const list = sections.flatMap((s) => s.placements).filter((p) => p.cycle === 'ZJAZD' && p.pattern === 'LIST' && p.numbers.includes(zjazd!) && !p.numbers.includes(to));
+      const list = toCopy;
       const errors: string[] = [];
       for (const p of list) {
         try {
@@ -174,19 +241,9 @@ export default function PlanPage() {
         description={term ? `Semestr ${term.label}. Zajecia umieszczasz recznie; terminy powstaja po „Generuj terminy”.` : 'Wybierz semestr w naglowku.'}
         actions={
           <>
-            {isAdmin && <FacultySelector />}
-            <NativeSelect value={cohortId} onChange={(e) => { setCohortId(e.target.value); setSelected(null); setZjazd(null); setGroupFilter('all'); }} className="w-72" aria-label="Rocznik">
-              {cohorts.map((c) => (
-                <NativeSelectOption key={c.id} value={c.id}>
-                  {c.program.code} · semestr {c.semester} (nabor {c.startTermLabel})
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
             {plan && !locked && (
-              <Tooltip open={blockedReason ? undefined : false}>
-                <TooltipTrigger asChild>
-                  {/* span: wylaczony przycisk nie emituje zdarzen, a podpowiedz ma sie pokazac */}
-                  <span tabIndex={blockedReason ? 0 : -1} className="inline-flex gap-2">
+              // Dymek natywny na spanie: wylaczony przycisk nie reaguje na najechanie, a powod ma byc widoczny.
+              <span title={blockedReason ?? undefined} className="inline-flex gap-2">
                     <Button variant="outline" disabled={!!blockedReason} onClick={() => setCarrying(true)}>
                       <History /> Przenies plan z zeszlego roku
                     </Button>
@@ -197,17 +254,54 @@ export default function PlanPage() {
                     >
                       <CalendarCheck /> Generuj terminy
                     </Button>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>{blockedReason}</TooltipContent>
-              </Tooltip>
+              </span>
             )}
           </>
         }
       />
 
-      {cohortsData && cohorts.length === 0 && (
+      {/* Filtry w kolejnosci zaleznosci: wydzial -> tryb, kierunek, stopien, semestr -> rocznik. */}
+      {term && (
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          {isAdmin && <FacultySelector />}
+          <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} />
+          {/* Licznik i czyszczenie przed strzalka: dotycza filtrow po lewej, nie wyboru rocznika. */}
+          <span className="text-muted-foreground">
+            {cohortFilter.facetsActive ? `${cohorts.length} z ${allCohorts.length} rocznikow` : `${allCohorts.length} rocznikow`}
+          </span>
+          {cohortFilter.facetsActive && (
+            <Button variant="ghost" size="sm" onClick={cohortFilter.clearFacets}>
+              <FilterX /> Wyczysc filtry
+            </Button>
+          )}
+          {/* Strzalka i rocznik zawijaja sie razem (strzalka nie zostaje sama na koncu linii). */}
+          <div className="flex shrink-0 items-center gap-3">
+            <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
+            <NativeSelect
+              value={cohortId}
+              onChange={(e) => { setCohortId(e.target.value); setSelected(null); setZjazd(null); setGroupFilter('all'); }}
+              className="w-64"
+              aria-label="Rocznik"
+              title={cohorts.find((c) => c.id === cohortId)?.program.name}
+              disabled={cohorts.length === 0}
+            >
+              {cohorts.map((c) => (
+                <NativeSelectOption key={c.id} value={c.id}>
+                  {c.program.code} · sem. {c.semester} · nabor {c.startTermLabel}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+          </div>
+        </div>
+      )}
+
+      {cohortsData && allCohorts.length === 0 && (
         <p className="text-sm text-muted-foreground">W tym semestrze nie ma rocznikow — sprawdz Roczniki i grupy.</p>
+      )}
+      {allCohorts.length > 0 && cohorts.length === 0 && (
+        <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+          Zaden rocznik nie pasuje do wybranych filtrow — zmien je albo wyczysc.
+        </p>
       )}
       {isPending && cohortId && <Skeleton className="h-96 w-full" />}
 
@@ -215,8 +309,8 @@ export default function PlanPage() {
         // Tylko informacja: zajecia rocznika wynikaja z tej wersji programu (zmiana wersji — poza tym widokiem).
         <p className="text-sm text-muted-foreground">
           Plan korzysta z programu studiow{' '}
-          <span className="font-medium text-foreground">
-            {cohort.program.code} — {cohort.program.name}
+          <span className="cursor-help font-medium text-foreground" title={cohort.program.name}>
+            {cohort.program.code}
           </span>
           {' · '}
           <Link
@@ -238,6 +332,20 @@ export default function PlanPage() {
             </>
           )}
         </p>
+      )}
+      {plan?.calendar?.status === 'ARCHIVED' && (isAdmin || me?.role === 'DEAN_OFFICE') && (
+        <Alert>
+          <TriangleAlert />
+          <AlertTitle>Kalendarz w archiwum — plan tylko do odczytu</AlertTitle>
+          <AlertDescription>
+            <p>
+              Plan, terminy, zajecia i obsada tego rocznika to zapis tego, co sie odbylo — nie da sie ich zmienic.
+              {isAdmin
+                ? ' Jesli to pomylka, przywroc kalendarz w „Kalendarz semestru” (zmien status).'
+                : ' Z archiwum moze go przywrocic tylko administrator.'}
+            </p>
+          </AlertDescription>
+        </Alert>
       )}
       {plan && draftVersion && (
         <Alert variant="destructive">
@@ -279,14 +387,10 @@ export default function PlanPage() {
       {plan?.stale && (
         <Alert>
           <TriangleAlert />
-          <AlertTitle>Kalendarz nieaktualny</AlertTitle>
+          <AlertTitle>Terminy nieaktualne</AlertTitle>
           <AlertDescription>
-            {plan.staleReasons.includes('PLACEMENTS') && plan.staleReasons.includes('SECTIONS')
-              ? 'Wzorzec i godziny zajec zmienily sie po ostatnim generowaniu.'
-              : plan.staleReasons.includes('SECTIONS')
-                ? 'Godziny zajec zmienily sie po ostatnim generowaniu (synchronizacja z programem).'
-                : 'Wzorzec zmienil sie po ostatnim generowaniu.'}{' '}
-            Terminy w kalendarzu sa jeszcze stare — uzyj „Generuj terminy”, gdy skonczysz zmiany.
+            {staleMessage(plan.staleReasons)}{' '}
+            Zakladka „Terminy” pokazuje jeszcze stan sprzed tych zmian — uzyj „Generuj terminy”, gdy skonczysz zmiany.
           </AlertDescription>
         </Alert>
       )}
@@ -314,7 +418,24 @@ export default function PlanPage() {
                   </NativeSelectOption>
                 ))}
               </NativeSelect>
-              {zjazdCalendar && (
+              {groupFilter !== 'all' && (
+                <label
+                  className="flex items-center gap-2 text-sm"
+                  title="Zajecia grup, na ktore wybrana grupa nie chodzi — wyszarzone, zajmuja miejsce w siatce"
+                >
+                  <Checkbox checked={showOtherGroups} onCheckedChange={(v) => setShowOtherGroups(v === true)} />
+                  Pokaz inne grupy
+                </label>
+              )}
+              {zjazdCalendar && !zjazdyVary && (
+                <span
+                  className="text-sm text-muted-foreground"
+                  title="Filtr zjazdow i kopiowanie zjazdu pojawia sie, gdy jakies zajecia odbywaja sie tylko w czesci zjazdow (na wybranych zjazdach albo z zakresem od-do)"
+                >
+                  wszystkie zjazdy jednakowe
+                </span>
+              )}
+              {zjazdyVary && (
                 <div className="flex flex-wrap items-center gap-1">
                   <Button size="sm" variant={zjazd === null ? 'default' : 'outline'} onClick={() => setZjazd(null)}>
                     Wszystkie zjazdy
@@ -335,8 +456,18 @@ export default function PlanPage() {
                           </NativeSelectOption>
                         ))}
                       </NativeSelect>
-                      <Button size="sm" variant="secondary" disabled={!copyTo || copyZjazd.isPending} onClick={() => copyZjazd.mutate()}>
-                        Kopiuj
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        disabled={toCopy.length === 0 || copyZjazd.isPending}
+                        title={
+                          copyTo && toCopy.length === 0
+                            ? `Nic do skopiowania: kopiuja sie zajecia "na wybranych zjazdach" z zjazdu ${zjazd}, ktorych jeszcze nie ma w zjezdzie ${copyTo}`
+                            : undefined
+                        }
+                        onClick={() => copyZjazd.mutate()}
+                      >
+                        Kopiuj{copyTo && ` (${toCopy.length})`}
                       </Button>
                     </span>
                   )}
@@ -344,7 +475,20 @@ export default function PlanPage() {
               )}
               {selected && (
                 <Badge variant="secondary" className="gap-1">
-                  Umieszczasz: {selected.subject.name} ({CLASS_LABELS[selected.classType]}) {selected.group.name} — kliknij godzine
+                  Umieszczasz: {selected.subject.name} ({CLASS_LABELS[selected.classType]}) {selected.group.name} —
+                  <select
+                    aria-label="Dlugosc zajec"
+                    value={placeLength}
+                    onChange={(e) => setLengthChoice({ sectionId: selected.id, length: Number(e.target.value) })}
+                    className="rounded border bg-background px-1 py-0.5 text-xs"
+                  >
+                    {Array.from({ length: Math.min(MAX_SUGGESTED_LENGTH, selected.hours) }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        {n} h
+                      </option>
+                    ))}
+                  </select>
+                  — kliknij godzine
                   <button type="button" aria-label="Anuluj wybor" onClick={() => setSelected(null)}>
                     <X className="size-3" />
                   </button>
@@ -358,10 +502,11 @@ export default function PlanPage() {
                 blocks={blocks}
                 items={items}
                 availability={selected ? availability?.cells : null}
+                passThrough={!!selected && !readOnly}
                 onCellClick={
                   readOnly || !selected
                     ? undefined
-                    : (day, order) => setTarget({ section: selected, placement: null, day, startOrder: order, zjazd })
+                    : (day, order) => setTarget({ section: selected, placement: null, day, startOrder: order, zjazd, length: placeLength })
                 }
                 onItemClick={(id) => {
                   const owner = placementOwner.get(id);
@@ -437,6 +582,38 @@ export default function PlanPage() {
                     </p>
                   </div>
                 )}
+                {issues.length > 0 && (
+                  <div className="space-y-1 rounded-md border border-amber-500/40 bg-amber-500/5 p-2 text-xs">
+                    <div className="font-medium text-amber-700 dark:text-amber-400">Niezgodnosci w planie ({issues.length})</div>
+                    <ul className="space-y-1">
+                      {issues.map((row) => {
+                        const placement = row.placementId ? row.section.placements.find((p) => p.id === row.placementId) : null;
+                        const label = `${CLASS_LABELS[row.section.classType]} · ${row.section.subject.name} · ${row.section.group.name}`;
+                        return (
+                          <li key={row.key}>
+                            {placement && !readOnly ? (
+                              <button
+                                type="button"
+                                className="text-left font-medium underline-offset-2 hover:underline"
+                                onClick={() =>
+                                  setTarget({ section: row.section, placement, day: placement.dayOfWeek, startOrder: placement.startOrder, zjazd })
+                                }
+                              >
+                                {label}
+                              </button>
+                            ) : (
+                              <span className="font-medium">{label}</span>
+                            )}
+                            <div className="text-muted-foreground">{row.message}</div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <p className="text-muted-foreground">
+                      Zmiany obsady, sal lub grup po umieszczeniu zajec. Kliknij zajecia, zeby poprawic umieszczenie.
+                    </p>
+                  </div>
+                )}
                 {sections.some((s) => s.plannedHours > s.hours) && (
                   <p className="text-xs text-amber-600">
                     Nadmiar: {sections.filter((s) => s.plannedHours > s.hours).map((s) => `${s.subject.name} (${CLASS_FULL_LABELS[s.classType]}) ${s.group.name}`).join('; ')}
@@ -447,7 +624,15 @@ export default function PlanPage() {
           </TabsContent>
 
           <TabsContent value="occurrences" className="mt-3">
-            <OccurrencesTab termKey={term.key} cohortId={cohortId} sections={sections} blocks={blocks} readOnly={readOnly} />
+            <OccurrencesTab
+              termKey={term.key}
+              cohortId={cohortId}
+              sections={sections}
+              blocks={blocks}
+              readOnly={readOnly}
+              periods={plan?.calendar?.periods ?? []}
+              modeDays={days}
+            />
           </TabsContent>
         </Tabs>
       )}

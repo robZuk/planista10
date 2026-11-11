@@ -2,9 +2,8 @@ import type { AcademicTerm, DayOfWeek, Prisma, TermCalendar } from '@prisma/clie
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { fromIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
-import { expandDates, TeachingCalendar } from '../lib/teachingCalendar';
+import { calendarPeriods, expandDates, TeachingCalendar } from '../lib/teachingCalendar';
 import { groupsOverlap, indexGroups, pathFromRoot } from '../lib/groupTree';
-import { staleReasons } from '../lib/planStaleness';
 import { roomTypeMap } from '../lib/scheduleTime';
 import { dayWindowProblem, formatMinutes, mapRangeByTime, minutesOverlap, weekdayLabel, type GridTime, type MinuteRange } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from './timeGrids';
@@ -16,9 +15,12 @@ import {
   type MatPlacement,
   type MatSection,
 } from '../lib/materializer';
-import { calendarInclude, toCalendarInput } from './termCalendars';
+import { toCalendarInput } from './termCalendars';
+import { calendarFor, calendarsFor, type CalendarRow } from './cohortCalendar';
 import { activeCohorts, type CohortContext } from './sections';
 import { cohortLabel, toTreeGroup } from './cohorts';
+import { staleReasonsByCohort } from './staleness';
+import { sectionIssues } from '../lib/planIssues';
 
 /**
  * Plan semestru (nowy model). Umieszczenia uklada planista; terminy powstaja tylko
@@ -30,7 +32,8 @@ const CLASS_LETTER: Record<string, string> = { LECTURE: 'W', EXERCISE: 'C', LAB:
 
 // ─── Kalendarz rocznika ──────────────────────────────────────
 
-export type CalendarRow = TermCalendar & Prisma.TermCalendarGetPayload<{ include: typeof calendarInclude }>;
+// Kalendarz rocznika: services/cohortCalendar (uzywany tez przez zajecia).
+export { calendarFor, calendarsFor, type CalendarRow } from './cohortCalendar';
 
 /**
  * Plan uklada sie tylko z zatwierdzonej wersji programu. Wersja w projekcie (takze cofnieta
@@ -50,23 +53,48 @@ export function assertVersionApproved(cohort: {
   }
 }
 
-/** Kalendarz, wg ktorego rocznik ma zajecia: wybrany w Rocznikach albo domyslny wydzialu. */
-export async function calendarFor(term: AcademicTerm, ctx: CohortContext): Promise<CalendarRow | null> {
-  const chosen = ctx.cohort.terms.find((t) => t.termId === term.id)?.calendarId;
-  const candidates = await prisma.termCalendar.findMany({
-    where: {
-      termId: term.id,
-      facultyId: ctx.cohort.program.fieldOfStudy.facultyId,
-      studyMode: ctx.cohort.program.studyMode,
-    },
-    include: calendarInclude,
-  });
-  return (
-    candidates.find((c) => c.id === chosen) ??
-    candidates.find((c) => c.name === 'Podstawowy') ??
-    candidates[0] ??
-    null
-  );
+/**
+ * Zajecia, obsada i plan rocznika w semestrze sa tylko do odczytu, gdy jego kalendarz jest
+ * w archiwum. Rocznik spoza semestru albo bez kalendarza — nie ma czego chronic.
+ * `what` konczy komunikat: "... jest w archiwum — obsada tylko do odczytu".
+ */
+export async function assertCohortTermWritable(term: AcademicTerm, cohortId: string, what: string): Promise<void> {
+  const [ctx] = await activeCohorts(term, null, [cohortId]);
+  if (!ctx) return;
+  const calendar = await calendarFor(term, ctx);
+  if (calendar?.status === 'ARCHIVED') {
+    throw new AppError(409, `Kalendarz rocznika ${cohortLabel(ctx.cohort)} jest w archiwum — ${what} tylko do odczytu`);
+  }
+}
+
+/** Ile planu stoi na kalendarzu: roczniki, ktore z niego korzystaja, ich umieszczenia i terminy. */
+export interface CalendarUsage {
+  /** Roczniki semestru, ktorych kalendarzem jest ten (wybrany w Rocznikach albo domyslny). */
+  cohorts: number;
+  /** Roczniki z planem (umieszczenia albo terminy) na tym kalendarzu. */
+  cohortsWithPlan: number;
+  placements: number;
+  occurrences: number;
+}
+
+export async function calendarUsage(calendar: Pick<TermCalendar, 'id' | 'termId' | 'facultyId' | 'studyMode'>): Promise<CalendarUsage> {
+  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: calendar.termId } });
+  const contexts = (await activeCohorts(term, calendar.facultyId)).filter((c) => c.cohort.program.studyMode === calendar.studyMode);
+  const chosen = await calendarsFor(term, contexts);
+  const cohortIds = contexts.filter((c) => chosen.get(c.cohort.id)?.id === calendar.id).map((c) => c.cohort.id);
+  if (cohortIds.length === 0) return { cohorts: 0, cohortsWithPlan: 0, placements: 0, occurrences: 0 };
+  const ofCohorts = { termId: term.id, section: { cohortId: { in: cohortIds } } };
+  const [placements, occurrences, cohortsWithPlan] = await Promise.all([
+    prisma.placement.count({ where: ofCohorts }),
+    prisma.occurrence.count({ where: ofCohorts }),
+    prisma.cohort.count({
+      where: {
+        id: { in: cohortIds },
+        sections: { some: { termId: term.id, OR: [{ placements: { some: {} } }, { occurrences: { some: {} } }] } },
+      },
+    }),
+  ]);
+  return { cohorts: cohortIds.length, cohortsWithPlan, placements, occurrences };
 }
 
 /**
@@ -154,9 +182,9 @@ async function loadScope(term: AcademicTerm, facultyId: string | null, cohortIds
   const calendars = new Map<string, CalendarRow>();
   const teaching = new Map<string, TeachingCalendar>();
   const grids = new Map<string, GridTime>();
-  const facultyGrids = await loadGrids();
+  const [facultyGrids, cohortCalendars] = await Promise.all([loadGrids(), calendarsFor(term, contexts)]);
   for (const ctx of contexts) {
-    const calendar = await calendarFor(term, ctx);
+    const calendar = cohortCalendars.get(ctx.cohort.id);
     if (!calendar) continue;
     const grid = pickGrid(facultyGrids, ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode);
     if (!grid) continue;
@@ -181,6 +209,22 @@ export interface OccupancyOptions {
    * jeszcze nie przeliczono, stare terminy sa tym, co dzis widza studenci.
    */
   includeGenerated?: boolean;
+  /**
+   * Tylko zajetosc, ktora moze kolidowac z tym rocznikiem, sala i prowadzacym (podpowiedz
+   * wolnych godzin, zapis umieszczenia, zmiana terminu). Grupy koliduja tylko w obrebie rocznika,
+   * wiec zajecia innych rocznikow rozpisujemy tylko, gdy ich wzorzec albo wyjatek dotyczy tej
+   * sali lub tego prowadzacego. Dla tych zasobow wynik jest taki sam jak bez filtra — a liczymy
+   * kilkadziesiat zajec zamiast wszystkich w uczelni.
+   */
+  relevantTo?: { cohortId: string; roomId?: string | null; instructorId?: string | null };
+  /**
+   * Sprawdzanie wzorca tego rocznika (zapis umieszczenia, podpowiedz): pomin jego terminy
+   * z usunietych umieszczen. "Generuj terminy" usuwa wszystkie wygenerowane terminy rocznika
+   * i tworzy je od nowa z wzorca, wiec te terminy znikna, zanim nowy wzorzec da terminy —
+   * nie moga z nim kolidowac (inaczej usuniete umieszczenie blokuje wlasne miejsce).
+   * Terminy z usunietych umieszczen innych rocznikow dalej sa zajetoscia.
+   */
+  patternOfCohortId?: string;
 }
 
 /**
@@ -198,10 +242,27 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
   const skip = new Set(opts.excludeCohortIds ?? []);
   const ctxById = new Map(scope.contexts.map((c) => [c.cohort.id, c]));
   const cohortIds = scope.contexts.map((c) => c.cohort.id).filter((id) => scope.teaching.has(id) && !skip.has(id));
+  const rel = opts.relevantTo;
+  // Umieszczenia dotykajace sali / prowadzacego — takze przez wyjatek (termin przeniesiony do tej sali).
+  const touches: Prisma.PlacementWhereInput[] = [];
+  if (rel?.roomId) touches.push({ roomId: rel.roomId }, { exceptions: { some: { newRoomId: rel.roomId } } });
+  if (rel?.instructorId) touches.push({ instructorId: rel.instructorId }, { exceptions: { some: { newInstructorId: rel.instructorId } } });
+  const sectionRelevant: Prisma.ClassSectionWhereInput = rel
+    ? { OR: [{ cohortId: rel.cohortId }, ...(touches.length ? [{ placements: { some: { OR: touches } } }] : [])] }
+    : {};
+  const occurrenceRelevant: Prisma.OccurrenceWhereInput = rel
+    ? {
+        OR: [
+          { section: { cohortId: rel.cohortId } },
+          ...(rel.roomId ? [{ roomId: rel.roomId }] : []),
+          ...(rel.instructorId ? [{ instructorId: rel.instructorId }] : []),
+        ],
+      }
+    : {};
 
   const [sections, manual, orphans] = await Promise.all([
     prisma.classSection.findMany({
-      where: { termId: term.id, cohortId: { in: cohortIds }, placements: { some: {} } },
+      where: { termId: term.id, cohortId: { in: cohortIds }, placements: { some: {} }, ...sectionRelevant },
       include: { ...sectionLabelInclude, placements: { include: { exceptions: true } } },
     }),
     prisma.occurrence.findMany({
@@ -215,6 +276,7 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
         status: { not: 'CANCELLED' },
         section: { cohortId: { notIn: [...skip] } },
         ...(opts.includeGenerated ? {} : { placementId: null }),
+        ...occurrenceRelevant,
       },
       include: { section: { include: sectionLabelInclude } },
     }),
@@ -277,6 +339,7 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
     if (o.id === opts.excludeOccurrenceId) continue;
     if (o.placementId && o.originalDate && `${o.placementId}|${toIsoDate(o.originalDate)}` === opts.excludePatternKey) continue;
     if (o.placementId && o.placementId === opts.excludePlacementId) continue;
+    if (opts.patternOfCohortId && o.kind === 'DERIVED' && !o.placementId && o.section.cohortId === opts.patternOfCohortId) continue;
     busy.push({
       date: toIsoDate(o.date),
       startMinute: o.startMinute,
@@ -291,9 +354,16 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
   return busy;
 }
 
-/** Zajetosc do sprawdzania umieszczenia (bez jego poprzedniej wersji). */
-async function placementBusy(term: AcademicTerm, excludePlacementId?: string): Promise<BusySlot[]> {
-  return termOccupancy(term, { excludePlacementId });
+/**
+ * Zajetosc do sprawdzania umieszczenia (bez jego poprzedniej wersji) — tylko to, co moze z nim
+ * kolidowac, i bez terminow rocznika z usunietych umieszczen (znikna przy generowaniu).
+ */
+async function placementBusy(
+  term: AcademicTerm,
+  relevantTo: NonNullable<OccupancyOptions['relevantTo']>,
+  excludePlacementId?: string,
+): Promise<BusySlot[]> {
+  return termOccupancy(term, { excludePlacementId, relevantTo, patternOfCohortId: relevantTo.cohortId });
 }
 
 // ─── Walidacja umieszczenia ──────────────────────────────────
@@ -367,7 +437,7 @@ export async function checkPlacement(term: AcademicTerm, input: PlacementInput, 
 
   const conflicts: PlacementCheck['conflicts'] = [];
   if (errors.length === 0 && time) {
-    const busy = await placementBusy(term, excludeId);
+    const busy = await placementBusy(term, { cohortId: section.cohortId, roomId: input.roomId, instructorId: input.instructorId }, excludeId);
     const overlap = await groupOverlapFn();
     const byDate = new Map<string, BusySlot[]>();
     for (const b of busy) byDate.set(b.date, [...(byDate.get(b.date) ?? []), b]);
@@ -402,10 +472,10 @@ export async function availability(
   const facultyGrid = await gridFor(ctx!.cohort.program.fieldOfStudy.facultyId, ctx!.cohort.program.studyMode);
   const grid = facultyGrid.time;
   const blocks = grid.blocks;
-  const busy = await placementBusy(term);
-  const overlap = await groupOverlapFn();
   const instructorId =
     opts.instructorId !== undefined ? opts.instructorId : (section.instructors.find((i) => i.instructorId)?.instructorId ?? null);
+  const busy = await placementBusy(term, { cohortId: section.cohortId, roomId: opts.roomId ?? null, instructorId });
+  const overlap = await groupOverlapFn();
 
   // Dni zajec z siatki wydzialu (np. niestacjonarne WN: czw-nd).
   const days = facultyGrid.days.map((d) => d.day);
@@ -450,7 +520,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
     include: {
       programEntry: { select: { orderInSemester: true, subject: { select: { id: true, name: true } }, specialization: { select: { shortName: true } } } },
       instructors: { include: { instructor: { select: { id: true, title: true, firstName: true, lastName: true } } } },
-      placements: { include: { room: { select: { id: true, number: true, building: { select: { name: true } } } }, instructor: { select: { id: true, title: true, firstName: true, lastName: true } }, _count: { select: { exceptions: true } } } },
+      placements: { include: { room: { select: { id: true, number: true, type: true, capacity: true, building: { select: { name: true } } } }, instructor: { select: { id: true, title: true, firstName: true, lastName: true } }, _count: { select: { exceptions: true } } } },
     },
   });
   const manual = await prisma.occurrence.groupBy({
@@ -488,18 +558,30 @@ export async function planView(term: AcademicTerm, cohortId: string) {
 
   const name = (i: { title: string | null; firstName: string; lastName: string } | null) =>
     i ? `${i.title ?? ''} ${i.firstName} ${i.lastName}`.trim() : 'NN';
-  const lastPlacementChange = sections
-    .flatMap((s) => s.placements.map((p) => p.updatedAt.getTime()))
-    .reduce((a, b) => Math.max(a, b), 0);
-  const generatedAt = calendar?.lastGeneratedAt?.getTime() ?? 0;
   const derivedCount = await prisma.occurrence.count({ where: { termId: term.id, kind: 'DERIVED', section: { cohortId } } });
-  // Zmiana zajec (godziny / status z synchronizacji) po generowaniu tez unieaktualnia terminy —
-  // liczymy tylko zajecia, ktore sa w planie (nowe zajecia bez umieszczen terminow nie zmieniaja).
-  const lastSectionChange = sections
-    .filter((s) => s.placements.length > 0 || manualHours.has(s.id))
-    .map((s) => s.updatedAt.getTime())
-    .reduce((a, b) => Math.max(a, b), 0);
-  const reasons = staleReasons({ lastPlacementChange, lastSectionChange, generatedAt });
+  // Terminy nieaktualne: ta sama funkcja co w "Przygotowaniu semestru" (services/staleness).
+  const reasons = (await staleReasonsByCohort(term, [ctx])).get(cohortId) ?? [];
+  // Niezgodnosci powstale po umieszczeniu (obsada, sala, grupa, godziny) — lib/planIssues.
+  const groupById = new Map(ctx.cohort.groups.map((g) => [g.id, g]));
+  const issuesOf = (s: (typeof sections)[number]) => {
+    const group = groupById.get(s.groupId);
+    if (!group) return [];
+    return sectionIssues(
+      {
+        classType: s.classType,
+        hours: s.hours,
+        group,
+        instructors: s.instructors,
+        placements: s.placements.map((p) => ({
+          id: p.id,
+          instructorId: p.instructorId,
+          instructorName: p.instructorId ? name(p.instructor) : undefined,
+          room: p.room,
+        })),
+      },
+      ctx.semester,
+    );
+  };
 
   return {
     cohort: {
@@ -524,9 +606,11 @@ export async function planView(term: AcademicTerm, cohortId: string) {
           endDate: toIsoDate(calendar.endDate),
           teachingWeeks: cal!.teachingWeeks().filter((w) => w.index !== null).length,
           zjazdy: calendar.zjazdy.map((z) => ({ number: z.number, startDate: toIsoDate(z.startDate), endDate: toIsoDate(z.endDate) })),
+          // Tygodnie albo zjazdy z dniami wolnymi — nawigacja widoku tygodnia w "Terminach".
+          periods: calendarPeriods(cal!),
         }
       : null,
-    // Kalendarz nieaktualny: umieszczenia zmienione po ostatnim generowaniu.
+    // Terminy nieaktualne: umieszczenia zmienione po ostatnim generowaniu.
     // Siatka godzin wydzialu i trybu rocznika: bloki planu, przerwy (odstepy) i dni zajec.
     timeGrid: { id: facultyGrid.id, studyMode: facultyGrid.studyMode, days: facultyGrid.days, blocks: facultyGrid.blocks },
     stale: reasons.length > 0,
@@ -568,6 +652,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
           jointKey: p.jointKey,
           exceptionCount: p._count.exceptions,
         })),
+        issues: issuesOf(s),
       }))
       .sort((a, b) => a.order - b.order || a.subject.name.localeCompare(b.subject.name) || a.classType.localeCompare(b.classType) || a.group.name.localeCompare(b.group.name)),
   };
@@ -729,6 +814,7 @@ export async function generate(
 
   if (!opts.dryRun) {
     const sectionById = new Map(sections.map((s) => [s.id, s]));
+    const now = new Date();
     await prisma.$transaction([
       prisma.occurrence.deleteMany({
         where: { sectionId: { in: sectionIds }, kind: 'DERIVED', ...(from ? { date: { gte: from } } : {}) },
@@ -755,8 +841,17 @@ export async function generate(
       }),
       prisma.termCalendar.updateMany({
         where: { id: { in: [...new Set(ctxs.map((c) => scope.calendars.get(c.cohort.id)!.id))] } },
-        data: { lastGeneratedAt: new Date() },
+        data: { lastGeneratedAt: now },
       }),
+      // "Terminy nieaktualne" liczymy per rocznik: czas tylko dla rocznikow przeliczonych teraz,
+      // nie dla wszystkich rocznikow kalendarza (generowanie z planu dotyczy jednego rocznika).
+      ...cohortIds.map((cohortId) =>
+        prisma.cohortGeneration.upsert({
+          where: { cohortId_termId: { cohortId, termId: term.id } },
+          create: { cohortId, termId: term.id, generatedAt: now },
+          update: { generatedAt: now },
+        }),
+      ),
     ]);
   }
   return report;

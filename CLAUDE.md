@@ -84,7 +84,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - `src/controllers/*` — obsługa żądań (walidacja wejścia, wywołanie logiki, odpowiedź)
 - `src/services/*` — logika domenowa z bazą: `termCalendars`, `cohorts`, `sections`
   (synchronizacja zajęć, przenoszenie obsady), `plan` (walidacja umieszczeń, dostępność,
-  generowanie terminów), `carryPlan`, `visibility`
+  generowanie terminów), `carryPlan`, `staleness` (terminy nieaktualne per rocznik), `visibility`
 - `src/lib/*` — czyste funkcje domeny (bez bazy, testowane jednostkowo):
   - `prisma.ts` — **singleton PrismaClient**; nigdy nie rób `new PrismaClient()`, importuj `prisma` stąd
   - `isoDate.ts` — daty jako tekst `YYYY-MM-DD` (arytmetyka w UTC)
@@ -119,7 +119,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   akcje („Przenieś plan z zeszłego roku", „Kopiuj zjazd", synchronizacja zajęć, obsada
   z poprzedniego roku) są uruchamiane przyciskiem i zawsze mają podgląd (`dryRun`).
 - **Terminy powstają tylko z „Generuj terminy"** (`services/plan.ts → generate`). Zmiana
-  wzorca NIE przelicza terminów — plan pokazuje wtedy „kalendarz nieaktualny".
+  wzorca NIE przelicza terminów — plan pokazuje wtedy „terminy nieaktualne".
   Ręczne poprawki terminów to `PlacementException` i przeżywają ponowne generowanie;
   terminy ręczne (`Occurrence.kind = MANUAL`) nie znikają.
 - **Kolizje sprawdzamy na konkretnych datach** w całej uczelni (sala, prowadzący, grupy wg

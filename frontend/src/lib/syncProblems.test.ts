@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SyncProblem } from '@/types';
-import { groupSyncProblems } from './syncProblems';
+import { groupSyncProblems, splitArchivedProblems } from './syncProblems';
 
 const zeew = { id: 's-zeew', shortName: 'ZEEW', name: 'Zarzadzanie Eksploatacja Elektrowni Wiatrowych' };
 const dut = { id: 's-dut', shortName: 'DUT', name: 'Diagnostyka Urzadzen Technicznych' };
@@ -50,5 +50,15 @@ describe('groupSyncProblems', () => {
     ]);
     expect(groups).toHaveLength(2);
     expect(groups[0]).toMatchObject({ kind: 'NO_ROOT_GROUP', subjects: [] });
+  });
+});
+
+describe('splitArchivedProblems', () => {
+  it('roczniki z archiwum osobno, reszta problemow bez zmian', () => {
+    const archived = problem({ kind: 'ARCHIVED_CALENDAR', specialization: null, cohort: 'MIBM-S1 · nabor 2024/25 zimowy', semester: 5, subject: '' });
+    const other = problem({});
+    const { archived: list, rest } = splitArchivedProblems([archived, other, archived]);
+    expect(list).toEqual(['MIBM-S1 · nabor 2024/25 zimowy · sem. 5']);
+    expect(rest).toEqual([other]);
   });
 });

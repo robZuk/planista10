@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, UserPlus, Users } from 'lucide-react';
+import { ChevronDown, ChevronUp, FilterX, Search, UserPlus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,8 @@ import { CALENDAR_KIND_LABELS, STUDY_MODE_LABELS } from '@/lib/labels';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 import type { AcademicTerm, IntakeCandidate, TermCohort } from '@/types';
+import { CohortFacetFilters } from './cohorts/CohortFacetFilters';
+import { useCohortFilters } from './cohorts/useCohortFilters';
 import { GroupTreePanel } from './cohorts/GroupTreePanel';
 
 /**
@@ -46,6 +48,9 @@ export default function CohortsPage() {
   const { term } = useCurrentTerm();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [intakeOpen, setIntakeOpen] = useState(false);
+  // Wyszukiwanie i "tylko bez kalendarza" sa tylko tej strony; reszta filtrow wspolna z Planem.
+  const [search, setSearch] = useState('');
+  const [withoutCalendar, setWithoutCalendar] = useState(false);
 
   const facultyParam = isAdmin ? facultyFilter : (me?.facultyId ?? undefined);
   const { data, isPending } = useQuery({
@@ -53,6 +58,16 @@ export default function CohortsPage() {
     queryFn: () => fetchTermCohorts(term!.key, facultyParam),
     enabled: !!term,
   });
+
+  const allCohorts = useMemo(() => data?.cohorts ?? [], [data]);
+  const cohortFilter = useCohortFilters(allCohorts, { search, withoutCalendar });
+  const visibleCohorts = cohortFilter.visible;
+  const filtered = cohortFilter.facetsActive || search.trim() !== '' || withoutCalendar;
+  const clearFilters = () => {
+    cohortFilter.clearFacets();
+    setSearch('');
+    setWithoutCalendar(false);
+  };
 
   const canEdit = (cohort: TermCohort) =>
     isAdmin || (me?.role === 'DEAN_OFFICE' && cohort.program.fieldOfStudy.facultyId === me.facultyId);
@@ -91,7 +106,6 @@ export default function CohortsPage() {
         }
         actions={
           <>
-            {isAdmin && <FacultySelector />}
             {canCreate && term && (
               <Button onClick={() => setIntakeOpen(true)}>
                 <UserPlus />
@@ -123,8 +137,51 @@ export default function CohortsPage() {
         </Empty>
       )}
 
+      {/* Filtry w kolejnosci zaleznosci: wydzial -> tryb, kierunek, stopien, semestr; potem wyszukiwanie. */}
+      {term && (
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          {isAdmin && <FacultySelector />}
+          <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} />
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              aria-label="Szukaj rocznika"
+              placeholder="Szukaj: kod, kierunek..."
+              className="w-56 pl-8"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <label className="flex items-center gap-2">
+            <Checkbox checked={withoutCalendar} onCheckedChange={(v) => setWithoutCalendar(v === true)} />
+            Tylko bez kalendarza
+          </label>
+          <span className="text-muted-foreground">
+            {filtered ? `${visibleCohorts.length} z ${allCohorts.length} rocznikow` : `${allCohorts.length} rocznikow`}
+          </span>
+          {filtered && (
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <FilterX />
+              Wyczysc filtry
+            </Button>
+          )}
+        </div>
+      )}
+
+      {allCohorts.length > 0 && visibleCohorts.length === 0 && (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FilterX />
+            </EmptyMedia>
+            <EmptyTitle>Brak rocznikow dla tych filtrow</EmptyTitle>
+            <EmptyDescription>Zaden rocznik nie pasuje do wybranych filtrow — zmien je albo wyczysc.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      )}
+
       <div className="space-y-3">
-        {data?.cohorts.map((cohort) => {
+        {visibleCohorts.map((cohort) => {
           const open = expanded === cohort.id;
           const editable = canEdit(cohort);
           return (
@@ -135,7 +192,6 @@ export default function CohortsPage() {
                   <Badge variant="secondary">
                     semestr {cohort.semester} · rok {cohort.studyYear}
                   </Badge>
-                  {cohort.isNewIntake && <Badge>nowy nabor</Badge>}
                   <span className="text-sm font-normal text-muted-foreground">nabor {cohort.startTermLabel}</span>
                 </CardTitle>
                 <CardDescription>
@@ -165,13 +221,14 @@ export default function CohortsPage() {
                       <NativeSelect
                         aria-label="Kalendarz rocznika"
                         className="w-64"
-                        disabled={!editable || calendarMutation.isPending}
+                        disabled={!editable || calendarMutation.isPending || cohort.calendar?.status === 'ARCHIVED'}
+                        title={cohort.calendar?.status === 'ARCHIVED' ? 'Kalendarz w archiwum — semestr tylko do odczytu' : undefined}
                         value={cohort.calendar?.id ?? ''}
                         onChange={(e) => calendarMutation.mutate({ cohort, calendarId: e.target.value })}
                       >
                         {cohort.availableCalendars.map((c) => (
-                          <NativeSelectOption key={c.id} value={c.id}>
-                            {c.name} ({CALENDAR_KIND_LABELS[c.kind].toLowerCase()})
+                          <NativeSelectOption key={c.id} value={c.id} disabled={c.status === 'ARCHIVED' && c.id !== cohort.calendar?.id}>
+                            {c.name} ({CALENDAR_KIND_LABELS[c.kind].toLowerCase()}){c.status === 'ARCHIVED' ? ' · archiwum' : ''}
                           </NativeSelectOption>
                         ))}
                       </NativeSelect>
@@ -184,7 +241,12 @@ export default function CohortsPage() {
                         disabled={!editable || lectureMutation.isPending}
                         onCheckedChange={(v) => lectureMutation.mutate({ cohort, joint: v === true })}
                       />
-                      Wyklady przedmiotow wspolnych razem dla calego rocznika
+                      <span
+                        className="cursor-help"
+                        title="Zaznaczone: jeden wyklad przedmiotu wspolnego dla calego rocznika; odznaczone: osobny dla kazdej specjalnosci. Zmiana obejmie zajecia po „Synchronizuj zajecia”."
+                      >
+                        Wyklady przedmiotow wspolnych razem dla calego rocznika
+                      </span>
                     </label>
                   )}
                 </div>

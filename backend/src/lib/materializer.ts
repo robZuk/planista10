@@ -139,7 +139,15 @@ export function materialize(input: {
   const result: MatResult = { occurrences: [], conflicts: [], beyondHours: [], shortfalls: [], orphanExceptions: [] };
   const exceptionByKey = new Map(input.exceptions.map((e) => [`${e.placementId}|${e.originalDate}`, e]));
   const usedExceptions = new Set<string>();
-  const busy = [...input.busy];
+  // Zajetosc wg daty: kolizja jest zawsze na jednej dacie, wiec nowy termin porownujemy tylko
+  // z terminami tego dnia (zamiast z cala uczelnia — inaczej koszt rosnie kwadratowo).
+  const busyByDate = new Map<IsoDate, BusySlot[]>();
+  const addBusy = (b: BusySlot) => {
+    const list = busyByDate.get(b.date);
+    if (list) list.push(b);
+    else busyByDate.set(b.date, [b]);
+  };
+  for (const b of input.busy) addBusy(b);
   const bySection = new Map<string, MatPlacement[]>();
   for (const p of input.placements) bySection.set(p.sectionId, [...(bySection.get(p.sectionId) ?? []), p]);
 
@@ -204,13 +212,13 @@ export function materialize(input: {
       occ.endMinute = time.endMinute;
 
       if (occ.status === 'SCHEDULED' && !input.skipConflicts) {
-        const conflict = findConflict(occ, busy, input.groupsOverlap);
+        const conflict = findConflict(occ, busyByDate.get(occ.date) ?? [], input.groupsOverlap);
         if (conflict) {
           // Termin kolidujacy pomijamy (nie zuzywa godzin) i zglaszamy planiscie.
           result.conflicts.push({ date: occ.date, section: section.label, ...conflict });
           continue;
         }
-        busy.push({ ...occ, label: section.label });
+        addBusy({ ...occ, label: section.label });
       }
       left -= length;
       result.occurrences.push(occ);

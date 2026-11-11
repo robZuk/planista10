@@ -8,14 +8,32 @@ process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn().mockResolvedValue({ facultyId: 'wm' }) },
   academicTerm: { findUnique: vi.fn().mockResolvedValue({ id: 't1', startYear: 2026, type: 'SUMMER' }) },
+  cohort: { findMany: vi.fn().mockResolvedValue([]) },
+  termCalendar: { findMany: vi.fn().mockResolvedValue([]) },
   classSection: { findUnique: vi.fn() },
-  occurrence: { findUnique: vi.fn(), delete: vi.fn() },
-  placement: { findUnique: vi.fn() },
+  occurrence: { findUnique: vi.fn(), delete: vi.fn(), updateMany: vi.fn((args: unknown) => ({ op: 'occurrence.updateMany', args })) },
+  placement: { findUnique: vi.fn(), delete: vi.fn((args: unknown) => ({ op: 'placement.delete', args })) },
+  $transaction: vi.fn().mockResolvedValue([]),
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
 
 import { createApp } from './index';
 import { signAccessToken } from './lib/jwt';
+
+// Rocznik z naboru 2025 zimowego (w 2026 letnim: semestr 4) i kalendarz jego wydzialu i trybu.
+const cohortRow = {
+  id: 'c1',
+  name: null,
+  programId: 'p1',
+  programVersionId: 'v1',
+  lectureMode: 'JOINT',
+  program: { code: 'EDST-S1', studyMode: 'FULL_TIME', fieldOfStudy: { facultyId: 'wm', shortName: 'EDST', specializations: [] } },
+  programVersion: { id: 'v1', label: 'Wersja 1', status: 'APPROVED', totalSemesters: 7 },
+  startTerm: { id: 't0', startYear: 2025, type: 'WINTER' },
+  terms: [],
+  groups: [],
+};
+const calendarRow = (status: string) => ({ id: 'cal1', termId: 't1', facultyId: 'wm', studyMode: 'FULL_TIME', name: 'Podstawowy', status });
 
 const app = createApp();
 let dean: string;
@@ -71,6 +89,46 @@ describe('API — plan', () => {
     const res = await request(app).delete('/api/placements/p1').set('Authorization', `Bearer ${dean}`);
     expect(res.status).toBe(409);
     expect(res.body.error).toMatch(/Wersja programu "Wersja 1" .* jest w projekcie/);
+  });
+
+  it('usuniecie umieszczenia odlacza jego terminy jawnie (czas usuniecia -> terminy nieaktualne)', async () => {
+    prismaMock.placement.findUnique.mockResolvedValueOnce({
+      id: 'p1',
+      facultyId: 'wm',
+      term: { id: 't1', startYear: 2026, type: 'SUMMER' },
+      section: {
+        cohort: {
+          id: 'c1',
+          name: null,
+          program: { code: 'EDST-S1' },
+          programVersion: { label: 'Wersja 1', status: 'APPROVED' },
+          startTerm: { startYear: 2026, type: 'WINTER' },
+        },
+      },
+    });
+    const res = await request(app).delete('/api/placements/p1').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(200);
+    // Najpierw odlaczenie terminow (updatedAt = chwila usuniecia), potem usuniecie — w jednej transakcji.
+    expect(prismaMock.$transaction).toHaveBeenCalledWith([
+      { op: 'occurrence.updateMany', args: { where: { placementId: 'p1' }, data: { placementId: null } } },
+      { op: 'placement.delete', args: { where: { id: 'p1' } } },
+    ]);
+  });
+
+  it('usuniecie umieszczenia, gdy kalendarz rocznika jest w archiwum -> 409', async () => {
+    prismaMock.placement.findUnique.mockResolvedValueOnce({
+      id: 'p1',
+      facultyId: 'wm',
+      term: { id: 't1', startYear: 2026, type: 'SUMMER' },
+      section: { cohort: cohortRow },
+    });
+    prismaMock.cohort.findMany.mockResolvedValueOnce([cohortRow]);
+    prismaMock.termCalendar.findMany.mockResolvedValueOnce([calendarRow('ARCHIVED')]);
+    const before = prismaMock.$transaction.mock.calls.length;
+    const res = await request(app).delete('/api/placements/p1').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/w archiwum — plan tylko do odczytu/);
+    expect(prismaMock.$transaction.mock.calls.length).toBe(before);
   });
 
   it('zla data "od kiedy" przy generowaniu -> 400', async () => {

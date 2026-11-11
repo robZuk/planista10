@@ -15,6 +15,7 @@ import { FacultySelector } from '@/components/FacultySelector';
 import {
   deleteTermCalendar,
   fetchCalendarProposal,
+  fetchCalendarUsage,
   fetchTermCalendars,
   setTermCalendarStatus,
 } from '@/api/terms';
@@ -35,11 +36,17 @@ import type { CalendarStatus, Faculty, StudyMode, TermCalendar } from '@/types';
 import { CalendarEditorDialog, type EditorTarget } from './calendar/CalendarEditorDialog';
 import { NewTermDialog } from './calendar/NewTermDialog';
 import { formatDayKey, formatRange } from './calendar/calendarUtils';
+import { statusChangeWarning, usageNote } from './calendar/statusChange';
+import { toDateKey } from '@/lib/scheduleDates';
 
 const STATUS_VARIANT: Record<CalendarStatus, 'default' | 'secondary' | 'outline'> = {
   PLANNING: 'default',
   PUBLISHED: 'secondary',
   ARCHIVED: 'outline',
+};
+// Opublikowany na zielono: plan widza wszyscy.
+const STATUS_CLASS: Partial<Record<CalendarStatus, string>> = {
+  PUBLISHED: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300',
 };
 
 /**
@@ -56,6 +63,22 @@ export default function TermCalendarPage() {
 
   const [editor, setEditor] = useState<EditorTarget | null>(null);
   const [deleting, setDeleting] = useState<TermCalendar | null>(null);
+  // Przed usunieciem: czy roczniki maja juz plan na tym kalendarzu (wtedy usuniecie jest zablokowane).
+  const { data: deletingUsage, isPending: usagePending } = useQuery({
+    queryKey: ['calendar-usage', deleting?.id],
+    queryFn: () => fetchCalendarUsage(deleting!.id),
+    enabled: !!deleting,
+    staleTime: 0,
+  });
+  // Zmiana statusu, ktora psuje dzialajacy plan (cofniecie publikacji, archiwum w trakcie semestru) — z potwierdzeniem.
+  const [statusChange, setStatusChange] = useState<{ calendar: TermCalendar; status: CalendarStatus } | null>(null);
+  const statusWarning = statusChange && statusChangeWarning(statusChange.calendar, statusChange.status, toDateKey(new Date()));
+  const { data: statusUsage, isPending: statusUsagePending } = useQuery({
+    queryKey: ['calendar-usage', statusChange?.calendar.id],
+    queryFn: () => fetchCalendarUsage(statusChange!.calendar.id),
+    enabled: !!statusWarning,
+    staleTime: 0,
+  });
   const [newTermOpen, setNewTermOpen] = useState(false);
   const [opening, setOpening] = useState<string | null>(null);
 
@@ -83,6 +106,7 @@ export default function TermCalendarPage() {
     mutationFn: ({ id, status }: { id: string; status: CalendarStatus }) => setTermCalendarStatus(id, status),
     onSuccess: async (calendar) => {
       toast.success(`Status: ${CALENDAR_STATUS_LABELS[calendar.status].toLowerCase()}`);
+      setStatusChange(null);
       await refresh();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -209,7 +233,11 @@ export default function TermCalendarPage() {
                           statusPending={statusMutation.isPending}
                           onEdit={() => setEditor({ mode: 'edit', calendar })}
                           onDelete={() => setDeleting(calendar)}
-                          onStatus={(status) => statusMutation.mutate({ id: calendar.id, status })}
+                          onStatus={(status) =>
+                            statusChangeWarning(calendar, status, toDateKey(new Date()))
+                              ? setStatusChange({ calendar, status })
+                              : statusMutation.mutate({ id: calendar.id, status })
+                          }
                         />
                       ))
                     )}
@@ -249,11 +277,35 @@ export default function TermCalendarPage() {
         title="Usunac kalendarz?"
         description={
           deleting
-            ? `${deleting.faculty.shortName} · ${STUDY_MODE_LABELS[deleting.studyMode]} · ${deleting.name} — razem z przerwami, wyjatkami dni i zjazdami.`
+            ? `${deleting.faculty.shortName} · ${STUDY_MODE_LABELS[deleting.studyMode]} · ${deleting.name} — ` +
+              (usagePending
+                ? 'sprawdzam, czy roczniki maja juz plan na tym kalendarzu...'
+                : (deletingUsage?.deleteBlock ??
+                  `razem z przerwami, wyjatkami dni i zjazdami.${
+                    deletingUsage && deletingUsage.cohorts > 0
+                      ? ` Korzystaja z niego roczniki (${deletingUsage.cohorts}, jeszcze bez planu) — po usunieciu przejda na inny wariant wydzialu albo zostana bez kalendarza.`
+                      : ''
+                  }`))
             : ''
         }
         isPending={deleteMutation.isPending}
+        confirmDisabled={usagePending || !!deletingUsage?.deleteBlock}
         onConfirm={() => deleting && deleteMutation.mutate(deleting.id)}
+      />
+
+      <ConfirmDialog
+        open={!!statusWarning}
+        onOpenChange={(open) => !open && setStatusChange(null)}
+        title={statusWarning?.title ?? ''}
+        description={
+          statusChange && statusWarning
+            ? `${statusChange.calendar.faculty.shortName} · ${STUDY_MODE_LABELS[statusChange.calendar.studyMode]} · ${statusChange.calendar.name}. ` +
+              `${statusWarning.effect} ${usageNote(statusUsage, statusUsagePending)}`
+            : ''
+        }
+        confirmLabel={statusWarning?.confirmLabel}
+        isPending={statusMutation.isPending}
+        onConfirm={() => statusChange && statusMutation.mutate({ id: statusChange.calendar.id, status: statusChange.status })}
       />
 
       {isAdmin && newTermOpen && <NewTermDialog open={newTermOpen} onOpenChange={setNewTermOpen} terms={terms} />}
@@ -278,7 +330,7 @@ function CalendarCard({ calendar, editable, canChangeStatus, statusPending, onEd
         <CardTitle className="flex flex-wrap items-center gap-2">
           {calendar.name}
           <Badge variant="outline">{CALENDAR_KIND_LABELS[calendar.kind]}</Badge>
-          <Badge variant={STATUS_VARIANT[calendar.status]}>{CALENDAR_STATUS_LABELS[calendar.status]}</Badge>
+          <Badge variant={STATUS_VARIANT[calendar.status]} className={STATUS_CLASS[calendar.status]}>{CALENDAR_STATUS_LABELS[calendar.status]}</Badge>
         </CardTitle>
         <CardDescription className="tabular-nums">{formatRange(calendar.startDate, calendar.endDate)}</CardDescription>
         <CardAction className="flex gap-1">

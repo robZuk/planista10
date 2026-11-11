@@ -1,0 +1,23 @@
+import { describe, expect, it } from 'vitest';
+import { staleMessage } from './planStaleness';
+
+describe('staleMessage', () => {
+  it('jeden powod', () => {
+    expect(staleMessage(['DELETED'])).toBe('Po ostatnim generowaniu usunieto zajecia z wzorca, a ich terminy wciaz sa w „Terminach”.');
+    expect(staleMessage(['PLACEMENTS'])).toBe('Po ostatnim generowaniu wzorzec zmienil sie.');
+  });
+
+  it('kilka powodow w jednym zdaniu', () => {
+    expect(staleMessage(['PLACEMENTS', 'SECTIONS', 'DELETED'])).toBe(
+      'Po ostatnim generowaniu wzorzec zmienil sie, godziny zajec zmienily sie (synchronizacja z programem) i usunieto zajecia z wzorca, a ich terminy wciaz sa w „Terminach”.',
+    );
+  });
+
+  it('zmiana kalendarza rocznika', () => {
+    expect(staleMessage(['CALENDAR'])).toBe(
+      'Po ostatnim generowaniu zmienil sie kalendarz rocznika (daty, przerwy, dni wolne, zjazdy albo wybor kalendarza).',
+    );
+  });
+
+  it('brak powodow', () => expect(staleMessage([])).toBe(''));
+});

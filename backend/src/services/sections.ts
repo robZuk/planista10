@@ -4,6 +4,7 @@ import { deriveSections, scaleHours, sectionKey, type DemandProblem } from '../l
 import { displayName, indexGroups, pathFromRoot, ROOT, type GroupIndex, type TreeGroup } from '../lib/groupTree';
 import { cohortSemesterInTerm, termLabel, termOrdinal } from '../lib/terms';
 import { cohortLabel, toTreeGroup } from './cohorts';
+import { archivedCohortIds } from './cohortCalendar';
 
 /**
  * Zajecia semestru (ClassSection) i obsada. Synchronizacja to idempotentny diff:
@@ -110,7 +111,7 @@ export interface SyncProblem {
   /** Semestr programu rocznika w synchronizowanym semestrze. */
   semester: number;
   subject: string;
-  kind: DemandProblem['kind'] | 'DRAFT_PROGRAM_VERSION';
+  kind: DemandProblem['kind'] | 'DRAFT_PROGRAM_VERSION' | 'ARCHIVED_CALENDAR';
   specialization: { id: string; shortName: string; name: string } | null;
   /** Wersja programu rocznika (DRAFT_PROGRAM_VERSION). */
   programVersion: { id: string; label: string } | null;
@@ -123,10 +124,25 @@ export async function syncSections(
 ): Promise<SyncReport> {
   const report: SyncReport = { created: [], hoursChanged: [], reactivated: [], orphaned: [], deleted: [], unchanged: 0, problems: [] };
   const contexts = await activeCohorts(term, opts.facultyId, opts.cohortIds);
+  const archived = await archivedCohortIds(term, contexts);
   const ops: Prisma.PrismaPromise<unknown>[] = [];
 
   for (const ctx of contexts) {
     const { cohort, semester } = ctx;
+    // Kalendarz w archiwum: zajecia to zapis tego, co sie odbylo — synchronizacja ich nie rusza.
+    if (archived.has(cohort.id)) {
+      report.problems.push({
+        cohort: cohortLabel(cohort),
+        cohortId: cohort.id,
+        semester,
+        subject: '',
+        kind: 'ARCHIVED_CALENDAR',
+        specialization: null,
+        programVersion: null,
+        message: 'Kalendarz rocznika jest w archiwum — zajecia tylko do odczytu, synchronizacja pominieta',
+      });
+      continue;
+    }
     // Plan uklada sie tylko z zatwierdzonego programu — wersja w projekcie moze sie jeszcze
     // zmienic. Rocznik pomijamy (istniejace zajecia zostaja bez zmian) i zglaszamy.
     if (cohort.programVersion.status === 'DRAFT') {
@@ -260,8 +276,11 @@ export interface CarryRow {
 export async function carryInstructors(
   term: AcademicTerm,
   opts: { facultyId: string | null; dryRun: boolean },
-): Promise<{ matched: CarryRow[]; unmatched: CarryRow[] }> {
-  const contexts = await activeCohorts(term, opts.facultyId);
+): Promise<{ matched: CarryRow[]; unmatched: CarryRow[]; archivedCohorts: number }> {
+  const all = await activeCohorts(term, opts.facultyId);
+  // Obsady rocznikow z kalendarzem w archiwum nie uzupelniamy — to zapis tego, co sie odbylo.
+  const archived = await archivedCohortIds(term, all);
+  const contexts = all.filter((c) => !archived.has(c.cohort.id));
   const ctxByCohort = new Map(contexts.map((c) => [c.cohort.id, c]));
   const targets = await prisma.classSection.findMany({
     where: { termId: term.id, cohortId: { in: [...ctxByCohort.keys()] }, status: 'ACTIVE', instructors: { none: {} } },
@@ -332,5 +351,5 @@ export async function carryInstructors(
     );
   }
   if (!opts.dryRun && ops.length > 0) await prisma.$transaction(ops);
-  return { matched, unmatched };
+  return { matched, unmatched, archivedCohorts: archived.size };
 }

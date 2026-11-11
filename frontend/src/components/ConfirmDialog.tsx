@@ -20,6 +20,8 @@ interface Props {
   /** Napis na przycisku potwierdzenia. */
   confirmLabel?: string;
   isPending?: boolean;
+  /** Potwierdzenie niedostepne (np. operacja zablokowana — powod w opisie). */
+  confirmDisabled?: boolean;
   onConfirm: () => void;
 }
 
@@ -34,6 +36,7 @@ export function ConfirmDialog({
   description,
   confirmLabel = 'Usun',
   isPending = false,
+  confirmDisabled = false,
   onConfirm,
 }: Props) {
   return (
@@ -47,7 +50,7 @@ export function ConfirmDialog({
           <AlertDialogCancel disabled={isPending}>Anuluj</AlertDialogCancel>
           <AlertDialogAction
             className={cn(buttonVariants({ variant: 'destructive' }))}
-            disabled={isPending}
+            disabled={isPending || confirmDisabled}
             // Dialog zamykamy dopiero po udanej mutacji (robi to strona), nie od razu po kliknieciu.
             onClick={(e) => {
               e.preventDefault();

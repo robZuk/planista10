@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { CalendarProposal } from '@/types';
 
 /** "2026-10-09" + n dni — liczone w UTC, wiec zmiana czasu nie przesuwa dnia. */
 export function addDaysKey(key: string, days: number): string {
@@ -27,4 +28,31 @@ export function useDebouncedValue<T>(value: T, delay: number): T {
     return () => clearTimeout(timer);
   }, [value, delay]);
   return debounced;
+}
+
+/**
+ * Opis propozycji nowego kalendarza: skopiowany z zeszlego roku albo (pierwszy kalendarz
+ * tego typu) domyslne daty — wtedy mowimy wprost, co trzeba uzupelnic recznie.
+ */
+export function proposalNote(proposal: CalendarProposal): { title: string; description: string } {
+  const { source, calendar } = proposal;
+  if (source) {
+    return {
+      title: `Propozycja na podstawie: ${source.termLabel} (${source.name})`,
+      description:
+        `Daty semestru i przerw przeniesione z ${source.termLabel} na ten semestr, zjazdy wyrownane do tych samych dni tygodnia. ` +
+        'Jednorazowe dni wolne i zamiany dni trzeba dodac na nowo. Sprawdz wszystko przed zapisem.',
+    };
+  }
+  const breaks = calendar.breaks.length > 0 ? `, przerwa: ${calendar.breaks.map((b) => b.name).join(', ')}` : ', bez przerw';
+  const toAdd = [calendar.kind === 'ZJAZD' && 'zjazdy', calendar.breaks.length > 0 ? 'pozostale przerwy' : 'przerwy', 'dni wolne uczelni']
+    .filter(Boolean)
+    .join(', ');
+  return {
+    title: 'Pierwszy kalendarz tego typu — domyslne daty',
+    description:
+      `Nie ma wczesniejszego kalendarza tego rodzaju semestru dla tego wydzialu i trybu, wiec nie ma z czego kopiowac. ` +
+      `Przyjeto domyslne daty semestru (${formatRange(calendar.startDate, calendar.endDate)})${breaks}. ` +
+      `Dodaj recznie: ${toAdd}. Kolejne kalendarze tego typu beda juz proponowane na podstawie tego.`,
+  };
 }

@@ -294,6 +294,70 @@ export function expandDates(calendar: TeachingCalendar, slot: SlotPattern): Expa
   return result;
 }
 
+/** Dzien okresu (tygodnia albo zjazdu) do widoku tygodnia terminow. */
+export interface PeriodDay {
+  date: IsoDate;
+  dayOfWeek: DayOfWeek;
+  /** Czy w tym dniu wg kalendarza sa zajecia. */
+  teaching: boolean;
+  /** Swieto, przerwa, dzien wolny albo nazwa zmiany dnia (null = zwykly dzien). */
+  label: string | null;
+  /** Zajecia wg planu innego dnia tygodnia (np. sroda wg planu piatku). */
+  followsWeekday: DayOfWeek | null;
+  /** Godziny rektorskie: zajecia od tego bloku odwolane. */
+  closedFromBlockOrder: number | null;
+}
+
+/** Okres nawigacji widoku tygodnia: tydzien kalendarzowy (pn-nd) albo zjazd. */
+export interface CalendarPeriod {
+  /** Numer tygodnia zajec / zjazdu; null = tydzien w calosci w przerwie. */
+  index: number | null;
+  label: string;
+  from: IsoDate;
+  to: IsoDate;
+  days: PeriodDay[];
+}
+
+/**
+ * Okresy semestru do przegladania terminow tydzien po tygodniu: dla kalendarza tygodniowego
+ * kazdy tydzien (pn-nd, takze w przerwie — zeby bylo widac, ze jest pusty), dla zjazdowego
+ * kazdy zjazd. Dni niosa swieta, przerwy, dni wolne i zamiany dni.
+ */
+export function calendarPeriods(calendar: TeachingCalendar): CalendarPeriod[] {
+  const dayOf = (date: IsoDate): PeriodDay => {
+    const info = calendar.dayInfo(date);
+    const weekday = weekdayOf(date);
+    const named = info.reason === 'HOLIDAY' || info.reason === 'BREAK' || info.reason === 'DAY_OFF';
+    return {
+      date,
+      dayOfWeek: WEEKDAY_ENUM[weekday]!,
+      teaching: info.teaching,
+      label: info.teaching || named ? info.label : null,
+      followsWeekday: info.teaching && info.effectiveWeekday !== weekday ? WEEKDAY_ENUM[info.effectiveWeekday]! : null,
+      closedFromBlockOrder: info.closedFromBlockOrder,
+    };
+  };
+  const input = calendar.input;
+  if (input.kind === 'ZJAZD') {
+    return [...input.zjazdy]
+      .sort((a, b) => a.startDate.localeCompare(b.startDate))
+      .map((z) => ({
+        index: z.number,
+        label: `Zjazd ${z.number}`,
+        from: z.startDate,
+        to: z.endDate,
+        days: [...eachDay(z.startDate, z.endDate)].map(dayOf),
+      }));
+  }
+  return calendar.teachingWeeks().map((week) => ({
+    index: week.index,
+    label: week.index !== null ? `Tydzien ${week.index}` : `Przerwa${week.breakName ? `: ${week.breakName}` : ''}`,
+    from: week.monday,
+    to: week.sunday,
+    days: [...eachDay(week.monday, week.sunday)].map(dayOf),
+  }));
+}
+
 /** Problemy spojnosci kalendarza — zwracane przed zapisem, zeby nie zapisac bzdur. */
 export function validateCalendar(input: CalendarInput): string[] {
   const problems: string[] = [];
@@ -331,4 +395,53 @@ export function validateCalendar(input: CalendarInput): string[] {
     problems.push('Kalendarz zjazdowy nie ma zadnego zjazdu');
   }
   return problems;
+}
+
+/**
+ * Klucz dat kalendarza — wszystko, od czego zaleza terminy: rodzaj, daty semestru, przerwy,
+ * dni wyjatkowe i zjazdy. Bez nazw (przerw, dni) i kolejnosci na liscie. Rozne klucze =
+ * terminy wygenerowane wg starej wersji kalendarza sa nieaktualne.
+ */
+export function calendarDatesKey(input: Omit<CalendarInput, 'studyMode'>): string {
+  const sorted = <T>(rows: T[]) => rows.map((r) => JSON.stringify(r)).sort();
+  return JSON.stringify({
+    kind: input.kind,
+    startDate: input.startDate,
+    endDate: input.endDate,
+    breaks: sorted(input.breaks.map((b) => [b.startDate, b.endDate])),
+    days: sorted(
+      input.days.map((d) => [
+        d.date,
+        d.kind,
+        d.kind === 'FOLLOWS_WEEKDAY' ? (d.followsWeekday ?? null) : null,
+        d.kind === 'CLOSED_FROM' ? (d.closedFromBlockOrder ?? null) : null,
+      ]),
+    ),
+    zjazdy: sorted(input.zjazdy.map((z) => [z.number, z.startDate, z.endDate])),
+  });
+}
+
+/** Powody, ktore planista nazywa "dniem wolnym" (a nie po prostu dniem bez zajec trybu). */
+const DAY_OFF_REASONS: DayBlockReason[] = ['HOLIDAY', 'BREAK', 'DAY_OFF'];
+
+/**
+ * Dni wolne w planie osobistym (student, prowadzacy) — opis do kolumny kalendarza tygodnia.
+ * Osoba moze miec zajecia wg kilku kalendarzy (prowadzacy na kilku wydzialach), wiec dzien jest
+ * wolny tylko wtedy, gdy w ZADNYM z nich nie ma zajec, a co najmniej jeden podaje powod (swieto,
+ * przerwa, dzien wolny uczelni). Bez kalendarzy — same swieta ustawowe.
+ */
+export function personalDaysOff(dates: IsoDate[], calendars: TeachingCalendar[]): Record<IsoDate, string> {
+  const result: Record<IsoDate, string> = {};
+  for (const date of dates) {
+    if (calendars.length === 0) {
+      const holiday = holidaysInRange(date, date)[0];
+      if (holiday) result[date] = holiday.name;
+      continue;
+    }
+    const infos = calendars.map((c) => c.dayInfo(date));
+    if (infos.some((i) => i.teaching)) continue;
+    const labels = [...new Set(infos.filter((i) => i.reason && DAY_OFF_REASONS.includes(i.reason)).map((i) => i.label ?? 'Dzien wolny'))];
+    if (labels.length > 0) result[date] = labels.join(' / ');
+  }
+  return result;
 }

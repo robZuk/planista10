@@ -37,6 +37,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast: "cn-toast",
+          // Komunikaty z backendu bywaja wielowierszowe (np. lista kolizji) — zachowaj nowe linie i wciecia.
+          title: "whitespace-pre-wrap",
         },
       }}
       {...props}

@@ -1,7 +1,11 @@
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircle2, Circle, CircleAlert } from 'lucide-react';
+import { CheckCircle2, Circle, CircleAlert, EyeOff, FilterX } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -10,25 +14,40 @@ import { FacultySelector } from '@/components/FacultySelector';
 import { fetchSetup } from '@/api/plan';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { CALENDAR_STATUS_LABELS, STUDY_MODE_LABELS } from '@/lib/labels';
+import { staleMessage } from '@/lib/planStaleness';
+import { cn } from '@/lib/utils';
+import { setupIssues, sortSetupCohorts } from '@/lib/setupIssues';
+import { setupSteps, type SetupStep, type StepState } from '@/lib/setupSteps';
+import { CohortFacetFilters } from './cohorts/CohortFacetFilters';
+import { useCohortFilters } from './cohorts/useCohortFilters';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 
-type State = 'done' | 'todo' | 'warn';
+const STATE_ICON: Record<StepState, { Icon: typeof CheckCircle2; className: string; label: string }> = {
+  done: { Icon: CheckCircle2, className: 'text-green-600', label: 'gotowe' },
+  warn: { Icon: CircleAlert, className: 'text-amber-600', label: 'do uzupelnienia' },
+  todo: { Icon: Circle, className: 'text-muted-foreground', label: 'do zrobienia' },
+};
 
-function Step({ n, title, state, children, to, link }: { n: number; title: string; state: State; children: React.ReactNode; to: string; link: string }) {
-  const Icon = state === 'done' ? CheckCircle2 : state === 'warn' ? CircleAlert : Circle;
+function Step({ step }: { step: SetupStep }) {
+  const { Icon, className, label } = STATE_ICON[step.state];
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Icon className={state === 'done' ? 'text-green-600' : state === 'warn' ? 'text-amber-600' : 'text-muted-foreground'} />
-          {n}. {title}
+          <Icon className={className} aria-label={label} />
+          {step.n}. {step.title}
         </CardTitle>
-        <CardDescription>{children}</CardDescription>
+        <CardDescription>{step.summary}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <Link to={to} className="text-sm font-medium text-primary hover:underline">
-          {link} →
+      <CardContent className="space-y-2">
+        {step.todo && (
+          <p className={cn('text-sm font-medium', step.state === 'warn' ? 'text-amber-600 dark:text-amber-400' : 'text-foreground')}>
+            Do zrobienia: {step.todo}
+          </p>
+        )}
+        <Link to={step.to} className="text-sm font-medium text-primary hover:underline">
+          {step.link} →
         </Link>
       </CardContent>
     </Card>
@@ -52,8 +71,26 @@ export default function TermSetupPage() {
     enabled: !!term,
   });
 
+  const [onlyIssues, setOnlyIssues] = useState(false);
+
   const t = data?.totals;
   const key = term?.key ?? '';
+  // Filtry rocznikow wspolne z Rocznikami i Planem (tryb globalny, reszta zapamietana). Karty
+  // powyzej licza caly wydzial — filtry zawezaja tylko tabele.
+  const allCohorts = useMemo(() => data?.cohorts ?? [], [data]);
+  const cohortFilter = useCohortFilters(allCohorts);
+  // Roczniki z brakami na gorze; komorka z brakiem wyrozniona (lib/setupIssues).
+  const rows = sortSetupCohorts(cohortFilter.visible).map((c) => ({ c, issues: setupIssues(c) }));
+  const withIssues = rows.filter((r) => r.issues.size > 0).length;
+  const visibleRows = onlyIssues ? rows.filter((r) => r.issues.size > 0) : rows;
+  const filtered = cohortFilter.facetsActive || onlyIssues;
+  const clearFilters = () => {
+    cohortFilter.clearFacets();
+    setOnlyIssues(false);
+  };
+  // Plan widza studenci i prowadzacy tylko z kalendarzy opublikowanych lub w archiwum (services/visibility).
+  const unpublished = (data?.calendars ?? []).filter((c) => c.status === 'PLANNING');
+  const warn = (on: boolean) => (on ? 'font-semibold text-amber-600 dark:text-amber-400' : undefined);
   return (
     <>
       <PageHeader
@@ -64,46 +101,65 @@ export default function TermSetupPage() {
       {isPending && term && <Skeleton className="h-64 w-full" />}
       {data && t && (
         <>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            <Step n={1} title="Kalendarz" state={data.missingCalendars > 0 ? 'todo' : 'done'} to={`/calendar/${key}`} link="Kalendarz semestru">
-              {data.calendars.length} kalendarzy
-              {data.missingCalendars > 0 ? ` · brakuje ${data.missingCalendars} (tryb bez kalendarza)` : ' · daty, przerwy, zjazdy'}
-            </Step>
-            <Step n={2} title="Roczniki i grupy" state={t.cohorts === 0 ? 'todo' : t.cohortsWithoutCalendar > 0 ? 'warn' : 'done'} to={`/cohorts/${key}`} link="Roczniki i grupy">
-              {t.cohorts} rocznikow w semestrze{t.cohortsWithoutCalendar > 0 ? ` · ${t.cohortsWithoutCalendar} bez kalendarza` : ''} · nowy nabor zakladasz recznie
-            </Step>
-            <Step
-              n={3}
-              title="Programy zatwierdzone"
-              state={t.cohorts === 0 ? 'todo' : t.cohortsWithDraftVersion > 0 ? 'todo' : 'done'}
-              to="/curriculum"
-              link="Programy studiow"
-            >
-              {t.cohortsWithDraftVersion > 0
-                ? `Roczniki z wersja programu w projekcie: ${t.cohortsWithDraftVersion} — bez zatwierdzenia nie powstana zajecia ani plan`
-                : 'Wszystkie roczniki korzystaja z zatwierdzonych wersji programu'}
-            </Step>
-            <Step n={4} title="Zajecia" state={t.cohortsWithoutSections > 0 || t.sections === 0 ? 'todo' : 'done'} to={`/obsada/${key}`} link="Synchronizuj zajecia">
-              {t.sections} zajec{t.cohortsWithoutSections > 0 ? ` · ${t.cohortsWithoutSections} rocznikow bez zajec — zsynchronizuj` : ''}
-            </Step>
-            <Step n={5} title="Obsada" state={t.sections === 0 ? 'todo' : t.vacancies > 0 ? 'warn' : 'done'} to={`/obsada/${key}`} link="Zajecia i obsada">
-              {t.vacancies > 0 ? `${t.vacancies} zajec bez pelnej obsady (NN)` : 'Wszystkie zajecia obsadzone'}
-            </Step>
-            <Step n={6} title="Plan (wzorzec)" state={t.sections === 0 ? 'todo' : t.placedSections < t.sections ? 'warn' : 'done'} to={`/plan/${key}`} link="Ukladanie planu">
-              {t.placedSections}/{t.sections} zajec umieszczonych · opcjonalnie „Przenies plan z zeszlego roku”
-            </Step>
-            <Step n={7} title="Terminy i publikacja" state={t.staleCohorts > 0 ? 'warn' : t.published > 0 ? 'done' : 'todo'} to={`/calendar/${key}`} link="Publikacja w kalendarzu">
-              {t.staleCohorts > 0 ? `${t.staleCohorts} rocznikow z nieaktualnymi terminami — „Generuj terminy”` : 'Terminy aktualne'} ·{' '}
-              {t.published > 0 ? `opublikowane kalendarze: ${t.published}` : 'nic nie opublikowano'}
-            </Step>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            {(['done', 'warn', 'todo'] as const).map((st) => {
+              const { Icon, className, label } = STATE_ICON[st];
+              return (
+                <span key={st} className="inline-flex items-center gap-1">
+                  <Icon className={cn('size-3.5', className)} /> {label}
+                </span>
+              );
+            })}
           </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {setupSteps(data, key).map((step) => (
+              <Step key={step.n} step={step} />
+            ))}
+          </div>
+
+          {unpublished.length > 0 && (
+            <Alert>
+              <EyeOff />
+              <AlertTitle>Studenci i prowadzacy nie widza jeszcze planu</AlertTitle>
+              <AlertDescription>
+                <p>
+                  {unpublished.length === 1 ? 'Kalendarz w przygotowaniu' : 'Kalendarze w przygotowaniu'}:{' '}
+                  {unpublished.map((c) => `${STUDY_MODE_LABELS[c.studyMode]} · ${c.name}`).join('; ')}. Plan rocznikow wg{' '}
+                  {unpublished.length === 1 ? 'tego kalendarza' : 'tych kalendarzy'} widzi tylko dziekanat — opublikuj go w{' '}
+                  <Link to={`/calendar/${key}`} className="font-medium text-primary underline-offset-4 hover:underline">
+                    Kalendarzu semestru
+                  </Link>
+                  , gdy plan bedzie gotowy.
+                </p>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} />
+            <label className="flex items-center gap-2">
+              <Checkbox checked={onlyIssues} onCheckedChange={(v) => setOnlyIssues(v === true)} />
+              Tylko roczniki z brakami ({withIssues})
+            </label>
+            <span className="text-muted-foreground">
+              {filtered ? `${visibleRows.length} z ${allCohorts.length} rocznikow` : `${allCohorts.length} rocznikow`}
+            </span>
+            {filtered && (
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <FilterX /> Wyczysc filtry
+              </Button>
+            )}
+          </div>
+          <p className="-mt-1 text-xs text-muted-foreground">
+            Roczniki z brakami sa na gorze; kliknij rocznik, zeby otworzyc jego plan. Karty powyzej licza caly wydzial.
+          </p>
 
           <div className="overflow-x-auto rounded-lg border">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Rocznik</TableHead>
-                  <TableHead>Program</TableHead>
+                  <TableHead>Wersja programu</TableHead>
                   <TableHead>Kalendarz</TableHead>
                   <TableHead className="text-right">Grupy</TableHead>
                   <TableHead className="text-right">Zajecia</TableHead>
@@ -113,10 +169,25 @@ export default function TermSetupPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.cohorts.map((c) => (
+                {visibleRows.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="py-6 text-center text-muted-foreground">
+                      {onlyIssues && withIssues === 0
+                        ? 'Wszystkie roczniki sa gotowe — brak brakow.'
+                        : 'Zaden rocznik nie pasuje do wybranych filtrow.'}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {visibleRows.map(({ c, issues }) => (
                   <TableRow key={c.id}>
-                    <TableCell className="font-medium">
-                      {c.code} · semestr {c.semester} {c.isNewIntake && <Badge className="ml-1">nowy nabor</Badge>}
+                    <TableCell className="font-medium whitespace-nowrap">
+                      <Link
+                        to={`/plan/${key}?cohort=${c.id}`}
+                        title="Otworz ten rocznik w Ukladaniu planu"
+                        className="underline-offset-4 hover:underline"
+                      >
+                        {c.code} · semestr {c.semester}
+                      </Link>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       <Link to={`/curriculum/program/${c.programVersion.id}`} className="underline-offset-4 hover:underline">
@@ -131,28 +202,29 @@ export default function TermSetupPage() {
                     <TableCell>
                       {c.calendar ? `${c.calendar.name} (${CALENDAR_STATUS_LABELS[c.calendar.status].toLowerCase()})` : <span className="text-destructive">brak</span>}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">{c.groups}</TableCell>
-                    <TableCell className="text-right tabular-nums">{c.sections}</TableCell>
-                    <TableCell className="text-right tabular-nums">{c.vacancies}</TableCell>
-                    <TableCell className="text-right tabular-nums">
+                    <TableCell className={cn('text-right tabular-nums', warn(issues.has('NO_GROUPS')))}>{c.groups}</TableCell>
+                    <TableCell className={cn('text-right tabular-nums', warn(issues.has('NO_SECTIONS')))}>{c.sections}</TableCell>
+                    <TableCell className={cn('text-right tabular-nums', warn(issues.has('VACANCIES')))}>{c.vacancies}</TableCell>
+                    <TableCell className={cn('text-right tabular-nums', warn(issues.has('UNPLACED')))}>
                       {c.placedSections}/{c.sections}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
+                    <TableCell className={cn('text-right tabular-nums', warn(issues.has('NO_OCCURRENCES')))}>
                       {c.occurrences}
-                      {c.stale && <Badge variant="outline" className="ml-1">nieaktualne</Badge>}
+                      {c.stale && (
+                        <Badge
+                          variant="outline"
+                          className="ml-1 cursor-help border-amber-500/60 text-amber-600 dark:text-amber-400"
+                          title={`${staleMessage(c.staleReasons)} Uzyj „Generuj terminy” w Ukladaniu planu.`}
+                        >
+                          nieaktualne
+                        </Badge>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
-          {data.calendars.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              Kalendarze:{' '}
-              {data.calendars.map((c) => `${STUDY_MODE_LABELS[c.studyMode]} · ${c.name} (${CALENDAR_STATUS_LABELS[c.status].toLowerCase()})`).join('; ')}
-              . Studenci i prowadzacy widza plan dopiero po zmianie statusu kalendarza na „Opublikowany”.
-            </p>
-          )}
         </>
       )}
     </>

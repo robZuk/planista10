@@ -30,7 +30,8 @@ services:
     command: npm run dev
     environment:
       PORT: 4003
-      DATABASE_URL: postgresql://postgres:password@db:5432/planista9?schema=public
+      # PLANISTA_DB=planista9_pelne docker compose up -d backend -> pelna baza testowa (scripts/pelne-dane)
+      DATABASE_URL: postgresql://postgres:password@db:5432/${PLANISTA_DB:-planista9}?schema=public
       # Sekrety deweloperskie — jawne, bo to tylko lokalne srodowisko.
       JWT_ACCESS_SECRET: dev-access-secret-change-me
       JWT_REFRESH_SECRET: dev-refresh-secret-change-me

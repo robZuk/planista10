@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, History, RefreshCw, Search, Upload } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CircleCheck, Download, FilterX, History, RefreshCw, Search, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
 import { downloadSectionsCsv, fetchSections, fetchWorkload } from '@/api/sections';
@@ -27,6 +27,8 @@ import { AssignmentDialog, CarryDialog, ImportDialog, SyncDialog } from './obsad
  * z programow i grup rocznikow (synchronizacja); tu wpisuje sie tez, kto prowadzi ile
  * godzin. Obsade mozna przeniesc z poprzedniego roku albo wczytac z CSV od katedr.
  */
+const PAGE_SIZE = 50;
+
 export default function ObsadaPage() {
   const queryClient = useQueryClient();
   const me = useAuthStore((s) => s.user);
@@ -79,7 +81,24 @@ export default function ObsadaPage() {
     );
   }, [data, cohortFilter, onlyVacant, search]);
 
+  // Strony po 50 wierszy — semestr wydzialu to setki zajec (WM: ~900), cala uczelnia — tysiace.
+  // Zmiana filtra wraca na pierwsza strone (strona pamietana razem z kluczem filtrow).
+  const filterKey = `${cohortFilter}|${onlyVacant}|${search}|${facultyId}|${term?.key}`;
+  const [pageState, setPageState] = useState({ key: filterKey, page: 0 });
+  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const page = pageState.key === filterKey ? Math.min(pageState.page, pageCount - 1) : 0;
+  const setPage = (p: number) => setPageState({ key: filterKey, page: p });
+  const pageRows = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
   const summary = data?.summary;
+  const filtersActive = cohortFilter !== 'all' || onlyVacant || search.trim() !== '';
+  const clearFilters = () => {
+    setCohortFilter('all');
+    setOnlyVacant(false);
+    setSearch('');
+  };
+  // Pusty wynik samego "Tylko braki" przy braku brakow to dobra wiadomosc, nie "nic nie znaleziono".
+  const allStaffed = onlyVacant && cohortFilter === 'all' && search.trim() === '' && summary?.vacancies === 0;
 
   return (
     <>
@@ -93,7 +112,7 @@ export default function ObsadaPage() {
         actions={
           <>
             {isAdmin && <FacultySelector />}
-            {canEdit && term && (
+            {canEdit && term && !summary?.archived && (
               <>
                 <Button variant="outline" onClick={() => setDialog('sync')}>
                   <RefreshCw /> Synchronizuj zajecia
@@ -115,6 +134,12 @@ export default function ObsadaPage() {
           </>
         }
       />
+
+      {summary?.archived && (
+        <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+          Kalendarze rocznikow sa w archiwum — zajecia i obsada tego semestru sa tylko do odczytu.
+        </p>
+      )}
 
       {summary && (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
@@ -157,80 +182,124 @@ export default function ObsadaPage() {
             <Checkbox checked={onlyVacant} onCheckedChange={(v) => setOnlyVacant(v === true)} />
             Tylko braki (NN / niepelna obsada)
           </label>
-          <span className="text-sm text-muted-foreground">{rows.length} pozycji</span>
+          <span className="text-sm text-muted-foreground">
+            {filtersActive ? `${rows.length} z ${data.rows.length} pozycji` : `${rows.length} pozycji`}
+          </span>
+          {filtersActive && (
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <FilterX /> Wyczysc filtry
+            </Button>
+          )}
         </div>
       )}
 
       {isPending && term && <Skeleton className="h-64 w-full" />}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
+        {/* Lewa kolumna zostaje takze przy pustym wyniku filtra — inaczej karta obciazenia
+            zajmowala cala szerokosc i wygladala jak wynik filtra. */}
+        {data && data.rows.length > 0 && rows.length === 0 && (
+          <Empty className="h-fit border">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">{allStaffed ? <CircleCheck /> : <FilterX />}</EmptyMedia>
+              <EmptyTitle>{allStaffed ? 'Brak brakow w obsadzie' : 'Brak zajec dla tych filtrow'}</EmptyTitle>
+              <EmptyDescription>
+                {allStaffed
+                  ? 'Wszystkie zajecia semestru maja pelna obsade — nie ma NN ani niepelnych godzin.'
+                  : 'Zadne zajecia nie pasuja do wybranego rocznika, wyszukiwania lub filtra brakow.'}
+              </EmptyDescription>
+            </EmptyHeader>
+            {filtersActive && (
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                <FilterX /> {allStaffed ? 'Pokaz wszystkie zajecia' : 'Wyczysc filtry'}
+              </Button>
+            )}
+          </Empty>
+        )}
+
         {rows.length > 0 && (
-          <div className="overflow-x-auto rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Rocznik</TableHead>
-                  <TableHead>Przedmiot</TableHead>
-                  <TableHead>Forma</TableHead>
-                  <TableHead>Grupa</TableHead>
-                  <TableHead className="text-right">Godz.</TableHead>
-                  <TableHead>Obsada</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className={canEdit ? 'cursor-pointer' : undefined}
-                    onClick={() => canEdit && setEditing(row)}
-                  >
-                    <TableCell className="whitespace-nowrap text-muted-foreground">
-                      {row.cohort.code} · s{row.cohort.semester}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {row.subject.name}
-                      {row.specialization && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge variant="outline" className="ml-2 cursor-help">
-                              {row.specialization}
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            Przedmiot specjalnosci {row.specialization}
-                            {row.specializationName && ` (${row.specializationName})`} — tylko dla jej studentow
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      {row.status === 'ORPHANED' && (
-                        <Badge variant="destructive" className="ml-2">
-                          osierocone
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{CLASS_FULL_LABELS[row.classType]}</TableCell>
-                    <TableCell className="whitespace-nowrap">{row.group.name}</TableCell>
-                    <TableCell className="text-right tabular-nums">{row.hours}</TableCell>
-                    <TableCell>
-                      {row.instructors.length === 0 ? (
-                        <Badge variant="destructive">brak obsady</Badge>
-                      ) : (
-                        <div className="flex flex-wrap gap-1">
-                          {row.instructors.map((i) => (
-                            <Badge key={i.id} variant={i.instructorId ? 'secondary' : 'destructive'}>
-                              {i.name} · {i.hours} h
-                            </Badge>
-                          ))}
-                          {row.assignedHours < row.hours && (
-                            <Badge variant="outline">brakuje {row.hours - row.assignedHours} h</Badge>
-                          )}
-                        </div>
-                      )}
-                    </TableCell>
+          <div className="min-w-0 space-y-2">
+            <div className="overflow-x-auto rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Rocznik</TableHead>
+                    <TableHead>Przedmiot</TableHead>
+                    <TableHead>Forma</TableHead>
+                    <TableHead>Grupa</TableHead>
+                    <TableHead className="text-right">Godz.</TableHead>
+                    <TableHead>Obsada</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {pageRows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      className={canEdit && !row.cohort.archived ? 'cursor-pointer' : undefined}
+                      title={row.cohort.archived ? 'Kalendarz rocznika w archiwum — obsada tylko do odczytu' : undefined}
+                      onClick={() => canEdit && !row.cohort.archived && setEditing(row)}
+                    >
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                        {row.cohort.code} · s{row.cohort.semester}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {row.subject.name}
+                        {row.specialization && (
+                          <Badge
+                            variant="outline"
+                            className="ml-2 cursor-help"
+                            title={`Przedmiot specjalnosci ${row.specialization}${row.specializationName ? ` (${row.specializationName})` : ''} — tylko dla jej studentow`}
+                          >
+                            {row.specialization}
+                          </Badge>
+                        )}
+                        {row.status === 'ORPHANED' && (
+                          <Badge variant="destructive" className="ml-2">
+                            osierocone
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{CLASS_FULL_LABELS[row.classType]}</TableCell>
+                      <TableCell className="whitespace-nowrap">{row.group.name}</TableCell>
+                      <TableCell className="text-right tabular-nums">{row.hours}</TableCell>
+                      <TableCell>
+                        {row.instructors.length === 0 ? (
+                          <Badge variant="destructive">brak obsady</Badge>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {row.instructors.map((i) => (
+                              <Badge key={i.id} variant={i.instructorId ? 'secondary' : 'destructive'}>
+                                {i.name} · {i.hours} h
+                              </Badge>
+                            ))}
+                            {row.assignedHours < row.hours && (
+                              <Badge variant="outline">brakuje {row.hours - row.assignedHours} h</Badge>
+                            )}
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {pageCount > 1 && (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-muted-foreground">
+                  Strona {page + 1} z {pageCount} (wiersze {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, rows.length)} z {rows.length})
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 0}>
+                    <ChevronLeft />
+                    Poprzednia
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page >= pageCount - 1}>
+                    Nastepna
+                    <ChevronRight />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -238,13 +307,16 @@ export default function ObsadaPage() {
           <Card className="h-fit">
             <CardHeader>
               <CardTitle className="text-base">Obciazenie prowadzacych</CardTitle>
+              <CardDescription>Caly semestr — niezaleznie od filtrow listy.</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-1 text-sm">
                 {workload.map((w) => (
                   <li key={w.id} className="flex justify-between gap-2">
-                    <span className="truncate">{w.name}</span>
-                    <span className="tabular-nums">
+                    <span className="min-w-0 truncate" title={w.name}>
+                      {w.name}
+                    </span>
+                    <span className="shrink-0 whitespace-nowrap tabular-nums">
                       {w.here} h{w.total !== w.here && <span className="text-muted-foreground"> / {w.total}</span>}
                     </span>
                   </li>

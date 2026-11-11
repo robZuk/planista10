@@ -41,3 +41,12 @@ export function groupSyncProblems(problems: SyncProblem[]): SyncProblemGroup[] {
   }
   return [...groups.values()];
 }
+
+/**
+ * Roczniki pominiete, bo ich kalendarz jest w archiwum — to nie problem do wyjasnienia, tylko
+ * informacja; pokazujemy je osobno i zwiezle. Reszta problemow idzie do "Do wyjasnienia".
+ */
+export function splitArchivedProblems(problems: SyncProblem[]): { archived: string[]; rest: SyncProblem[] } {
+  const archived = problems.filter((p) => p.kind === 'ARCHIVED_CALENDAR').map((p) => `${p.cohort} · sem. ${p.semester}`);
+  return { archived: [...new Set(archived)], rest: problems.filter((p) => p.kind !== 'ARCHIVED_CALENDAR') };
+}
