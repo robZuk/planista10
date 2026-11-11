@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarCheck, ChevronRight, Copy, FilterX, History, TriangleAlert, X } from 'lucide-react';
@@ -64,6 +64,19 @@ export default function PlanPage() {
   const [selected, setSelected] = useState<PlanSection | null>(null);
   const [target, setTarget] = useState<PlacementTarget | null>(null);
   const [viewing, setViewing] = useState<{ section: PlanSection; placement: PlanPlacement } | null>(null);
+  // Po zamknieciu okna (umieszczenie / podglad) fokus wraca tam, skad je otwarto — kafelek albo
+  // komorka siatki; inaczej uzytkownik klawiatury laduje na poczatku strony.
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const dialogOpen = !!target || !!viewing;
+  useEffect(() => {
+    if (dialogOpen) return;
+    const el = returnFocus.current;
+    returnFocus.current = null;
+    if (el?.isConnected) requestAnimationFrame(() => el.focus());
+  }, [dialogOpen]);
+  const rememberFocus = () => {
+    if (document.activeElement instanceof HTMLElement && document.activeElement !== document.body) returnFocus.current = document.activeElement;
+  };
   const [zjazdChoice, setZjazd] = useState<number | null>(null);
   const [groupFilter, setGroupFilter] = useState('all');
   // Przy filtrze grupy zajecia innych grup sa domyslnie ukryte — kafelki wybranej grupy maja wtedy pelna szerokosc.
@@ -525,11 +538,15 @@ export default function PlanPage() {
                 onCellClick={
                   readOnly || !selected
                     ? undefined
-                    : (day, order) => setTarget({ section: selected, placement: null, day, startOrder: order, zjazd, length: placeLength })
+                    : (day, order) => {
+                        rememberFocus();
+                        setTarget({ section: selected, placement: null, day, startOrder: order, zjazd, length: placeLength });
+                      }
                 }
                 onItemClick={(id) => {
                   const owner = placementOwner.get(id);
                   if (!owner) return;
+                  rememberFocus();
                   // Archiwum / bez uprawnien: szczegoly do odczytu (jak termin w zakladce "Terminy").
                   if (readOnly) setViewing(owner);
                   else setTarget({ section: owner.section, placement: owner.placement, day: owner.placement.dayOfWeek, startOrder: owner.placement.startOrder, zjazd });

@@ -126,15 +126,35 @@ export function WeekGrid({
               {layout.rows.map((r) => {
                 const reason = availability?.[day]?.[r.order];
                 const state = availability ? (reason === null ? 'free' : reason === undefined ? undefined : 'busy') : undefined;
+                const block = blocks.find((b) => b.order === r.order);
+                // Komorki do umieszczania dostepne tez z klawiatury (Tab + Enter/Spacja).
+                const interactive = !!onCellClick;
                 return (
                   <div
                     key={r.order}
                     title={reason ?? undefined}
+                    role={interactive ? 'button' : undefined}
+                    tabIndex={interactive ? 0 : undefined}
+                    aria-label={
+                      interactive
+                        ? `${DAY_SHORT[day]} ${block?.startTime ?? ''}${state === 'free' ? ' — wolne' : reason ? ` — ${reason}` : ''}`
+                        : undefined
+                    }
+                    onKeyDown={
+                      interactive
+                        ? (e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              onCellClick(day, r.order);
+                            }
+                          }
+                        : undefined
+                    }
                     onClick={() => onCellClick?.(day, r.order)}
                     style={{ position: 'absolute', top: r.top, height: r.height, left: 0, right: 0 }}
                     className={cn(
                       'border-t border-border/60 first:border-transparent',
-                      onCellClick && 'cursor-pointer hover:bg-muted/60',
+                      onCellClick && 'cursor-pointer hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-primary focus-visible:-outline-offset-2',
                       state === 'free' && 'bg-green-500/10',
                       state === 'busy' && 'bg-red-500/10',
                     )}

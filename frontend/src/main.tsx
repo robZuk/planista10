@@ -1,11 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import App from './App';
 import { initSentry, Sentry } from './lib/sentry';
+import { createServerWatch } from './lib/serverStatus';
 import './index.css';
 
 // Error-tracking startujemy przed renderem (no-op gdy brak VITE_SENTRY_DSN).
@@ -15,7 +16,11 @@ initSentry();
  * Jeden klient React Query na cala aplikacje.
  * retry: 1 — przy bledzie 4xx nie ma sensu ponawiac w nieskonczonosc.
  */
-const queryClient = new QueryClient({
+// Brak polaczenia z serwerem: jeden komunikat i ponawianie (lib/serverStatus).
+const serverWatch = createServerWatch(() => queryClient);
+const queryClient: QueryClient = new QueryClient({
+  queryCache: new QueryCache({ onError: serverWatch.onError, onSuccess: serverWatch.onSuccess }),
+  mutationCache: new MutationCache({ onError: serverWatch.onError }),
   defaultOptions: {
     queries: { retry: 1, refetchOnWindowFocus: false },
   },
