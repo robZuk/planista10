@@ -64,6 +64,19 @@ describe('numeracja tygodni', () => {
     const november = weeks.find((w) => w.monday === '2024-11-11')!;
     expect(november.notes.some((n) => n.includes('2024-11-11'))).toBe(true);
   });
+
+  it('podglad tygodni opisuje tez wyjatki dni zajec (inny plan dnia, godziny rektorskie)', () => {
+    const cal = new TeachingCalendar({
+      ...winter2024,
+      days: [
+        { date: '2024-11-15', kind: 'FOLLOWS_WEEKDAY', followsWeekday: 'MONDAY' },
+        { date: '2024-11-14', kind: 'CLOSED_FROM', closedFromBlockOrder: 5, name: 'Godziny rektorskie' },
+      ],
+    });
+    const notes = cal.teachingWeeks().find((w) => w.monday === '2024-11-11')!.notes;
+    expect(notes).toContain('2024-11-15: zajecia wg planu — poniedzialek');
+    expect(notes).toContain('2024-11-14: Godziny rektorskie od bloku 5');
+  });
 });
 
 describe('expandDates', () => {
