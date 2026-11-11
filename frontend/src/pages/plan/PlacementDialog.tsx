@@ -22,7 +22,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { AssignmentDialog } from '@/pages/obsada/ObsadaDialogs';
 import { createPlacement, deletePlacement, updatePlacement } from '@/api/plan';
 import { fetchBuildings } from '@/api/buildings';
-import { getErrorMessage } from '@/lib/errors';
+import { getErrorMessage, isNotFound } from '@/lib/errors';
 import { WEEKDAY_LABELS } from '@/lib/labels';
 import { formatDayMonth } from '@/lib/planHours';
 import { CLASS_FULL_LABELS, ROOM_TYPES_FOR_CLASS } from '@/lib/scheduleDisplay';
@@ -127,13 +127,19 @@ export function PlacementDialog({
     jointKey: jointKey.trim() || null,
   };
 
+  // Umieszczenie albo zajecia usuniete w miedzyczasie (inny planista, synchronizacja):
+  // zamiast bledu w otwartym oknie — zamykamy je i odswiezamy plan.
+  const gone = () => {
+    toast.info(placement ? 'Umieszczenie zostalo w miedzyczasie usuniete — plan odswiezony' : 'Zajecia zniknely w miedzyczasie — plan odswiezony');
+    onSaved();
+  };
   const save = useMutation({
     mutationFn: () => (placement ? updatePlacement(placement.id, payload) : createPlacement(termKey, payload)),
     onSuccess: (r) => {
       toast.success(r.message);
       onSaved();
     },
-    onError: (e) => toast.error(getErrorMessage(e), { duration: 10000 }),
+    onError: (e) => (isNotFound(e) ? gone() : toast.error(getErrorMessage(e), { duration: 10000 })),
   });
   const remove = useMutation({
     mutationFn: () => deletePlacement(placement!.id),
@@ -141,7 +147,7 @@ export function PlacementDialog({
       toast.success(r.message);
       onSaved();
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => (isNotFound(e) ? gone() : toast.error(getErrorMessage(e))),
   });
 
   const listOptions = zjazdCalendar

@@ -18,3 +18,11 @@ export function slotWarningsOf(error: unknown): string[] | null {
   const data = error.response?.data as { code?: string; warnings?: unknown } | undefined;
   return data?.code === 'SLOT_WARNINGS' && Array.isArray(data.warnings) ? data.warnings.map(String) : null;
 }
+
+/**
+ * Rekord zniknal w miedzyczasie (404) — np. inny planista usunal umieszczenie albo terminy
+ * wygenerowano od nowa. Okno nie ma czego zapisac: zamykamy je i odswiezamy widok.
+ */
+export function isNotFound(error: unknown): boolean {
+  return axios.isAxiosError(error) && error.response?.status === 404;
+}

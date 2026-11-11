@@ -25,7 +25,7 @@ import { Combobox } from '@/components/Combobox';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { changeOccurrence, createManualOccurrence, deleteManualOccurrence, fetchOccurrences } from '@/api/plan';
 import { fetchBuildings } from '@/api/buildings';
-import { getErrorMessage, slotWarningsOf } from '@/lib/errors';
+import { getErrorMessage, isNotFound, slotWarningsOf } from '@/lib/errors';
 import { matchesAllWords } from '@/lib/searchMatch';
 import { SlotWarnings } from '@/components/SlotWarnings';
 import { CLASS_LABELS } from '@/lib/scheduleDisplay';
@@ -82,13 +82,18 @@ export function OccurrencesTab({
     await queryClient.invalidateQueries({ queryKey: ['occurrences'] });
     await queryClient.invalidateQueries({ queryKey: ['plan'] });
   };
+  // Termin zniknal w miedzyczasie (ponowne generowanie, usuniecie przez kogos innego).
+  const termGone = () => {
+    toast.info('Termin zniknal w miedzyczasie (np. terminy wygenerowano od nowa) — lista odswiezona');
+    void refresh();
+  };
   const act = useMutation({
     mutationFn: ({ id, action }: { id: string; action: 'CANCEL' | 'RESTORE' }) => changeOccurrence(id, { action }),
     onSuccess: async (r) => {
       toast.success(r.message);
       await refresh();
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => (isNotFound(e) ? termGone() : toast.error(getErrorMessage(e))),
   });
   const remove = useMutation({
     mutationFn: (id: string) => deleteManualOccurrence(id),
@@ -96,7 +101,7 @@ export function OccurrencesTab({
       toast.success(r.message);
       await refresh();
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => (isNotFound(e) ? termGone() : toast.error(getErrorMessage(e))),
   });
 
   const rows = useMemo(() => {
@@ -359,7 +364,10 @@ function MoveDialog({
     onError: (e) => {
       const list = slotWarningsOf(e);
       if (list) setWarned({ key: slotKey, warnings: list });
-      else toast.error(getErrorMessage(e));
+      else if (isNotFound(e)) {
+        toast.info('Termin zniknal w miedzyczasie (np. terminy wygenerowano od nowa) — lista odswiezona');
+        onDone();
+      } else toast.error(getErrorMessage(e));
     },
   });
   return (
