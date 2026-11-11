@@ -47,8 +47,10 @@ export function setupSteps(data: SetupStatus, termKey: string): SetupStep[] {
 
   // Krok 7: terminy (nieaktualne, nigdy niewygenerowane) i publikacja kalendarzy.
   const step7Todos: string[] = [];
-  // Pusty semestr: nie ma czego generowac ani publikowac — to nie jest "gotowe".
-  if (data.cohorts.length === 0) step7Todos.push('najpierw plan rocznikow (krok 6)');
+  // Pusty semestr (bez rocznikow albo bez zajec, np. nowy semestr letni z rocznikami
+  // przeniesionymi z zimy): nie ma czego generowac ani publikowac — to nie jest "gotowe".
+  if (data.cohorts.length === 0 || noSections) step7Todos.push('najpierw plan rocznikow (krok 6)');
+  else if (data.calendars.length === 0) step7Todos.push('najpierw kalendarz semestru (krok 1)');
   if (t.staleCohorts > 0) step7Todos.push(`„Generuj terminy” ${rocznikom(t.staleCohorts)} z nieaktualnymi terminami`);
   if (withoutOccurrences > 0) step7Todos.push(`„Generuj terminy” ${rocznikom(withoutOccurrences)} bez terminow`);
   if (unpublished > 0) {
@@ -151,7 +153,13 @@ export function setupSteps(data: SetupStatus, termKey: string): SetupStep[] {
       n: 7,
       title: 'Terminy i publikacja',
       state: step7State,
-      summary: `${t.staleCohorts > 0 || withoutOccurrences > 0 ? 'Terminy do wygenerowania' : 'Terminy aktualne'} · opublikowane kalendarze: ${visibleCalendars}/${data.calendars.length}`,
+      summary: `${
+        data.cohorts.length === 0 || noSections
+          ? 'Brak terminow'
+          : t.staleCohorts > 0 || withoutOccurrences > 0
+            ? 'Terminy do wygenerowania'
+            : 'Terminy aktualne'
+      } · opublikowane kalendarze: ${visibleCalendars}/${data.calendars.length}`,
       todo: step7Todos.length > 0 ? step7Todos.join('; ').replace(/^./, (c) => c.toUpperCase()) : null,
       // Najpierw terminy (z planu rocznika), potem publikacja kalendarza.
       to: generateFirst ? `/plan/${termKey}` : `/calendar/${termKey}`,

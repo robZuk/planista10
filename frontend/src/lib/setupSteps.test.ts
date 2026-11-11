@@ -106,6 +106,22 @@ describe('setupSteps', () => {
     expect(step(data, 5).todo).toBe('Najpierw zajecia (krok 4)');
   });
 
+  it('roczniki bez zajec i bez kalendarzy (nowy semestr) -> krok 7 nie jest gotowy', () => {
+    const data = ready(
+      { calendars: [], cohorts: [cohort({ id: 'a', sections: 0, placedSections: 0, occurrences: 0, calendar: null })] },
+      { cohorts: 1, cohortsWithoutCalendar: 1, cohortsWithoutSections: 1, sections: 0, placedSections: 0, published: 0 },
+    );
+    expect(step(data, 7).state).toBe('todo');
+    expect(step(data, 7).todo).toBe('Najpierw plan rocznikow (krok 6)');
+    expect(step(data, 7).summary).toBe('Brak terminow · opublikowane kalendarze: 0/0');
+  });
+
+  it('zajecia ulozone, ale semestr bez kalendarza -> krok 7 wskazuje kalendarz', () => {
+    const data = ready({ calendars: [] }, { published: 0 });
+    expect(step(data, 7).state).not.toBe('done');
+    expect(step(data, 7).todo).toBe('Najpierw kalendarz semestru (krok 1)');
+  });
+
   it('braki obsady i roczniki bez kalendarza -> "!" z czynnoscia', () => {
     const data = ready({}, { vacancies: 3, cohortsWithoutCalendar: 2 });
     expect(step(data, 5)).toMatchObject({ state: 'warn', summary: '3 zajecia bez pelnej obsady (NN)' });
