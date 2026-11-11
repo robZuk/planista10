@@ -22,7 +22,7 @@ export async function syncSections(
 export async function carryInstructors(
   termKey: string,
   input: { facultyId?: string; dryRun: boolean },
-): Promise<{ data: { matched: CarryRow[]; unmatched: CarryRow[] }; message: string }> {
+): Promise<{ data: { matched: CarryRow[]; unmatched: CarryRow[]; sourceSections: number }; message: string }> {
   const res = await api.post(`/terms/${termKey}/sections/carry`, { ...input, ...facultyParams(input.facultyId) });
   return res.data;
 }

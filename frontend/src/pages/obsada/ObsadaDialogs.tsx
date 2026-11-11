@@ -221,7 +221,7 @@ export function CarryDialog({
   onClose: () => void;
   onDone: () => void;
 }) {
-  const [report, setReport] = useState<{ matched: CarryRow[]; unmatched: CarryRow[] } | null>(null);
+  const [report, setReport] = useState<{ matched: CarryRow[]; unmatched: CarryRow[]; sourceSections: number } | null>(null);
   const preview = useMutation({
     mutationFn: () => carryInstructors(termKey, { facultyId, dryRun: true }),
     onSuccess: (r) => setReport(r.data),
@@ -256,6 +256,13 @@ export function CarryDialog({
           </div>
         ) : (
           <div className="max-h-[60vh] space-y-4 overflow-y-auto">
+            {report.sourceSections === 0 && report.unmatched.length > 0 && (
+              // Nie "nic nie pasuje", tylko "nie ma z czego przenosic" — np. pierwszy taki semestr w systemie.
+              <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+                We wczesniejszych semestrach tego typu ({termKey.endsWith('-L') ? 'letnich' : 'zimowych'}) nie ma zajec
+                z obsada dla tych programow — nie ma z czego przeniesc. Obsadz zajecia recznie albo wczytaj CSV od katedr.
+              </p>
+            )}
             <section>
               <h4 className="font-medium">Do uzupelnienia ({report.matched.length})</h4>
               <RowList rows={report.matched} empty="Brak dopasowan." />

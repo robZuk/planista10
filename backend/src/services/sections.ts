@@ -277,7 +277,7 @@ export interface CarryRow {
 export async function carryInstructors(
   term: AcademicTerm,
   opts: { facultyId: string | null; dryRun: boolean },
-): Promise<{ matched: CarryRow[]; unmatched: CarryRow[]; archivedCohorts: number }> {
+): Promise<{ matched: CarryRow[]; unmatched: CarryRow[]; archivedCohorts: number; sourceSections: number }> {
   const all = await activeCohorts(term, opts.facultyId);
   // Obsady rocznikow z kalendarzem w archiwum nie uzupelniamy — to zapis tego, co sie odbylo.
   const archived = await archivedCohortIds(term, all);
@@ -352,5 +352,7 @@ export async function carryInstructors(
     );
   }
   if (!opts.dryRun && ops.length > 0) await prisma.$transaction(ops);
-  return { matched, unmatched, archivedCohorts: archived.size };
+  // Ile zajec z obsada bylo w ogole do wyboru — 0 znaczy "nie ma z czego przenosic" (np. pierwszy
+  // semestr letni w systemie), a nie "nic nie pasuje".
+  return { matched, unmatched, archivedCohorts: archived.size, sourceSections: candidates.length };
 }
