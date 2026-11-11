@@ -11,7 +11,10 @@ const prismaMock = vi.hoisted(() => ({
     findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 't1', startYear: 2026, type: 'SUMMER' }),
     findUnique: vi.fn().mockResolvedValue({ id: 't1', startYear: 2026, type: 'SUMMER' }),
   },
-  instructor: { findMany: vi.fn().mockResolvedValue([{ id: 'i1', email: 'jan@umg.edu.pl' }]) },
+  instructor: {
+    findMany: vi.fn().mockResolvedValue([{ id: 'i1', email: 'jan@umg.edu.pl' }]),
+    count: vi.fn((args: { where: { id: { in: string[] } } }) => Promise.resolve(args.where.id.in.length)),
+  },
   cohort: { findMany: vi.fn().mockResolvedValue([]) },
   termCalendar: { findMany: vi.fn().mockResolvedValue([]) },
   classSection: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
@@ -87,6 +90,16 @@ describe('API — obsada zajec', () => {
     ]);
     expect(res.status).toBe(200);
     expect(res.body.message).toMatch(/brakuje 5 h/);
+  });
+
+  it('prowadzacy usuniety w miedzyczasie -> 409 z prosba o odswiezenie, bez zapisu', async () => {
+    prismaMock.classSection.findUnique.mockResolvedValueOnce({ id: 's1', facultyId: 'wm', hours: 30 });
+    prismaMock.instructor.count.mockResolvedValueOnce(0);
+    const before = prismaMock.$transaction.mock.calls.length;
+    const res = await put(dean, [{ instructorId: 'i-usuniety', hours: 30 }]);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/zostal usuniety/);
+    expect(prismaMock.$transaction.mock.calls.length).toBe(before);
   });
 
   it('kalendarz rocznika w archiwum -> 409, obsada bez zmian', async () => {

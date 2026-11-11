@@ -27,6 +27,8 @@ const prismaMock = vi.hoisted(() => ({
     findFirst: vi.fn(),
     create: vi.fn((args: { data: object }) => Promise.resolve({ id: 'i-new', ...args.data })),
     update: vi.fn((args: { data: object }) => Promise.resolve({ id: 'i1', ...args.data })),
+    findUnique: vi.fn(),
+    delete: vi.fn().mockResolvedValue({ id: 'i1' }),
   },
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
@@ -103,6 +105,25 @@ describe('API — prowadzacy: duplikat e-maila', () => {
     const res = await request(app).put('/api/instructors/i1').set('Authorization', `Bearer ${admin}`).send(body);
     expect(res.status).toBe(200);
     expect(prismaMock.instructor.findFirst).toHaveBeenCalledWith({ where: expect.objectContaining({ NOT: { id: 'i1' } }) });
+  });
+});
+
+describe('API — prowadzacy: usuwanie', () => {
+  const counts = (c: object) => ({ id: 'i1', _count: { placements: 0, occurrences: 0, sectionAssignments: 0, changeRequests: 0, ...c } });
+
+  it('prowadzacy ze zgloszeniami zmian -> 409 z powodem, bez usuwania', async () => {
+    prismaMock.instructor.findUnique.mockResolvedValueOnce(counts({ changeRequests: 2 }));
+    const res = await request(app).delete('/api/instructors/i1').set('Authorization', `Bearer ${admin}`);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toContain('zgloszenia zmian');
+    expect(prismaMock.instructor.delete).not.toHaveBeenCalled();
+  });
+
+  it('prowadzacy bez obsady, planu i zgloszen jest usuwany', async () => {
+    prismaMock.instructor.findUnique.mockResolvedValueOnce(counts({}));
+    const res = await request(app).delete('/api/instructors/i1').set('Authorization', `Bearer ${admin}`);
+    expect(res.status).toBe(200);
+    expect(prismaMock.instructor.delete).toHaveBeenCalledWith({ where: { id: 'i1' } });
   });
 });
 
