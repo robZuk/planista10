@@ -169,6 +169,10 @@ export const setInstructors = asyncHandler(async (req, res) => {
   }
   const ids = assignments.map((a) => a.instructorId).filter((x): x is string => !!x);
   if (new Set(ids).size !== ids.length) throw new AppError(400, 'Prowadzacy powtarza sie w obsadzie');
+  // Prowadzacy usuniety w miedzyczasie (inne okno) — czytelny komunikat zamiast bledu klucza obcego.
+  if (ids.length > 0 && (await prisma.instructor.count({ where: { id: { in: ids } } })) !== ids.length) {
+    throw new AppError(409, 'Ktorys z wybranych prowadzacych zostal usuniety — odswiez liste i wybierz ponownie');
+  }
   await prisma.$transaction([
     prisma.sectionInstructor.deleteMany({ where: { sectionId: section.id } }),
     prisma.sectionInstructor.createMany({
