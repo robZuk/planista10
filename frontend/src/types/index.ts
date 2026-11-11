@@ -146,6 +146,17 @@ export interface PublicHoliday {
   name: string;
 }
 
+export interface UpcomingDayOff {
+  id: string;
+  kind: 'HOLIDAY' | 'BREAK' | 'DAY_OFF';
+  name: string;
+  /** YYYY-MM-DD */
+  start: string;
+  end: string;
+  /** Kalendarze, ktorych dotyczy; null = wszystkie (i swieta ustawowe). */
+  calendars: string[] | null;
+}
+
 export interface DashboardEntry {
   id: string;
   classType: ClassType;
@@ -177,6 +188,8 @@ export interface DashboardStats {
   /** Biezacy tydzien (pon-nd), przyciety do roli: student/prowadzacy — tylko swoje, opublikowane. */
   weekEntries: DashboardEntry[];
   upcomingHolidays: PublicHoliday[];
+  /** Karta planisty: swieta oraz przerwy i dni wolne kalendarzy (60 dni, zakres roli). */
+  upcomingDaysOff: UpcomingDayOff[];
   recentUsers: { id: string; name: string; email: string; role: Role; createdAt: string }[];
 }
 

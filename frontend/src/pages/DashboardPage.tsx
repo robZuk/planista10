@@ -26,6 +26,13 @@ import { EntryStatusMeter } from './dashboard/EntryStatusMeter';
 import { plural } from '@/lib/setupSteps';
 import { TodayCard } from './dashboard/TodayCard';
 
+const DAY_OFF_LABELS = { HOLIDAY: 'swieto', BREAK: 'przerwa', DAY_OFF: 'dzien wolny' } as const;
+
+/** "11 listopada 2026" albo "23 grudnia 2026 – 1 stycznia 2027". */
+function formatDayOffRange(start: string, end: string): string {
+  return start === end ? formatDateLong(start) : `${formatDateLong(start)} – ${formatDateLong(end)}`;
+}
+
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const role = user?.role;
@@ -120,6 +127,9 @@ export default function DashboardPage() {
 
   // ─── Administrator i dziekanat: obraz calej uczelni ───
   const isAdmin = role === 'ADMIN';
+  // Swieto albo przerwa we wszystkich kalendarzach — pusty dzien dostaje powod.
+  const todayOffEverywhere =
+    stats?.upcomingDaysOff.find((d) => d.calendars === null && d.start <= todayKey && todayKey <= d.end) ?? null;
 
   return (
     <>
@@ -188,7 +198,12 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <TodayCard entries={stats?.todayEntries} loading={isPending} limit={12} />
+        <TodayCard
+          entries={stats?.todayEntries}
+          loading={isPending}
+          limit={12}
+          emptyText={todayOffEverywhere ? `Dzis wolne: ${todayOffEverywhere.name}.` : undefined}
+        />
 
         <Card>
           <CardHeader>
@@ -196,20 +211,26 @@ export default function DashboardPage() {
               <CalendarOff className="size-4 text-muted-foreground" />
               Najblizsze dni wolne
             </CardTitle>
-            <CardDescription>Generator terminow omija te daty.</CardDescription>
+            <CardDescription>Swieta oraz przerwy i dni wolne z kalendarzy semestru — generator terminow je omija.</CardDescription>
           </CardHeader>
           <CardContent>
-            {stats?.upcomingHolidays.length === 0 ? (
+            {stats?.upcomingDaysOff.length === 0 ? (
               <p className="py-6 text-center text-sm text-muted-foreground">
-                Nie ma zaplanowanych dni wolnych.
+                W najblizszych 60 dniach nie ma dni wolnych.
               </p>
             ) : (
               <ItemGroup className="rounded-lg border">
-                {stats?.upcomingHolidays.map((holiday) => (
-                  <Item key={holiday.id} size="sm" variant="muted">
+                {stats?.upcomingDaysOff.map((day) => (
+                  <Item key={day.id} size="sm" variant="muted">
                     <ItemContent>
-                      <ItemTitle>{holiday.name}</ItemTitle>
-                      <ItemDescription>{formatDateLong(holiday.date)}</ItemDescription>
+                      <ItemTitle>
+                        {day.name}
+                        <Badge variant="outline">{DAY_OFF_LABELS[day.kind]}</Badge>
+                      </ItemTitle>
+                      <ItemDescription>
+                        {formatDayOffRange(day.start, day.end)}
+                        {day.calendars && ` · ${day.calendars.join(', ')}`}
+                      </ItemDescription>
                     </ItemContent>
                   </Item>
                 ))}

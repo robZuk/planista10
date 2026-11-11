@@ -1,8 +1,9 @@
 import { prisma } from '../lib/prisma';
 import { asyncHandler } from '../middleware/asyncHandler';
-import { addDays, fromIsoDate, mondayOf, todayIso } from '../lib/isoDate';
+import { addDays, fromIsoDate, mondayOf, toIsoDate, todayIso } from '../lib/isoDate';
 import { holidaysInRange } from '../lib/holidays';
 import { formatMinutes } from '../lib/timeGrid';
+import { upcomingDaysOff, type CalendarDayOff } from '../lib/daysOff';
 import { occurrenceScope, publishedCohortKeys } from '../services/visibility';
 
 const occurrenceInclude = {
@@ -102,6 +103,33 @@ export const getStats = asyncHandler(async (req, res) => {
       endBlock: { order: o.endOrder, endTime: formatMinutes(o.endMinute) },
     }));
 
+  // Najblizsze dni wolne (karta planisty): swieta i przerwy/dni wolne kalendarzy w zakresie roli.
+  const horizon = addDays(today, 60);
+  const planner = user?.role === 'ADMIN' || dean;
+  const calendars = planner
+    ? await prisma.termCalendar.findMany({
+          where: { ...(fid ? { facultyId: fid } : {}), startDate: { lte: fromIsoDate(horizon) }, endDate: { gte: fromIsoDate(today) } },
+          select: {
+            name: true,
+            studyMode: true,
+            faculty: { select: { shortName: true } },
+            breaks: { select: { name: true, startDate: true, endDate: true } },
+            days: { where: { kind: 'DAY_OFF' }, select: { name: true, date: true } },
+          },
+        })
+      : [];
+  const calendarLabel = (c: (typeof calendars)[number]) =>
+    `${fid ? '' : `${c.faculty.shortName} `}${c.studyMode === 'FULL_TIME' ? 'stacj.' : 'niestacj.'}${c.name === 'Podstawowy' ? '' : ` (${c.name})`}`;
+  const calendarDaysOff: CalendarDayOff[] = calendars.flatMap((c) => [
+    ...c.breaks.map((b) => ({ kind: 'BREAK' as const, name: b.name, start: toIsoDate(b.startDate), end: toIsoDate(b.endDate), calendar: calendarLabel(c) })),
+    ...c.days.map((d) => {
+      const date = toIsoDate(d.date);
+      return { kind: 'DAY_OFF' as const, name: d.name || 'Dzien wolny', start: date, end: date, calendar: calendarLabel(c) };
+    }),
+  ]);
+  // Karta jest tylko w widoku planisty; prowadzacy i student maja wlasny plan.
+  const daysOff = planner ? upcomingDaysOff(today, horizon, holidaysInRange(today, horizon), calendarDaysOff, calendars.map(calendarLabel)) : [];
+
   const byRole = Object.fromEntries(usersByRole.map((r) => [r.role, r._count._all])) as Record<string, number>;
   const byStatus = Object.fromEntries(occurrencesByStatus.map((r) => [r.status, r._count._all])) as Record<string, number>;
   const todayEntries = week.filter((o) => o.date.slice(0, 10) === today);
@@ -138,6 +166,7 @@ export const getStats = asyncHandler(async (req, res) => {
       todayEntries,
       weekEntries: week,
       upcomingHolidays: holidaysInRange(today, addDays(today, 7)).map((h) => ({ id: h.date, ...h })),
+      upcomingDaysOff: daysOff,
       recentUsers,
     },
   });
