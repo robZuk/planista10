@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classLabel, proposalDateProblem, requestableKinds, validateRequestInput } from './changeRequests';
+import { classLabel, proposalDateProblem, requestableKinds, resolveOnDirectChange, validateRequestInput } from './changeRequests';
 import { occurrenceKey, parseOccurrenceKey } from './occurrenceKey';
 
 const today = '2026-11-09';
@@ -75,5 +75,23 @@ describe('proposalDateProblem', () => {
     expect(proposalDateProblem({ teaching: false, reason: 'OUT_OF_RANGE', label: null })).toBe('Data poza semestrem');
     expect(proposalDateProblem({ teaching: false, reason: 'NO_ZJAZD', label: null })).toMatch(/zjazdu/);
     expect(proposalDateProblem({ teaching: false, reason: 'NOT_MODE_DAY', label: null })).toMatch(/dzien tygodnia/);
+  });
+});
+
+describe('resolveOnDirectChange', () => {
+  const move = { kind: 'MOVE' as const, newDate: '2026-12-09', newStartOrder: 3, newEndOrder: 4 };
+  const cancel = { kind: 'CANCEL' as const, newDate: null, newStartOrder: null, newEndOrder: null };
+
+  it('planista zrobil to, o co proszono — zgloszenie zalatwione', () => {
+    expect(resolveOnDirectChange(cancel, { action: 'CANCEL' })).toBe('APPROVED');
+    expect(resolveOnDirectChange(move, { action: 'MODIFY', date: '2026-12-09', startOrder: 3, endOrder: 4 })).toBe('APPROVED');
+    expect(resolveOnDirectChange({ ...move, kind: 'MAKEUP' }, { action: 'MAKEUP', date: '2026-12-09', startOrder: 3, endOrder: 4 })).toBe('APPROVED');
+  });
+
+  it('inna zmiana — zgloszenie nieaktualne', () => {
+    expect(resolveOnDirectChange(move, { action: 'MODIFY', date: '2026-12-10', startOrder: 3, endOrder: 4 })).toBe('SUPERSEDED');
+    expect(resolveOnDirectChange(move, { action: 'CANCEL' })).toBe('SUPERSEDED');
+    expect(resolveOnDirectChange(cancel, { action: 'MODIFY', date: '2026-12-10', startOrder: 1, endOrder: 2 })).toBe('SUPERSEDED');
+    expect(resolveOnDirectChange({ ...move, kind: 'MAKEUP' }, { action: 'RESTORE' })).toBe('SUPERSEDED');
   });
 });

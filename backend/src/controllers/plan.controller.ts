@@ -10,7 +10,9 @@ import { mapRangeByTime } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from '../services/timeGrids';
 import { activeCohorts } from '../services/sections';
 import { conflictMessage } from '../lib/conflictMessage';
-import { notifyClassChange } from '../services/changeRequests';
+import { closePendingOnDirectChange, keyOf, notifyClassChange, pendingByKeys } from '../services/changeRequests';
+import type { DirectChange } from '../lib/changeRequests';
+import { occurrenceKey } from '../lib/occurrenceKey';
 import {
   assertPlanEditable,
   cancelOccurrence,
@@ -234,9 +236,14 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       })
     ).map((e) => `${e.placementId}|${toIsoDate(e.originalDate)}`),
   );
+  // Czekajace zgloszenia prowadzacych — okno terminu ostrzega planiste przed zmiana wprost.
+  const keyOfRow = (o: (typeof rows)[number]) =>
+    occurrenceKey({ id: o.id, kind: o.kind, placementId: o.placementId, originalDate: o.originalDate ? toIsoDate(o.originalDate) : null });
+  const pending = await pendingByKeys(rows.map(keyOfRow));
   res.json({
     data: rows.map((o) => ({
       id: o.id,
+      pendingRequest: pending.get(keyOfRow(o)) ?? null,
       sectionId: o.sectionId,
       placementId: o.placementId,
       date: toIsoDate(o.date),
@@ -272,21 +279,30 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
   const grid = await assertPlanEditable(occ.termId, occ.section.cohortId);
   const body = req.body as { action: 'CANCEL' | 'MODIFY' | 'RESTORE' } & MoveInput;
   const before = { date: occ.date, startMinute: occ.startMinute, endMinute: occ.endMinute };
+  const key = keyOf(occ);
+  // Czekajace zgloszenie prowadzacego dla tego terminu zamyka sie samo (zalatwione albo
+  // nieaktualne) i wtedy to ono niesie powiadomienie; inaczej zwykle powiadomienie o zmianie.
+  const after = async (change: DirectChange, fallback: 'CLASS_CHANGED' | 'CLASS_CANCELLED') => {
+    if (!(await closePendingOnDirectChange(key, change, req.user!.id, before, occ.id))) {
+      await notifyClassChange(occ.id, fallback, req.user!.id, before);
+    }
+  };
 
   if (body.action === 'RESTORE') {
     await restoreOccurrence(occ, grid);
-    await notifyClassChange(occ.id, 'CLASS_CHANGED', req.user!.id, before);
+    await after({ action: 'RESTORE' }, 'CLASS_CHANGED');
     res.json({ message: 'Termin przywrocony wg wzorca' });
     return;
   }
   if (body.action === 'CANCEL') {
     await cancelOccurrence(occ, body.note ?? null);
-    await notifyClassChange(occ.id, 'CLASS_CANCELLED', req.user!.id, before);
+    await after({ action: 'CANCEL' }, 'CLASS_CANCELLED');
     res.json({ message: 'Termin odwolany' });
     return;
   }
   await moveOccurrence(occ, grid, body);
-  await notifyClassChange(occ.id, 'CLASS_CHANGED', req.user!.id, before);
+  const moved = await prisma.occurrence.findUniqueOrThrow({ where: { id: occ.id } });
+  await after({ action: 'MODIFY', date: toIsoDate(moved.date), startOrder: moved.startOrder, endOrder: moved.endOrder }, 'CLASS_CHANGED');
   res.json({ message: 'Termin zmieniony' });
 });
 
@@ -299,7 +315,17 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
   await assertFacultyScope(req, section.facultyId);
   const grid = await assertPlanEditable(term.id, section.cohortId);
   const data = await createManual(term, section, grid, body);
-  await notifyClassChange(data.id, 'MAKEUP_SCHEDULED', req.user!.id);
+  // Odrobienie wskazanego odwolanego terminu zamyka czekajaca propozycje odrobienia prowadzacego.
+  const closed = body.makeupOfKey
+    ? await closePendingOnDirectChange(
+        body.makeupOfKey,
+        { action: 'MAKEUP', date: toIsoDate(data.date), startOrder: data.startOrder, endOrder: data.endOrder },
+        req.user!.id,
+        { date: data.date, startMinute: data.startMinute, endMinute: data.endMinute },
+        data.id,
+      )
+    : false;
+  if (!closed) await notifyClassChange(data.id, 'MAKEUP_SCHEDULED', req.user!.id);
   res.status(201).json({ data, message: 'Termin reczny dodany' });
 });
 

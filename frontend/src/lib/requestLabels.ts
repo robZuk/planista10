@@ -12,6 +12,7 @@ export const REQUEST_STATUS_LABELS: Record<ChangeRequestStatus, string> = {
   APPROVED: 'zatwierdzone',
   REJECTED: 'odrzucone',
   WITHDRAWN: 'wycofane',
+  SUPERSEDED: 'nieaktualne — plan zmieniony',
 };
 
 export const MAKEUP_STATE_LABELS: Record<MakeupRow['state'], string> = {

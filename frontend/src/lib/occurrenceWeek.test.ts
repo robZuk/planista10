@@ -44,6 +44,7 @@ const occ = (date: string, extra: Partial<OccurrenceRow> = {}): OccurrenceRow =>
   classType: 'LECTURE',
   group: 'EDST-1-W',
   groupId: 'g1',
+  pendingRequest: null,
   room: { id: 'r1', label: '101' },
   instructor: 'dr Nowak',
   instructorId: 'i1',
@@ -91,6 +92,10 @@ describe('occurrencesIn / dayNote / occurrenceMarker / periodLabel', () => {
 
   it('oznaczenie terminu', () => {
     expect(occurrenceMarker(occ('2026-11-02', { status: 'CANCELLED' }))).toBe('odwolany');
+    // Czekajace zgloszenie prowadzacego ma pierwszenstwo — planista widzi je przed zmiana terminu.
+    expect(
+      occurrenceMarker(occ('2026-11-02', { status: 'CANCELLED', pendingRequest: { id: 'r1', kind: 'MAKEUP', instructor: 'dr X', proposal: '09.12' } })),
+    ).toBe('zgloszenie: odrobienie');
     expect(occurrenceMarker(occ('2026-11-02', { kind: 'MANUAL', originalDate: null }))).toBe('reczny');
     expect(occurrenceMarker(occ('2026-11-03', { originalDate: '2026-11-11', changed: true }))).toBe('przeniesiony z 11.11');
     expect(occurrenceMarker(occ('2026-11-02', { changed: true }))).toBe('zmieniony');

@@ -816,6 +816,7 @@ enum ChangeRequestStatus {
   APPROVED // zatwierdzone i wykonane
   REJECTED // odrzucone (z uzasadnieniem)
   WITHDRAWN // wycofane przez prowadzacego
+  SUPERSEDED // nieaktualne: planista zmienil termin wprost, inaczej niz w prosbie
 }
 
 enum NotificationKind {
@@ -823,6 +824,7 @@ enum NotificationKind {
   REQUEST_WITHDRAWN // do dziekanatu: prowadzacy wycofal zgloszenie
   REQUEST_APPROVED // do prowadzacego
   REQUEST_REJECTED // do prowadzacego
+  REQUEST_SUPERSEDED // do prowadzacego: termin zmieniony wprost, zgloszenie nieaktualne
   CLASS_CANCELLED // do prowadzacego: dziekanat odwolal jego zajecia
   CLASS_CHANGED // do prowadzacego: dziekanat przeniosl / przywrocil jego zajecia
   MAKEUP_SCHEDULED // do prowadzacego: dziekanat dodal termin (odrobienie) z jego udzialem

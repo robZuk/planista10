@@ -93,3 +93,29 @@ export function proposalDateProblem(info: { teaching: boolean; reason: DayReason
       return 'Rocznik nie ma zajec w ten dzien tygodnia';
   }
 }
+
+/** Bezposrednia zmiana terminu przez planiste (Ukladanie planu → Terminy). */
+export interface DirectChange {
+  action: 'CANCEL' | 'MODIFY' | 'RESTORE' | 'MAKEUP';
+  /** MODIFY / MAKEUP: termin po zmianie. */
+  date?: string;
+  startOrder?: number;
+  endOrder?: number;
+}
+
+/**
+ * Co zrobic z czekajacym zgloszeniem, gdy planista zmienil termin wprost: jesli zrobil dokladnie
+ * to, o co prosil prowadzacy (odwolal prosbe o odwolanie, przeniosl na proponowany termin, dodal
+ * odrobienie w proponowanym terminie) — zgloszenie jest zalatwione (APPROVED); w kazdym innym
+ * przypadku jest nieaktualne (SUPERSEDED), bo plan zmieniono inaczej, niz prosil.
+ */
+export function resolveOnDirectChange(
+  request: { kind: RequestKind; newDate: string | null; newStartOrder: number | null; newEndOrder: number | null },
+  change: DirectChange,
+): 'APPROVED' | 'SUPERSEDED' {
+  const sameSlot = change.date === request.newDate && change.startOrder === request.newStartOrder && change.endOrder === request.newEndOrder;
+  if (request.kind === 'CANCEL' && change.action === 'CANCEL') return 'APPROVED';
+  if (request.kind === 'MOVE' && change.action === 'MODIFY' && sameSlot) return 'APPROVED';
+  if (request.kind === 'MAKEUP' && change.action === 'MAKEUP' && sameSlot) return 'APPROVED';
+  return 'SUPERSEDED';
+}

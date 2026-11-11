@@ -6,7 +6,17 @@ import { termKey } from '../lib/terms';
 import { dayWindowProblem, formatMinutes } from '../lib/timeGrid';
 import { singleConflictMessage } from '../lib/conflictMessage';
 import { occurrenceKey, parseOccurrenceKey } from '../lib/occurrenceKey';
-import { classLabel, KIND_LABEL, proposalDateProblem, requestableKinds, slotLabel, validateRequestInput, type RequestInput } from '../lib/changeRequests';
+import {
+  classLabel,
+  KIND_LABEL,
+  proposalDateProblem,
+  requestableKinds,
+  resolveOnDirectChange,
+  slotLabel,
+  validateRequestInput,
+  type DirectChange,
+  type RequestInput,
+} from '../lib/changeRequests';
 import { TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
 import { toCalendarInput } from './termCalendars';
 import { activeCohorts } from './sections';
@@ -484,5 +494,87 @@ export async function notifyClassChange(
       link: `/my-plan/${termKey(term)}`,
     },
     actorId,
+  );
+}
+
+/**
+ * Planista zmienil termin wprost (Ukladanie planu → Terminy), a prowadzacy ma dla niego zgloszenie
+ * czekajace na decyzje. Zgloszenie zamyka sie samo: zalatwione, jesli zmiana jest dokladnie tym,
+ * o co prosil, inaczej nieaktualne (lib/changeRequests.resolveOnDirectChange). Prowadzacy dostaje
+ * jedno powiadomienie z wynikiem i nowym terminem. Zwraca true, gdy cos zamknieto — wtedy
+ * kontroler nie wysyla juz zwyklego powiadomienia o zmianie terminu.
+ */
+export async function closePendingOnDirectChange(
+  key: string,
+  change: DirectChange,
+  actorId: string,
+  before: { date: Date; startMinute: number; endMinute: number },
+  resultOccurrenceId: string,
+): Promise<boolean> {
+  const pending = await prisma.changeRequest.findMany({ where: { occurrenceKey: key, status: 'PENDING' } });
+  if (pending.length === 0) return false;
+  const occ = await prisma.occurrence.findUnique({ where: { id: resultOccurrenceId }, include: occurrenceInclude });
+  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: pending[0]!.termId } });
+  const was = slotLabel(toIsoDate(before.date), before.startMinute, before.endMinute);
+  const now = occ ? slotLabel(toIsoDate(occ.date), occ.startMinute, occ.endMinute) : was;
+  const effect = {
+    CANCEL: `Zajecia ${was} sa odwolane.`,
+    MODIFY: `Bylo: ${was}, jest: ${now}.`,
+    RESTORE: `Zajecia ${was} przywrocone wg wzorca: ${now}.`,
+    MAKEUP: `Dodany termin: ${now}.`,
+  }[change.action];
+
+  for (const r of pending) {
+    const outcome = resolveOnDirectChange(
+      { kind: r.kind, newDate: r.newDate ? toIsoDate(r.newDate) : null, newStartOrder: r.newStartOrder, newEndOrder: r.newEndOrder },
+      change,
+    );
+    const note =
+      outcome === 'APPROVED' ? 'Zmiana wprowadzona bezposrednio w planie, zgodnie z prosba' : 'Dziekanat zmienil ten termin bezposrednio w planie, inaczej niz w prosbie';
+    await prisma.changeRequest.update({
+      where: { id: r.id },
+      data: { status: outcome, decidedById: actorId, decidedAt: new Date(), decisionNote: note },
+    });
+    const subject = await subjectOf(r.sectionId);
+    await notify(
+      await instructorUserIds(r.instructorId),
+      outcome === 'APPROVED'
+        ? {
+            kind: 'REQUEST_APPROVED',
+            title: `Zalatwiono: ${KIND_LABEL[r.kind]}`,
+            body: `${subject}. Dziekanat zmienil plan zgodnie z Twoja prosba. ${effect}`,
+            link: `/requests/${termKey(term)}`,
+            requestId: r.id,
+          }
+        : {
+            kind: 'REQUEST_SUPERSEDED',
+            title: `Zgloszenie nieaktualne: ${KIND_LABEL[r.kind]}`,
+            body: `${subject}. Dziekanat zmienil ten termin inaczej niz w Twojej prosbie: ${effect} Jesli to nie pasuje, zloz nowe zgloszenie.`,
+            link: `/requests/${termKey(term)}`,
+            requestId: r.id,
+          },
+      actorId,
+    );
+  }
+  return true;
+}
+
+/** Czekajace zgloszenia terminow (klucze) — ostrzezenie dla planisty w "Terminach". */
+export async function pendingByKeys(keys: string[]) {
+  if (keys.length === 0) return new Map<string, { id: string; kind: ChangeRequest['kind']; instructor: string; proposal: string | null }>();
+  const rows = await prisma.changeRequest.findMany({
+    where: { occurrenceKey: { in: keys }, status: 'PENDING' },
+    include: { instructor: { select: { title: true, firstName: true, lastName: true } } },
+  });
+  return new Map(
+    rows.map((r) => [
+      r.occurrenceKey,
+      {
+        id: r.id,
+        kind: r.kind,
+        instructor: personName(r.instructor),
+        proposal: r.newDate ? `${toIsoDate(r.newDate).slice(8, 10)}.${toIsoDate(r.newDate).slice(5, 7)}` : null,
+      },
+    ]),
   );
 }

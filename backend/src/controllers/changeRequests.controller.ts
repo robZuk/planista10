@@ -53,7 +53,7 @@ async function listScope(req: Request): Promise<{ instructorId?: string; faculty
   return { facultyId: scope.facultyId };
 }
 
-const STATUSES: ChangeRequestStatus[] = ['PENDING', 'APPROVED', 'REJECTED', 'WITHDRAWN'];
+const STATUSES: ChangeRequestStatus[] = ['PENDING', 'APPROVED', 'REJECTED', 'WITHDRAWN', 'SUPERSEDED'];
 
 export const list = asyncHandler(async (req, res) => {
   const term = await findTerm(String(req.params.key));

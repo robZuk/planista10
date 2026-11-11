@@ -30,6 +30,7 @@ const STATUS_VARIANT: Record<ChangeRequestRow['status'], 'default' | 'secondary'
   APPROVED: 'default',
   REJECTED: 'destructive',
   WITHDRAWN: 'secondary',
+  SUPERSEDED: 'secondary',
 };
 
 /** Opis zgloszenia: zajecia, termin i propozycja. */

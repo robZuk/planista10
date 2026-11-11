@@ -123,7 +123,11 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   sprawdzana od razu (dzień zajęć rocznika, siatka i okno godzin wydziału, kolizje). Zgłoszenie
   niczego nie zmienia; dziekanat wydziału **zatwierdza** (zmiana wykonuje się tymi samymi
   funkcjami co ręczna zmiana planisty — `services/occurrenceChanges`) albo **odrzuca** z
-  uzasadnieniem; prowadzący może **wycofać** czekające. Stany: `PENDING → APPROVED | REJECTED | WITHDRAWN`.
+  uzasadnieniem; prowadzący może **wycofać** czekające. Stany: `PENDING → APPROVED | REJECTED | WITHDRAWN | SUPERSEDED`.
+- Planista zmienia termin **wprost** (Terminy), a zgłoszenie czeka: okno terminu ostrzega, a zmiana
+  zamyka zgłoszenie — `APPROVED`, gdy to dokładnie to, o co proszono (odwołanie / proponowany
+  termin), inaczej `SUPERSEDED` (nieaktualne). Prowadzący dostaje jedno powiadomienie
+  (`lib/changeRequests.resolveOnDirectChange`).
 - Lista **do odrobienia**: odwołane terminy prowadzącego ze stanem — do odrobienia / termin
   zgłoszony / odrobione (jest termin ręczny z jego `makeupOfKey`).
 - `Notification` — powiadomienia w aplikacji (dzwonek): nowe i wycofane zgłoszenia do dziekanatu

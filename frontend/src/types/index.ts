@@ -674,6 +674,8 @@ export interface OccurrenceRow {
   status: EntryStatus;
   changed: boolean;
   note: string | null;
+  /** Zgloszenie prowadzacego czekajace na decyzje — zmiana wprost je zamknie. */
+  pendingRequest: { id: string; kind: ChangeRequestKind; instructor: string; proposal: string | null } | null;
 }
 
 // ─── Etap 6: przenoszenie planu, przygotowanie semestru, moj plan ──
@@ -760,7 +762,7 @@ export interface MyPlanRow {
 // ─── Zgloszenia zmian i powiadomienia ──────────────────────────
 
 export type ChangeRequestKind = 'CANCEL' | 'MOVE' | 'MAKEUP';
-export type ChangeRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
+export type ChangeRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN' | 'SUPERSEDED';
 
 export interface ChangeRequestRow {
   id: string;

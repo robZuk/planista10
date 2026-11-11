@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarDays, List, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CalendarDays, Inbox, List, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +29,7 @@ import { CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { formatMinutes } from '@/lib/timeGrid';
 import { formatDayMonth } from '@/lib/planHours';
 import { occurrenceMarker } from '@/lib/occurrenceWeek';
+import { REQUEST_KIND_LABELS } from '@/lib/requestLabels';
 import type { CalendarPeriod, DayOfWeek, OccurrenceRow, PlanSection, TimeBlock } from '@/types';
 import { OccurrencesWeek } from './OccurrencesWeek';
 
@@ -223,6 +226,7 @@ export function OccurrencesTab({
                 </>
               )}
             </dl>
+            {details.pendingRequest && <PendingRequestNote request={details.pendingRequest} termKey={termKey} />}
             {!readOnly && (
               <DialogFooter className="sm:justify-start">
                 {details.status !== 'CANCELLED' && (
@@ -255,7 +259,7 @@ export function OccurrencesTab({
           </DialogContent>
         </Dialog>
       )}
-      {editing && <MoveDialog occurrence={editing} blocks={blocks} onClose={() => setEditing(null)} onDone={refresh} />}
+      {editing && <MoveDialog termKey={termKey} occurrence={editing} blocks={blocks} onClose={() => setEditing(null)} onDone={refresh} />}
       {adding && (
         <ManualDialog termKey={termKey} sections={sections} blocks={blocks} onClose={() => setAdding(false)} onDone={refresh} />
       )}
@@ -270,12 +274,36 @@ function useRoomOptions() {
   );
 }
 
+/** Ostrzezenie przy zmianie terminu, dla ktorego prowadzacy ma zgloszenie czekajace na decyzje. */
+function PendingRequestNote({ request, termKey }: { request: NonNullable<OccurrenceRow['pendingRequest']>; termKey: string }) {
+  return (
+    <Alert>
+      <Inbox />
+      <AlertTitle>
+        Zgloszenie prowadzacego ({request.instructor}): {REQUEST_KIND_LABELS[request.kind].toLowerCase()}
+        {request.proposal && ` na ${request.proposal}`}
+      </AlertTitle>
+      <AlertDescription>
+        <p>
+          Zmiana wprost zamknie zgloszenie — jako zalatwione, gdy jest zgodna z prosba, inaczej jako nieaktualne — a prowadzacy dostanie
+          powiadomienie.{' '}
+          <Link to={`/requests/${termKey}`} className="font-medium underline underline-offset-4">
+            Rozpatrz w „Zgloszeniach zmian”
+          </Link>
+        </p>
+      </AlertDescription>
+    </Alert>
+  );
+}
+
 function MoveDialog({
+  termKey,
   occurrence,
   blocks,
   onClose,
   onDone,
 }: {
+  termKey: string;
   occurrence: OccurrenceRow;
   blocks: TimeBlock[];
   onClose: () => void;
@@ -313,6 +341,7 @@ function MoveDialog({
             {occurrence.subject} · {occurrence.group}. Zmiana dotyczy tylko tego terminu i przetrwa ponowne generowanie.
           </DialogDescription>
         </DialogHeader>
+        {occurrence.pendingRequest && <PendingRequestNote request={occurrence.pendingRequest} termKey={termKey} />}
         <div className="grid grid-cols-2 gap-3">
           <Field>
             <FieldLabel htmlFor="mv-date">Data</FieldLabel>
