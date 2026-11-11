@@ -1,5 +1,6 @@
 import type { Request } from 'express';
 import { prisma } from '../lib/prisma';
+import { plural } from '../lib/plural';
 import { CLASS_LABEL_PL } from '../lib/scheduleTime';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
@@ -270,22 +271,27 @@ export const importCsv = asyncHandler(async (req, res) => {
   const byEmail = new Map(instructors.map((i) => [i.email.toLowerCase(), i.id]));
   const grouped = new Map<string, { instructorId: string | null; hours: number }[]>();
   const errors: string[] = [];
+  // Zajecia z choc jednym blednym wierszem pomijamy w calosci — inaczej literowka w e-mailu
+  // po cichu odebralaby komus godziny (obsada z pliku zastepuje dotychczasowa).
+  const brokenRows = new Map<string, number[]>();
   lines.slice(1).forEach((line, n) => {
     const cols = parseCsvLine(line);
     const [sectionId, , , , , , , email = '', hoursRaw = ''] = cols;
     const hours = Number(hoursRaw);
-    if (!sectionId || !Number.isInteger(hours) || hours <= 0) {
-      errors.push(`Wiersz ${n + 2}: brak id zajec albo niepoprawne godziny`);
-      return;
-    }
+    const fail = (message: string) => {
+      errors.push(`Wiersz ${n + 2}: ${message}`);
+      if (sectionId) brokenRows.set(sectionId, [...(brokenRows.get(sectionId) ?? []), n + 2]);
+    };
+    if (!sectionId || !Number.isInteger(hours) || hours <= 0) return fail('brak id zajec albo niepoprawne godziny');
     const key = email.trim().toLowerCase();
     const instructorId = key === '' || key === 'nn' ? null : (byEmail.get(key) ?? undefined);
-    if (instructorId === undefined) {
-      errors.push(`Wiersz ${n + 2}: nie ma prowadzacego ${email}`);
-      return;
-    }
+    if (instructorId === undefined) return fail(`nie ma prowadzacego ${email}`);
     grouped.set(sectionId, [...(grouped.get(sectionId) ?? []), { instructorId, hours }]);
   });
+  for (const [sectionId, rows] of brokenRows) {
+    if (!grouped.delete(sectionId)) continue;
+    errors.push(`Zajecia ${sectionId}: pominiete w calosci — popraw bledne wiersze (${rows.join(', ')}), obsada zostaje bez zmian`);
+  }
 
   const sections = await prisma.classSection.findMany({
     where: { id: { in: [...grouped.keys()] }, termId: term.id, ...(facultyId ? { facultyId } : {}) },
@@ -316,6 +322,8 @@ export const importCsv = asyncHandler(async (req, res) => {
   if (!dryRun && ops.length > 0) await prisma.$transaction(ops);
   res.json({
     data: { applied, errors },
-    message: dryRun ? `Do wczytania: ${applied} zajec` : `Wczytano obsade ${applied} zajec`,
+    message: dryRun
+      ? `Do wczytania: ${plural(applied, 'zajecia', 'zajecia', 'zajec')}`
+      : `Wczytano obsade: ${plural(applied, 'zajecia', 'zajecia', 'zajec')}`,
   });
 });

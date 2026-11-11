@@ -41,9 +41,10 @@ export async function updateRoom(
   buildingId: string,
   roomId: string,
   input: RoomInput,
-): Promise<Room> {
+): Promise<{ data: Room; warning: string | null }> {
   const res = await api.put(`/buildings/${buildingId}/rooms/${roomId}`, input);
-  return res.data.data;
+  /** warning: ulozone zajecia z grupa wieksza niz nowa pojemnosc (zapis i tak przechodzi). */
+  return { data: res.data.data, warning: res.data.warning ?? null };
 }
 
 export async function deleteRoom(buildingId: string, roomId: string): Promise<void> {

@@ -1,5 +1,6 @@
 import type { RoomType } from '@prisma/client';
 import { prisma } from '../lib/prisma';
+import { plural } from '../lib/plural';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 
@@ -88,7 +89,20 @@ export const updateRoom = asyncHandler(async (req, res) => {
     where: { id: req.params.roomId },
     data: { number, type, capacity },
   });
-  res.json({ data, message: 'Sala zaktualizowana' });
+  // Zmiany nie blokujemy (plan pokaze niezgodnosc), ale mowimy od razu, ile ulozonych zajec
+  // ma teraz grupe wieksza niz sala — w semestrach, ktore nie sa w archiwum.
+  const tooSmall = await prisma.placement.count({
+    where: {
+      roomId: data.id,
+      section: { group: { size: { gt: data.capacity } } },
+      term: { calendars: { some: { status: { not: 'ARCHIVED' } } } },
+    },
+  });
+  const warning =
+    tooSmall > 0
+      ? `W planie jest ${plural(tooSmall, 'umieszczenie', 'umieszczenia', 'umieszczen')} tej sali z grupa wieksza niz ${data.capacity} os. — zobacz „Niezgodnosci w planie”`
+      : null;
+  res.json({ data, message: 'Sala zaktualizowana', warning });
 });
 
 export const removeRoom = asyncHandler(async (req, res) => {

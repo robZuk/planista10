@@ -49,6 +49,17 @@ export interface CalendarInput {
   zjazdy: ZjazdInput[];
 }
 
+/** Nazwa dnia do opisow w podgladzie kalendarza. */
+const WEEKDAY_LABEL_PL: Record<DayOfWeek, string> = {
+  MONDAY: 'poniedzialek',
+  TUESDAY: 'wtorek',
+  WEDNESDAY: 'sroda',
+  THURSDAY: 'czwartek',
+  FRIDAY: 'piatek',
+  SATURDAY: 'sobota',
+  SUNDAY: 'niedziela',
+};
+
 const WEEKDAY_NUM: Record<DayOfWeek, number> = {
   SUNDAY: 0,
   MONDAY: 1,
@@ -231,9 +242,18 @@ export class TeachingCalendar {
         monday,
         sunday: addDays(monday, 6),
         teachingDays: days.filter((day) => day.teaching).length,
-        notes: days
-          .filter((day) => day.label && (day.reason === 'HOLIDAY' || day.reason === 'DAY_OFF'))
-          .map((day) => `${day.date}: ${day.label}`),
+        notes: days.flatMap((day) => {
+          if (day.label && (day.reason === 'HOLIDAY' || day.reason === 'DAY_OFF')) return [`${day.date}: ${day.label}`];
+          // Wyjatki dni w dniu zajec tez widac w podgladzie (jak swieta), zeby planista je zauwazyl.
+          const override = day.teaching ? this.overrides.get(day.date) : undefined;
+          if (override?.kind === 'FOLLOWS_WEEKDAY' && override.followsWeekday) {
+            return [`${day.date}: zajecia wg planu — ${WEEKDAY_LABEL_PL[override.followsWeekday]}${override.name ? ` (${override.name})` : ''}`];
+          }
+          if (override?.kind === 'CLOSED_FROM' && override.closedFromBlockOrder) {
+            return [`${day.date}: ${override.name ?? 'godziny rektorskie'} od bloku ${override.closedFromBlockOrder}`];
+          }
+          return [];
+        }),
         breakName: index === null ? (this.breakOf(addDays(monday, 2))?.name ?? null) : null,
       });
     }

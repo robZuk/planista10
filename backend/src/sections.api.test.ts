@@ -7,10 +7,14 @@ process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn().mockResolvedValue({ facultyId: 'wm' }) },
-  academicTerm: { findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 't1', startYear: 2026, type: 'SUMMER' }) },
+  academicTerm: {
+    findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 't1', startYear: 2026, type: 'SUMMER' }),
+    findUnique: vi.fn().mockResolvedValue({ id: 't1', startYear: 2026, type: 'SUMMER' }),
+  },
+  instructor: { findMany: vi.fn().mockResolvedValue([{ id: 'i1', email: 'jan@umg.edu.pl' }]) },
   cohort: { findMany: vi.fn().mockResolvedValue([]) },
   termCalendar: { findMany: vi.fn().mockResolvedValue([]) },
-  classSection: { findUnique: vi.fn() },
+  classSection: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
   sectionInstructor: { deleteMany: vi.fn(), createMany: vi.fn() },
   $transaction: vi.fn().mockResolvedValue([]),
 }));
@@ -94,5 +98,23 @@ describe('API — obsada zajec', () => {
     expect(res.status).toBe(409);
     expect(res.body.error).toMatch(/w archiwum — obsada tylko do odczytu/);
     expect(prismaMock.$transaction.mock.calls.length).toBe(before);
+  });
+});
+
+describe('API — import obsady z CSV', () => {
+  const header = 'id_zajec;rocznik;semestr;przedmiot;forma;grupa;godziny;prowadzacy_email;godziny_prowadzacego';
+  const section = (id: string) => ({ id, termId: 't1', facultyId: 'wm', cohortId: 'c1', hours: 30 });
+
+  it('blad w jednym wierszu zajec pomija cale zajecia (bez cichej utraty godzin)', async () => {
+    prismaMock.classSection.findMany.mockResolvedValueOnce([section('s1'), section('s2')]);
+    const csv = [header, 's1;X;1;P;wyklad;G;30;jan@umg.edu.pl;25', 's1;X;1;P;wyklad;G;30;literowka@umg.edu.pl;5', 's2;X;1;P;wyklad;G;30;NN;30'].join('\n');
+    const res = await request(app).post('/api/terms/2026-L/sections/import').set('Authorization', `Bearer ${dean}`).send({ csv, dryRun: true });
+    expect(res.status).toBe(200);
+    expect(res.body.data.applied).toBe(1);
+    expect(res.body.message).toBe('Do wczytania: 1 zajecia');
+    expect(res.body.data.errors).toEqual([
+      'Wiersz 3: nie ma prowadzacego literowka@umg.edu.pl',
+      'Zajecia s1: pominiete w calosci — popraw bledne wiersze (3), obsada zostaje bez zmian',
+    ]);
   });
 });
