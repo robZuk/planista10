@@ -14,7 +14,8 @@ export type PlanIssueKind =
   | 'ROOM_TYPE' // typ sali nie pasuje do formy zajec
   | 'ROOM_CAPACITY' // sala mniejsza niz grupa
   | 'GROUP_INACTIVE' // grupy nie ma w semestrze rocznika, a jej zajecia sa w planie
-  | 'STAFF_HOURS'; // obsada ma wiecej godzin niz zajecia
+  | 'STAFF_HOURS' // obsada ma wiecej godzin niz zajecia
+  | 'OUTSIDE_GRID'; // dzien albo godziny umieszczenia poza dniami/oknem siatki wydzialu
 
 export interface PlanIssue {
   kind: PlanIssueKind;
@@ -34,6 +35,8 @@ export interface IssueSection {
     instructorName?: string;
     /** null = zajecia online (bez sali). */
     room: { number: string; type: RoomType; capacity: number } | null;
+    /** Problem z dniem/oknem siatki (lib/timeGrid.dayWindowProblem) albo null. */
+    gridProblem?: string | null;
   }[];
 }
 
@@ -60,6 +63,13 @@ export function sectionIssues(section: IssueSection, semester: number): PlanIssu
   }
 
   for (const p of section.placements) {
+    if (p.gridProblem) {
+      issues.push({
+        kind: 'OUTSIDE_GRID',
+        placementId: p.id,
+        message: `Zajecia poza siatka godzin wydzialu: ${p.gridProblem} — przenies je w dozwolony dzien i godziny`,
+      });
+    }
     if (p.instructorId && !staff.has(p.instructorId)) {
       issues.push({
         kind: 'INSTRUCTOR_NOT_STAFFED',

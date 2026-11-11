@@ -15,7 +15,7 @@ const prismaMock = vi.hoisted(() => {
     tx,
     user: { findUnique: vi.fn().mockResolvedValue({ facultyId: 'we' }) },
     timeGrid: { findUnique: vi.fn() },
-    placement: { count: vi.fn() },
+    placement: { count: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
     $transaction: vi.fn((fn: (t: typeof tx) => unknown) => fn(tx)),
   };
 });
@@ -74,6 +74,20 @@ describe('API — siatki godzin wydzialow', () => {
     expect(res.status).toBe(200);
     // zapis w kolejnosci tygodnia
     expect(prismaMock.tx.timeGrid.update.mock.calls[0]![0].data.days.map((d: { day: string }) => d.day)).toEqual(['THURSDAY', 'SATURDAY']);
+  });
+
+  it('dni wyrzucajace ulozone zajecia poza siatke -> 409 z liczba umieszczen, nic nie zapisane', async () => {
+    // Piatek 08:00-08:45 w dwoch rocznikach; nowa siatka: piatek dopiero od 15:00, sobota bez zmian.
+    prismaMock.placement.findMany.mockResolvedValueOnce([
+      { dayOfWeek: 'FRIDAY', startOrder: 1, endOrder: 1, section: { cohortId: 'c1' } },
+      { dayOfWeek: 'FRIDAY', startOrder: 1, endOrder: 1, section: { cohortId: 'c2' } },
+    ]);
+    const res = await put(admin, { days: [{ day: 'FRIDAY', from: '15:00', to: null }] });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe(
+      'Zmiana wyrzucilaby poza siatke ulozone zajecia: piatek: zajecia od 15:00 — 2 umieszczenia (2 roczniki). Najpierw przenies te zajecia w Ukladaniu planu.',
+    );
+    expect(prismaMock.tx.timeGrid.update).not.toHaveBeenCalled();
   });
 
   it('nachodzace bloki -> 400', async () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PlanSection } from '@/types';
-import { issueRows, placementWarning } from './planIssues';
+import { issueRows, placementWarning, planDays } from './planIssues';
 
 const section = (id: string, issues: PlanSection['issues']) => ({ id, issues }) as PlanSection;
 
@@ -31,5 +31,15 @@ describe('issueRows', () => {
       ]),
     ]);
     expect(rows.map((r) => [r.section.id, r.message])).toEqual([['a', 'x'], ['c', 'y'], ['c', 'z']]);
+  });
+});
+
+describe('planDays', () => {
+  const at = (dayOfWeek: 'MONDAY' | 'FRIDAY' | 'SATURDAY') => ({ placements: [{ dayOfWeek }] }) as never;
+  it('dni siatki w kolejnosci tygodnia', () => {
+    expect(planDays(['SATURDAY', 'FRIDAY'], [])).toEqual(['FRIDAY', 'SATURDAY']);
+  });
+  it('dzien z umieszczeniem spoza siatki zostaje kolumna', () => {
+    expect(planDays(['MONDAY'], [at('FRIDAY'), at('MONDAY')])).toEqual(['MONDAY', 'FRIDAY']);
   });
 });

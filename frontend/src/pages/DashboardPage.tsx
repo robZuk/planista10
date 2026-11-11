@@ -23,6 +23,7 @@ import { useAuthStore } from '@/store/authStore';
 import { StatTile } from './dashboard/StatTile';
 import { WeekLoadChart } from './dashboard/WeekLoadChart';
 import { EntryStatusMeter } from './dashboard/EntryStatusMeter';
+import { plural } from '@/lib/setupSteps';
 import { TodayCard } from './dashboard/TodayCard';
 
 export default function DashboardPage() {
@@ -132,7 +133,7 @@ export default function DashboardPage() {
             value={stats?.users.total ?? 0}
             hint={
               stats
-                ? `${stats.users.byRole.INSTRUCTOR} prowadzacych, ${stats.users.byRole.STUDENT} studentow`
+                ? `${plural(stats.users.byRole.INSTRUCTOR, 'prowadzacy', 'prowadzacych', 'prowadzacych')}, ${plural(stats.users.byRole.STUDENT, 'student', 'studentow', 'studentow')}`
                 : undefined
             }
             icon={ShieldCheck}
@@ -148,7 +149,7 @@ export default function DashboardPage() {
         <StatTile
           label="Grupy"
           value={stats?.groups.total ?? 0}
-          hint={stats ? `${stats.students.total} studentow` : undefined}
+          hint={stats ? plural(stats.students.total, 'student', 'studentow', 'studentow') : undefined}
           icon={Users}
           loading={isPending}
         />
@@ -180,6 +181,7 @@ export default function DashboardPage() {
           scheduled={stats?.entries.scheduled ?? 0}
           cancelled={stats?.entries.cancelled ?? 0}
           makeup={stats?.entries.makeup ?? 0}
+          scopeName={stats?.scope.kind === 'FACULTY' ? stats.scope.name : undefined}
         />
       </div>
 

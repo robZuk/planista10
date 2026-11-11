@@ -2,14 +2,15 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
-import { blockLabel, gridBreaks, numberBlocks, parseGridDays, toMinutes, validateBlocks, WEEK_ORDER } from '../lib/timeGrid';
-import { gridLocked } from '../services/timeGrids';
+import { blockLabel, gridBreaks, gridTime, numberBlocks, parseGridDays, toMinutes, validateBlocks, WEEK_ORDER } from '../lib/timeGrid';
+import { gridLocked, placementsOutsideDays } from '../services/timeGrids';
+import { plural } from '../lib/plural';
 import type { TimeGridUpdate } from '../schemas/timeGrid';
 
 /**
  * Siatki godzin wydzialow (stacjonarna i niestacjonarna). Bloki zablokowane, gdy wydzial ma
- * juz plan w tym trybie w biezacym semestrze; dni i okno godzin mozna zmieniac zawsze
- * (dotycza nowych umieszczen).
+ * juz plan w tym trybie w biezacym semestrze; dni i okno godzin mozna zmieniac, o ile
+ * nie wyrzucaja poza siatke juz ulozonych zajec.
  */
 
 const gridInclude = {
@@ -56,6 +57,17 @@ export const updateGrid = asyncHandler(async (req, res) => {
     if (new Set(body.days.map((d) => d.day)).size !== body.days.length) throw new AppError(400, 'Dzien powtarza sie na liscie');
   }
   const days = body.days ? [...body.days].sort((a, b) => WEEK_ORDER.indexOf(a.day) - WEEK_ORDER.indexOf(b.day)) : null;
+  if (days) {
+    // Bloki zostaja (zablokowane albo zmieniane razem) — czas umieszczen liczymy wg siatki po zmianie.
+    const time = gridTime(rows ?? current.blocks);
+    const outside = await placementsOutsideDays(current.facultyId, current.studyMode, days, time);
+    if (outside.length > 0) {
+      const list = outside
+        .map((o) => `${o.problem} — ${plural(o.placements, 'umieszczenie', 'umieszczenia', 'umieszczen')} (${plural(o.cohorts, 'rocznik', 'roczniki', 'rocznikow')})`)
+        .join('; ');
+      throw new AppError(409, `Zmiana wyrzucilaby poza siatke ulozone zajecia: ${list}. Najpierw przenies te zajecia w Ukladaniu planu.`);
+    }
+  }
 
   const grid = await prisma.$transaction(async (tx) => {
     if (rows) {

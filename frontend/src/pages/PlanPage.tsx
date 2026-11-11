@@ -15,13 +15,14 @@ import { FacultySelector } from '@/components/FacultySelector';
 import { fetchTermCohorts } from '@/api/cohorts';
 import { fetchAvailability, fetchPlan, updatePlacement } from '@/api/plan';
 import { useCurrentTerm } from '@/hooks/useTerm';
+import { usePlanCohortStore } from '@/store/planCohortStore';
 import { getErrorMessage } from '@/lib/errors';
 import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGroupFilter';
 import { earlyEndWeeks, formatDayMonth, MAX_SUGGESTED_LENGTH, suggestedLength } from '@/lib/planHours';
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { describeDays } from '@/lib/timeGrid';
 import { staleMessage } from '@/lib/planStaleness';
-import { issueRows, placementWarning } from '@/lib/planIssues';
+import { issueRows, placementWarning, planDays } from '@/lib/planIssues';
 import { copyCandidates, inZjazd, zjazdyDiffer } from '@/lib/zjazdView';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
@@ -79,15 +80,22 @@ export default function PlanPage() {
   const cohortFilter = useCohortFilters(allCohorts);
   const cohorts = cohortFilter.visible;
   const cohortIds = cohorts.map((c) => c.id).join(',');
-  // Wybrany rocznik wypadl z filtra -> pierwszy pasujacy; nic nie pasuje -> brak wyboru.
+  // Wybrany rocznik wypadl z filtra (albo wejscie na strone) -> ostatnio ogladany, jesli pasuje,
+  // inaczej pierwszy pasujacy; nic nie pasuje -> brak wyboru.
+  const { lastCohortId, setLastCohortId } = usePlanCohortStore();
+  useEffect(() => {
+    if (cohortId) setLastCohortId(cohortId);
+  }, [cohortId, setLastCohortId]);
   useEffect(() => {
     const ids = cohortIds ? cohortIds.split(',') : [];
     if (!ids.includes(cohortId)) {
-      setCohortId(ids[0] ?? '');
+      setCohortId(lastCohortId && ids.includes(lastCohortId) ? lastCohortId : (ids[0] ?? ''));
       setSelected(null);
       setZjazd(null);
       setGroupFilter('all');
     }
+    // lastCohortId celowo poza zaleznosciami: czytamy go tylko przy wyborze, zapis nie ma wywolywac efektu.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cohortIds, cohortId]);
 
   // Wejscie z linku (np. "Przygotowanie semestru"): /plan/2026-Z?cohort=<id> wybiera ten rocznik.
@@ -134,7 +142,14 @@ export default function PlanPage() {
   const zjazd = zjazdyVary ? zjazdChoice : null;
   // Bloki i dni zajec z siatki godzin wydzialu i trybu rocznika (np. niestacjonarne: czw-nd).
   const blocks = plan?.timeGrid.blocks;
-  const days: DayOfWeek[] = plan?.timeGrid.days.map((d) => d.day) ?? [];
+  // Plus dni, na ktore juz cos umieszczono — zajecia spoza siatki zostaja widoczne (z ostrzezeniem).
+  const days: DayOfWeek[] = useMemo(() => (plan ? planDays(plan.timeGrid.days.map((d) => d.day), plan.sections) : []), [plan]);
+  const outsideGridDays = useMemo(() => {
+    const grid = new Set(plan?.timeGrid.days.map((d) => d.day));
+    return Object.fromEntries(days.filter((d) => !grid.has(d)).map((d) => [d, 'Dzien poza siatka godzin — przenies zajecia'])) as Partial<
+      Record<DayOfWeek, string>
+    >;
+  }, [plan, days]);
   // Zablokowany na stale (archiwum / brak uprawnien) — akcji nie pokazujemy wcale.
   const locked = plan?.calendar?.status === 'ARCHIVED' || !(isAdmin || me?.role === 'DEAN_OFFICE');
   // Brak kalendarza i wersja programu w projekcie da sie naprawic — akcje widoczne, ale
@@ -499,6 +514,7 @@ export default function PlanPage() {
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
               <WeekGrid
                 days={days}
+                closedDays={outsideGridDays}
                 blocks={blocks}
                 items={items}
                 availability={selected ? availability?.cells : null}

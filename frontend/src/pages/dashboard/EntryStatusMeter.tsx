@@ -22,10 +22,13 @@ export function EntryStatusMeter({
   scheduled,
   cancelled,
   makeup,
+  scopeName,
 }: {
   scheduled: number;
   cancelled: number;
   makeup: number;
+  /** Nazwa wydzialu, gdy liczby sa zawezone (dziekanat); brak = cala uczelnia. */
+  scopeName?: string;
 }) {
   const segments: Segment[] = [
     {
@@ -59,7 +62,7 @@ export function EntryStatusMeter({
         <CardTitle>Terminy wg statusu</CardTitle>
         <CardDescription>
           {total > 0
-            ? `${total} terminow w calym systemie.`
+            ? `${total} terminow ${scopeName ? `— ${scopeName}` : 'w calym systemie'}.`
             : 'Nie ma jeszcze zadnych terminow.'}
         </CardDescription>
       </CardHeader>

@@ -1,4 +1,4 @@
-import type { PlanSection } from '@/types';
+import type { DayOfWeek, PlanSection } from '@/types';
 
 /**
  * Opis ostrzezenia na kafelku umieszczenia: jego wlasne niezgodnosci i niezgodnosci calych
@@ -21,4 +21,16 @@ export function issueRows(sections: PlanSection[]): IssueRow[] {
   return sections.flatMap((s) =>
     s.issues.map((i, n) => ({ key: `${s.id}:${n}`, section: s, placementId: i.placementId, message: i.message })),
   );
+}
+
+const WEEK: DayOfWeek[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+
+/**
+ * Kolumny siatki planu: dni siatki godzin wydzialu oraz dni, na ktore juz cos umieszczono —
+ * zajecia spoza siatki (np. po zmianie dni) maja byc widoczne i oznaczone, a nie znikac.
+ */
+export function planDays(gridDays: DayOfWeek[], sections: Pick<PlanSection, 'placements'>[]): DayOfWeek[] {
+  const used = new Set<DayOfWeek>(gridDays);
+  for (const s of sections) for (const p of s.placements) used.add(p.dayOfWeek);
+  return WEEK.filter((d) => used.has(d));
 }

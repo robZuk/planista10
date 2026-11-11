@@ -1,7 +1,7 @@
 import type { Prisma, StudyMode } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
-import { blockLabel, defaultGridDays, gridTime, parseGridDays, type GridDay, type GridTime } from '../lib/timeGrid';
+import { blockLabel, defaultGridDays, gridTime, parseGridDays, slotsOutsideDays, type GridDay, type GridTime } from '../lib/timeGrid';
 
 /**
  * Siatki godzin wydzialow: kazdy wydzial ma siatke stacjonarna i niestacjonarna. Siatka
@@ -66,13 +66,35 @@ export function defaultGridsCreate() {
  * ktorego kalendarz nie jest w archiwum. Umieszczenia wskazuja bloki numerem — zmiana godzin
  * przesunelaby zajecia. Terminy niosa wlasne minuty, wiec archiwum zostaje poprawne.
  */
+/** Umieszczenia wydzialu w danym trybie w semestrach, ktore nie sa w archiwum (plan "zywy"). */
+const livePlacements = (facultyId: string, studyMode: StudyMode) => ({
+  facultyId,
+  section: { cohort: { program: { studyMode } } },
+  term: { calendars: { some: { facultyId, studyMode, status: { not: 'ARCHIVED' as const } } } },
+});
+
 export async function gridLocked(facultyId: string, studyMode: StudyMode): Promise<boolean> {
-  const placements = await prisma.placement.count({
-    where: {
-      facultyId,
-      section: { cohort: { program: { studyMode } } },
-      term: { calendars: { some: { facultyId, studyMode, status: { not: 'ARCHIVED' } } } },
-    },
-  });
+  const placements = await prisma.placement.count({ where: livePlacements(facultyId, studyMode) });
   return placements > 0;
+}
+
+/**
+ * Nowe dni/okna siatki nie moga wyrzucic poza siatke juz ulozonych zajec — inaczej
+ * znikalyby z widoku planu (kolumny dni biora sie z siatki). Zwraca problemy do komunikatu.
+ */
+export async function placementsOutsideDays(
+  facultyId: string,
+  studyMode: StudyMode,
+  days: GridDay[],
+  time: GridTime,
+): Promise<ReturnType<typeof slotsOutsideDays>> {
+  const placements = await prisma.placement.findMany({
+    where: livePlacements(facultyId, studyMode),
+    select: { dayOfWeek: true, startOrder: true, endOrder: true, section: { select: { cohortId: true } } },
+  });
+  return slotsOutsideDays(
+    placements.map((p) => ({ dayOfWeek: p.dayOfWeek, startOrder: p.startOrder, endOrder: p.endOrder, cohortId: p.section.cohortId })),
+    days,
+    time,
+  );
 }

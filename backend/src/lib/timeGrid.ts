@@ -189,3 +189,35 @@ export function mapRangeByTime(from: GridTime, to: GridTime, startOrder: number,
   const end = to.blocks.find((b) => to.range(b.order, b.order)!.endMinute === range.endMinute);
   return start && end && end.order >= start.order ? { startOrder: start.order, endOrder: end.order } : null;
 }
+
+/** Umieszczenie we wzorcu (dzien + bloki) — do sprawdzenia wzgledem dni i okien siatki. */
+export interface PatternSlot {
+  dayOfWeek: WeekdayName;
+  startOrder: number;
+  endOrder: number;
+  cohortId: string;
+}
+
+/**
+ * Umieszczenia, ktore po zmianie dni/okien siatki wypadlyby poza nia — pogrupowane wg
+ * problemu (np. "Siatka nie przewiduje zajec w dniu: piatek ..."), z liczba umieszczen
+ * i rocznikow. Pusta lista = zmiana nie rusza istniejacego planu.
+ */
+export function slotsOutsideDays(
+  slots: PatternSlot[],
+  days: GridDay[],
+  time: GridTime,
+): { problem: string; placements: number; cohorts: number }[] {
+  const groups = new Map<string, { placements: number; cohorts: Set<string> }>();
+  for (const slot of slots) {
+    const range = time.range(slot.startOrder, slot.endOrder);
+    if (!range) continue;
+    const problem = dayWindowProblem(days, slot.dayOfWeek, range.startMinute, range.endMinute);
+    if (!problem) continue;
+    const g = groups.get(problem) ?? { placements: 0, cohorts: new Set<string>() };
+    g.placements += 1;
+    g.cohorts.add(slot.cohortId);
+    groups.set(problem, g);
+  }
+  return [...groups].map(([problem, g]) => ({ problem, placements: g.placements, cohorts: g.cohorts.size }));
+}

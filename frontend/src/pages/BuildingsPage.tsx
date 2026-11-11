@@ -215,7 +215,7 @@ export default function BuildingsPage() {
     <>
       <PageHeader
         title="Budynki i sale"
-        description="Rozwin budynek, zeby zobaczyc i edytowac jego sale."
+        description={canEdit ? 'Rozwin budynek, zeby zobaczyc i edytowac jego sale.' : 'Rozwin budynek, zeby zobaczyc jego sale.'}
         actions={
           canEdit && (
             <Button onClick={openCreateBuilding}>

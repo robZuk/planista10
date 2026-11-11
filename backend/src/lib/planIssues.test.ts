@@ -27,6 +27,11 @@ describe('sectionIssues', () => {
     expect(kinds({ ...ok, placements: [{ ...ok.placements[0]!, instructorId: null }] })).toEqual([]);
   });
 
+  it('umieszczenie poza dniami/oknem siatki', () => {
+    const issues = sectionIssues({ ...ok, placements: [{ ...ok.placements[0]!, gridProblem: 'piatek: zajecia od 16:00' }] }, 3);
+    expect(issues).toEqual([{ kind: 'OUTSIDE_GRID', placementId: 'p1', message: expect.stringContaining('wydzialu: piatek: zajecia od 16:00 —') }]);
+  });
+
   it('sala innego typu i za mala', () => {
     const lab = { ...ok.placements[0]!, room: { number: '5', type: 'LAB' as const, capacity: 20 } };
     expect(kinds({ ...ok, placements: [lab] })).toEqual(['ROOM_TYPE', 'ROOM_CAPACITY']);

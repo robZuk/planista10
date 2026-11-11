@@ -5,7 +5,7 @@ import { fromIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
 import { calendarPeriods, expandDates, TeachingCalendar } from '../lib/teachingCalendar';
 import { groupsOverlap, indexGroups, pathFromRoot } from '../lib/groupTree';
 import { roomTypeMap } from '../lib/scheduleTime';
-import { dayWindowProblem, formatMinutes, mapRangeByTime, minutesOverlap, weekdayLabel, type GridTime, type MinuteRange } from '../lib/timeGrid';
+import { dayWindowProblem, formatMinutes, mapRangeByTime, minutesOverlap, weekdayLabel, type GridTime, type MinuteRange, type WeekdayName } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from './timeGrids';
 import {
   findConflict,
@@ -564,6 +564,10 @@ export async function planView(term: AcademicTerm, cohortId: string) {
   const reasons = (await staleReasonsByCohort(term, [ctx])).get(cohortId) ?? [];
   // Niezgodnosci powstale po umieszczeniu (obsada, sala, grupa, godziny) — lib/planIssues.
   const groupById = new Map(ctx.cohort.groups.map((g) => [g.id, g]));
+  const gridProblemOf = (p: { dayOfWeek: WeekdayName; startOrder: number; endOrder: number }) => {
+    const range = facultyGrid.time.range(p.startOrder, p.endOrder);
+    return range ? dayWindowProblem(facultyGrid.days, p.dayOfWeek, range.startMinute, range.endMinute) : 'bloki spoza siatki';
+  };
   const issuesOf = (s: (typeof sections)[number]) => {
     const group = groupById.get(s.groupId);
     if (!group) return [];
@@ -578,6 +582,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
           instructorId: p.instructorId,
           instructorName: p.instructorId ? name(p.instructor) : undefined,
           room: p.room,
+          gridProblem: gridProblemOf(p),
         })),
       },
       ctx.semester,

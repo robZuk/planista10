@@ -153,7 +153,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   wskazują bloki (`startOrder..endOrder`) siatki wydziału i trybu rocznika. **Kolizje
   liczymy w minutach** (`lib/timeGrid.ts → minutesOverlap`, przedziały półotwarte), bo
   wydziały mają różne siatki; terminy niosą rzeczywisty czas (`Occurrence.startMinute/endMinute`).
-  Bloków siatki nie zmienia się, gdy wydział ma plan w tym trybie w bieżącym semestrze.
+  Bloków siatki nie zmienia się, gdy wydział ma plan w tym trybie w bieżącym semestrze, a dni
+  i okien godzin — gdy wyrzuciłyby poza siatkę ułożone już zajęcia (`slotsOutsideDays`).
 - **Daty:** dni jako tekst `YYYY-MM-DD` (`lib/isoDate.ts`), kolumny `@db.Date`; nigdy
   arytmetyka na `Date` w strefie lokalnej.
 - **TypeScript:** `strict` po obu stronach; backend CommonJS, frontend ESM.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  slotsOutsideDays,
   formatMinutes,
   gridBreaks,
   gridTime,
@@ -158,5 +159,26 @@ describe('mapRangeByTime (zajecia laczone miedzy siatkami)', () => {
   it('godziny nie istnieja w drugiej siatce -> null', () => {
     expect(mapRangeByTime(gridTime(g60), gridTime(g45), 3, 3)).toBeNull(); // 09:00-10:00 vs siatka 45 min
     expect(mapRangeByTime(gridTime(g60), gridTime(g45), 99, 99)).toBeNull();
+  });
+});
+
+describe('slotsOutsideDays', () => {
+  const time = gridTime([
+    { order: 1, startTime: '08:00', endTime: '09:00' },
+    { order: 2, startTime: '16:00', endTime: '17:00' },
+  ]);
+  const slot = (dayOfWeek: 'THURSDAY' | 'FRIDAY', order: number, cohortId: string) => ({ dayOfWeek, startOrder: order, endOrder: order, cohortId });
+
+  it('wszystko w siatce — pusto', () => {
+    expect(slotsOutsideDays([slot('FRIDAY', 1, 'c1')], [{ day: 'FRIDAY', from: null, to: null }], time)).toEqual([]);
+  });
+
+  it('usuniety dzien i zawezone okno — grupy z liczba umieszczen i rocznikow', () => {
+    const days = [{ day: 'THURSDAY' as const, from: '16:00', to: null }];
+    const result = slotsOutsideDays([slot('FRIDAY', 1, 'c1'), slot('FRIDAY', 2, 'c1'), slot('THURSDAY', 1, 'c2'), slot('THURSDAY', 2, 'c2')], days, time);
+    expect(result).toEqual([
+      { problem: 'Siatka nie przewiduje zajec w dniu: piatek (dni: czwartek)', placements: 2, cohorts: 1 },
+      { problem: 'czwartek: zajecia od 16:00', placements: 1, cohorts: 1 },
+    ]);
   });
 });
