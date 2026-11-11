@@ -63,6 +63,8 @@ export interface Instructor {
   title: string | null;
   facultyId: string | null;
   faculty?: Faculty | null;
+  /** Konto logowania powiazane z prowadzacym (lista prowadzacych). */
+  user?: { id: string; name: string; email: string } | null;
   createdAt: string;
 }
 
