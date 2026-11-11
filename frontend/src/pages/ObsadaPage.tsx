@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, CircleCheck, Download, FilterX, History, RefreshCw, Search, Upload } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CircleCheck, Download, FilterX, History, RefreshCw, Search, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,8 @@ export default function ObsadaPage() {
   const [cohortFilter, setCohortFilter] = useState('all');
   const [onlyVacant, setOnlyVacant] = useState(false);
   const [search, setSearch] = useState('');
+  // Prowadzacy wybrany w karcie obciazenia — lista pokazuje tylko jego zajecia.
+  const [instructorFilter, setInstructorFilter] = useState<{ id: string; name: string } | null>(null);
   const [dialog, setDialog] = useState<'sync' | 'carry' | 'import' | null>(null);
   const [editing, setEditing] = useState<ClassSectionRow | null>(null);
 
@@ -83,13 +85,14 @@ export default function ObsadaPage() {
       (r) =>
         (cohortFilter === 'all' || r.cohort.id === cohortFilter) &&
         (!onlyVacant || r.hasVacancy) &&
+        (!instructorFilter || r.instructors.some((i) => i.instructorId === instructorFilter.id)) &&
         (!q || matchesAllWords([r.cohort.label, r.subject.name, r.group.name, ...r.instructors.map((i) => i.name)].join(' '), q)),
     );
-  }, [data, cohortFilter, onlyVacant, search]);
+  }, [data, cohortFilter, onlyVacant, search, instructorFilter]);
 
   // Strony po 50 wierszy — semestr wydzialu to setki zajec (WM: ~900), cala uczelnia — tysiace.
   // Zmiana filtra wraca na pierwsza strone (strona pamietana razem z kluczem filtrow).
-  const filterKey = `${cohortFilter}|${onlyVacant}|${search}|${facultyId}|${term?.key}`;
+  const filterKey = `${cohortFilter}|${onlyVacant}|${search}|${instructorFilter?.id}|${facultyId}|${term?.key}`;
   const [pageState, setPageState] = useState({ key: filterKey, page: 0 });
   const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const page = pageState.key === filterKey ? Math.min(pageState.page, pageCount - 1) : 0;
@@ -97,14 +100,15 @@ export default function ObsadaPage() {
   const pageRows = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const summary = data?.summary;
-  const filtersActive = cohortFilter !== 'all' || onlyVacant || search.trim() !== '';
+  const filtersActive = cohortFilter !== 'all' || onlyVacant || search.trim() !== '' || !!instructorFilter;
   const clearFilters = () => {
     setCohortFilter('all');
     setOnlyVacant(false);
     setSearch('');
+    setInstructorFilter(null);
   };
   // Pusty wynik samego "Tylko braki" przy braku brakow to dobra wiadomosc, nie "nic nie znaleziono".
-  const allStaffed = onlyVacant && cohortFilter === 'all' && search.trim() === '' && summary?.vacancies === 0;
+  const allStaffed = onlyVacant && cohortFilter === 'all' && search.trim() === '' && !instructorFilter && summary?.vacancies === 0;
 
   return (
     <>
@@ -184,6 +188,20 @@ export default function ObsadaPage() {
             <Search className="absolute top-2.5 left-2 size-4 text-muted-foreground" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Przedmiot, grupa, prowadzacy…" className="w-72 pl-8" />
           </div>
+          {instructorFilter && (
+            <Badge variant="secondary" className="h-7 gap-1 pr-1">
+              Prowadzacy: {instructorFilter.name}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-5"
+                aria-label="Pokaz zajecia wszystkich prowadzacych"
+                onClick={() => setInstructorFilter(null)}
+              >
+                <X />
+              </Button>
+            </Badge>
+          )}
           <label className="flex items-center gap-2 text-sm">
             <Checkbox checked={onlyVacant} onCheckedChange={(v) => setOnlyVacant(v === true)} />
             Tylko braki (NN / niepelna obsada)
@@ -212,7 +230,7 @@ export default function ObsadaPage() {
               <EmptyDescription>
                 {allStaffed
                   ? 'Wszystkie zajecia semestru maja pelna obsade — nie ma NN ani niepelnych godzin.'
-                  : 'Zadne zajecia nie pasuja do wybranego rocznika, wyszukiwania lub filtra brakow.'}
+                  : 'Zadne zajecia nie pasuja do wybranego rocznika, prowadzacego, wyszukiwania lub filtra brakow.'}
               </EmptyDescription>
             </EmptyHeader>
             {filtersActive && (
@@ -313,20 +331,29 @@ export default function ObsadaPage() {
           <Card className="h-fit">
             <CardHeader>
               <CardTitle className="text-base">Obciazenie prowadzacych</CardTitle>
-              <CardDescription>Caly semestr — niezaleznie od filtrow listy.</CardDescription>
+              <CardDescription>Caly semestr — niezaleznie od filtrow listy. Kliknij nazwisko, zeby pokazac zajecia prowadzacego.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-1 text-sm">
-                {workload.map((w) => (
-                  <li key={w.id} className="flex justify-between gap-2">
-                    <span className="min-w-0 truncate" title={w.name}>
-                      {w.name}
-                    </span>
-                    <span className="shrink-0 whitespace-nowrap tabular-nums">
-                      {w.here} h{w.total !== w.here && <span className="text-muted-foreground"> / {w.total}</span>}
-                    </span>
-                  </li>
-                ))}
+              <ul className="space-y-0.5 text-sm">
+                {workload.map((w) => {
+                  const active = instructorFilter?.id === w.id;
+                  return (
+                    <li key={w.id}>
+                      <button
+                        type="button"
+                        aria-pressed={active}
+                        title={active ? 'Pokaz zajecia wszystkich prowadzacych' : `Pokaz zajecia: ${w.name}`}
+                        onClick={() => setInstructorFilter(active ? null : { id: w.id, name: w.name })}
+                        className={`-mx-1.5 flex w-[calc(100%+0.75rem)] justify-between gap-2 rounded px-1.5 py-0.5 text-left hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${active ? 'bg-primary/15 font-medium text-foreground' : ''}`}
+                      >
+                        <span className="min-w-0 truncate">{w.name}</span>
+                        <span className="shrink-0 whitespace-nowrap tabular-nums">
+                          {w.here} h{w.total !== w.here && <span className="text-muted-foreground"> / {w.total}</span>}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             </CardContent>
           </Card>
