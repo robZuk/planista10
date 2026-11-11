@@ -20,3 +20,12 @@ export const roomTypeMap: Record<ClassType, RoomType[]> = {
   PROJECT: ['EXERCISE', 'COMPUTER_LAB', 'SEMINAR'],
   SEMINAR: ['SEMINAR', 'EXERCISE'],
 };
+
+/** Nazwa formy zajec dla ludzi (powiadomienia, eksport CSV) — enum zostaje w bazie i API. */
+export const CLASS_LABEL_PL: Record<ClassType, string> = {
+  LECTURE: 'wyklad',
+  EXERCISE: 'cwiczenia',
+  LAB: 'laboratorium',
+  PROJECT: 'projekt',
+  SEMINAR: 'seminarium',
+};

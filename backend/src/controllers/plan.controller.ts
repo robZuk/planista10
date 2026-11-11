@@ -123,7 +123,13 @@ export const createPlacement = asyncHandler(async (req, res) => {
   const check = await checkPlacement(term, input);
   rejectIfInvalid(check);
   const data = await prisma.placement.create({ data: { ...input, termId: term.id, facultyId: section.facultyId } });
-  res.status(201).json({ data, message: `Zajecia umieszczone (${check.dates} terminow w semestrze)` });
+  // Bilans godzin jak w widoku planu (z limitem godzin zajec) — liczba dat we wzorcu bywa
+  // wieksza niz liczba terminow, ktore faktycznie powstana (np. brakowala tylko 1 h).
+  const planned = (await planView(term, section.cohortId)).sections.find((s) => s.id === section.id);
+  const summary = planned
+    ? `zaplanowane ${planned.plannedHours}/${planned.hours} h${planned.plannedHours < planned.hours ? ` — brakuje ${planned.hours - planned.plannedHours} h` : ''}`
+    : `${check.dates} terminow w semestrze`;
+  res.status(201).json({ data, message: `Zajecia umieszczone — ${summary}` });
 });
 
 async function loadPlacement(id: string) {

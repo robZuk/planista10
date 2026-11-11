@@ -42,6 +42,7 @@ export function RequestDialog({ occurrenceId, onClose }: { occurrenceId: string;
   const [reason, setReason] = useState('');
   const [date, setDate] = useState('');
   const [start, setStart] = useState<number | null>(null);
+  // Dlugosc = dlugosc terminu (bloki siatki); nie do zmiany w zgloszeniu.
   const [length, setLength] = useState(1);
   const [roomMode, setRoomMode] = useState<RoomMode>('same');
   const [roomId, setRoomId] = useState('');
@@ -146,13 +147,8 @@ export function RequestDialog({ occurrenceId, onClose }: { occurrenceId: string;
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="rq-len">Dlugosc</FieldLabel>
-                  <NativeSelect id="rq-len" value={length} onChange={(e) => setLength(Number(e.target.value))}>
-                    {[1, 2, 3, 4, 5, 6].map((n) => (
-                      <NativeSelectOption key={n} value={n}>
-                        {n} h
-                      </NativeSelectOption>
-                    ))}
-                  </NativeSelect>
+                  {/* Przeniesienie i odrobienie maja dlugosc oryginalu — krotszy termin gubilby godziny zajec. */}
+                  <Input id="rq-len" value={`${length} h`} disabled title="Tyle, ile trwaja zajecia w planie" />
                 </Field>
                 <Field className="sm:col-span-3">
                   <FieldLabel htmlFor="rq-room">Sala</FieldLabel>

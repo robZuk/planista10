@@ -1,5 +1,6 @@
 import type { Request } from 'express';
 import { prisma } from '../lib/prisma';
+import { CLASS_LABEL_PL } from '../lib/scheduleTime';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { assertFacultyScope, getCallerScope } from '../lib/facultyScope';
@@ -222,7 +223,7 @@ export const exportCsv = asyncHandler(async (req, res) => {
   const lines = [CSV_HEADER];
   for (const s of sections) {
     const ctx = ctxById.get(s.cohortId);
-    const base = [s.id, ctx?.cohort.program.code ?? '', ctx?.semester ?? '', s.programEntry.subject.name, s.classType, ctx?.nameOf(s.groupId) ?? '', s.hours];
+    const base = [s.id, ctx?.cohort.program.code ?? '', ctx?.semester ?? '', s.programEntry.subject.name, CLASS_LABEL_PL[s.classType], ctx?.nameOf(s.groupId) ?? '', s.hours];
     const rows = s.instructors.length > 0 ? s.instructors : [{ instructor: null, hours: s.hours }];
     for (const i of rows) lines.push([...base, i.instructor?.email ?? 'NN', i.hours].map(esc).join(';'));
   }

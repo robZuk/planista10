@@ -1,5 +1,6 @@
 import type { AcademicTerm, ChangeRequest, ChangeRequestStatus, ClassType, Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
+import { CLASS_LABEL_PL } from '../lib/scheduleTime';
 import { AppError } from '../lib/AppError';
 import { fromIsoDate, toIsoDate, todayIso } from '../lib/isoDate';
 import { termKey } from '../lib/terms';
@@ -16,6 +17,7 @@ import {
   validateRequestInput,
   type DirectChange,
   type RequestInput,
+  lengthProblem,
 } from '../lib/changeRequests';
 import { TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
 import { toCalendarInput } from './termCalendars';
@@ -39,14 +41,6 @@ import { facultyPlannerIds, instructorUserIds, notify } from './notifications';
  * tymi samymi funkcjami co reczna zmiana planisty, z kontrola kolizji) albo odrzuca. Obie strony
  * dostaja powiadomienia. Reguly: lib/changeRequests; klucz terminu: lib/occurrenceKey.
  */
-
-const CLASS_PL: Record<ClassType, string> = {
-  LECTURE: 'wyklad',
-  EXERCISE: 'cwiczenia',
-  LAB: 'laboratorium',
-  PROJECT: 'projekt',
-  SEMINAR: 'seminarium',
-};
 
 const occurrenceInclude = { placement: true, section: true } satisfies Prisma.OccurrenceInclude;
 
@@ -73,7 +67,7 @@ async function describe(occ: OccurrenceFull, term: AcademicTerm) {
   const [ctx] = await activeCohorts(term, null, [section.cohortId]);
   return {
     subject: section.programEntry.subject.name,
-    classLabel: CLASS_PL[section.classType],
+    classLabel: CLASS_LABEL_PL[section.classType],
     group: ctx?.nameOf(occ.groupId) ?? '',
   };
 }
@@ -148,6 +142,10 @@ export async function createRequest(occurrenceId: string, user: { id: string; in
   }
   const problems = validateRequestInput(input, today);
   if (problems.length > 0) throw new AppError(400, problems.join('; '));
+  if (input.kind !== 'CANCEL') {
+    const tooShort = lengthProblem(input.kind, occ, { startOrder: input.startOrder!, endOrder: input.endOrder! });
+    if (tooShort) throw new AppError(400, tooShort);
+  }
 
   if (input.kind !== 'CANCEL') {
     const grid = await gridFor(occ.facultyId, ctx.cohort.program.studyMode);
@@ -234,6 +232,11 @@ export async function approveRequest(request: ChangeRequest, actorId: string, no
     roomId: override.roomId !== undefined ? override.roomId : request.newRoomId,
     confirmWarnings: override.confirmWarnings === true,
   };
+  if (request.kind !== 'CANCEL' && final.startOrder !== undefined && final.endOrder !== undefined) {
+    // Poprawka dziekanatu tez nie skraca zajec (patrz lib/changeRequests.lengthProblem).
+    const tooShort = lengthProblem(request.kind, occ, { startOrder: final.startOrder, endOrder: final.endOrder });
+    if (tooShort) throw new AppError(400, tooShort);
+  }
   const info = await describe(occ, term);
   const original = slotLabel(toIsoDate(occ.date), occ.startMinute, occ.endMinute);
   let outcome: string;
@@ -339,7 +342,7 @@ async function subjectOf(sectionId: string): Promise<string> {
     where: { id: sectionId },
     select: { classType: true, programEntry: { select: { subject: { select: { name: true } } } } },
   });
-  return `${s.programEntry.subject.name} (${CLASS_PL[s.classType]})`;
+  return `${s.programEntry.subject.name} (${CLASS_LABEL_PL[s.classType]})`;
 }
 
 const personName = (p: { title: string | null; firstName: string; lastName: string } | null) =>

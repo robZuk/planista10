@@ -54,6 +54,18 @@ export function validateRequestInput(input: RequestInput, today: string): string
   return problems;
 }
 
+/**
+ * Przeniesienie i odrobienie maja dlugosc oryginalnego terminu (liczba blokow siatki = godzin
+ * programu). Krotszy termin po cichu gubilby godziny zajec — plan liczy je z wzorca, nie z terminow.
+ */
+export function lengthProblem(kind: RequestKind, original: { startOrder: number; endOrder: number }, proposed: { startOrder: number; endOrder: number }): string | null {
+  if (kind === 'CANCEL') return null;
+  const want = original.endOrder - original.startOrder + 1;
+  const got = proposed.endOrder - proposed.startOrder + 1;
+  if (want === got) return null;
+  return `${kind === 'MOVE' ? 'Przeniesienie' : 'Odrobienie'} trwa tyle co zajecia w planie (${want} h), a nie ${got} h`;
+}
+
 export const KIND_LABEL: Record<RequestKind, string> = {
   CANCEL: 'odwolanie',
   MOVE: 'przeniesienie',

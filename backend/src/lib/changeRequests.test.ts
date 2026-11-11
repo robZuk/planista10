@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classLabel, proposalDateProblem, requestableKinds, resolveOnDirectChange, validateRequestInput } from './changeRequests';
+import { classLabel, proposalDateProblem, requestableKinds, resolveOnDirectChange, validateRequestInput, lengthProblem } from './changeRequests';
 import { occurrenceKey, parseOccurrenceKey } from './occurrenceKey';
 
 const today = '2026-11-09';
@@ -93,5 +93,20 @@ describe('resolveOnDirectChange', () => {
     expect(resolveOnDirectChange(move, { action: 'CANCEL' })).toBe('SUPERSEDED');
     expect(resolveOnDirectChange(cancel, { action: 'MODIFY', date: '2026-12-10', startOrder: 1, endOrder: 2 })).toBe('SUPERSEDED');
     expect(resolveOnDirectChange({ ...move, kind: 'MAKEUP' }, { action: 'RESTORE' })).toBe('SUPERSEDED');
+  });
+});
+
+describe('lengthProblem', () => {
+  const twoHours = { startOrder: 3, endOrder: 4 };
+  it('przeniesienie i odrobienie o tej samej dlugosci — ok (inne godziny dozwolone)', () => {
+    expect(lengthProblem('MOVE', twoHours, { startOrder: 7, endOrder: 8 })).toBeNull();
+    expect(lengthProblem('MAKEUP', twoHours, { startOrder: 1, endOrder: 2 })).toBeNull();
+  });
+  it('krotszy albo dluzszy termin — blad z dlugoscia oryginalu', () => {
+    expect(lengthProblem('MOVE', twoHours, { startOrder: 9, endOrder: 9 })).toBe('Przeniesienie trwa tyle co zajecia w planie (2 h), a nie 1 h');
+    expect(lengthProblem('MAKEUP', twoHours, { startOrder: 1, endOrder: 3 })).toBe('Odrobienie trwa tyle co zajecia w planie (2 h), a nie 3 h');
+  });
+  it('odwolanie nie ma dlugosci', () => {
+    expect(lengthProblem('CANCEL', twoHours, { startOrder: 1, endOrder: 1 })).toBeNull();
   });
 });
