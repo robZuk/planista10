@@ -3,6 +3,7 @@ import { formatDayMonth } from '@/lib/planHours';
 import { CLASS_COLORS, CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { formatMinutes } from '@/lib/timeGrid';
 import { hourRange, weekColumns, weekLanes } from '@/lib/myPlanWeek';
+import { REQUEST_KIND_LABELS } from '@/lib/requestLabels';
 import type { MyPlanRow } from '@/types';
 
 const DAY_SHORT = ['Nd', 'Pn', 'Wt', 'Sr', 'Cz', 'Pt', 'Sb'];
@@ -20,12 +21,15 @@ export function MyPlanWeek({
   rows,
   daysOff,
   showInstructor,
+  onSelect,
 }: {
   monday: string;
   rows: MyPlanRow[];
   /** Data -> nazwa swieta, przerwy albo dnia wolnego uczelni (kolumna zakreskowana z opisem). */
   daysOff: Record<string, string>;
   showInstructor: boolean;
+  /** Prowadzacy: klikniecie zajec otwiera zgloszenie do dziekanatu. */
+  onSelect?: (row: MyPlanRow) => void;
 }) {
   const days = weekColumns(monday, rows);
   const { from, to } = hourRange(rows);
@@ -90,10 +94,15 @@ export function MyPlanWeek({
                 const time = `${formatMinutes(r.startMinute)}–${formatMinutes(r.endMinute)}`;
                 const who = `${r.program} · ${r.group}`;
                 const lines = [r.room, ...(showInstructor ? [r.instructor] : [])];
-                const status = r.status === 'CANCELLED' ? 'odwolane' : r.status === 'MAKEUP' ? 'odrobienie' : null;
+                const pending = r.pendingRequest ? `zgloszono: ${REQUEST_KIND_LABELS[r.pendingRequest].toLowerCase()}` : null;
+                const status = pending ?? (r.status === 'CANCELLED' ? 'odwolane' : r.status === 'MAKEUP' ? 'odrobienie' : null);
                 return (
                   <div
                     key={r.id}
+                    role={onSelect ? 'button' : undefined}
+                    tabIndex={onSelect ? 0 : undefined}
+                    onClick={onSelect ? () => onSelect(r) : undefined}
+                    onKeyDown={onSelect ? (e) => (e.key === 'Enter' || e.key === ' ') && onSelect(r) : undefined}
                     title={[
                       `${time} ${CLASS_LABELS[r.classType]} · ${r.subject}`,
                       who,
@@ -112,6 +121,8 @@ export function MyPlanWeek({
                       'overflow-hidden rounded-md border-l-4 px-1.5 py-1 text-[11px] leading-tight shadow-sm',
                       CLASS_COLORS[r.classType],
                       r.status === 'CANCELLED' && 'line-through opacity-50 grayscale',
+                      onSelect && 'cursor-pointer hover:ring-2 hover:ring-primary/50',
+                      pending && 'ring-2 ring-amber-500',
                     )}
                   >
                     <div className="tabular-nums opacity-80">

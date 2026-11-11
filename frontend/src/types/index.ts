@@ -753,4 +753,86 @@ export interface MyPlanRow {
   instructor: string;
   status: EntryStatus;
   note: string | null;
+  /** Prowadzacy: zgloszenie tego terminu czekajace na dziekanat. */
+  pendingRequest: ChangeRequestKind | null;
+}
+
+// ─── Zgloszenia zmian i powiadomienia ──────────────────────────
+
+export type ChangeRequestKind = 'CANCEL' | 'MOVE' | 'MAKEUP';
+export type ChangeRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
+
+export interface ChangeRequestRow {
+  id: string;
+  kind: ChangeRequestKind;
+  status: ChangeRequestStatus;
+  instructor: string;
+  subject: string;
+  classType: ClassType;
+  program: string;
+  group: string;
+  original: { date: string; time: string };
+  /** Przeniesienie / odrobienie: proponowany termin; odwolanie — null. */
+  proposal: {
+    date: string | null;
+    startOrder: number | null;
+    endOrder: number | null;
+    time: string | null;
+    roomId: string | null;
+    room: string | null;
+    online: boolean;
+  } | null;
+  reason: string;
+  decisionNote: string | null;
+  decidedBy: string | null;
+  decidedAt: string | null;
+  createdAt: string;
+  /** Czeka, ale terminu juz nie ma (plan wygenerowano od nowa) — do odrzucenia. */
+  stale: boolean;
+}
+
+export interface MakeupRow {
+  occurrenceId: string;
+  key: string;
+  date: string;
+  time: string;
+  subject: string;
+  classType: ClassType;
+  program: string;
+  group: string;
+  instructor: string;
+  hours: number;
+  note: string | null;
+  /** TODO — do odrobienia, REQUESTED — zgloszony termin czeka, MADE_UP — odrobione. */
+  state: 'TODO' | 'REQUESTED' | 'MADE_UP';
+  makeup: { date: string; time: string } | null;
+}
+
+export interface RequestOptions {
+  kinds: ChangeRequestKind[];
+  /** Dlaczego nic nie wolno zglosic (gdy kinds puste). */
+  reason: string | null;
+  occurrence: {
+    id: string;
+    date: string;
+    startOrder: number;
+    endOrder: number;
+    roomId: string | null;
+    status: EntryStatus;
+    subject: string;
+    classLabel: string;
+    group: string;
+  };
+  blocks: { order: number; startTime: string; endTime: string }[];
+  days: DayOfWeek[];
+}
+
+export interface AppNotification {
+  id: string;
+  kind: string;
+  title: string;
+  body: string;
+  link: string | null;
+  readAt: string | null;
+  createdAt: string;
 }

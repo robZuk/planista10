@@ -12,6 +12,8 @@ import { formatMinutes } from '@/lib/timeGrid';
 import { useAuthStore } from '@/store/authStore';
 import { addDaysKey } from './calendar/calendarUtils';
 import { MyPlanWeek } from './myPlan/MyPlanWeek';
+import { RequestDialog } from './myPlan/RequestDialog';
+import { REQUEST_KIND_LABELS } from '@/lib/requestLabels';
 import type { MyPlanRow } from '@/types';
 
 const WEEKDAY = ['Niedziela', 'Poniedzialek', 'Wtorek', 'Sroda', 'Czwartek', 'Piatek', 'Sobota'];
@@ -28,7 +30,11 @@ function mondayOf(key: string): string {
 export default function MyPlanPage() {
   const { term } = useCurrentTerm();
   // Prowadzacy nie potrzebuje wlasnego nazwiska w kazdym wierszu; student — tak.
-  const showInstructor = useAuthStore((s) => s.user?.role) !== 'INSTRUCTOR';
+  const isInstructor = useAuthStore((s) => s.user?.role) === 'INSTRUCTOR';
+  const showInstructor = !isInstructor;
+  // Prowadzacy: klikniecie zajec otwiera zgloszenie do dziekanatu (odwolanie, przeniesienie, odrobienie).
+  const [requestFor, setRequestFor] = useState<string | null>(null);
+  const onSelect = isInstructor ? (r: MyPlanRow) => setRequestFor(r.id) : undefined;
   const [view, setView] = useState<'week' | 'list'>('week');
   const [monday, setMonday] = useState(() => mondayOf(new Date().toISOString().slice(0, 10)));
   const sunday = addDaysKey(monday, 6);
@@ -50,7 +56,11 @@ export default function MyPlanPage() {
     <>
       <PageHeader
         title="Moj plan"
-        description={term ? `Semestr ${term.label}. Widzisz tylko plan opublikowany przez dziekanat.` : 'Wybierz semestr w naglowku.'}
+        description={
+          term
+            ? `Semestr ${term.label}. Widzisz tylko plan opublikowany przez dziekanat.${isInstructor ? ' Kliknij zajecia, zeby poprosic o odwolanie, przeniesienie albo odrobienie.' : ''}`
+            : 'Wybierz semestr w naglowku.'
+        }
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex rounded-md border p-0.5" role="group" aria-label="Widok planu">
@@ -85,7 +95,7 @@ export default function MyPlanPage() {
       />
       {isPending && term && <Skeleton className="h-48 w-full" />}
       {data && view === 'week' && byDay.length > 0 && (
-        <MyPlanWeek monday={monday} rows={rows} daysOff={daysOff} showInstructor={showInstructor} />
+        <MyPlanWeek monday={monday} rows={rows} daysOff={daysOff} showInstructor={showInstructor} onSelect={onSelect} />
       )}
       {data && byDay.length === 0 && (
         <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
@@ -105,7 +115,11 @@ export default function MyPlanPage() {
                   {dayRows.map((r) => (
                     <li
                       key={r.id}
-                      className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 text-sm ${r.status === 'CANCELLED' ? 'text-muted-foreground line-through' : ''}`}
+                      role={onSelect ? 'button' : undefined}
+                      tabIndex={onSelect ? 0 : undefined}
+                      onClick={onSelect ? () => onSelect(r) : undefined}
+                      onKeyDown={onSelect ? (e) => (e.key === 'Enter' || e.key === ' ') && onSelect(r) : undefined}
+                      className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 text-sm ${r.status === 'CANCELLED' ? 'text-muted-foreground line-through' : ''} ${onSelect ? 'cursor-pointer hover:bg-muted' : ''}`}
                     >
                       <span className="w-28 tabular-nums">
                         {formatMinutes(r.startMinute)}–{formatMinutes(r.endMinute)}
@@ -119,6 +133,11 @@ export default function MyPlanPage() {
                       {showInstructor && <span className="text-muted-foreground">{r.instructor}</span>}
                       {r.status === 'CANCELLED' && <Badge variant="destructive">odwolane</Badge>}
                       {r.status === 'MAKEUP' && <Badge>odrobienie</Badge>}
+                      {r.pendingRequest && (
+                        <Badge variant="outline" className="border-amber-500 text-amber-700 dark:text-amber-400">
+                          zgloszono: {REQUEST_KIND_LABELS[r.pendingRequest].toLowerCase()}
+                        </Badge>
+                      )}
                       {r.note && <span className="text-xs text-muted-foreground">{r.note}</span>}
                     </li>
                   ))}
@@ -127,6 +146,7 @@ export default function MyPlanPage() {
             </section>
           ))}
       </div>
+      {requestFor && <RequestDialog occurrenceId={requestFor} onClose={() => setRequestFor(null)} />}
     </>
   );
 }
