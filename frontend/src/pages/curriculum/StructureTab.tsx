@@ -252,10 +252,13 @@ export default function StructureTab() {
                         <Pencil />
                         Edytuj kierunek
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setDeletingField(field)}>
-                        <Trash2 />
-                        Usun kierunek
-                      </Button>
+                      {/* Kierunek ze specjalnosciami i tak nie zostanie usuniety — mowimy to od razu, jak przy przedmiotach. */}
+                      <span title={specs.length > 0 ? 'Kierunek ma specjalnosci — usun je najpierw' : undefined}>
+                        <Button size="sm" variant="outline" disabled={specs.length > 0} onClick={() => setDeletingField(field)}>
+                          <Trash2 />
+                          Usun kierunek
+                        </Button>
+                      </span>
                     </div>
                   )}
 

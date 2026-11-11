@@ -1,6 +1,22 @@
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
+import { foldName } from '../lib/foldName';
+
+/**
+ * Nazwa i skrot kierunku unikalne w obrebie wydzialu — bez wielkosci liter i polskich znakow
+ * ("transport" == "Transport"); skrot trafia do nazw grup i kodow, wiec tez nie moze sie powtorzyc.
+ */
+async function assertFieldFree(facultyId: string, name: string, shortName: string, exceptId?: string) {
+  const others = await prisma.fieldOfStudy.findMany({
+    where: { facultyId, ...(exceptId ? { NOT: { id: exceptId } } : {}) },
+    select: { name: true, shortName: true },
+  });
+  const byName = others.find((f) => foldName(f.name) === foldName(name));
+  if (byName) throw new AppError(409, `Kierunek „${byName.name}” juz istnieje na tym wydziale`);
+  const byShort = others.find((f) => foldName(f.shortName) === foldName(shortName));
+  if (byShort) throw new AppError(409, `Skrot ${byShort.shortName} ma juz kierunek „${byShort.name}” na tym wydziale`);
+}
 
 export const getAll = asyncHandler(async (req, res) => {
   const { facultyId } = req.query;
@@ -20,6 +36,7 @@ export const create = asyncHandler(async (req, res) => {
     shortName: string;
     facultyId: string;
   };
+  await assertFieldFree(facultyId, name, shortName);
   const data = await prisma.fieldOfStudy.create({ data: { name, shortName, facultyId } });
   res.status(201).json({ data, message: 'Kierunek utworzony' });
 });
@@ -29,11 +46,7 @@ export const update = asyncHandler(async (req, res) => {
   const { name, shortName } = req.body as { name: string; shortName: string };
   const field = await prisma.fieldOfStudy.findUnique({ where: { id } });
   if (!field) throw new AppError(404, 'Kierunek nie znaleziony');
-  // Nazwa unikalna w obrebie wydzialu — mowimy wprost, zamiast ogolnego 409.
-  const clash = await prisma.fieldOfStudy.findFirst({
-    where: { facultyId: field.facultyId, name: { equals: name, mode: 'insensitive' }, NOT: { id } },
-  });
-  if (clash) throw new AppError(409, `Kierunek „${clash.name}” juz istnieje na tym wydziale`);
+  await assertFieldFree(field.facultyId, name, shortName, id);
   const data = await prisma.fieldOfStudy.update({ where: { id }, data: { name, shortName } });
   res.json({ data, message: 'Kierunek zaktualizowany' });
 });

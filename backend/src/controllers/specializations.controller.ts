@@ -1,6 +1,22 @@
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
+import { foldName } from '../lib/foldName';
+
+/**
+ * Nazwa i skrot specjalnosci unikalne na kierunku — bez wielkosci liter i polskich znakow.
+ * Skrot jest kodem grupy specjalnosci (np. SPEC-DUT), wiec powtorzony dawalby dwie takie same grupy.
+ */
+async function assertSpecFree(fieldOfStudyId: string, name: string, shortName: string, exceptId?: string) {
+  const others = await prisma.specialization.findMany({
+    where: { fieldOfStudyId, ...(exceptId ? { NOT: { id: exceptId } } : {}) },
+    select: { name: true, shortName: true },
+  });
+  const byName = others.find((s) => foldName(s.name) === foldName(name));
+  if (byName) throw new AppError(409, `Specjalnosc „${byName.name}” juz istnieje na tym kierunku`);
+  const byShort = others.find((s) => foldName(s.shortName) === foldName(shortName));
+  if (byShort) throw new AppError(409, `Skrot ${byShort.shortName} ma juz specjalnosc „${byShort.name}” na tym kierunku`);
+}
 
 export const getAll = asyncHandler(async (req, res) => {
   const { fieldOfStudyId } = req.query;
@@ -21,6 +37,7 @@ export const create = asyncHandler(async (req, res) => {
     shortName: string;
     fieldOfStudyId: string;
   };
+  await assertSpecFree(fieldOfStudyId, name, shortName);
   const data = await prisma.specialization.create({ data: { name, shortName, fieldOfStudyId } });
   res.status(201).json({ data, message: 'Specjalnosc utworzona' });
 });
@@ -30,10 +47,7 @@ export const update = asyncHandler(async (req, res) => {
   const { name, shortName } = req.body as { name: string; shortName: string };
   const spec = await prisma.specialization.findUnique({ where: { id } });
   if (!spec) throw new AppError(404, 'Specjalnosc nie znaleziona');
-  const clash = await prisma.specialization.findFirst({
-    where: { fieldOfStudyId: spec.fieldOfStudyId, name: { equals: name, mode: 'insensitive' }, NOT: { id } },
-  });
-  if (clash) throw new AppError(409, `Specjalnosc „${clash.name}” juz istnieje na tym kierunku`);
+  await assertSpecFree(spec.fieldOfStudyId, name, shortName, id);
   const data = await prisma.specialization.update({ where: { id }, data: { name, shortName } });
   res.json({ data, message: 'Specjalnosc zaktualizowana' });
 });

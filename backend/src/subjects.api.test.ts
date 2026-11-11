@@ -16,11 +16,15 @@ const prismaMock = vi.hoisted(() => ({
   fieldOfStudy: {
     findUnique: vi.fn(),
     findFirst: vi.fn(),
+    findMany: vi.fn(),
+    create: vi.fn((args: { data: object }) => Promise.resolve({ id: 'f-new', ...args.data })),
     update: vi.fn((args: { data: object }) => Promise.resolve({ id: 'f1', ...args.data })),
   },
   specialization: {
     findUnique: vi.fn(),
     findFirst: vi.fn(),
+    findMany: vi.fn(),
+    create: vi.fn((args: { data: object }) => Promise.resolve({ id: 'sp-new', ...args.data })),
     update: vi.fn((args: { data: object }) => Promise.resolve({ id: 'sp1', ...args.data })),
   },
   instructor: {
@@ -50,6 +54,8 @@ beforeEach(() => {
   prismaMock.instructor.findFirst.mockReset().mockResolvedValue(null);
   prismaMock.fieldOfStudy.findFirst.mockReset().mockResolvedValue(null);
   prismaMock.specialization.findFirst.mockReset().mockResolvedValue(null);
+  prismaMock.fieldOfStudy.findMany.mockReset().mockResolvedValue([]);
+  prismaMock.specialization.findMany.mockReset().mockResolvedValue([]);
 });
 
 describe('API — przedmioty', () => {
@@ -138,7 +144,7 @@ describe('API — kierunki i specjalnosci: edycja', () => {
 
   it('kierunek: nazwa zajeta na tym wydziale -> 409 z nazwa', async () => {
     prismaMock.fieldOfStudy.findUnique.mockResolvedValueOnce({ id: 'f1', facultyId: 'wm' });
-    prismaMock.fieldOfStudy.findFirst.mockResolvedValueOnce({ id: 'f2', name: 'Mechanika i Budowa Maszyn' });
+    prismaMock.fieldOfStudy.findMany.mockResolvedValueOnce([{ name: 'Mechanika i Budowa Maszyn', shortName: 'MIBM' }]);
     const res = await request(app).put('/api/fields-of-study/f1').set('Authorization', `Bearer ${admin}`).send({ name: 'mechanika i budowa maszyn', shortName: 'MBM' });
     expect(res.status).toBe(409);
     expect(res.body.error).toBe('Kierunek „Mechanika i Budowa Maszyn” juz istnieje na tym wydziale');
@@ -149,9 +155,31 @@ describe('API — kierunki i specjalnosci: edycja', () => {
     const ok = await request(app).put('/api/specializations/sp1').set('Authorization', `Bearer ${admin}`).send({ name: 'Diagnostyka', shortName: 'DIAG' });
     expect(ok.status).toBe(200);
     prismaMock.specialization.findUnique.mockResolvedValueOnce({ id: 'sp1', fieldOfStudyId: 'f1' });
-    prismaMock.specialization.findFirst.mockResolvedValueOnce({ id: 'sp2', name: 'Zarzadzanie' });
+    prismaMock.specialization.findMany.mockResolvedValueOnce([{ name: 'Zarządzanie', shortName: 'ZAR' }]);
     const clash = await request(app).put('/api/specializations/sp1').set('Authorization', `Bearer ${admin}`).send({ name: 'Zarzadzanie', shortName: 'Z' });
     expect(clash.status).toBe(409);
-    expect(clash.body.error).toBe('Specjalnosc „Zarzadzanie” juz istnieje na tym kierunku');
+    expect(clash.body.error).toBe('Specjalnosc „Zarządzanie” juz istnieje na tym kierunku');
+  });
+
+  it('dodanie kierunku: nazwa innej wielkosci liter albo zajety skrot -> 409, bez zapisu', async () => {
+    const body = { name: 'transport', shortName: 'TRX', facultyId: 'wn' };
+    prismaMock.fieldOfStudy.findMany.mockResolvedValueOnce([{ name: 'Transport', shortName: 'TR' }]);
+    const byName = await request(app).post('/api/fields-of-study').set('Authorization', `Bearer ${admin}`).send(body);
+    expect(byName.status).toBe(409);
+    expect(byName.body.error).toBe('Kierunek „Transport” juz istnieje na tym wydziale');
+    prismaMock.fieldOfStudy.findMany.mockResolvedValueOnce([{ name: 'Transport', shortName: 'TR' }]);
+    const byShort = await request(app).post('/api/fields-of-study').set('Authorization', `Bearer ${admin}`).send({ ...body, name: 'Logistyka', shortName: 'tr' });
+    expect(byShort.status).toBe(409);
+    expect(byShort.body.error).toBe('Skrot TR ma juz kierunek „Transport” na tym wydziale');
+    expect(prismaMock.fieldOfStudy.create).not.toHaveBeenCalled();
+  });
+
+  it('dodanie specjalnosci z zajetym skrotem -> 409; nowa — zapisana', async () => {
+    prismaMock.specialization.findMany.mockResolvedValueOnce([{ name: 'Diagnostyka', shortName: 'DUT' }]);
+    const clash = await request(app).post('/api/specializations').set('Authorization', `Bearer ${admin}`).send({ name: 'Inna', shortName: 'dut', fieldOfStudyId: 'f1' });
+    expect(clash.status).toBe(409);
+    expect(clash.body.error).toMatch(/Skrot DUT ma juz specjalnosc/);
+    const ok = await request(app).post('/api/specializations').set('Authorization', `Bearer ${admin}`).send({ name: 'Inna', shortName: 'INN', fieldOfStudyId: 'f1' });
+    expect(ok.status).toBe(201);
   });
 });
