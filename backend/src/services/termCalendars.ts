@@ -165,7 +165,8 @@ export interface CalendarProposal {
 }
 
 /**
- * Propozycja kalendarza dla nowego semestru: ostatni kalendarz tego samego typu
+ * Propozycja kalendarza. Nowy wariant w semestrze z kalendarzem — kopia tamtego (patrz nizej).
+ * Pierwszy kalendarz w semestrze: ostatni kalendarz tego samego typu
  * semestru (ten sam wydzial i tryb, najlepiej ten sam wariant) przesuniety o lata.
  * Daty semestru i przerw zachowuja dzien miesiaca; zjazdy — dzien tygodnia (zjazd
  * musi dalej zaczynac sie w piatek). Jednorazowe wyjatki dni NIE sa kopiowane —
@@ -177,6 +178,37 @@ export async function proposeCalendar(
   studyMode: StudyMode,
   name: string,
 ): Promise<CalendarProposal> {
+  // Nowy wariant w semestrze, ktory ma juz kalendarz tego wydzialu i trybu: kopia tamtego
+  // (najlepiej "Podstawowy") — te same daty, przerwy, dni wolne i zjazdy; planista zmienia
+  // tylko to, czym wariant sie rozni (np. inne zjazdy dla czesci kierunkow).
+  const sameTerm = await prisma.termCalendar.findMany({
+    where: { facultyId, studyMode, term: { type: term.type, startYear: term.startYear } },
+    include: calendarInclude,
+    orderBy: { createdAt: 'asc' },
+  });
+  const base = sameTerm.find((c) => c.name === 'Podstawowy') ?? sameTerm[0];
+  if (base) {
+    const input = toCalendarInput(base);
+    return {
+      source: { termKey: termKey(base.term), termLabel: termLabel(base.term), facultyName: base.faculty.name, name: base.name },
+      calendar: {
+        name,
+        kind: base.kind,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        breaks: input.breaks.map((b) => ({ name: b.name ?? 'Przerwa', startDate: b.startDate, endDate: b.endDate })),
+        days: input.days.map((d) => ({
+          date: d.date,
+          kind: d.kind,
+          name: d.name ?? null,
+          followsWeekday: d.followsWeekday ?? null,
+          closedFromBlockOrder: d.closedFromBlockOrder ?? null,
+        })),
+        zjazdy: input.zjazdy.map((z) => ({ number: z.number, startDate: z.startDate, endDate: z.endDate })),
+      },
+    };
+  }
+
   const candidates = await prisma.termCalendar.findMany({
     where: { facultyId, studyMode, term: { type: term.type, startYear: { lt: term.startYear } } },
     include: calendarInclude,

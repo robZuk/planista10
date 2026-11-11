@@ -24,6 +24,12 @@ describe('proposalNote', () => {
     expect(note.description).toContain('przeniesione z 2025/26 letni na ten semestr');
   });
 
+  it('wariant w tym samym semestrze: kopia, nie "pierwszy kalendarz"', () => {
+    const note = proposalNote({ source: { termKey: '2026-Z', termLabel: '2026/27 zimowy', facultyName: 'WM', name: 'Podstawowy' }, calendar }, '2026-Z');
+    expect(note.title).toBe('Kopia kalendarza „Podstawowy” z tego semestru');
+    expect(note.description).toContain('Zmien tylko to, czym wariant sie rozni');
+  });
+
   it('bez zrodla: domyslne daty i co dodac recznie', () => {
     const note = proposalNote({ source: null, calendar: { ...calendar, kind: 'ZJAZD' } });
     expect(note.title).toContain('domyslne daty');

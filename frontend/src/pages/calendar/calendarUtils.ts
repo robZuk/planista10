@@ -34,8 +34,16 @@ export function useDebouncedValue<T>(value: T, delay: number): T {
  * Opis propozycji nowego kalendarza: skopiowany z zeszlego roku albo (pierwszy kalendarz
  * tego typu) domyslne daty — wtedy mowimy wprost, co trzeba uzupelnic recznie.
  */
-export function proposalNote(proposal: CalendarProposal): { title: string; description: string } {
+export function proposalNote(proposal: CalendarProposal, termKey?: string): { title: string; description: string } {
   const { source, calendar } = proposal;
+  // Nowy wariant w semestrze, ktory ma juz kalendarz: kopia tamtego, nie "pierwszy kalendarz".
+  if (source && source.termKey === termKey) {
+    return {
+      title: `Kopia kalendarza „${source.name}” z tego semestru`,
+      description:
+        'Daty semestru, przerwy, dni wolne i zjazdy sa takie same jak w nim. Zmien tylko to, czym wariant sie rozni (np. inne zjazdy dla czesci kierunkow).',
+    };
+  }
   if (source) {
     return {
       title: `Propozycja na podstawie: ${source.termLabel} (${source.name})`,

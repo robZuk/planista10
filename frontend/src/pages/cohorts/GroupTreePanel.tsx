@@ -25,6 +25,8 @@ import {
   updateCohortGroup,
 } from '@/api/cohorts';
 import { getErrorMessage } from '@/lib/errors';
+import { defaultSubPartition } from '@/lib/subPartition';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import type { CohortGroup, TermCohort } from '@/types';
 
 /** Podzialy rocznika: ROOT (caly rocznik) i SPEC sa zakladane osobno. */
@@ -54,6 +56,7 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
     queryFn: () => fetchCohortGroups(cohort.id, cohort.semester),
   });
   const [addTarget, setAddTarget] = useState<AddTarget>(null);
+  const [deleting, setDeleting] = useState<CohortGroup | null>(null);
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['cohort-groups', cohort.id] });
@@ -70,6 +73,7 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
     mutationFn: (id: string) => deleteCohortGroup(id),
     onSuccess: async () => {
       toast.success('Grupa usunieta');
+      setDeleting(null);
       await refresh();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -162,7 +166,7 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
                     size="icon"
                     className="size-7 text-destructive hover:text-destructive"
                     aria-label={`Usun ${group.name}`}
-                    onClick={() => remove.mutate(group.id)}
+                    onClick={() => setDeleting(group)}
                   >
                     <Trash2 />
                   </Button>
@@ -199,6 +203,14 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
           </ul>
         </details>
       )}
+      <ConfirmDialog
+        open={!!deleting}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        title={`Usunac grupe ${deleting?.name ?? ''}?`}
+        description="Grupa nie ma zajec, podgrup ani studentow. Jesli ma byc tylko w czesci studiow, zamiast usuwac zakoncz ja na wybranym semestrze (flaga)."
+        isPending={remove.isPending}
+        onConfirm={() => remove.mutate(deleting!.id)}
+      />
       {addTarget && (
         <AddGroupsDialog
           cohort={cohort}
@@ -226,7 +238,7 @@ function AddGroupsDialog({
   onDone: () => void;
 }) {
   const specs = cohort.program.fieldOfStudy.specializations;
-  const [partition, setPartition] = useState(target.parent.partitionKey === 'C' ? 'L' : 'C');
+  const [partition, setPartition] = useState(defaultSubPartition(target.parent.partitionKey));
   const [custom, setCustom] = useState('');
   const [count, setCount] = useState('2');
   const [size, setSize] = useState(String(Math.max(1, Math.round(target.parent.size / 2))));

@@ -546,7 +546,13 @@ export default function BuildingsPage() {
         open={!!deletingBuilding}
         onOpenChange={(open) => !open && setDeletingBuilding(null)}
         title={`Usunac budynek ${deletingBuilding?.name ?? ''}?`}
-        description="Tej operacji nie da sie cofnac. Budynek z salami nie zostanie usuniety — najpierw usun sale."
+        description={
+          deletingBuilding?.rooms?.length
+            ? `Budynek ma sale (${deletingBuilding.rooms.length}) — najpierw usun je, potem budynek.`
+            : 'Tej operacji nie da sie cofnac.'
+        }
+        // Budynku z salami serwer i tak nie usunie — nie proponujemy przycisku, ktory skonczy sie bledem.
+        confirmDisabled={!!deletingBuilding?.rooms?.length}
         isPending={removeBuilding.isPending}
         onConfirm={() => deletingBuilding && removeBuilding.mutate(deletingBuilding.id)}
       />

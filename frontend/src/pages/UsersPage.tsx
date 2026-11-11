@@ -73,7 +73,9 @@ function userSchema(isEdit: boolean) {
     instructorId: z.string().optional(),
     facultyId: z.string().optional(),
     studentGroupIds: z.array(z.string()),
-  });
+  })
+  // Konto dziekanatu bez wydzialu nie moze niczego zmienic — serwer tez tego wymaga.
+  .refine((v) => v.role !== 'DEAN_OFFICE' || !!v.facultyId, { path: ['facultyId'], message: 'Wybierz wydzial dziekanatu' });
 }
 
 type UserValues = z.infer<ReturnType<typeof userSchema>>;
@@ -158,6 +160,8 @@ export default function UsersPage() {
       })),
     [faculties],
   );
+
+  const facultyShort = useMemo(() => new Map((faculties ?? []).map((f) => [f.id, f.shortName])), [faculties]);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['users'] });
 
@@ -265,10 +269,23 @@ export default function UsersPage() {
       accessorFn: (row) =>
         row.instructor
           ? `${row.instructor.firstName} ${row.instructor.lastName}`
-          : row.studentGroups.map((group) => groupLabel.get(group.id) ?? group.name).join(' '),
+          : row.role === 'DEAN_OFFICE'
+            ? (facultyShort.get(row.facultyId ?? '') ?? 'brak wydzialu')
+            : row.studentGroups.map((group) => groupLabel.get(group.id) ?? group.name).join(' '),
       header: 'Powiazanie',
       cell: ({ row }) => {
-        const { instructor, studentGroups } = row.original;
+        const { instructor, studentGroups, role, facultyId } = row.original;
+        // Dziekanat: wydzial, ktorego dane zmienia; bez wydzialu konto nic nie moze.
+        if (role === 'DEAN_OFFICE') {
+          const short = facultyShort.get(facultyId ?? '');
+          return short ? (
+            <Badge variant="outline">Wydzial {short}</Badge>
+          ) : (
+            <Badge variant="destructive" title="Konto dziekanatu bez wydzialu nie moze niczego zmieniac — przypisz wydzial">
+              brak wydzialu
+            </Badge>
+          );
+        }
         if (instructor) {
           return (
             <span className="text-sm">
@@ -502,6 +519,7 @@ export default function UsersPage() {
                   <FieldDescription>
                     Konto dziekanatu widzi i generuje plan tylko dla tego wydzialu.
                   </FieldDescription>
+                  <FieldError errors={[form.formState.errors.facultyId]} />
                 </Field>
               )}
 

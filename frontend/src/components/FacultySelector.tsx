@@ -26,7 +26,8 @@ export function FacultySelector() {
 
   return (
     <Select value={facultyId} onValueChange={setFacultyId}>
-      <SelectTrigger className="w-48" aria-label="Wydzial">
+      {/* Szerokosc wg nazwy (pelna nazwa wydzialu, np. "Wydzial Mechaniczny"), ale nie szerzej niz ekran. */}
+      <SelectTrigger className="w-auto max-w-full min-w-48" aria-label="Wydzial">
         <Landmark className="size-4 text-muted-foreground" />
         <SelectValue placeholder="Wydzial" />
       </SelectTrigger>

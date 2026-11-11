@@ -37,6 +37,16 @@ function withGroupNames<T extends { studentGroups: { id: string; code: string | 
   };
 }
 
+/**
+ * Konto dziekanatu bez wydzialu nie moze niczego zmienic (assertFacultyScope), a widzialoby plan
+ * calej uczelni z przyciskami, ktore koncza sie bledem — wiec wydzial jest wymagany i musi istniec.
+ */
+async function assertDeanFaculty(role: Role, facultyId: string | null | undefined): Promise<void> {
+  if (role !== 'DEAN_OFFICE') return;
+  if (!facultyId) throw new AppError(400, 'Konto dziekanatu wymaga wydzialu — wybierz wydzial');
+  if (!(await prisma.faculty.findUnique({ where: { id: facultyId } }))) throw new AppError(400, 'Wydzial nie istnieje');
+}
+
 // GET /api/users
 export const getAll = asyncHandler(async (_req, res) => {
   const data = await prisma.user.findMany({ select: userSelect, orderBy: { createdAt: 'asc' } });
@@ -54,6 +64,7 @@ export const create = asyncHandler(async (req, res) => {
     studentGroupIds?: string[];
     facultyId?: string | null;
   };
+  await assertDeanFaculty(role, facultyId);
 
   const data = await prisma.user.create({
     data: {
@@ -83,6 +94,11 @@ export const update = asyncHandler(async (req, res) => {
     password?: string;
     facultyId?: string | null;
   };
+
+  // Wydzial dziekanatu po zmianie: nowa rola i nowy wydzial albo dotychczasowe.
+  const current = await prisma.user.findUnique({ where: { id: req.params.id }, select: { role: true, facultyId: true } });
+  if (!current) throw new AppError(404, 'Uzytkownik nie znaleziony');
+  await assertDeanFaculty(role ?? current.role, facultyId !== undefined ? facultyId || null : current.facultyId);
 
   // Powiazania sa juz zawezone przez rolę po stronie frontendu
   // (instructorId=null gdy nie-INSTRUCTOR, studentGroupIds=[] gdy nie-STUDENT).

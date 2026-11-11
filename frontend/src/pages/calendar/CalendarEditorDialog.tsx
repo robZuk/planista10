@@ -242,8 +242,8 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
         {target?.mode === 'create' && (
           <Alert>
             <Info />
-            <AlertTitle>{proposalNote(target.proposal).title}</AlertTitle>
-            <AlertDescription>{proposalNote(target.proposal).description}</AlertDescription>
+            <AlertTitle>{proposalNote(target.proposal, term.key).title}</AlertTitle>
+            <AlertDescription>{proposalNote(target.proposal, term.key).description}</AlertDescription>
           </Alert>
         )}
 
