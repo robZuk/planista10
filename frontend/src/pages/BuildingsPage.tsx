@@ -163,10 +163,11 @@ export default function BuildingsPage() {
       };
       return roomTarget.room
         ? updateRoom(roomTarget.buildingId, roomTarget.room.id, payload)
-        : createRoom(roomTarget.buildingId, payload);
+        : createRoom(roomTarget.buildingId, payload).then((data) => ({ data, warning: null }));
     },
-    onSuccess: () => {
-      toast.success(roomTarget?.room ? 'Sala zaktualizowana' : 'Sala dodana');
+    onSuccess: ({ warning }) => {
+      if (warning) toast.warning('Sala zaktualizowana', { description: warning, duration: 10000 });
+      else toast.success(roomTarget?.room ? 'Sala zaktualizowana' : 'Sala dodana');
       setRoomDialog(false);
       void invalidate();
     },
