@@ -16,6 +16,7 @@ import { FacultySelector } from '@/components/FacultySelector';
 import { downloadSectionsCsv, fetchSections, fetchWorkload } from '@/api/sections';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage } from '@/lib/errors';
+import { matchesAllWords } from '@/lib/searchMatch';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
@@ -75,15 +76,14 @@ export default function ObsadaPage() {
   }, [data]);
 
   const rows = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = search.trim();
+    // Wspolne dopasowanie: kazde slowo gdziekolwiek w wierszu, bez znaczenia polskie znaki
+    // ("zarzadzanie" znajdzie "Zarządzanie", "matematyka dut" — przedmiot i grupe).
     return (data?.rows ?? []).filter(
       (r) =>
         (cohortFilter === 'all' || r.cohort.id === cohortFilter) &&
         (!onlyVacant || r.hasVacancy) &&
-        (!q ||
-          r.subject.name.toLowerCase().includes(q) ||
-          r.group.name.toLowerCase().includes(q) ||
-          r.instructors.some((i) => i.name.toLowerCase().includes(q))),
+        (!q || matchesAllWords([r.cohort.label, r.subject.name, r.group.name, ...r.instructors.map((i) => i.name)].join(' '), q)),
     );
   }, [data, cohortFilter, onlyVacant, search]);
 

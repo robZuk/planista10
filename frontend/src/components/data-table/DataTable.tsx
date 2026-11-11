@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { matchesAllWords } from '@/lib/searchMatch';
 import {
   flexRender,
   getCoreRowModel,
@@ -73,6 +74,17 @@ export function DataTable<TData>({
     state: { sorting, globalFilter, columnVisibility },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    // Wyszukiwarka tabel jak w listach rozwijanych: kazde slowo gdziekolwiek w wierszu,
+    // bez znaczenia wielkosc liter i polskie znaki (lib/searchMatch).
+    globalFilterFn: (row, _columnId, value: string) =>
+      matchesAllWords(
+        row
+          .getAllCells()
+          .map((cell) => cell.getValue())
+          .filter((v) => typeof v === 'string' || typeof v === 'number')
+          .join(' '),
+        value,
+      ),
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),

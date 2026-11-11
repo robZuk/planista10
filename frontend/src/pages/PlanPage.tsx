@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
 import { fetchTermCohorts } from '@/api/cohorts';
@@ -26,6 +27,7 @@ import { issueRows, placementWarning, planDays } from '@/lib/planIssues';
 import { copyCandidates, inZjazd, zjazdyDiffer } from '@/lib/zjazdView';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
+import { WEEKDAY_LABELS } from '@/lib/labels';
 import type { DayOfWeek, PlanPlacement, PlanSection } from '@/types';
 import { WeekGrid, type GridItem } from './plan/WeekGrid';
 import { CohortFacetFilters } from './cohorts/CohortFacetFilters';
@@ -61,6 +63,7 @@ export default function PlanPage() {
   const [cohortId, setCohortId] = useState('');
   const [selected, setSelected] = useState<PlanSection | null>(null);
   const [target, setTarget] = useState<PlacementTarget | null>(null);
+  const [viewing, setViewing] = useState<{ section: PlanSection; placement: PlanPlacement } | null>(null);
   const [zjazdChoice, setZjazd] = useState<number | null>(null);
   const [groupFilter, setGroupFilter] = useState('all');
   // Przy filtrze grupy zajecia innych grup sa domyslnie ukryte — kafelki wybranej grupy maja wtedy pelna szerokosc.
@@ -258,7 +261,7 @@ export default function PlanPage() {
           <>
             {plan && !locked && (
               // Dymek natywny na spanie: wylaczony przycisk nie reaguje na najechanie, a powod ma byc widoczny.
-              <span title={blockedReason ?? undefined} className="inline-flex gap-2">
+              <span title={blockedReason ?? undefined} className="inline-flex flex-wrap gap-2">
                     <Button variant="outline" disabled={!!blockedReason} onClick={() => setCarrying(true)}>
                       <History /> Przenies plan z zeszlego roku
                     </Button>
@@ -526,9 +529,10 @@ export default function PlanPage() {
                 }
                 onItemClick={(id) => {
                   const owner = placementOwner.get(id);
-                  if (owner && !readOnly) {
-                    setTarget({ section: owner.section, placement: owner.placement, day: owner.placement.dayOfWeek, startOrder: owner.placement.startOrder, zjazd });
-                  }
+                  if (!owner) return;
+                  // Archiwum / bez uprawnien: szczegoly do odczytu (jak termin w zakladce "Terminy").
+                  if (readOnly) setViewing(owner);
+                  else setTarget({ section: owner.section, placement: owner.placement, day: owner.placement.dayOfWeek, startOrder: owner.placement.startOrder, zjazd });
                 }}
               />
 
@@ -651,6 +655,39 @@ export default function PlanPage() {
             />
           </TabsContent>
         </Tabs>
+      )}
+
+      {viewing && (
+        <Dialog open onOpenChange={(open) => !open && setViewing(null)}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {CLASS_LABELS[viewing.section.classType]} · {viewing.section.subject.name}
+              </DialogTitle>
+              <DialogDescription>Umieszczenie we wzorcu — tylko do odczytu.</DialogDescription>
+            </DialogHeader>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+              <dt className="text-muted-foreground">Grupa</dt>
+              <dd>{viewing.section.group.name}</dd>
+              <dt className="text-muted-foreground">Termin</dt>
+              <dd>
+                {WEEKDAY_LABELS[viewing.placement.dayOfWeek]}{' '}
+                {blocks?.find((b) => b.order === viewing.placement.startOrder)?.startTime}–
+                {blocks?.find((b) => b.order === viewing.placement.endOrder)?.endTime}
+              </dd>
+              <dt className="text-muted-foreground">Rytm</dt>
+              <dd>{patternLabel(viewing.placement)}</dd>
+              <dt className="text-muted-foreground">Sala</dt>
+              <dd>{viewing.placement.room?.label ?? 'ON-LINE'}</dd>
+              <dt className="text-muted-foreground">Prowadzacy</dt>
+              <dd>{viewing.placement.instructor?.name ?? 'NN'}</dd>
+              <dt className="text-muted-foreground">Godziny</dt>
+              <dd>
+                {viewing.section.plannedHours}/{viewing.section.hours} h zaplanowane
+              </dd>
+            </dl>
+          </DialogContent>
+        </Dialog>
       )}
 
       {target && plan && blocks && term && (

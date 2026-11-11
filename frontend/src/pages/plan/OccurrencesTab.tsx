@@ -26,6 +26,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { changeOccurrence, createManualOccurrence, deleteManualOccurrence, fetchOccurrences } from '@/api/plan';
 import { fetchBuildings } from '@/api/buildings';
 import { getErrorMessage, slotWarningsOf } from '@/lib/errors';
+import { matchesAllWords } from '@/lib/searchMatch';
 import { SlotWarnings } from '@/components/SlotWarnings';
 import { CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { formatMinutes } from '@/lib/timeGrid';
@@ -99,8 +100,8 @@ export function OccurrencesTab({
   });
 
   const rows = useMemo(() => {
-    const q = filter.trim().toLowerCase();
-    return (data ?? []).filter((o) => !q || o.subject.toLowerCase().includes(q) || o.group.toLowerCase().includes(q));
+    const q = filter.trim();
+    return (data ?? []).filter((o) => !q || matchesAllWords(`${o.subject} ${o.group} ${o.instructor} ${o.room.label}`, q));
   }, [data, filter]);
 
   if (isPending) return <Skeleton className="h-64 w-full" />;

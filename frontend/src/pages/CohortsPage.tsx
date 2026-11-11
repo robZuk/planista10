@@ -244,6 +244,12 @@ export default function CohortsPage() {
                       </NativeSelect>
                     )}
                   </label>
+                  {cohort.calendar?.status === 'ARCHIVED' && (
+                    <span className="text-xs text-muted-foreground">
+                      Semestr w archiwum — plan i obsada tylko do odczytu. Grupy i tryb wykladow dotycza calego rocznika:
+                      zmiany zadzialaja w kolejnych semestrach, nie w tym.
+                    </span>
+                  )}
                   {cohort.calendar?.status === 'PLANNING' && (
                     <span className="text-xs text-amber-700 dark:text-amber-400">
                       Kalendarz w planowaniu — studenci i prowadzacy nie widza jeszcze planu tego rocznika
