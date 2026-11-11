@@ -398,7 +398,10 @@ export function AssignmentDialog({
               {total} / {section.hours} h
             </span>
           </div>
-          {rowProblem && <p className="text-sm text-destructive">{rowProblem}</p>}
+          {/* Pusty wiersz (np. swiezo otwarte okno) to wskazowka, nie blad — bez czerwieni. */}
+          {rowProblem && (
+            <p className={`text-sm ${rows.some((r) => !r.instructorId) ? 'text-muted-foreground' : 'text-destructive'}`}>{rowProblem}</p>
+          )}
           {rows.length === 0 && (
             <p className="text-sm text-muted-foreground">Bez wierszy zapis usunie obsade tych zajec.</p>
           )}

@@ -16,6 +16,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { generateOccurrences } from '@/api/plan';
 import { getErrorMessage } from '@/lib/errors';
 import type { GenerateReport } from '@/types';
+import { plural } from '@/lib/setupSteps';
 
 const REASON: Record<string, string> = { ROOM: 'sala', INSTRUCTOR: 'prowadzacy', GROUP: 'grupa' };
 
@@ -133,7 +134,7 @@ export function GenerateTermsDialog({
             )}
             {report.beyondHours > 0 && (
               <p className="text-muted-foreground">
-                {report.beyondHours} dat pominieto, bo godziny zajec juz sie wyczerpaly (zajecia koncza sie wczesniej).
+                {plural(report.beyondHours, 'date', 'daty', 'dat')} pominieto, bo godziny zajec juz sie wyczerpaly (zajecia koncza sie wczesniej).
               </p>
             )}
           </div>
