@@ -170,7 +170,7 @@ export function parseGridDays(value: unknown): GridDay[] {
 export function dayWindowProblem(days: GridDay[], day: WeekdayName, startMinute: number, endMinute: number): string | null {
   const entry = days.find((d) => d.day === day);
   if (!entry) {
-    return `Siatka nie przewiduje zajec w ${DAY_LABEL[day]} (dni: ${days.map((d) => DAY_LABEL[d.day]).join(', ') || 'brak'})`;
+    return `Siatka nie przewiduje zajec w dniu: ${DAY_LABEL[day]} (dni: ${days.map((d) => DAY_LABEL[d.day]).join(', ') || 'brak'})`;
   }
   if (entry.from && startMinute < toMinutes(entry.from)) return `${DAY_LABEL[day]}: zajecia od ${entry.from}`;
   if (entry.to && endMinute > toMinutes(entry.to)) return `${DAY_LABEL[day]}: zajecia do ${entry.to}`;

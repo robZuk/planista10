@@ -36,8 +36,8 @@ export async function createChangeRequest(occurrenceId: string, input: RequestIn
   return res.data;
 }
 
-export async function approveChangeRequest(id: string, note: string): Promise<{ message: string }> {
-  const res = await api.post(`/change-requests/${id}/approve`, { note });
+export async function approveChangeRequest(id: string, note: string, confirmWarnings = false): Promise<{ message: string }> {
+  const res = await api.post(`/change-requests/${id}/approve`, { note, confirmWarnings });
   return res.data;
 }
 

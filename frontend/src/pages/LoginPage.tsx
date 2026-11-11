@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,7 +35,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const user = useAuthStore((s) => s.user);
   const setAuth = useAuthStore((s) => s.setAuth);
-  const navigate = useNavigate();
   const location = useLocation();
 
   // Dokad wrocic po zalogowaniu (jesli ProtectedRoute nas tu odeslal).
@@ -49,14 +48,15 @@ export default function LoginPage() {
   const mutation = useMutation({
     mutationFn: (values: LoginValues) => loginRequest(values.email, values.password),
     onSuccess: (data) => {
+      // Przekierowanie robi ponizszy <Navigate> — osobne navigate() tutaj scigalo sie
+      // z renderem po setAuth i wygrywal powrot na "/".
       setAuth(data);
       toast.success(`Witaj, ${data.user.name}`);
-      navigate(from, { replace: true });
     },
   });
 
-  // Zalogowany uzytkownik nie ma po co ogladac formularza.
-  if (user) return <Navigate to="/" replace />;
+  // Zalogowany uzytkownik nie ma po co ogladac formularza — wraca tam, dokad szedl.
+  if (user) return <Navigate to={from} replace />;
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">

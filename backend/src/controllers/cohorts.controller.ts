@@ -114,7 +114,13 @@ export const listTermCohorts = asyncHandler(async (req, res) => {
     (p) => !startedHere.has(p.id) && p.versions.some((v) => v.defaultStartType === term.type),
   );
 
-  res.json({ data, intakeCandidates });
+  // Programy, ktore maja juz nabor startujacy w tym semestrze (cala uczelnia, bez filtra wydzialu) —
+  // okno "Nowy nabor" ich nie proponuje, bo drugi taki sam nabor i tak bylby odrzucony.
+  const startedProgramIds = (await prisma.cohort.findMany({ where: { startTermId: term.id }, select: { programId: true } })).map(
+    (c) => c.programId,
+  );
+
+  res.json({ data, intakeCandidates, startedProgramIds });
 });
 
 /**

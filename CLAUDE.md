@@ -101,6 +101,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `facultyScope.ts` — zakres wydziału wywołującego (`assertFacultyScope`)
   - `occurrenceKey.ts` — trwały klucz terminu (terminy z wzorca mają nowe id po każdym generowaniu)
   - `changeRequests.ts` — reguły zgłoszeń zmian (co wolno zgłosić, walidacja propozycji)
+  - `occurrenceSlot.ts` — ocena nowego miejsca terminu (blokada poza semestrem, ostrzeżenia do potwierdzenia)
 - `src/middleware/authenticate.ts` — weryfikacja JWT; role w enumie `Role`
 - `prisma/schema.prisma` — źródło prawdy o modelu danych (opis: `docs/model-danych.md`)
 

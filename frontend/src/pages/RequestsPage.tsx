@@ -17,7 +17,8 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { FacultySelector } from '@/components/FacultySelector';
 import { approveChangeRequest, fetchMakeups, fetchRequests, rejectChangeRequest, withdrawChangeRequest } from '@/api/requests';
 import { useCurrentTerm } from '@/hooks/useTerm';
-import { getErrorMessage } from '@/lib/errors';
+import { getErrorMessage, slotWarningsOf } from '@/lib/errors';
+import { SlotWarnings } from '@/components/SlotWarnings';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
 import { formatDate, MAKEUP_STATE_LABELS, REQUEST_KIND_LABELS, REQUEST_STATUS_LABELS } from '@/lib/requestLabels';
 import { useAuthStore } from '@/store/authStore';
@@ -154,6 +155,13 @@ export default function RequestsPage() {
   const [withdrawing, setWithdrawing] = useState<ChangeRequestRow | null>(null);
   const [deciding, setDeciding] = useState<{ request: ChangeRequestRow; approve: boolean } | null>(null);
   const [note, setNote] = useState('');
+  // Zgloszenie sprawdzono przy skladaniu; ostrzezenia pojawia sie, gdy od tamtej pory zmienil sie kalendarz.
+  const [warnings, setWarnings] = useState<string[] | null>(null);
+  const closeDecision = () => {
+    setDeciding(null);
+    setNote('');
+    setWarnings(null);
+  };
 
   const withdraw = useMutation({
     mutationFn: (id: string) => withdrawChangeRequest(id),
@@ -165,14 +173,20 @@ export default function RequestsPage() {
     onError: (e) => toast.error(getErrorMessage(e)),
   });
   const decide = useMutation({
-    mutationFn: () => (deciding!.approve ? approveChangeRequest(deciding!.request.id, note) : rejectChangeRequest(deciding!.request.id, note)),
+    mutationFn: () =>
+      deciding!.approve
+        ? approveChangeRequest(deciding!.request.id, note, warnings !== null)
+        : rejectChangeRequest(deciding!.request.id, note),
     onSuccess: (r) => {
       toast.success(r.message);
-      setDeciding(null);
-      setNote('');
+      closeDecision();
       refresh();
     },
-    onError: (e) => toast.error(getErrorMessage(e), { duration: 10000 }),
+    onError: (e) => {
+      const list = slotWarningsOf(e);
+      if (list) setWarnings(list);
+      else toast.error(getErrorMessage(e), { duration: 10000 });
+    },
   });
 
   const pending = (requests ?? []).filter((r) => r.status === 'PENDING');
@@ -293,7 +307,7 @@ export default function RequestsPage() {
         onConfirm={() => withdraw.mutate(withdrawing!.id)}
       />
 
-      <Dialog open={!!deciding} onOpenChange={(open) => !open && (setDeciding(null), setNote(''))}>
+      <Dialog open={!!deciding} onOpenChange={(open) => !open && closeDecision()}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{deciding?.approve ? 'Zatwierdzic zgloszenie?' : 'Odrzucic zgloszenie?'}</DialogTitle>
@@ -311,8 +325,9 @@ export default function RequestsPage() {
             placeholder={deciding?.approve ? 'Uwagi dla prowadzacego (opcjonalnie)' : 'Dlaczego odrzucasz? np. sala zajeta — prosze o inny termin'}
             aria-label="Uwagi dla prowadzacego"
           />
+          {deciding?.approve && warnings && <SlotWarnings warnings={warnings} />}
           <DialogFooter>
-            <Button variant="outline" onClick={() => (setDeciding(null), setNote(''))}>
+            <Button variant="outline" onClick={closeDecision}>
               Anuluj
             </Button>
             <Button
@@ -321,7 +336,7 @@ export default function RequestsPage() {
               onClick={() => decide.mutate()}
             >
               {decide.isPending && <Spinner />}
-              {deciding?.approve ? 'Zatwierdz' : 'Odrzuc'}
+              {deciding?.approve ? (warnings ? 'Zatwierdz mimo to' : 'Zatwierdz') : 'Odrzuc'}
             </Button>
           </DialogFooter>
         </DialogContent>

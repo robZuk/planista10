@@ -117,6 +117,8 @@ export interface Subject {
   name: string;
   code: string | null;
   createdAt: string;
+  /** Liczba wpisow programow z tym przedmiotem (lista slownika). */
+  _count?: { programEntries: number };
 }
 
 export type StudyMode = 'FULL_TIME' | 'PART_TIME';

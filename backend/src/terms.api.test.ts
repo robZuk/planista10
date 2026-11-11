@@ -8,8 +8,11 @@ process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn().mockResolvedValue({ facultyId: 'wm' }) },
-  academicTerm: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+  academicTerm: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]), delete: vi.fn().mockResolvedValue({}) },
+  cohort: { count: vi.fn().mockResolvedValue(0) },
+  classSection: { count: vi.fn().mockResolvedValue(0) },
   termCalendar: {
+    count: vi.fn().mockResolvedValue(0),
     findUnique: vi.fn(),
     findMany: vi.fn().mockResolvedValue([]),
     delete: vi.fn().mockResolvedValue({}),
@@ -47,6 +50,39 @@ const validCalendar = {
   endDate: '2027-01-31',
   breaks: [{ name: 'Przerwa swiateczna', startDate: '2026-12-23', endDate: '2027-01-01' }],
 };
+
+describe('API — usuwanie semestru', () => {
+  const term = { id: 't-27z', startYear: 2027, type: 'WINTER' };
+
+  it('tylko admin', async () => {
+    const res = await request(app).delete('/api/terms/2027-Z').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(403);
+  });
+
+  it('pusty semestr usuwa', async () => {
+    prismaMock.academicTerm.findUnique.mockResolvedValueOnce(term);
+    const res = await request(app).delete('/api/terms/2027-Z').set('Authorization', `Bearer ${admin}`);
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('Usunieto semestr 2027/28 zimowy');
+    expect(prismaMock.academicTerm.delete).toHaveBeenCalledWith({ where: { id: 't-27z' } });
+  });
+
+  it('semestr z naborem rocznikow nie znika — komunikat mowi dlaczego', async () => {
+    prismaMock.academicTerm.findUnique.mockResolvedValueOnce(term);
+    prismaMock.cohort.count.mockResolvedValueOnce(3);
+    const res = await request(app).delete('/api/terms/2027-Z').set('Authorization', `Bearer ${admin}`);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toContain('roczniki (3)');
+  });
+
+  it('semestr z kalendarzami — najpierw kalendarze', async () => {
+    prismaMock.academicTerm.findUnique.mockResolvedValueOnce(term);
+    prismaMock.termCalendar.count.mockResolvedValueOnce(2);
+    const res = await request(app).delete('/api/terms/2027-Z').set('Authorization', `Bearer ${admin}`);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toContain('kalendarze wydzialow (2)');
+  });
+});
 
 describe('API — semestry', () => {
   it('lista semestrow wymaga zalogowania', async () => {

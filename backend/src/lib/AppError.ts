@@ -7,6 +7,8 @@ export class AppError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    /** Dodatkowe pola odpowiedzi (np. `code` i lista ostrzezen do potwierdzenia). */
+    public readonly details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'AppError';

@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import LoginPage from '@/pages/LoginPage';
 import FacultiesPage from '@/pages/FacultiesPage';
 import BuildingsPage from '@/pages/BuildingsPage';
@@ -16,6 +16,7 @@ import RequestsPage from '@/pages/RequestsPage';
 import TermCalendarPage from '@/pages/TermCalendarPage';
 import DashboardPage from '@/pages/DashboardPage';
 import UsersPage from '@/pages/UsersPage';
+import NotFoundPage from '@/pages/NotFoundPage';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AppShell } from '@/components/layout/AppShell';
 import { NAV_ITEMS } from '@/lib/navigation';
@@ -78,10 +79,10 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-      </Route>
 
-      {/* Nieznana sciezka -> strona startowa */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Nieznany adres — komunikat w ramach aplikacji (niezalogowany trafi najpierw na logowanie). */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
     </Routes>
   );
 }

@@ -19,7 +19,7 @@ export default function ProtectedRoute({ children, roles }: Props) {
   const location = useLocation();
 
   if (!accessToken || !user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
   }
 
   if (roles && !roles.includes(user.role)) {

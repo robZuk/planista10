@@ -11,6 +11,11 @@ export async function createSubject(input: { name: string; code?: string }): Pro
   return res.data.data;
 }
 
+export async function updateSubject(id: string, input: { name: string; code?: string }): Promise<Subject> {
+  const res = await api.put(`/subjects/${id}`, input);
+  return res.data.data;
+}
+
 export async function deleteSubject(id: string): Promise<void> {
   await api.delete(`/subjects/${id}`);
 }

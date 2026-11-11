@@ -21,6 +21,18 @@ export const getOne = asyncHandler(async (req, res) => {
   res.json({ data });
 });
 
+/** E-mail prowadzacego jest unikalny — mowimy, kto go juz ma, zamiast ogolnego 409. */
+async function assertEmailFree(email: string | undefined, exceptId?: string): Promise<void> {
+  if (!email) return;
+  const owner = await prisma.instructor.findFirst({
+    where: { email: { equals: email, mode: 'insensitive' }, ...(exceptId ? { NOT: { id: exceptId } } : {}) },
+  });
+  if (owner) {
+    const who = `${owner.title ?? ''} ${owner.firstName} ${owner.lastName}`.trim();
+    throw new AppError(409, `Adres ${email} ma juz prowadzacy ${who}`);
+  }
+}
+
 export const create = asyncHandler(async (req, res) => {
   const { firstName, lastName, email, title, facultyId } = req.body as {
     firstName: string;
@@ -29,6 +41,7 @@ export const create = asyncHandler(async (req, res) => {
     title?: string;
     facultyId?: string;
   };
+  await assertEmailFree(email);
   const data = await prisma.instructor.create({
     data: { firstName, lastName, email, title, facultyId },
   });
@@ -43,6 +56,7 @@ export const update = asyncHandler(async (req, res) => {
     title?: string;
     facultyId?: string;
   };
+  await assertEmailFree(email, String(req.params.id));
   const data = await prisma.instructor.update({
     where: { id: req.params.id },
     data: { firstName, lastName, email, title, facultyId },

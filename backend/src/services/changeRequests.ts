@@ -214,6 +214,8 @@ export interface DecisionOverride {
   endOrder?: number;
   roomId?: string | null;
   online?: boolean;
+  /** Dziekanat potwierdzil ostrzezenia o dniu/godzinach (swieto, poza oknem) — patrz lib/occurrenceSlot. */
+  confirmWarnings?: boolean;
 }
 
 /** Zatwierdzenie: wykonuje zmiane (dziekanat moze poprawic propozycje: date, godziny, sale). */
@@ -230,6 +232,7 @@ export async function approveRequest(request: ChangeRequest, actorId: string, no
     endOrder: override.endOrder ?? request.newEndOrder ?? undefined,
     online: override.online ?? request.newOnline,
     roomId: override.roomId !== undefined ? override.roomId : request.newRoomId,
+    confirmWarnings: override.confirmWarnings === true,
   };
   const info = await describe(occ, term);
   const original = slotLabel(toIsoDate(occ.date), occ.startMinute, occ.endMinute);
@@ -256,6 +259,7 @@ export async function approveRequest(request: ChangeRequest, actorId: string, no
       instructorId: request.instructorId,
       note: `Odrobienie zajec z ${original}`,
       makeupOfKey: request.occurrenceKey,
+      confirmWarnings: final.confirmWarnings,
     });
     outcome = `Odrobienie zajec z ${original}: ${slotLabel(toIsoDate(made.date), made.startMinute, made.endMinute)}.`;
   }

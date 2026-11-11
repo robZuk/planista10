@@ -4,11 +4,15 @@ import type { CohortDto, CohortGroup, CohortLectureMode, IntakeCandidate, TermCo
 export async function fetchTermCohorts(
   termKey: string,
   facultyId?: string,
-): Promise<{ cohorts: TermCohort[]; intakeCandidates: IntakeCandidate[] }> {
+): Promise<{ cohorts: TermCohort[]; intakeCandidates: IntakeCandidate[]; startedProgramIds: string[] }> {
   const res = await api.get(`/terms/${termKey}/cohorts`, {
     params: facultyId && facultyId !== 'all' ? { facultyId } : {},
   });
-  return { cohorts: res.data.data, intakeCandidates: res.data.intakeCandidates };
+  return {
+    cohorts: res.data.data,
+    intakeCandidates: res.data.intakeCandidates,
+    startedProgramIds: res.data.startedProgramIds ?? [],
+  };
 }
 
 export async function createCohort(input: {

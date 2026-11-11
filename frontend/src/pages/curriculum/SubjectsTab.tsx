@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { ColumnDef } from '@tanstack/react-table';
-import { BookOpen, Plus, Trash2 } from 'lucide-react';
+import { BookOpen, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DataTable } from '@/components/data-table/DataTable';
 import { SortableHeader } from '@/components/data-table/SortableHeader';
-import { createSubject, deleteSubject, fetchSubjects } from '@/api/subjects';
+import { createSubject, deleteSubject, fetchSubjects, updateSubject } from '@/api/subjects';
 import { getErrorMessage } from '@/lib/errors';
 import { useAuthStore } from '@/store/authStore';
 import type { Subject } from '@/types';
@@ -35,14 +35,16 @@ const subjectSchema = z.object({
 
 type SubjectValues = z.infer<typeof subjectSchema>;
 
-const COLUMN_LABELS = { name: 'Nazwa', code: 'Kod' };
+const COLUMN_LABELS = { name: 'Nazwa', code: 'Kod', usage: 'Programy' };
 
-/** Slownik przedmiotow wspolny dla calej uczelni — ten sam przedmiot bywa na wielu siatkach. */
+/** Slownik przedmiotow wspolny dla calej uczelni — ten sam przedmiot bywa w wielu programach. */
 export default function SubjectsTab() {
   const queryClient = useQueryClient();
   const canEdit = useAuthStore((s) => s.user?.role) === 'ADMIN';
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  // null = nowy przedmiot; inaczej edycja nazwy/kodu istniejacego.
+  const [editing, setEditing] = useState<Subject | null>(null);
   const [deleting, setDeleting] = useState<Subject | null>(null);
 
   const { data, isPending } = useQuery({ queryKey: ['subjects'], queryFn: () => fetchSubjects() });
@@ -54,16 +56,25 @@ export default function SubjectsTab() {
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['subjects'] });
 
-  const createMutation = useMutation({
-    mutationFn: (values: SubjectValues) =>
-      createSubject({ name: values.name, code: values.code || undefined }),
+  const saveMutation = useMutation({
+    mutationFn: (values: SubjectValues) => {
+      const input = { name: values.name, code: values.code ?? '' };
+      return editing ? updateSubject(editing.id, input) : createSubject(input);
+    },
     onSuccess: () => {
-      toast.success('Przedmiot dodany');
+      toast.success(editing ? 'Przedmiot zaktualizowany' : 'Przedmiot dodany');
       setDialogOpen(false);
       void invalidate();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   });
+
+  const openDialog = (subject: Subject | null) => {
+    setEditing(subject);
+    form.reset({ name: subject?.name ?? '', code: subject?.code ?? '' });
+    setDialogOpen(true);
+  };
+  const editingUsage = editing?._count?.programEntries ?? 0;
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteSubject(id),
@@ -92,19 +103,39 @@ export default function SubjectsTab() {
           <span className="text-muted-foreground">—</span>
         ),
     },
+    {
+      id: 'usage',
+      accessorFn: (s) => s._count?.programEntries ?? 0,
+      header: ({ column }) => <SortableHeader column={column}>Programy</SortableHeader>,
+      cell: ({ row }) => {
+        const n = row.original._count?.programEntries ?? 0;
+        return n > 0 ? <span className="tabular-nums">{n}</span> : <span className="text-muted-foreground">nieuzywany</span>;
+      },
+    },
     ...(canEdit
       ? [
           {
             id: 'actions',
             enableHiding: false,
-            size: 60,
+            size: 90,
             cell: ({ row }) => (
-              <div className="text-right">
+              <div className="flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  aria-label={`Edytuj przedmiot ${row.original.name}`}
+                  onClick={() => openDialog(row.original)}
+                >
+                  <Pencil />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="size-8 text-destructive hover:text-destructive"
                   aria-label={`Usun przedmiot ${row.original.name}`}
+                  disabled={(row.original._count?.programEntries ?? 0) > 0}
+                  title={(row.original._count?.programEntries ?? 0) > 0 ? 'Przedmiot jest w programach studiow — nie mozna go usunac' : undefined}
                   onClick={() => setDeleting(row.original)}
                 >
                   <Trash2 />
@@ -120,12 +151,7 @@ export default function SubjectsTab() {
     <div className="space-y-4">
       {canEdit && (
         <div className="flex justify-end">
-          <Button
-            onClick={() => {
-              form.reset({ name: '', code: '' });
-              setDialogOpen(true);
-            }}
-          >
+          <Button onClick={() => openDialog(null)}>
             <Plus />
             Dodaj przedmiot
           </Button>
@@ -147,7 +173,7 @@ export default function SubjectsTab() {
               </EmptyMedia>
               <EmptyTitle>Brak przedmiotow</EmptyTitle>
               <EmptyDescription>
-                Przedmioty sa wspolne dla calej uczelni — dodane raz, wchodza do dowolnej siatki.
+                Przedmioty sa wspolne dla calej uczelni — dodane raz, wchodza do dowolnego programu studiow.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
@@ -157,15 +183,19 @@ export default function SubjectsTab() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nowy przedmiot</DialogTitle>
+            <DialogTitle>{editing ? 'Edytuj przedmiot' : 'Nowy przedmiot'}</DialogTitle>
             <DialogDescription>
-              Wymiar godzin i punkty ECTS ustawia sie osobno w kazdej siatce — tutaj tylko nazwa.
+              {editing
+                ? editingUsage > 0
+                  ? `Zmiana obejmie wszystkie programy studiow z tym przedmiotem (wpisy: ${editingUsage}) i ich plany.`
+                  : 'Przedmiot nie jest jeszcze w zadnym programie studiow.'
+                : 'Godziny i punkty ECTS ustawia sie osobno w kazdym programie studiow — tutaj tylko nazwa i kod.'}
             </DialogDescription>
           </DialogHeader>
 
           <form
             id="subject-form"
-            onSubmit={form.handleSubmit((values) => createMutation.mutate(values))}
+            onSubmit={form.handleSubmit((values) => saveMutation.mutate(values))}
             noValidate
           >
             <FieldGroup>
@@ -192,9 +222,9 @@ export default function SubjectsTab() {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Anuluj
             </Button>
-            <Button type="submit" form="subject-form" disabled={createMutation.isPending}>
-              {createMutation.isPending && <Spinner />}
-              Dodaj
+            <Button type="submit" form="subject-form" disabled={saveMutation.isPending}>
+              {saveMutation.isPending && <Spinner />}
+              {editing ? 'Zapisz' : 'Dodaj'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -204,7 +234,7 @@ export default function SubjectsTab() {
         open={!!deleting}
         onOpenChange={(open) => !open && setDeleting(null)}
         title={`Usunac przedmiot ${deleting?.name ?? ''}?`}
-        description="Przedmiot uzywany w jakiejkolwiek siatce godzin nie zostanie usuniety."
+        description="Przedmiot zniknie ze slownika. Usunac mozna tylko przedmiot, ktorego nie ma w zadnym programie studiow."
         isPending={deleteMutation.isPending}
         onConfirm={() => deleting && deleteMutation.mutate(deleting.id)}
       />

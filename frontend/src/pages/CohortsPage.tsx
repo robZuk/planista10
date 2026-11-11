@@ -16,9 +16,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-import { Field, FieldLabel } from '@/components/ui/field';
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { PageHeader } from '@/components/PageHeader';
@@ -261,6 +261,7 @@ export default function CohortsPage() {
         <NewIntakeDialog
           term={term}
           candidates={data.intakeCandidates}
+          startedProgramIds={data.startedProgramIds}
           onClose={() => setIntakeOpen(false)}
           onCreated={async () => {
             setIntakeOpen(false);
@@ -275,11 +276,14 @@ export default function CohortsPage() {
 function NewIntakeDialog({
   term,
   candidates,
+  startedProgramIds,
   onClose,
   onCreated,
 }: {
   term: AcademicTerm;
   candidates: IntakeCandidate[];
+  /** Programy z naborem juz startujacym w tym semestrze — nie do wyboru. */
+  startedProgramIds: string[];
   onClose: () => void;
   onCreated: () => void;
 }) {
@@ -293,6 +297,12 @@ function NewIntakeDialog({
   const [copy, setCopy] = useState(true);
   const [rootSize, setRootSize] = useState('');
   const program = programs?.find((p) => p.id === programId);
+  // Najpierw programy, ktore zwykle ruszaja w tym semestrze; programy z naborem juz zalozonym znikaja z listy.
+  const started = new Set(startedProgramIds);
+  const candidateIds = new Set(candidates.map((c) => c.id));
+  const available = (programs ?? []).filter((p) => !started.has(p.id));
+  const usual = available.filter((p) => candidateIds.has(p.id));
+  const other = available.filter((p) => !candidateIds.has(p.id));
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -325,12 +335,28 @@ function NewIntakeDialog({
             <FieldLabel htmlFor="intake-program">Program</FieldLabel>
             <NativeSelect id="intake-program" value={programId} onChange={(e) => setProgramId(e.target.value)}>
               <NativeSelectOption value="">— wybierz —</NativeSelectOption>
-              {programs?.map((p) => (
-                <NativeSelectOption key={p.id} value={p.id}>
-                  {p.code} — {p.name}
-                </NativeSelectOption>
-              ))}
+              {usual.length > 0 && (
+                <NativeSelectOptGroup label="Zwykle rusza w tym semestrze">
+                  {usual.map((p) => (
+                    <NativeSelectOption key={p.id} value={p.id}>
+                      {p.code} — {p.name}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelectOptGroup>
+              )}
+              {other.length > 0 && (
+                <NativeSelectOptGroup label="Pozostale programy">
+                  {other.map((p) => (
+                    <NativeSelectOption key={p.id} value={p.id}>
+                      {p.code} — {p.name}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelectOptGroup>
+              )}
             </NativeSelect>
+            {programs && available.length === 0 && (
+              <FieldDescription>Wszystkie programy maja juz nabor w tym semestrze.</FieldDescription>
+            )}
           </Field>
           <Field>
             <FieldLabel htmlFor="intake-version">Wersja programu</FieldLabel>

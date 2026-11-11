@@ -24,7 +24,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     return;
   }
   if (err instanceof AppError) {
-    res.status(err.status).json({ error: err.message });
+    res.status(err.status).json({ error: err.message, ...err.details });
     return;
   }
   if (isUniqueConstraintError(err)) {

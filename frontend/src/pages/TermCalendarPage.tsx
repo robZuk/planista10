@@ -13,6 +13,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { FacultySelector } from '@/components/FacultySelector';
 import {
+  deleteTerm,
   deleteTermCalendar,
   fetchCalendarProposal,
   fetchCalendarUsage,
@@ -63,6 +64,18 @@ export default function TermCalendarPage() {
 
   const [editor, setEditor] = useState<EditorTarget | null>(null);
   const [deleting, setDeleting] = useState<TermCalendar | null>(null);
+  // Usuwanie calego semestru (admin) — backend pozwala tylko na pusty: bez kalendarzy, naborow i zajec.
+  const [deletingTerm, setDeletingTerm] = useState(false);
+  const removeTerm = useMutation({
+    mutationFn: () => deleteTerm(term!.key),
+    onSuccess: async () => {
+      toast.success(`Usunieto semestr ${term!.label}`);
+      setDeletingTerm(false);
+      // Adres wskazuje teraz nieistniejacy semestr — useCurrentTerm sam przejdzie na domyslny.
+      await queryClient.invalidateQueries({ queryKey: TERMS_QUERY_KEY });
+    },
+    onError: (e) => toast.error(getErrorMessage(e), { duration: 10000 }),
+  });
   // Przed usunieciem: czy roczniki maja juz plan na tym kalendarzu (wtedy usuniecie jest zablokowane).
   const { data: deletingUsage, isPending: usagePending } = useQuery({
     queryKey: ['calendar-usage', deleting?.id],
@@ -176,6 +189,12 @@ export default function TermCalendarPage() {
                 <CalendarPlus />
                 Nowy semestr
               </Button>
+              {term && (
+                <Button variant="outline" className="text-destructive" onClick={() => setDeletingTerm(true)}>
+                  <Trash2 />
+                  Usun semestr
+                </Button>
+              )}
             </>
           )
         }
@@ -308,6 +327,14 @@ export default function TermCalendarPage() {
         onConfirm={() => statusChange && statusMutation.mutate({ id: statusChange.calendar.id, status: statusChange.status })}
       />
 
+      <ConfirmDialog
+        open={deletingTerm}
+        onOpenChange={(open) => !open && setDeletingTerm(false)}
+        title={`Usunac semestr ${term?.label ?? ''}?`}
+        description="Usunac mozna tylko pusty semestr — np. zalozony przez pomylke. Gdy ma kalendarze wydzialow, nabor rocznikow albo zajecia, system odmowi i powie, co go blokuje."
+        isPending={removeTerm.isPending}
+        onConfirm={() => removeTerm.mutate()}
+      />
       {isAdmin && newTermOpen && <NewTermDialog open={newTermOpen} onOpenChange={setNewTermOpen} terms={terms} />}
     </>
   );

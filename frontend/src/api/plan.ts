@@ -70,6 +70,8 @@ export async function changeOccurrence(
     online?: boolean;
     instructorId?: string | null;
     note?: string;
+    /** Potwierdzenie ostrzezen o dniu/godzinach (lib/errors → slotWarningsOf). */
+    confirmWarnings?: boolean;
   },
 ): Promise<{ message: string }> {
   const res = await api.put(`/occurrences/${id}`, input);
@@ -78,7 +80,17 @@ export async function changeOccurrence(
 
 export async function createManualOccurrence(
   termKey: string,
-  input: { sectionId: string; date: string; startOrder: number; endOrder: number; roomId: string | null; online?: boolean; instructorId?: string | null; note?: string },
+  input: {
+    sectionId: string;
+    date: string;
+    startOrder: number;
+    endOrder: number;
+    roomId: string | null;
+    online?: boolean;
+    instructorId?: string | null;
+    note?: string;
+    confirmWarnings?: boolean;
+  },
 ): Promise<{ message: string }> {
   const res = await api.post(`/terms/${termKey}/occurrences`, input);
   return res.data;

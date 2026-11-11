@@ -22,9 +22,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Combobox } from '@/components/Combobox';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { changeOccurrence, createManualOccurrence, deleteManualOccurrence, fetchOccurrences } from '@/api/plan';
 import { fetchBuildings } from '@/api/buildings';
-import { getErrorMessage } from '@/lib/errors';
+import { getErrorMessage, slotWarningsOf } from '@/lib/errors';
+import { SlotWarnings } from '@/components/SlotWarnings';
 import { CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { formatMinutes } from '@/lib/timeGrid';
 import { formatDayMonth } from '@/lib/planHours';
@@ -69,8 +71,10 @@ export function OccurrencesTab({
   // Widok tygodnia (siatka jak wzorzec, z datami) albo lista wszystkich terminow semestru.
   const [view, setView] = useState<'week' | 'list'>('week');
   const [details, setDetails] = useState<OccurrenceRow | null>(null);
+  const [removing, setRemoving] = useState<OccurrenceRow | null>(null);
 
   const refresh = async () => {
+    setRemoving(null);
     setEditing(null);
     setAdding(false);
     setDetails(null);
@@ -187,7 +191,7 @@ export function OccurrencesTab({
                           </Button>
                         )}
                         {o.kind === 'MANUAL' && (
-                          <Button variant="ghost" size="sm" className="text-destructive" onClick={() => remove.mutate(o.id)}>
+                          <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setRemoving(o)}>
                             Usun
                           </Button>
                         )}
@@ -250,7 +254,11 @@ export function OccurrencesTab({
                   </Button>
                 )}
                 {details.kind === 'MANUAL' && (
-                  <Button variant="outline" className="text-destructive" disabled={remove.isPending} onClick={() => remove.mutate(details.id)}>
+                  <Button variant="outline" className="text-destructive" onClick={() => {
+                      setRemoving(details);
+                      setDetails(null);
+                    }}
+                  >
                     Usun termin reczny
                   </Button>
                 )}
@@ -259,6 +267,18 @@ export function OccurrencesTab({
           </DialogContent>
         </Dialog>
       )}
+      <ConfirmDialog
+        open={!!removing}
+        onOpenChange={(open) => !open && setRemoving(null)}
+        title="Usunac termin reczny?"
+        description={
+          removing
+            ? `${removing.subject} · ${removing.group}, ${formatDayMonth(removing.date)} ${formatMinutes(removing.startMinute)}–${formatMinutes(removing.endMinute)}. Terminu recznego nie da sie przywrocic — trzeba go dodac od nowa.`
+            : ''
+        }
+        isPending={remove.isPending}
+        onConfirm={() => remove.mutate(removing!.id)}
+      />
       {editing && <MoveDialog termKey={termKey} occurrence={editing} blocks={blocks} onClose={() => setEditing(null)} onDone={refresh} />}
       {adding && (
         <ManualDialog termKey={termKey} sections={sections} blocks={blocks} onClose={() => setAdding(false)} onDone={refresh} />
@@ -316,6 +336,10 @@ function MoveDialog({
   const [roomId, setRoomId] = useState(occurrence.room.id ?? '');
   const [online, setOnline] = useState(occurrence.room.id === null);
   const [note, setNote] = useState(occurrence.note ?? '');
+  // Ostrzezenia dotycza konkretnej daty i godzin — po ich zmianie trzeba je zobaczyc od nowa.
+  const slotKey = `${date}|${start}`;
+  const [warned, setWarned] = useState<{ key: string; warnings: string[] } | null>(null);
+  const warnings = warned?.key === slotKey ? warned.warnings : null;
   const save = useMutation({
     mutationFn: () =>
       changeOccurrence(occurrence.id, {
@@ -325,12 +349,17 @@ function MoveDialog({
         endOrder: start + length - 1,
         ...(online ? { online: true } : { roomId, online: false }),
         note: note || undefined,
+        confirmWarnings: warnings !== null,
       }),
     onSuccess: (r) => {
       toast.success(r.message);
       onDone();
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => {
+      const list = slotWarningsOf(e);
+      if (list) setWarned({ key: slotKey, warnings: list });
+      else toast.error(getErrorMessage(e));
+    },
   });
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -370,13 +399,14 @@ function MoveDialog({
             <Input id="mv-note" value={note} onChange={(e) => setNote(e.target.value)} />
           </Field>
         </div>
+        {warnings && <SlotWarnings warnings={warnings} />}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Anuluj
           </Button>
           <Button onClick={() => save.mutate()} disabled={save.isPending || (!online && !roomId)}>
             {save.isPending && <Spinner />}
-            Zapisz
+            {warnings ? 'Zapisz mimo to' : 'Zapisz'}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -406,6 +436,9 @@ function ManualDialog({
   const [online, setOnline] = useState(false);
   const [note, setNote] = useState('Odrobienie');
   const section = sections.find((s) => s.id === sectionId);
+  const slotKey = `${sectionId}|${date}|${start}|${length}`;
+  const [warned, setWarned] = useState<{ key: string; warnings: string[] } | null>(null);
+  const warnings = warned?.key === slotKey ? warned.warnings : null;
   const save = useMutation({
     mutationFn: () =>
       createManualOccurrence(termKey, {
@@ -417,12 +450,17 @@ function ManualDialog({
         online,
         instructorId: section?.instructors.find((i) => i.instructorId)?.instructorId ?? null,
         note,
+        confirmWarnings: warnings !== null,
       }),
     onSuccess: (r) => {
       toast.success(r.message);
       onDone();
     },
-    onError: (e) => toast.error(getErrorMessage(e)),
+    onError: (e) => {
+      const list = slotWarningsOf(e);
+      if (list) setWarned({ key: slotKey, warnings: list });
+      else toast.error(getErrorMessage(e));
+    },
   });
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -478,13 +516,14 @@ function ManualDialog({
             <Input id="mn-note" value={note} onChange={(e) => setNote(e.target.value)} />
           </Field>
         </div>
+        {warnings && <SlotWarnings warnings={warnings} />}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Anuluj
           </Button>
           <Button onClick={() => save.mutate()} disabled={!sectionId || !date || (!online && !roomId) || save.isPending}>
             {save.isPending && <Spinner />}
-            Dodaj
+            {warnings ? 'Dodaj mimo to' : 'Dodaj'}
           </Button>
         </DialogFooter>
       </DialogContent>

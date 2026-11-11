@@ -90,9 +90,21 @@ export const createTerm = asyncHandler(async (req, res) => {
 
 export const deleteTerm = asyncHandler(async (req, res) => {
   const term = await findTerm(String(req.params.key));
-  const calendars = await prisma.termCalendar.count({ where: { termId: term.id } });
+  // Usunac mozna tylko pusty semestr (np. zalozony przez pomylke) — wszystko, co na nim
+  // stoi, mowimy wprost, zamiast konczyc ogolnym bledem klucza obcego.
+  const [calendars, cohorts, sections] = await Promise.all([
+    prisma.termCalendar.count({ where: { termId: term.id } }),
+    prisma.cohort.count({ where: { startTermId: term.id } }),
+    prisma.classSection.count({ where: { termId: term.id } }),
+  ]);
   if (calendars > 0) {
-    throw new AppError(409, 'Semestr ma kalendarze wydzialow — usun je najpierw');
+    throw new AppError(409, `Semestr ma kalendarze wydzialow (${calendars}) — usun je najpierw`);
+  }
+  if (cohorts > 0) {
+    throw new AppError(409, `W tym semestrze zaczynaja studia roczniki (${cohorts}) — semestru nie mozna usunac`);
+  }
+  if (sections > 0) {
+    throw new AppError(409, `Semestr ma zajecia (${sections}) — semestru nie mozna usunac`);
   }
   await prisma.academicTerm.delete({ where: { id: term.id } });
   res.json({ message: `Usunieto semestr ${termLabel(term)}` });

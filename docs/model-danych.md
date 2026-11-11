@@ -107,6 +107,10 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 - `PlacementException(placement, originalDate)` — odwołanie albo przeniesienie pojedynczego
   terminu; **przeżywa ponowne generowanie**. Wyjątek bez daty we wzorcu trafia do raportu.
 - `Occurrence.kind = MANUAL` — odrobienia i terminy jednorazowe; liczą się do godzin, nie znikają.
+- Nowe miejsce terminu (przeniesienie, termin ręczny, zatwierdzenie zgłoszenia) jest oceniane
+  względem kalendarza rocznika i okna godzin siatki (`lib/occurrenceSlot`): data poza semestrem
+  blokuje, a święto, przerwa, dzień poza zjazdami czy godziny poza oknem wymagają potwierdzenia
+  (`409 { code: 'SLOT_WARNINGS', warnings }` → ponowienie z `confirmWarnings: true`).
   Odrobienie konkretnego odwołanego terminu ma `makeupOfKey` (jego trwały klucz) i **nie zużywa
   godzin drugi raz** — odwołany termin z wzorca już je zużył.
 - **Trwały klucz terminu** (`lib/occurrenceKey`): terminy `DERIVED` dostają nowe id przy każdym

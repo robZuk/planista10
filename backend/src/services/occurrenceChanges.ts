@@ -4,9 +4,12 @@ import { AppError } from '../lib/AppError';
 import { fromIsoDate, isIsoDate, toIsoDate } from '../lib/isoDate';
 import { findConflict, type BusySlot } from '../lib/materializer';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
-import type { GridTime } from '../lib/timeGrid';
+import { dayWindowProblem, type GridTime } from '../lib/timeGrid';
 import { singleConflictMessage } from '../lib/conflictMessage';
+import { TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
+import { assessSlot, SLOT_WARNINGS_CODE, type SlotAssessment } from '../lib/occurrenceSlot';
 import { gridFor } from './timeGrids';
+import { toCalendarInput } from './termCalendars';
 import { toTreeGroup } from './cohorts';
 import { activeCohorts } from './sections';
 import { assertVersionApproved, calendarFor, termOccupancy, type OccupancyOptions } from './plan';
@@ -53,6 +56,33 @@ export function minutesOf(grid: GridTime, startOrder: number, endOrder: number) 
   return time;
 }
 
+/**
+ * Nowe miejsce terminu wzgledem kalendarza rocznika (semestr, swieta, przerwy, zjazdy)
+ * i okna godzin dnia w siatce wydzialu. Data poza semestrem od razu blokuje (400).
+ */
+async function slotAssessment(term: AcademicTerm, cohortId: string, date: string, time: { startMinute: number; endMinute: number }): Promise<SlotAssessment> {
+  const [ctx] = await activeCohorts(term, null, [cohortId]);
+  const calendar = ctx ? await calendarFor(term, ctx) : null;
+  if (!ctx || !calendar) throw new AppError(409, 'Rocznik nie ma kalendarza w tym semestrze');
+  const grid = await gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode);
+  const weekday = WEEKDAY_ENUM[new Date(`${date}T12:00:00Z`).getUTCDay()]!;
+  const assessment = assessSlot(
+    new TeachingCalendar(toCalendarInput(calendar)).dayInfo(date),
+    dayWindowProblem(grid.days, weekday, time.startMinute, time.endMinute),
+  );
+  if (assessment.blocking) throw new AppError(400, assessment.blocking);
+  return assessment;
+}
+
+/** Ostrzezenia (swieto, dzien bez zajec, godziny poza oknem) wymagaja potwierdzenia — 409 z lista dla frontu. */
+function assertWarningsConfirmed(assessment: SlotAssessment, confirmed: boolean | undefined): void {
+  if (assessment.warnings.length === 0 || confirmed) return;
+  throw new AppError(409, `Termin poza zwyklym planem: ${assessment.warnings.join('; ')}`, {
+    code: SLOT_WARNINGS_CODE,
+    warnings: assessment.warnings,
+  });
+}
+
 const isDerived = (occ: OccurrenceFull) => occ.kind === 'DERIVED' && !!occ.placement && !!occ.originalDate;
 
 /** Przywrocenie terminu z wzorca (usuwa wyjatek). */
@@ -96,6 +126,8 @@ export interface MoveInput {
   online?: boolean;
   instructorId?: string | null;
   note?: string | null;
+  /** Planista potwierdzil ostrzezenia o dniu/godzinach (patrz lib/occurrenceSlot). */
+  confirmWarnings?: boolean;
 }
 
 /** Przeniesienie terminu (data, godziny, sala, prowadzacy) — z kontrola kolizji. */
@@ -113,6 +145,9 @@ export async function moveOccurrence(occ: OccurrenceFull, grid: GridTime, input:
   if (input.online === false && !next.roomId) throw new AppError(400, 'Wybierz sale (albo zostaw zajecia online)');
   const time = minutesOf(grid, next.startOrder, next.endOrder);
   const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: occ.termId } });
+  // Dzien i godziny oceniamy tylko przy zmianie miejsca w czasie (sama zmiana sali/prowadzacego ich nie rusza).
+  const slotChanged = next.date !== toIsoDate(occ.date) || next.startOrder !== occ.startOrder || next.endOrder !== occ.endOrder;
+  const assessment = slotChanged ? await slotAssessment(term, occ.section.cohortId, next.date, time) : null;
   const derived = isDerived(occ);
   const conflict = await occurrenceConflicts(
     term,
@@ -121,6 +156,7 @@ export async function moveOccurrence(occ: OccurrenceFull, grid: GridTime, input:
     derived ? { excludePatternKey: `${occ.placementId}|${toIsoDate(occ.originalDate!)}`, excludeOccurrenceId: occ.id } : { excludeOccurrenceId: occ.id },
   );
   if (conflict) throw new AppError(409, singleConflictMessage(conflict));
+  if (assessment) assertWarningsConfirmed(assessment, input.confirmWarnings);
   const note = input.note ?? null;
   const exception = {
     action: 'MODIFY' as const,
@@ -159,6 +195,8 @@ export interface ManualInput {
   note?: string | null;
   /** Odrobienie konkretnego odwolanego terminu (jego trwaly klucz) — nie zuzywa godzin drugi raz. */
   makeupOfKey?: string | null;
+  /** Planista potwierdzil ostrzezenia o dniu/godzinach (patrz lib/occurrenceSlot). */
+  confirmWarnings?: boolean;
 }
 
 /** Termin reczny (odrobienie, zajecia jednorazowe) z kontrola kolizji. */
@@ -169,12 +207,14 @@ export async function createManualOccurrence(term: AcademicTerm, section: ClassS
   }
   if (!input.online && !roomId) throw new AppError(400, 'Wybierz sale (albo zaznacz zajecia online)');
   const time = minutesOf(grid, input.startOrder, input.endOrder);
+  const assessment = await slotAssessment(term, section.cohortId, input.date, time);
   const conflict = await occurrenceConflicts(
     term,
     { date: input.date, ...time, roomId, instructorId: input.instructorId ?? null, groupId: section.groupId, jointKey: null },
     {},
   );
   if (conflict) throw new AppError(409, singleConflictMessage(conflict));
+  assertWarningsConfirmed(assessment, input.confirmWarnings);
   return prisma.occurrence.create({
     data: {
       termId: term.id,
