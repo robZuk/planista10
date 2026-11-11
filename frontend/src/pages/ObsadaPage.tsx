@@ -29,6 +29,12 @@ import { AssignmentDialog, CarryDialog, ImportDialog, SyncDialog } from './obsad
  */
 const PAGE_SIZE = 50;
 
+/** Procent obsady w dol — 100% dopiero przy pelnej obsadzie (99,99% to wciaz brakujace godziny). */
+function staffedPercent(assigned: number, total: number): number {
+  if (total <= 0) return 0;
+  return assigned >= total ? 100 : Math.floor((100 * assigned) / total);
+}
+
 export default function ObsadaPage() {
   const queryClient = useQueryClient();
   const me = useAuthStore((s) => s.user);
@@ -146,7 +152,7 @@ export default function ObsadaPage() {
           {[
             ['Zajec', summary.sections],
             ['Godzin', summary.hours],
-            ['Obsadzonych godzin', `${summary.assignedHours} (${summary.hours ? Math.round((100 * summary.assignedHours) / summary.hours) : 0}%)`],
+            ['Obsadzonych godzin', `${summary.assignedHours} (${staffedPercent(summary.assignedHours, summary.hours)}%)`],
             ['Zajec z brakami', summary.vacancies],
             ['Osieroconych', summary.orphaned],
           ].map(([label, value]) => (

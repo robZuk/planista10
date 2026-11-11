@@ -5,6 +5,7 @@ const ready: Parameters<typeof setupIssues>[0] = {
   calendar: { name: 'Podstawowy', status: 'PUBLISHED' },
   groups: 10,
   programVersion: { id: 'v', label: 'od naboru 2025/26', status: 'APPROVED' },
+  programEntries: 18,
   sections: 42,
   vacancies: 0,
   placedSections: 42,
@@ -32,6 +33,10 @@ describe('setupIssues', () => {
     expect(issues({ sections: 0, placedSections: 0, occurrences: 0 })).toEqual(['NO_SECTIONS']);
     expect(issues({ occurrences: 0 })).toEqual(['NO_OCCURRENCES']);
     expect(issues({ placedSections: 0, occurrences: 0 })).toEqual(['UNPLACED']);
+  });
+
+  it('program bez przedmiotow w semestrze (np. praktyka) — brak zajec nie jest brakiem', () => {
+    expect(issues({ programEntries: 0, sections: 0, placedSections: 0, occurrences: 0 })).toEqual([]);
   });
 });
 

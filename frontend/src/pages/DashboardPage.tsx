@@ -46,6 +46,8 @@ export default function DashboardPage() {
   const myToday = weekEntries?.filter((entry) => toDateKey(entry.date) === todayKey) ?? [];
 
   const greeting = `${ROLE_LABELS[role ?? 'STUDENT']} · ${formatDateLong(new Date())}`;
+  // Swieto ustawowe dzis — pusty dzien prowadzacego/studenta dostaje powod zamiast "nie masz zajec".
+  const todayHoliday = stats?.upcomingHolidays.find((h) => toDateKey(h.date) === todayKey) ?? null;
 
   // ─── Prowadzacy i student: wlasny plan, bez statystyk calej uczelni ───
   if (role === 'INSTRUCTOR' || role === 'STUDENT') {
@@ -102,7 +104,7 @@ export default function DashboardPage() {
             entries={myToday}
             loading={!weekEntries}
             title={isInstructor ? 'Twoje dzisiejsze zajecia' : 'Dzis w planie grupy'}
-            emptyText="Dzis nie masz zajec."
+            emptyText={todayHoliday ? `Dzis wolne: ${todayHoliday.name}.` : 'Dzis nie masz zajec.'}
           />
         </div>
 

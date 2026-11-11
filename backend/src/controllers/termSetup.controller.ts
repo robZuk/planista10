@@ -73,7 +73,8 @@ export const setupStatus = asyncHandler(async (req, res) => {
   const cohortIds = contexts.map((c) => c.cohort.id);
   // Liczniki wszystkich rocznikow zbiorczo (kilka zapytan zamiast kilku na rocznik).
   const active = { termId: term.id, cohortId: { in: cohortIds }, status: 'ACTIVE' as const };
-  const [cohortCalendars, sectionRows, placedRows, vacancyRows, termSections, occurrenceRows, staleByCohort] = await Promise.all([
+  const versionIds = [...new Set(contexts.map((c) => c.cohort.programVersion.id))];
+  const [cohortCalendars, sectionRows, placedRows, vacancyRows, termSections, occurrenceRows, staleByCohort, entryRows] = await Promise.all([
     calendarsFor(term, contexts),
     prisma.classSection.groupBy({ by: ['cohortId'], where: active, _count: { _all: true } }),
     prisma.classSection.groupBy({ by: ['cohortId'], where: { ...active, placements: { some: {} } }, _count: { _all: true } }),
@@ -86,7 +87,11 @@ export const setupStatus = asyncHandler(async (req, res) => {
     prisma.occurrence.groupBy({ by: ['sectionId'], where: { termId: term.id, section: { cohortId: { in: cohortIds } } }, _count: { _all: true } }),
     // Terminy nieaktualne: ta sama funkcja co w "Ukladaniu planu" (services/staleness).
     staleReasonsByCohort(term, contexts),
+    // Przedmioty programu wg semestru — rocznik bez zajec, ktorego program nie ma nic w tym
+    // semestrze (np. praktyka), nie jest zaleglosci: synchronizacja i tak niczego nie doda.
+    prisma.programEntry.groupBy({ by: ['versionId', 'semester'], where: { versionId: { in: versionIds } }, _count: { _all: true } }),
   ]);
+  const entriesIn = new Map(entryRows.map((r) => [`${r.versionId}|${r.semester}`, r._count._all]));
   const countOf = (rows: { cohortId: string; _count: { _all: number } }[]) => new Map(rows.map((r) => [r.cohortId, r._count._all]));
   const sectionCount = countOf(sectionRows);
   const placedCount = countOf(placedRows);
@@ -126,6 +131,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
       programVersion: { id: ctx.cohort.programVersion.id, label: ctx.cohort.programVersion.label, status: ctx.cohort.programVersion.status },
       calendar: calendar ? { name: calendar.name, status: calendar.status } : null,
       groups: ctx.tree.length,
+      programEntries: entriesIn.get(`${ctx.cohort.programVersion.id}|${ctx.semester}`) ?? 0,
       sections,
       vacancies,
       placedSections: withPlacement,
@@ -144,7 +150,8 @@ export const setupStatus = asyncHandler(async (req, res) => {
         cohorts: cohorts.length,
         cohortsWithoutCalendar: cohorts.filter((c) => !c.calendar).length,
         cohortsWithDraftVersion: cohorts.filter((c) => c.programVersion.status === 'DRAFT').length,
-        cohortsWithoutSections: cohorts.filter((c) => c.sections === 0).length,
+        cohortsWithoutSections: cohorts.filter((c) => c.sections === 0 && c.programEntries > 0).length,
+        cohortsWithEmptySemester: cohorts.filter((c) => c.programEntries === 0).length,
         sections: cohorts.reduce((s, c) => s + c.sections, 0),
         vacancies: cohorts.reduce((s, c) => s + c.vacancies, 0),
         placedSections: cohorts.reduce((s, c) => s + c.placedSections, 0),

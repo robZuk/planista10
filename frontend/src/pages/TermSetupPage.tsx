@@ -203,7 +203,12 @@ export default function TermSetupPage() {
                       {c.calendar ? `${c.calendar.name} (${CALENDAR_STATUS_LABELS[c.calendar.status].toLowerCase()})` : <span className="text-destructive">brak</span>}
                     </TableCell>
                     <TableCell className={cn('text-right tabular-nums', warn(issues.has('NO_GROUPS')))}>{c.groups}</TableCell>
-                    <TableCell className={cn('text-right tabular-nums', warn(issues.has('NO_SECTIONS')))}>{c.sections}</TableCell>
+                    <TableCell
+                      className={cn('text-right tabular-nums', warn(issues.has('NO_SECTIONS')))}
+                      title={c.programEntries === 0 ? `Program nie ma przedmiotow w semestrze ${c.semester}` : undefined}
+                    >
+                      {c.programEntries === 0 ? <span className="text-muted-foreground">brak w programie</span> : c.sections}
+                    </TableCell>
                     <TableCell className={cn('text-right tabular-nums', warn(issues.has('VACANCIES')))}>{c.vacancies}</TableCell>
                     <TableCell className={cn('text-right tabular-nums', warn(issues.has('UNPLACED')))}>
                       {c.placedSections}/{c.sections}

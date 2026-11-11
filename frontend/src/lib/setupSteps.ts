@@ -108,7 +108,10 @@ export function setupSteps(data: SetupStatus, termKey: string): SetupStep[] {
       n: 4,
       title: 'Zajecia',
       state: t.cohortsWithoutSections > 0 || noSections ? 'todo' : 'done',
-      summary: sectionsN(t.sections),
+      summary:
+        t.cohortsWithEmptySemester > 0
+          ? `${sectionsN(t.sections)} · ${cohortsN(t.cohortsWithEmptySemester)} bez przedmiotow w tym semestrze programu`
+          : sectionsN(t.sections),
       todo:
         t.cohortsWithoutSections > 0
           ? `Uruchom „Synchronizuj zajecia” — ${cohortsN(t.cohortsWithoutSections)} bez zajec`

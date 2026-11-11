@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronRight, Flag, Plus, Trash2 } from 'lucide-react';
+import { ChevronRight, Flag, Plus, Trash2, TriangleAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,7 @@ import {
 } from '@/api/cohorts';
 import { getErrorMessage } from '@/lib/errors';
 import { defaultSubPartition } from '@/lib/subPartition';
+import { partitionOverflows } from '@/lib/groupSizes';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import type { CohortGroup, TermCohort } from '@/types';
 
@@ -66,7 +67,10 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
   const update = useMutation({
     mutationFn: ({ id, input }: { id: string; input: Parameters<typeof updateCohortGroup>[1] }) =>
       updateCohortGroup(id, input),
-    onSuccess: refresh,
+    onSuccess: async (_data, vars) => {
+      if (vars.input.size !== undefined) toast.success('Liczebnosc zapisana');
+      await refresh();
+    },
     onError: (error) => toast.error(getErrorMessage(error)),
   });
   const remove = useMutation({
@@ -119,6 +123,16 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
           )}
           {group.fromSemester > 1 && <span className="text-xs text-muted-foreground">od sem. {group.fromSemester}</span>}
           {group.memberCount > 0 && <span className="text-xs text-muted-foreground">{group.memberCount} stud.</span>}
+          {partitionOverflows(group, kids).map((o) => (
+            <span
+              key={o.partitionKey}
+              className="inline-flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400"
+              title="Grupy jednego podzialu dziela studentow tej grupy — suma ich liczebnosci nie powinna jej przekraczac"
+            >
+              <TriangleAlert className="size-3" />
+              {(PARTITION_LABELS[o.partitionKey] ?? o.partitionKey).toLowerCase()}: razem {o.sum} os. &gt; {group.size}
+            </span>
+          ))}
           <span className="ml-auto flex items-center gap-1">
             {canEdit ? (
               <Input

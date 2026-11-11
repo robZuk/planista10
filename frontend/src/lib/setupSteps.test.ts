@@ -17,6 +17,7 @@ const cohort = (over: Partial<SetupCohort> = {}): SetupCohort => ({
   programVersion: { id: 'v', label: 'od naboru 2025/26', status: 'APPROVED' },
   calendar: { name: 'Podstawowy', status: 'PUBLISHED' },
   groups: 10,
+  programEntries: 18,
   sections: 40,
   vacancies: 0,
   placedSections: 40,
@@ -39,6 +40,7 @@ const ready = (over: Partial<SetupStatus> = {}, totals: Partial<SetupStatus['tot
     cohortsWithoutCalendar: 0,
     cohortsWithDraftVersion: 0,
     cohortsWithoutSections: 0,
+    cohortsWithEmptySemester: 0,
     sections: 80,
     vacancies: 0,
     placedSections: 80,
@@ -108,5 +110,14 @@ describe('setupSteps', () => {
     const data = ready({}, { vacancies: 3, cohortsWithoutCalendar: 2 });
     expect(step(data, 5)).toMatchObject({ state: 'warn', summary: '3 zajecia bez pelnej obsady (NN)' });
     expect(step(data, 2)).toMatchObject({ state: 'warn', todo: 'Wybierz kalendarz 2 rocznikom bez kalendarza' });
+  });
+});
+
+describe('krok 4 — semestr programu bez przedmiotow', () => {
+  it('nie jest zaleglosci, ale podsumowanie o nim mowi', () => {
+    const s4 = step(ready({}, { cohortsWithEmptySemester: 2 }), 4);
+    expect(s4.state).toBe('done');
+    expect(s4.todo).toBeNull();
+    expect(s4.summary).toBe('80 zajec · 2 roczniki bez przedmiotow w tym semestrze programu');
   });
 });

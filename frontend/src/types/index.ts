@@ -714,6 +714,8 @@ export interface SetupCohort {
   programVersion: { id: string; label: string; status: ProgramVersionStatus };
   calendar: { name: string; status: CalendarStatus } | null;
   groups: number;
+  /** Przedmioty programu w semestrze rocznika (0 = np. sama praktyka — zajec nie bedzie). */
+  programEntries: number;
   sections: number;
   vacancies: number;
   placedSections: number;
@@ -732,6 +734,8 @@ export interface SetupStatus {
     cohortsWithoutCalendar: number;
     cohortsWithDraftVersion: number;
     cohortsWithoutSections: number;
+    /** Roczniki, ktorych program nie ma przedmiotow w ich semestrze — nie sa zaleglosci. */
+    cohortsWithEmptySemester: number;
     sections: number;
     vacancies: number;
     placedSections: number;

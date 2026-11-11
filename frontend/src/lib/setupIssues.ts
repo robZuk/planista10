@@ -17,7 +17,7 @@ export type SetupIssue =
 
 type IssueInput = Pick<
   SetupCohort,
-  'calendar' | 'groups' | 'programVersion' | 'sections' | 'vacancies' | 'placedSections' | 'occurrences' | 'stale'
+  'calendar' | 'groups' | 'programVersion' | 'programEntries' | 'sections' | 'vacancies' | 'placedSections' | 'occurrences' | 'stale'
 >;
 
 export function setupIssues(c: IssueInput): Set<SetupIssue> {
@@ -25,7 +25,8 @@ export function setupIssues(c: IssueInput): Set<SetupIssue> {
   if (!c.calendar) issues.add('NO_CALENDAR');
   if (c.groups === 0) issues.add('NO_GROUPS');
   if (c.programVersion.status === 'DRAFT') issues.add('DRAFT_VERSION');
-  if (c.sections === 0) issues.add('NO_SECTIONS');
+  // Program bez przedmiotow w tym semestrze (np. praktyka): brak zajec jest poprawny.
+  if (c.sections === 0 && c.programEntries > 0) issues.add('NO_SECTIONS');
   if (c.vacancies > 0) issues.add('VACANCIES');
   if (c.sections > 0 && c.placedSections < c.sections) issues.add('UNPLACED');
   // Terminy 0 to brak tylko wtedy, gdy jest juz z czego je wygenerowac.
