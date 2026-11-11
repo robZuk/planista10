@@ -186,11 +186,30 @@ export default function ProgramVersionPage() {
   const canManage =
     me?.role === 'ADMIN' || (me?.role === 'DEAN_OFFICE' && me.facultyId === program.fieldOfStudy.facultyId);
   const canEdit = canManage && !isApproved;
-  const totalEcts = semesters.reduce((sum, s) => sum + s.totalEcts, 0);
 
   const visible = (entry: ProgramEntry) =>
     specFilter === ALL ||
     (specFilter === COMMON ? entry.specializationId === null : entry.specializationId === null || entry.specializationId === specFilter);
+
+  // Student realizuje jedna specjalnosc — suma przedmiotow wszystkich specjalnosci (np. 238 ECTS
+  // zamiast 180) myli. Przy "Wszystkie" ECTS liczymy osobno dla kazdej sciezki (wspolne + specjalnosc).
+  const sumEcts = (entries: ProgramEntry[]) => entries.reduce((sum, e) => sum + e.ects, 0);
+  const pathEcts = (entries: ProgramEntry[], specId: string) =>
+    sumEcts(entries.filter((e) => e.specializationId === null || e.specializationId === specId));
+  const perPath = specializations.length > 0 && specFilter === ALL;
+  const ectsLabel = (entries: ProgramEntry[]) =>
+    perPath
+      ? `${specializations.map((sp) => `${sp.shortName} ${pathEcts(entries, sp.id)}`).join(' · ')} ECTS`
+      : `${sumEcts(entries.filter(visible))} ECTS`;
+  const allEntries = semesters.flatMap((s) => s.entries);
+  const totalLabel =
+    specializations.length === 0
+      ? `${sumEcts(allEntries)} ECTS lacznie`
+      : perPath
+        ? `ECTS na sciezke: ${ectsLabel(allEntries).replace(/ ECTS$/, '')}`
+        : specFilter === COMMON
+          ? `${sumEcts(allEntries.filter(visible))} ECTS wspolnych`
+          : `${sumEcts(allEntries.filter(visible))} ECTS sciezki ${specializations.find((sp) => sp.id === specFilter)?.shortName ?? ''}`;
 
   const openDialog = (semester: number, entry: ProgramEntry | null) => {
     form.reset({
@@ -233,8 +252,12 @@ export default function ProgramVersionPage() {
           .join(' · ')}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="tabular-nums">
-              {totalEcts} ECTS lacznie
+            <Badge
+              variant="secondary"
+              className="tabular-nums"
+              title={perPath ? 'Kazda sciezka to przedmioty wspolne kierunku i jednej specjalnosci' : undefined}
+            >
+              {totalLabel}
             </Badge>
             <Badge variant={isApproved ? 'secondary' : 'default'}>{isApproved ? 'Zatwierdzona' : 'Projekt'}</Badge>
             {canManage &&
@@ -310,7 +333,9 @@ export default function ProgramVersionPage() {
                   <span className="ml-auto flex items-center gap-3 text-sm font-normal text-muted-foreground tabular-nums">
                     <span>{entries.length} przedm.</span>
                     <span>{entries.reduce((sum, e) => sum + totalHours(e), 0)} godz.</span>
-                    <span>{entries.reduce((sum, e) => sum + e.ects, 0)} ECTS</span>
+                    <span title={perPath ? 'ECTS sciezki: przedmioty wspolne i danej specjalnosci' : undefined}>
+                      {ectsLabel(semester.entries)}
+                    </span>
                   </span>
                 </div>
               </AccordionTrigger>
