@@ -307,6 +307,18 @@ export function AssignmentDialog({
       : [{ instructorId: '', hours: String(section.hours) }],
   );
   const total = rows.reduce((s, r) => s + (Number(r.hours) || 0), 0);
+  // Wiersz bez prowadzacego bylby przy zapisie pominiety po cichu (licznik mowilby co innego
+  // niz zapis) — wymagamy wyboru prowadzacego albo NN, dodatnich godzin i bez powtorzen.
+  const chosen = rows.map((r) => r.instructorId).filter((id) => id && id !== NN);
+  const rowProblem = rows.some((r) => !r.instructorId)
+    ? 'Wybierz prowadzacego (albo NN) w kazdym wierszu albo usun pusty wiersz'
+    : rows.some((r) => !Number.isInteger(Number(r.hours)) || Number(r.hours) <= 0 || r.hours.trim() === '')
+      ? 'Godziny w kazdym wierszu musza byc liczba calkowita wieksza od zera'
+      : new Set(chosen).size !== chosen.length
+        ? 'Ten sam prowadzacy jest w obsadzie dwa razy — polacz jego godziny w jednym wierszu'
+        : total > section.hours
+          ? `Suma godzin (${total}) przekracza godziny zajec (${section.hours})`
+          : null;
   const options = [
     { value: NN, label: 'NN (wakat)' },
     ...(instructors ?? []).map((i) => ({
@@ -320,9 +332,7 @@ export function AssignmentDialog({
     mutationFn: () =>
       setSectionInstructors(
         section.id,
-        rows
-          .filter((r) => r.instructorId)
-          .map((r) => ({ instructorId: r.instructorId === NN ? null : r.instructorId, hours: Number(r.hours) })),
+        rows.map((r) => ({ instructorId: r.instructorId === NN ? null : r.instructorId, hours: Number(r.hours) })),
       ),
     onSuccess: (r) => {
       toast.success(r.message);
@@ -381,12 +391,16 @@ export function AssignmentDialog({
               {total} / {section.hours} h
             </span>
           </div>
+          {rowProblem && <p className="text-sm text-destructive">{rowProblem}</p>}
+          {rows.length === 0 && (
+            <p className="text-sm text-muted-foreground">Bez wierszy zapis usunie obsade tych zajec.</p>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Anuluj
           </Button>
-          <Button onClick={() => save.mutate()} disabled={save.isPending || total > section.hours}>
+          <Button onClick={() => save.mutate()} disabled={save.isPending || !!rowProblem}>
             {save.isPending && <Spinner />}
             Zapisz obsade
           </Button>
