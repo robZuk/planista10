@@ -5,6 +5,7 @@ import { AppError } from '../lib/AppError';
 import { logger } from '../lib/logger';
 import { Sentry } from '../lib/sentry';
 import { isUniqueConstraintError, isNotFoundError, isForeignKeyError } from '../lib/prismaErrors';
+import { formatZodIssue } from '../lib/zodErrors';
 
 /**
  * Jedyne miejsce, gdzie blad zamienia sie na odpowiedz HTTP. Kolejnosc rozpoznawania:
@@ -17,10 +18,9 @@ import { isUniqueConstraintError, isNotFoundError, isForeignKeyError } from '../
  */
 export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction): void {
   if (err instanceof ZodError) {
-    // Pierwszy problem wystarcza klientowi; sciezka pola dla czytelnosci ("email: ...").
+    // Pierwszy problem wystarcza klientowi; polska nazwa pola dla czytelnosci ("E-mail: ...").
     const first = err.issues[0];
-    const path = first?.path.join('.');
-    res.status(400).json({ error: path ? `${path}: ${first.message}` : (first?.message ?? 'Nieprawidlowe dane') });
+    res.status(400).json({ error: first ? formatZodIssue(first) : 'Nieprawidlowe dane' });
     return;
   }
   if (err instanceof AppError) {

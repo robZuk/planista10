@@ -24,6 +24,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { httpLogger } from './middleware/httpLogger';
 import { logger } from './lib/logger';
 import { initSentry, Sentry } from './lib/sentry';
+import { installPolishZodErrors } from './lib/zodErrors';
 
 /**
  * Buduje instancje aplikacji Express wraz z globalnymi middleware i trasami.
@@ -31,6 +32,8 @@ import { initSentry, Sentry } from './lib/sentry';
  * bez faktycznego nasluchiwania na porcie.
  */
 export function createApp(): Express {
+  // Komunikaty walidacji zod po polsku (lib/zodErrors) — globalnie, przed pierwszym parsowaniem.
+  installPolishZodErrors();
   const app = express();
 
   // Za odwrotnym proxy (nginx/edge) — ufamy 1 przeskokowi, zeby req.ip bral

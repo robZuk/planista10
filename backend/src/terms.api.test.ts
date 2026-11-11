@@ -139,7 +139,7 @@ describe('API — kalendarze semestru', () => {
       .set('Authorization', `Bearer ${dean}`)
       .send({ ...validCalendar, startDate: '2026-13-01' });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/startDate/);
+    expect(res.body.error).toMatch(/^Data poczatku: /);
   });
 
   it('kalendarz zjazdowy bez zjazdow zglaszany jako problem', async () => {
