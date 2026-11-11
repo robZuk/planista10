@@ -525,7 +525,8 @@ export async function planView(term: AcademicTerm, cohortId: string) {
   });
   const manual = await prisma.occurrence.groupBy({
     by: ['sectionId'],
-    where: { termId: term.id, kind: 'MANUAL', status: { not: 'CANCELLED' }, section: { cohortId } },
+    // Bez odrobien odwolanych terminow — ich godziny liczy juz odwolany termin z wzorca.
+    where: { termId: term.id, kind: 'MANUAL', makeupOfKey: null, status: { not: 'CANCELLED' }, section: { cohortId } },
     _sum: { endOrder: true, startOrder: true },
     _count: { _all: true },
     _max: { date: true },
@@ -706,11 +707,13 @@ export async function generate(
   const from = opts.fromDate ? fromIsoDate(opts.fromDate) : null;
 
   // Godziny zuzyte poza generowaniem: terminy MANUAL i zachowane terminy sprzed "od kiedy".
+  // Odrobienie odwolanego terminu (makeupOfKey) sie nie liczy — odwolany termin z wzorca juz
+  // zuzyl te godziny; liczone dwa razy ucielyby zajecia na koncu semestru.
   const kept = await prisma.occurrence.findMany({
     where: {
       sectionId: { in: sectionIds },
       status: { not: 'CANCELLED' },
-      OR: [{ kind: 'MANUAL' }, ...(from ? [{ kind: 'DERIVED' as const, date: { lt: from } }] : [])],
+      OR: [{ kind: 'MANUAL', makeupOfKey: null }, ...(from ? [{ kind: 'DERIVED' as const, date: { lt: from } }] : [])],
     },
     select: { sectionId: true, startOrder: true, endOrder: true },
   });

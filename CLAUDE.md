@@ -84,7 +84,9 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - `src/controllers/*` — obsługa żądań (walidacja wejścia, wywołanie logiki, odpowiedź)
 - `src/services/*` — logika domenowa z bazą: `termCalendars`, `cohorts`, `sections`
   (synchronizacja zajęć, przenoszenie obsady), `plan` (walidacja umieszczeń, dostępność,
-  generowanie terminów), `carryPlan`, `staleness` (terminy nieaktualne per rocznik), `visibility`
+  generowanie terminów), `occurrenceChanges` (odwołanie / przeniesienie / termin ręczny z kontrolą
+  kolizji — wspólne dla planisty i zgłoszeń), `changeRequests` (zgłoszenia prowadzących,
+  odrobienia), `notifications`, `carryPlan`, `staleness` (terminy nieaktualne per rocznik), `visibility`
 - `src/lib/*` — czyste funkcje domeny (bez bazy, testowane jednostkowo):
   - `prisma.ts` — **singleton PrismaClient**; nigdy nie rób `new PrismaClient()`, importuj `prisma` stąd
   - `isoDate.ts` — daty jako tekst `YYYY-MM-DD` (arytmetyka w UTC)
@@ -97,6 +99,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `timeGrid.ts` — siatki godzin: walidacja bloków, bloki → minuty, przerwy, dni z oknem godzin, kolizje w minutach
   - `scheduleTime.ts` — typy sal dla form zajęć
   - `facultyScope.ts` — zakres wydziału wywołującego (`assertFacultyScope`)
+  - `occurrenceKey.ts` — trwały klucz terminu (terminy z wzorca mają nowe id po każdym generowaniu)
+  - `changeRequests.ts` — reguły zgłoszeń zmian (co wolno zgłosić, walidacja propozycji)
 - `src/middleware/authenticate.ts` — weryfikacja JWT; role w enumie `Role`
 - `prisma/schema.prisma` — źródło prawdy o modelu danych (opis: `docs/model-danych.md`)
 

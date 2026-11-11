@@ -107,9 +107,28 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 - `PlacementException(placement, originalDate)` — odwołanie albo przeniesienie pojedynczego
   terminu; **przeżywa ponowne generowanie**. Wyjątek bez daty we wzorcu trafia do raportu.
 - `Occurrence.kind = MANUAL` — odrobienia i terminy jednorazowe; liczą się do godzin, nie znikają.
+  Odrobienie konkretnego odwołanego terminu ma `makeupOfKey` (jego trwały klucz) i **nie zużywa
+  godzin drugi raz** — odwołany termin z wzorca już je zużył.
+- **Trwały klucz terminu** (`lib/occurrenceKey`): terminy `DERIVED` dostają nowe id przy każdym
+  „Generuj terminy", więc zgłoszenia i odrobienia wskazują je kluczem `p:<umieszczenie>|<data z wzorca>`
+  (jak wyjątki); terminy ręczne — `o:<id>`.
 - Zmiana wzorca po generowaniu → „terminy nieaktualne" — liczone per rocznik od jego ostatniego
   generowania (`CohortGeneration`, nie od kalendarza, który dzieli wiele roczników);
   jedno źródło dla planu i „Przygotowania semestru" (`services/staleness.ts`).
+
+## 6a. Zgłoszenia zmian i powiadomienia
+
+- `ChangeRequest` — prośba prowadzącego do dziekanatu: odwołanie (`CANCEL`) albo przeniesienie
+  (`MOVE`) swojego terminu, albo termin odrobienia odwołanych zajęć (`MAKEUP`). Propozycja jest
+  sprawdzana od razu (dzień zajęć rocznika, siatka i okno godzin wydziału, kolizje). Zgłoszenie
+  niczego nie zmienia; dziekanat wydziału **zatwierdza** (zmiana wykonuje się tymi samymi
+  funkcjami co ręczna zmiana planisty — `services/occurrenceChanges`) albo **odrzuca** z
+  uzasadnieniem; prowadzący może **wycofać** czekające. Stany: `PENDING → APPROVED | REJECTED | WITHDRAWN`.
+- Lista **do odrobienia**: odwołane terminy prowadzącego ze stanem — do odrobienia / termin
+  zgłoszony / odrobione (jest termin ręczny z jego `makeupOfKey`).
+- `Notification` — powiadomienia w aplikacji (dzwonek): nowe i wycofane zgłoszenia do dziekanatu
+  wydziału (bez kont dziekanatu — do adminów), decyzje do prowadzącego oraz bezpośrednie zmiany
+  jego terminów przez dziekanat (tylko w planie opublikowanym).
 
 ## 7. Widoczność i uprawnienia
 

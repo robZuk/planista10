@@ -4,6 +4,7 @@ import {
   CalendarRange,
   Clock,
   GraduationCap,
+  Inbox,
   LayoutDashboard,
   LayoutGrid,
   ListChecks,
@@ -65,6 +66,14 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: CalendarDays,
         roles: ['INSTRUCTOR', 'STUDENT'],
         keywords: ['plan', 'zajecia', 'tydzien'],
+        termScoped: true,
+      },
+      {
+        to: '/requests',
+        label: 'Zgloszenia zmian',
+        icon: Inbox,
+        roles: ['ADMIN', 'DEAN_OFFICE', 'INSTRUCTOR'],
+        keywords: ['odwolanie', 'przeniesienie', 'odrobienie', 'prosba', 'zgloszenie', 'powiadomienia'],
         termScoped: true,
       },
       {
