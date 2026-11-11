@@ -1,6 +1,7 @@
 import type { Request } from 'express';
 import { AppError } from './AppError';
 import { getCallerFacultyId } from './callerFaculty';
+import { prisma } from './prisma';
 
 /**
  * Zakres wydzialu wywolujacego — jedno miejsce zamiast powtarzanych blokow
@@ -34,4 +35,17 @@ export async function assertFacultyScope(req: Request, facultyId: string): Promi
   const own = await getCallerFacultyId(req.user!.id);
   if (!own) throw new AppError(403, 'Konto dziekanatu nie ma przypisanego wydzialu');
   if (own !== facultyId) throw new AppError(403, 'Mozesz zmieniac tylko dane swojego wydzialu');
+}
+
+/**
+ * Akcje na wskazanych rocznikach (generowanie terminow, przeniesienie planu): dziekanat
+ * tylko na rocznikach swojego wydzialu — jawna odmowa zamiast cichego "0 zmian".
+ */
+export async function assertCohortsInScope(req: Request, cohortIds: string[] | undefined): Promise<void> {
+  if (!cohortIds?.length || req.user!.role === 'ADMIN') return;
+  const cohorts = await prisma.cohort.findMany({
+    where: { id: { in: cohortIds } },
+    select: { program: { select: { fieldOfStudy: { select: { facultyId: true } } } } },
+  });
+  for (const facultyId of new Set(cohorts.map((c) => c.program.fieldOfStudy.facultyId))) await assertFacultyScope(req, facultyId);
 }

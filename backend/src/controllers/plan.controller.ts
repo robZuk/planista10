@@ -3,7 +3,7 @@ import type { DayOfWeek } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
-import { assertFacultyScope, getCallerScope } from '../lib/facultyScope';
+import { assertFacultyScope, getCallerScope, assertCohortsInScope } from '../lib/facultyScope';
 import { fromIsoDate, isIsoDate, toIsoDate } from '../lib/isoDate';
 import { parseTermKey } from '../lib/terms';
 import { mapRangeByTime } from '../lib/timeGrid';
@@ -207,6 +207,7 @@ export const generateTerms = asyncHandler(async (req, res) => {
   const facultyId = await facultyOf(req);
   const { dryRun = true, cohortIds, fromDate } = req.body as { dryRun?: boolean; cohortIds?: string[]; fromDate?: string | null };
   if (fromDate && !isIsoDate(fromDate)) throw new AppError(400, 'Nieprawidlowa data "od kiedy"');
+  await assertCohortsInScope(req, cohortIds);
   const report = await generate(term, { facultyId, cohortIds, fromDate: fromDate ?? null, dryRun });
   res.json({
     data: report,

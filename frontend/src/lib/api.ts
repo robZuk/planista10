@@ -1,4 +1,5 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios';
+import { toast } from 'sonner';
 import { useAuthStore } from '@/store/authStore';
 
 /**
@@ -30,6 +31,7 @@ async function refreshAccessToken(): Promise<string> {
   // admina z aplikacji — konczymy podglad i wracamy do jego wlasnej sesji.
   if (originalAuth) {
     stopImpersonating();
+    toast.info('Podglad wygasl — wrocono do konta administratora', { id: 'session-expired' });
     throw new Error('Sesja podgladu wygasla');
   }
 
@@ -43,7 +45,10 @@ async function refreshAccessToken(): Promise<string> {
     setAccessToken(newAccess);
     return newAccess;
   } catch (err) {
+    // Sesja wygasla albo ja uniewazniono (np. wylogowanie na innym urzadzeniu). Bez komunikatu
+    // uzytkownik widzial tylko nagly powrot do logowania. Jeden komunikat (id) na wiele zadan naraz.
     clearAuth();
+    toast.info('Sesja wygasla — zaloguj sie ponownie. Po zalogowaniu wrocisz na te strone.', { id: 'session-expired', duration: 8000 });
     throw err;
   }
 }

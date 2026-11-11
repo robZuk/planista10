@@ -45,6 +45,21 @@ beforeAll(() => {
 });
 
 describe('API — plan', () => {
+  it('prowadzacy nie czyta planu w ukladaniu ani listy terminow rocznika -> 403', async () => {
+    const instructor = signAccessToken({ sub: 'u-i', role: 'INSTRUCTOR' });
+    for (const path of ['/api/terms/2026-L/plan?cohortId=c1', '/api/terms/2026-L/occurrences?cohortId=c1']) {
+      const res = await request(app).get(path).set('Authorization', `Bearer ${instructor}`);
+      expect(res.status).toBe(403);
+    }
+  });
+
+  it('dziekanat WM generuje terminy rocznika innego wydzialu -> 403, a nie "0 terminow"', async () => {
+    prismaMock.cohort.findMany.mockResolvedValueOnce([{ program: { fieldOfStudy: { facultyId: 'we' } } }]);
+    const res = await request(app).post('/api/terms/2026-L/generate').set('Authorization', `Bearer ${dean}`).send({ dryRun: false, cohortIds: ['c-we'] });
+    expect(res.status).toBe(403);
+    expect(res.body.error).toBe('Mozesz zmieniac tylko dane swojego wydzialu');
+  });
+
   it('student nie generuje terminow -> 403', async () => {
     const res = await request(app).post('/api/terms/2026-L/generate').set('Authorization', `Bearer ${student}`).send({});
     expect(res.status).toBe(403);

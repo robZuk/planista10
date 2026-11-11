@@ -3,7 +3,7 @@ import type { AcademicTerm } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
-import { getCallerScope } from '../lib/facultyScope';
+import { getCallerScope, assertCohortsInScope } from '../lib/facultyScope';
 import { addDays, fromIsoDate, isIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
 import { personalDaysOff, TeachingCalendar } from '../lib/teachingCalendar';
 import { occurrenceKey } from '../lib/occurrenceKey';
@@ -41,6 +41,7 @@ export const carryPlanHandler = asyncHandler(async (req, res) => {
   const facultyId = await facultyOf(req);
   const { cohortIds, dryRun = true } = req.body as { cohortIds?: string[]; dryRun?: boolean };
   if (!Array.isArray(cohortIds) || cohortIds.length === 0) throw new AppError(400, 'Wybierz roczniki');
+  await assertCohortsInScope(req, cohortIds);
   const report = await carryPlan(term, { facultyId, cohortIds, dryRun });
   res.json({
     data: report,
