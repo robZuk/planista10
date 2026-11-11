@@ -3,7 +3,7 @@ import { asyncHandler } from '../middleware/asyncHandler';
 import { addDays, fromIsoDate, mondayOf, todayIso } from '../lib/isoDate';
 import { holidaysInRange } from '../lib/holidays';
 import { formatMinutes } from '../lib/timeGrid';
-import { occurrenceScope, publishedScopes } from '../services/visibility';
+import { occurrenceScope, publishedCohortKeys } from '../services/visibility';
 
 const occurrenceInclude = {
   room: { select: { number: true, building: { select: { name: true } } } },
@@ -12,6 +12,7 @@ const occurrenceInclude = {
   section: {
     select: {
       classType: true,
+      cohortId: true,
       cohort: { select: { program: { select: { code: true, studyMode: true } } } },
       programEntry: { select: { subject: { select: { name: true } } } },
     },
@@ -80,9 +81,10 @@ export const getStats = asyncHandler(async (req, res) => {
       : Promise.resolve([]),
   ]);
 
-  const visible = scope?.publishedOnly ? await publishedScopes() : null;
+  // Student i prowadzacy: tylko roczniki z opublikowanym (albo archiwalnym) wlasnym kalendarzem.
+  const visible = scope?.publishedOnly ? await publishedCohortKeys(weekRows.map((o) => ({ termId: o.termId, cohortId: o.section.cohortId }))) : null;
   const week = weekRows
-    .filter((o) => !visible || visible.has(`${o.termId}|${o.facultyId}|${o.section.cohort.program.studyMode}`))
+    .filter((o) => !visible || visible.has(`${o.termId}|${o.section.cohortId}`))
     .map((o) => ({
       id: o.id,
       classType: o.section.classType,

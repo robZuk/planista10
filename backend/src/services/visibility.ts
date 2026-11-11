@@ -2,6 +2,8 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
 import { toTreeGroup } from './cohorts';
+import { activeCohorts } from './sections';
+import { calendarsFor } from './cohortCalendar';
 
 /**
  * Kto widzi ktore terminy. Student i prowadzacy — tylko z opublikowanych (i archiwalnych)
@@ -23,13 +25,24 @@ export async function studentVisibleGroupIds(userId: string): Promise<string[]> 
   return groups.filter((g) => member.some((m) => groupsOverlap(m.id, g.id, index))).map((g) => g.id);
 }
 
-/** Pary wydzial|tryb z opublikowanym albo archiwalnym kalendarzem (dowolnego semestru). */
-export async function publishedScopes(): Promise<Set<string>> {
-  const calendars = await prisma.termCalendar.findMany({
-    where: { status: { in: ['PUBLISHED', 'ARCHIVED'] } },
-    select: { termId: true, facultyId: true, studyMode: true },
-  });
-  return new Set(calendars.map((c) => `${c.termId}|${c.facultyId}|${c.studyMode}`));
+/**
+ * Roczniki, ktorych plan widza studenci i prowadzacy: wlasny kalendarz rocznika w danym
+ * semestrze jest opublikowany albo w archiwum (wariant "w planowaniu" — jeszcze nie, nawet
+ * gdy wydzial ma inne opublikowane kalendarze). Klucz: `termId|cohortId`.
+ */
+export async function publishedCohortKeys(pairs: { termId: string; cohortId: string }[]): Promise<Set<string>> {
+  const keys = new Set<string>();
+  const byTerm = new Map<string, Set<string>>();
+  for (const p of pairs) byTerm.set(p.termId, (byTerm.get(p.termId) ?? new Set()).add(p.cohortId));
+  for (const [termId, cohortIds] of byTerm) {
+    const term = await prisma.academicTerm.findUnique({ where: { id: termId } });
+    if (!term) continue;
+    const contexts = await activeCohorts(term, null, [...cohortIds]);
+    for (const [cohortId, cal] of await calendarsFor(term, contexts)) {
+      if (cal && cal.status !== 'PLANNING') keys.add(`${termId}|${cohortId}`);
+    }
+  }
+  return keys;
 }
 
 /** Warunek na terminy widoczne dla uzytkownika (bez filtra publikacji — ten nakladamy po pobraniu). */

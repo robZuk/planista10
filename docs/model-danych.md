@@ -119,6 +119,13 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 - Zmiana wzorca po generowaniu → „terminy nieaktualne" — liczone per rocznik od jego ostatniego
   generowania (`CohortGeneration`, nie od kalendarza, który dzieli wiele roczników);
   jedno źródło dla planu i „Przygotowania semestru" (`services/staleness.ts`).
+  Powód „kalendarz" porównuje **odcisk** kalendarza zapisany przy generowaniu
+  (`CohortGeneration.calendarKey`: kalendarz, semestr rocznika, daty) z obecnym — zmiana
+  „tam i z powrotem" nie unieważnia terminów; stare generowania bez odcisku porównują czasy.
+- **Widoczność dla studentów i prowadzących** („Mój plan", panel główny) liczy się z kalendarza
+  **rocznika**: tylko opublikowany albo w archiwum (`services/visibility.publishedCohortKeys`).
+  Rocznik przypięty do wariantu „w planowaniu" nie pokazuje planu, choć wydział ma inne
+  opublikowane kalendarze.
 
 ## 6a. Zgłoszenia zmian i powiadomienia
 

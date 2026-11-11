@@ -13,6 +13,7 @@ import { groupsOverlap, indexGroups } from '../lib/groupTree';
 import { activeCohorts } from '../services/sections';
 import { cohortLabel, toTreeGroup } from '../services/cohorts';
 import { calendarsFor } from '../services/plan';
+import { publishedCohortKeys } from '../services/visibility';
 import { carryPlan } from '../services/carryPlan';
 import { staleReasonsByCohort } from '../services/staleness';
 
@@ -177,12 +178,6 @@ export const myPlan = asyncHandler(async (req, res) => {
   const from = typeof req.query.from === 'string' && isIsoDate(req.query.from) ? fromIsoDate(req.query.from) : undefined;
   const to = typeof req.query.to === 'string' && isIsoDate(req.query.to) ? fromIsoDate(req.query.to) : undefined;
 
-  const published = await prisma.termCalendar.findMany({
-    where: { termId: term.id, status: { in: ['PUBLISHED', 'ARCHIVED'] } },
-    select: { facultyId: true, studyMode: true },
-  });
-  const visible = new Set(published.map((c) => `${c.facultyId}|${c.studyMode}`));
-
   let groupFilter: string[] | null = null;
   // Roczniki, wg ktorych kalendarzy osoba ma zajecia — do dni wolnych w kalendarzu tygodnia.
   let personCohortIds: string[] = [];
@@ -222,12 +217,14 @@ export const myPlan = asyncHandler(async (req, res) => {
     },
     orderBy: [{ date: 'asc' }, { startMinute: 'asc' }],
   });
-  const shown = rows.filter((o) => visible.has(`${o.facultyId}|${o.section.cohort.program.studyMode}`));
-  // Nazwy grup liczone na semestr rocznika (jak w Ukladaniu planu) — prowadzacy rozroznia
-  // ten sam przedmiot w roznych grupach tego samego dnia.
+  // Widac tylko terminy rocznikow, ktorych WLASNY kalendarz jest opublikowany albo w archiwum —
+  // rocznik przypiety do wariantu "w planowaniu" nie pokazuje jeszcze planu (choc wydzial ma
+  // inne opublikowane kalendarze). Nazwy grup liczone na semestr rocznika (jak w Ukladaniu planu).
   // Pusta lista rocznikow w activeCohorts znaczy "wszystkie" — tydzien bez zajec nie pyta o nic.
-  const cohortIds = [...new Set(shown.map((o) => o.section.cohortId))];
+  const cohortIds = [...new Set(rows.map((o) => o.section.cohortId))];
   const contexts = cohortIds.length > 0 ? await activeCohorts(term, null, cohortIds) : [];
+  const visibleCohorts = await publishedCohortKeys(cohortIds.map((cohortId) => ({ termId: term.id, cohortId })));
+  const shown = rows.filter((o) => visibleCohorts.has(`${term.id}|${o.section.cohortId}`));
   const nameOf = new Map(contexts.map((c) => [c.cohort.id, c.nameOf]));
   // Prowadzacy: zgloszenia czekajace na dziekanat — kafelek pokazuje "zgloszono odwolanie" itp.
   const keyOfRow = (o: (typeof shown)[number]) =>
@@ -258,20 +255,20 @@ export const myPlan = asyncHandler(async (req, res) => {
       note: o.note,
       pendingRequest: pendingByKey.get(keyOfRow(o)) ?? null,
     }));
-  res.json({ data, daysOff: from && to ? await personDaysOff(term, personCohortIds, visible, toIsoDate(from), toIsoDate(to)) : {} });
+  res.json({ data, daysOff: from && to ? await personDaysOff(term, personCohortIds, toIsoDate(from), toIsoDate(to)) : {} });
 });
 
 /**
  * Dni wolne w zakresie planu osobistego (najwyzej 2 tygodnie) wg kalendarzy rocznikow osoby —
  * tylko opublikowanych albo archiwalnych, jak same terminy. Regula: lib/teachingCalendar.personalDaysOff.
  */
-async function personDaysOff(term: AcademicTerm, cohortIds: string[], visible: Set<string>, from: IsoDate, to: IsoDate) {
+async function personDaysOff(term: AcademicTerm, cohortIds: string[], from: IsoDate, to: IsoDate) {
   const dates: IsoDate[] = [];
   for (let d = from; d <= to && dates.length < 14; d = addDays(d, 1)) dates.push(d);
   const contexts = cohortIds.length > 0 ? await activeCohorts(term, null, cohortIds) : [];
   const calendars = new Map<string, TeachingCalendar>();
   for (const [, cal] of await calendarsFor(term, contexts)) {
-    if (cal.status === 'PLANNING' || !visible.has(`${cal.facultyId}|${cal.studyMode}`)) continue;
+    if (!cal || cal.status === 'PLANNING') continue;
     if (!calendars.has(cal.id)) calendars.set(cal.id, new TeachingCalendar(toCalendarInput(cal)));
   }
   return personalDaysOff(dates, [...calendars.values()]);

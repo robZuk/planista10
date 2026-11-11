@@ -40,3 +40,17 @@ describe('staleReasons', () => {
     expect(staleReasons({ lastPlacementChange: 0, lastSectionChange: 0, generatedAt: 0, lastCalendarChange: 6 })).toEqual([]);
   });
 });
+
+describe('staleReasons — odcisk kalendarza', () => {
+  const base = { lastPlacementChange: 100, lastSectionChange: 100, generatedAt: 200 };
+  it('zmiana tam i z powrotem (pozniejszy czas, ten sam odcisk) — terminy aktualne', () => {
+    expect(staleReasons({ ...base, lastCalendarChange: 300, calendarChanged: false })).toEqual([]);
+  });
+  it('inny odcisk — CALENDAR, nawet bez pozniejszego czasu', () => {
+    expect(staleReasons({ ...base, lastCalendarChange: 0, calendarChanged: true })).toEqual(['CALENDAR']);
+  });
+  it('brak odcisku (stare generowanie) — porownanie czasow jak dotad', () => {
+    expect(staleReasons({ ...base, lastCalendarChange: 300 })).toEqual(['CALENDAR']);
+    expect(staleReasons({ ...base, lastCalendarChange: 150 })).toEqual([]);
+  });
+});

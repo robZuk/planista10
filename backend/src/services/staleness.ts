@@ -1,7 +1,10 @@
+import { createHash } from 'node:crypto';
 import type { AcademicTerm } from '@prisma/client';
 import { prisma } from '../lib/prisma';
+import { calendarDatesKey } from '../lib/teachingCalendar';
+import { toCalendarInput } from './termCalendars';
 import { staleReasons, type StaleReason } from '../lib/planStaleness';
-import { calendarsFor } from './cohortCalendar';
+import { calendarsFor, type CalendarRow } from './cohortCalendar';
 import type { CohortContext } from './sections';
 
 /**
@@ -12,6 +15,15 @@ import type { CohortContext } from './sections';
  * kalendarz dzieli wiele rocznikow, a generowanie z planu przelicza tylko jeden.
  * Reguly powodow: lib/planStaleness.ts.
  */
+/**
+ * Odcisk kalendarza, wg ktorego powstaja terminy rocznika: wybrany kalendarz, numer semestru
+ * rocznika i daty (semestr, przerwy, dni, zjazdy). Ten sam odcisk = te same daty zajec.
+ */
+export function calendarFingerprint(calendar: CalendarRow, semester: number): string {
+  const key = `${calendar.id}|${semester}|${calendarDatesKey(toCalendarInput(calendar))}`;
+  return createHash('sha1').update(key).digest('hex');
+}
+
 export async function staleReasonsByCohort(term: AcademicTerm, contexts: CohortContext[]): Promise<Map<string, StaleReason[]>> {
   const result = new Map<string, StaleReason[]>();
   if (contexts.length === 0) return result;
@@ -71,6 +83,14 @@ export async function staleReasonsByCohort(term: AcademicTerm, contexts: CohortC
     if (cohortId) entry(cohortId).deletion = Math.max(entry(cohortId).deletion, d._max.updatedAt?.getTime() ?? 0);
   }
   const generatedAt = new Map(generations.map((g) => [g.cohortId, g.generatedAt.getTime()]));
+  // Odcisk zapisany przy generowaniu -> porownanie tresci (zmiana tam i z powrotem to nie zmiana).
+  const calendarChanged = new Map<string, boolean | undefined>(
+    contexts.map((c) => {
+      const stored = generations.find((g) => g.cohortId === c.cohort.id)?.calendarKey;
+      const calendar = calendars.get(c.cohort.id);
+      return [c.cohort.id, stored && calendar ? stored !== calendarFingerprint(calendar, c.semester) : undefined];
+    }),
+  );
 
   for (const cohortId of cohortIds) {
     const e = acc.get(cohortId) ?? { placements: 0, sections: 0, deletion: 0 };
@@ -82,6 +102,7 @@ export async function staleReasonsByCohort(term: AcademicTerm, contexts: CohortC
         generatedAt: generatedAt.get(cohortId) ?? 0,
         lastDeletion: e.deletion,
         lastCalendarChange: calendarChange.get(cohortId) ?? 0,
+        calendarChanged: calendarChanged.get(cohortId),
       }),
     );
   }

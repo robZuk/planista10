@@ -26,6 +26,11 @@ export function staleReasons(input: {
   lastDeletion?: number;
   /** Ostatnia zmiana dat kalendarza rocznika albo jego ustawien w semestrze (0 = brak). */
   lastCalendarChange?: number;
+  /**
+   * Wynik porownania odciskow kalendarza (z generowania i obecny). Gdy podany, zastepuje
+   * porownanie czasow — zmiana "tam i z powrotem" nie unieaktualnia terminow.
+   */
+  calendarChanged?: boolean;
 }): StaleReason[] {
   const reasons: StaleReason[] = [];
   if (input.lastPlacementChange > input.generatedAt) reasons.push('PLACEMENTS');
@@ -33,6 +38,7 @@ export function staleReasons(input: {
   if (input.generatedAt > 0 && input.lastSectionChange > input.generatedAt) reasons.push('SECTIONS');
   if ((input.lastDeletion ?? 0) > input.generatedAt) reasons.push('DELETED');
   // Jak SECTIONS: bez generowania nie ma czego unieaktualnic.
-  if (input.generatedAt > 0 && (input.lastCalendarChange ?? 0) > input.generatedAt) reasons.push('CALENDAR');
+  const calendarChanged = input.calendarChanged ?? (input.lastCalendarChange ?? 0) > input.generatedAt;
+  if (input.generatedAt > 0 && calendarChanged) reasons.push('CALENDAR');
   return reasons;
 }

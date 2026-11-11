@@ -9,6 +9,7 @@ import { fetchMyPlan } from '@/api/plan';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
 import { formatMinutes } from '@/lib/timeGrid';
+import { formatDayMonth } from '@/lib/planHours';
 import { useAuthStore } from '@/store/authStore';
 import { addDaysKey } from './calendar/calendarUtils';
 import { MyPlanWeek } from './myPlan/MyPlanWeek';
@@ -107,7 +108,7 @@ export default function MyPlanPage() {
           byDay.map(([date, dayRows]) => (
             <section key={date} className="space-y-1">
               <h3 className="flex flex-wrap items-center gap-2 font-medium">
-                {WEEKDAY[new Date(`${date}T12:00:00Z`).getUTCDay()]} {date}
+                {WEEKDAY[new Date(`${date}T12:00:00Z`).getUTCDay()]} {formatDayMonth(date)}
                 {daysOff[date] && <Badge variant="secondary">{daysOff[date]}</Badge>}
               </h3>
               {dayRows.length > 0 && (

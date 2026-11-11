@@ -575,6 +575,9 @@ model CohortGeneration {
   term        AcademicTerm @relation(fields: [termId], references: [id])
   termId      String
   generatedAt DateTime
+  // Odcisk kalendarza z chwili generowania (services/staleness.calendarFingerprint): zmiana
+  // tam i z powrotem nie unieaktualnia terminow. null = generowanie sprzed tej kolumny.
+  calendarKey String?
 
   @@unique([cohortId, termId])
 }

@@ -19,7 +19,7 @@ import { toCalendarInput } from './termCalendars';
 import { calendarFor, calendarsFor, type CalendarRow } from './cohortCalendar';
 import { activeCohorts, type CohortContext } from './sections';
 import { cohortLabel, toTreeGroup } from './cohorts';
-import { staleReasonsByCohort } from './staleness';
+import { calendarFingerprint, staleReasonsByCohort } from './staleness';
 import { sectionIssues } from '../lib/planIssues';
 
 /**
@@ -703,6 +703,12 @@ export async function generate(
   }
   const cohortIds = ctxs.map((c) => c.cohort.id);
   const ctxById = new Map(ctxs.map((c) => [c.cohort.id, c]));
+  // Odcisk kalendarza zapisany przy generowaniu (services/staleness) — do "terminow nieaktualnych".
+  const fingerprintOf = (cohortId: string) => {
+    const calendar = scope.calendars.get(cohortId);
+    const ctx = ctxById.get(cohortId);
+    return calendar && ctx ? calendarFingerprint(calendar, ctx.semester) : null;
+  };
 
   const sections = await prisma.classSection.findMany({
     where: { termId: term.id, cohortId: { in: cohortIds } },
@@ -856,8 +862,8 @@ export async function generate(
       ...cohortIds.map((cohortId) =>
         prisma.cohortGeneration.upsert({
           where: { cohortId_termId: { cohortId, termId: term.id } },
-          create: { cohortId, termId: term.id, generatedAt: now },
-          update: { generatedAt: now },
+          create: { cohortId, termId: term.id, generatedAt: now, calendarKey: fingerprintOf(cohortId) },
+          update: { generatedAt: now, calendarKey: fingerprintOf(cohortId) },
         }),
       ),
     ]);

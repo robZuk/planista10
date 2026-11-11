@@ -79,8 +79,15 @@ export default function CohortsPage() {
   const calendarMutation = useMutation({
     mutationFn: ({ cohort, calendarId }: { cohort: TermCohort; calendarId: string }) =>
       setCohortTerm(term!.key, cohort.id, { calendarId }),
-    onSuccess: async () => {
-      toast.success('Kalendarz rocznika zapisany');
+    onSuccess: async (_d, vars) => {
+      const chosen = vars.cohort.availableCalendars.find((c) => c.id === vars.calendarId);
+      toast.success('Kalendarz rocznika zapisany', {
+        description:
+          chosen?.status === 'PLANNING'
+            ? 'Ten kalendarz nie jest opublikowany — studenci i prowadzacy nie zobacza planu rocznika do publikacji.'
+            : 'Terminy rocznika trzeba wygenerowac od nowa („Generuj terminy” w Ukladaniu planu).',
+        duration: 8000,
+      });
       await refresh();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -222,7 +229,7 @@ export default function CohortsPage() {
                     ) : (
                       <NativeSelect
                         aria-label="Kalendarz rocznika"
-                        className="w-64"
+                        className="w-auto min-w-64 max-w-full"
                         disabled={!editable || calendarMutation.isPending || cohort.calendar?.status === 'ARCHIVED'}
                         title={cohort.calendar?.status === 'ARCHIVED' ? 'Kalendarz w archiwum — semestr tylko do odczytu' : undefined}
                         value={cohort.calendar?.id ?? ''}
@@ -230,12 +237,18 @@ export default function CohortsPage() {
                       >
                         {cohort.availableCalendars.map((c) => (
                           <NativeSelectOption key={c.id} value={c.id} disabled={c.status === 'ARCHIVED' && c.id !== cohort.calendar?.id}>
-                            {c.name} ({CALENDAR_KIND_LABELS[c.kind].toLowerCase()}){c.status === 'ARCHIVED' ? ' · archiwum' : ''}
+                            {c.name} ({CALENDAR_KIND_LABELS[c.kind].toLowerCase()})
+                            {c.status === 'ARCHIVED' ? ' · archiwum' : c.status === 'PLANNING' ? ' · w planowaniu' : ''}
                           </NativeSelectOption>
                         ))}
                       </NativeSelect>
                     )}
                   </label>
+                  {cohort.calendar?.status === 'PLANNING' && (
+                    <span className="text-xs text-amber-700 dark:text-amber-400">
+                      Kalendarz w planowaniu — studenci i prowadzacy nie widza jeszcze planu tego rocznika
+                    </span>
+                  )}
                   {cohort.program.fieldOfStudy.specializations.length > 1 && (
                     <label className="flex items-center gap-2">
                       <Checkbox
