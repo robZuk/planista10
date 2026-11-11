@@ -3,7 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { CalendarPlus, Info, Plus, Trash2, TriangleAlert } from 'lucide-react';
+import { CalendarPlus, Info, Plus, Trash2, TriangleAlert, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -206,7 +206,9 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
   // akcja planisty — wynik widac od razu na liscie i w podgladzie, mozna poprawic.
   const [firstFriday, setFirstFriday] = useState('');
   const [everyWeeks, setEveryWeeks] = useState('2');
-  const addZjazdSeries = () => {
+  // replace: seria zastepuje cala liste (jak "Wstaw bloki" w siatce godzin); inaczej dopisuje.
+  // Zmiana dotyczy tylko formularza — do bazy trafia dopiero po "Zapisz kalendarz".
+  const addZjazdSeries = (replace: boolean) => {
     const end = form.getValues('endDate');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(firstFriday) || !end) {
       toast.error('Podaj date pierwszego zjazdu i koniec semestru');
@@ -217,7 +219,12 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
     for (let start = firstFriday; addDaysKey(start, 2) <= end && series.length < 30; start = addDaysKey(start, step)) {
       series.push({ startDate: start, endDate: addDaysKey(start, 2) });
     }
-    zjazdy.append(series);
+    if (replace) {
+      zjazdy.replace(series);
+      toast.info(`Lista zjazdow zastapiona seria (${series.length}) — zapisze sie po „Zapisz kalendarz”`);
+    } else {
+      zjazdy.append(series);
+    }
   };
 
   const kind = form.watch('kind');
@@ -426,8 +433,17 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
                         <NativeSelectOption value="3">co 3 tygodnie</NativeSelectOption>
                       </NativeSelect>
                     </Field>
-                    <Button type="button" variant="secondary" size="sm" onClick={addZjazdSeries}>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => addZjazdSeries(false)}>
                       <CalendarPlus /> Dopisz serie do konca semestru
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      title="Usuwa obecne zjazdy z listy i wstawia serie od pierwszego zjazdu do konca semestru"
+                      onClick={() => addZjazdSeries(true)}
+                    >
+                      <RefreshCw /> Zastap liste seria
                     </Button>
                   </div>
                   {zjazdy.fields.map((field, index) => (
