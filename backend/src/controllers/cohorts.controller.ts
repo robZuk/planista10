@@ -328,6 +328,23 @@ interface NewGroupInput {
   toSemester?: number | null;
 }
 
+/**
+ * Liczebnosc i zakres semestrow grupy: puste pole z formularza (0), ulamek albo semestr poza
+ * programem nie moga trafic do bazy (semestr 0 albo 9 przy 7-semestralnym programie dawal
+ * grupe "od sem. 0" albo nigdy nieaktywna; ulamek — blad 500 z bazy).
+ */
+function assertGroupRange(totalSemesters: number, size: number | undefined, from: number, to: number | null) {
+  if (size !== undefined && (!Number.isInteger(size) || size < 0 || size > 10000)) {
+    throw new AppError(400, 'Liczebnosc musi byc liczba calkowita od 0 do 10000');
+  }
+  if (!Number.isInteger(from) || from < 1 || from > totalSemesters) {
+    throw new AppError(400, `Semestr poczatku grupy musi byc w zakresie 1-${totalSemesters}`);
+  }
+  if (to !== null && (!Number.isInteger(to) || to < from || to > totalSemesters)) {
+    throw new AppError(400, `Semestr konca grupy musi byc w zakresie ${from}-${totalSemesters}`);
+  }
+}
+
 async function createGroupIn(cohort: Awaited<ReturnType<typeof requireCohort>>, input: NewGroupInput) {
   const parent = await prisma.studentGroup.findUnique({ where: { id: input.parentId } });
   if (!parent || parent.cohortId !== cohort.id) throw new AppError(400, 'Grupa nadrzedna nie nalezy do rocznika');
@@ -348,6 +365,7 @@ async function createGroupIn(cohort: Awaited<ReturnType<typeof requireCohort>>, 
   });
   const from = input.fromSemester ?? 1;
   const to = input.toSemester ?? null;
+  assertGroupRange(cohort.programVersion.totalSemesters, input.size ?? 0, from, to);
   const code = input.code?.trim() || nextCodes(1, partitionKey === 'L' && parent.partitionKey === 'C' ? parent.code : null, siblings.map((s) => s.code ?? ''))[0]!;
   const clash = siblings.some(
     (s) => s.code === code && s.fromSemester <= (to ?? 99) && (s.toSemester === null || s.toSemester >= from),
@@ -384,7 +402,7 @@ export const createGroupsBulk = asyncHandler(async (req, res) => {
   await assertFacultyScope(req, cohort.program.fieldOfStudy.facultyId);
   const body = req.body as { parentIds: string[]; partitionKey: string; perParent: number; size: number; fromSemester?: number };
   if (!Array.isArray(body.parentIds) || body.parentIds.length === 0) throw new AppError(400, 'Wskaz grupy nadrzedne');
-  if (!body.perParent || body.perParent < 1 || body.perParent > 26) throw new AppError(400, 'Liczba grup: 1-26');
+  if (!Number.isInteger(body.perParent) || body.perParent < 1 || body.perParent > 26) throw new AppError(400, 'Liczba grup: 1-26');
   const created: StudentGroup[] = [];
   for (const parentId of body.parentIds) {
     const parent = await prisma.studentGroup.findUnique({ where: { id: parentId } });
@@ -406,12 +424,10 @@ export const updateGroup = asyncHandler(async (req, res) => {
   const { group, cohort } = await loadGroupInCohort(String(req.params.id));
   await assertFacultyScope(req, cohort.program.fieldOfStudy.facultyId);
   const body = req.body as { code?: string; size?: number; fromSemester?: number; toSemester?: number | null };
-  if (body.size !== undefined && (!Number.isInteger(body.size) || body.size < 0)) {
-    throw new AppError(400, 'Liczebnosc musi byc liczba nieujemna');
-  }
   const from = body.fromSemester ?? group.fromSemester;
   const to = body.toSemester === undefined ? group.toSemester : body.toSemester;
   if (to !== null && to < from) throw new AppError(400, 'Grupa nie moze konczyc sie przed poczatkiem');
+  assertGroupRange(cohort.programVersion.totalSemesters, body.size, from, to);
   if (group.partitionKey === ROOT && (from !== 1 || to !== null)) {
     throw new AppError(400, 'Korzen rocznika obowiazuje przez cale studia');
   }
