@@ -47,6 +47,23 @@ async function assertDeanFaculty(role: Role, facultyId: string | null | undefine
   if (!(await prisma.faculty.findUnique({ where: { id: facultyId } }))) throw new AppError(400, 'Wydzial nie istnieje');
 }
 
+/**
+ * Unikalny e-mail i jeden prowadzacy = jedno konto — czytelny komunikat zamiast ogolnego
+ * "Rekord o podanych danych juz istnieje" z bazy. E-mail porownujemy bez wielkosci liter
+ * (Jan@ i jan@ to w praktyce ten sam adres).
+ */
+async function assertUnique(userId: string | null, email: string | undefined, instructorId: string | null | undefined) {
+  const notMe = userId ? { NOT: { id: userId } } : {};
+  if (email) {
+    const other = await prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' }, ...notMe }, select: { name: true } });
+    if (other) throw new AppError(409, `Adres ${email} ma juz konto: ${other.name}`);
+  }
+  if (instructorId) {
+    const other = await prisma.user.findFirst({ where: { instructorId, ...notMe }, select: { email: true } });
+    if (other) throw new AppError(409, `Ten prowadzacy ma juz konto ${other.email} — prowadzacy moze miec jedno konto`);
+  }
+}
+
 // GET /api/users
 export const getAll = asyncHandler(async (_req, res) => {
   const data = await prisma.user.findMany({ select: userSelect, orderBy: { createdAt: 'asc' } });
@@ -65,6 +82,7 @@ export const create = asyncHandler(async (req, res) => {
     facultyId?: string | null;
   };
   await assertDeanFaculty(role, facultyId);
+  await assertUnique(null, email, role === 'INSTRUCTOR' ? instructorId : null);
 
   const data = await prisma.user.create({
     data: {
@@ -96,9 +114,10 @@ export const update = asyncHandler(async (req, res) => {
   };
 
   // Wydzial dziekanatu po zmianie: nowa rola i nowy wydzial albo dotychczasowe.
-  const current = await prisma.user.findUnique({ where: { id: req.params.id }, select: { role: true, facultyId: true } });
+  const current = await prisma.user.findUnique({ where: { id: req.params.id }, select: { id: true, role: true, facultyId: true } });
   if (!current) throw new AppError(404, 'Uzytkownik nie znaleziony');
   await assertDeanFaculty(role ?? current.role, facultyId !== undefined ? facultyId || null : current.facultyId);
+  await assertUnique(current.id, email, instructorId);
 
   // Powiazania sa juz zawezone przez rolę po stronie frontendu
   // (instructorId=null gdy nie-INSTRUCTOR, studentGroupIds=[] gdy nie-STUDENT).

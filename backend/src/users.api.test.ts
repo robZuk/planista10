@@ -6,7 +6,7 @@ process.env.JWT_ACCESS_SECRET ??= 'test-access-secret';
 process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 
 const prismaMock = vi.hoisted(() => ({
-  user: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
+  user: { findUnique: vi.fn(), findFirst: vi.fn().mockResolvedValue(null), create: vi.fn(), update: vi.fn() },
   faculty: { findUnique: vi.fn() },
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
@@ -59,5 +59,37 @@ describe('API — konta dziekanatu', () => {
     prismaMock.faculty.findUnique.mockResolvedValueOnce({ id: 'wm' });
     prismaMock.user.update.mockResolvedValueOnce(user);
     expect((await request(app).put('/api/users/u1').set('Authorization', `Bearer ${admin}`).send({ name: 'Nowa nazwa' })).status).toBe(200);
+  });
+});
+
+describe('API — konta: zajety e-mail i prowadzacy z kontem', () => {
+  const instr = { name: 'Jan Nowak', email: 'jan.nowak@umg.edu.pl', password: 'Haslo12345', role: 'INSTRUCTOR', instructorId: 'i1' };
+
+  it('zajety e-mail (bez wzgledu na wielkosc liter) -> 409 z nazwa konta', async () => {
+    prismaMock.user.findFirst.mockResolvedValueOnce({ name: 'Student testowy' });
+    prismaMock.user.create.mockClear();
+    const res = await request(app).post('/api/users').set('Authorization', `Bearer ${admin}`).send({ ...instr, email: 'Student@umg.edu.pl' });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('Adres Student@umg.edu.pl ma juz konto: Student testowy');
+    expect(prismaMock.user.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { email: { equals: 'Student@umg.edu.pl', mode: 'insensitive' } } }),
+    );
+    expect(prismaMock.user.create).not.toHaveBeenCalled();
+  });
+
+  it('prowadzacy z innym kontem -> 409 z adresem tamtego konta', async () => {
+    prismaMock.user.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({ email: 'prowadzacy@umg.edu.pl' });
+    const res = await request(app).post('/api/users').set('Authorization', `Bearer ${admin}`).send(instr);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/ma juz konto prowadzacy@umg.edu.pl/);
+  });
+
+  it('edycja nie zderza sie z wlasnym kontem', async () => {
+    prismaMock.user.findUnique.mockResolvedValueOnce({ id: 'u1', role: 'INSTRUCTOR', facultyId: null });
+    prismaMock.user.update.mockResolvedValueOnce({ ...user, role: 'INSTRUCTOR', facultyId: null });
+    prismaMock.user.findFirst.mockClear();
+    const res = await request(app).put('/api/users/u1').set('Authorization', `Bearer ${admin}`).send({ email: instr.email, instructorId: 'i1' });
+    expect(res.status).toBe(200);
+    expect(prismaMock.user.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ NOT: { id: 'u1' } }) }));
   });
 });

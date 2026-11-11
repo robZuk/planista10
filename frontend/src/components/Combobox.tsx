@@ -18,6 +18,10 @@ export interface ComboboxOption {
   label: string;
   /** Dodatkowy tekst brany pod uwage przy wyszukiwaniu (np. kod przedmiotu). */
   keywords?: string;
+  /** Opcja widoczna, ale niewybieralna (np. prowadzacy z innym kontem). */
+  disabled?: boolean;
+  /** Krotki dopisek pod etykieta (np. powod zablokowania). */
+  hint?: string;
 }
 
 interface Props {
@@ -82,6 +86,7 @@ export function Combobox({
                   // `value` trafia do wyszukiwarki Command — dokladamy slowa kluczowe,
                   // zeby dalo sie szukac takze po kodzie przedmiotu.
                   value={`${option.label} ${option.keywords ?? ''}`}
+                  disabled={option.disabled}
                   onSelect={() => {
                     onChange(option.value);
                     setOpen(false);
@@ -90,7 +95,14 @@ export function Combobox({
                   <Check
                     className={cn('mr-2 size-4', option.value === value ? 'opacity-100' : 'opacity-0')}
                   />
-                  {option.label}
+                  {option.hint ? (
+                    <span className="flex min-w-0 flex-col">
+                      <span className="truncate">{option.label}</span>
+                      <span className="truncate text-xs text-muted-foreground">{option.hint}</span>
+                    </span>
+                  ) : (
+                    option.label
+                  )}
                 </CommandItem>
               ))}
             </CommandGroup>

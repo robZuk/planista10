@@ -138,12 +138,18 @@ export default function UsersPage() {
 
   const instructorOptions = useMemo(
     () =>
-      (instructors ?? []).map((instructor) => ({
-        value: instructor.id,
-        label: `${instructor.title ?? ''} ${instructor.firstName} ${instructor.lastName}`.trim(),
-        keywords: instructor.email,
-      })),
-    [instructors],
+      (instructors ?? []).map((instructor) => {
+        // Prowadzacy moze miec jedno konto — z innym kontem widoczny, ale niewybieralny.
+        const taken = instructor.user && instructor.user.id !== editing?.id ? instructor.user : null;
+        return {
+          value: instructor.id,
+          label: `${instructor.title ?? ''} ${instructor.firstName} ${instructor.lastName}`.trim(),
+          keywords: instructor.email,
+          disabled: !!taken,
+          hint: taken ? `ma juz konto: ${taken.email}` : undefined,
+        };
+      }),
+    [instructors, editing],
   );
 
   const groupOptions = useMemo(
@@ -163,7 +169,12 @@ export default function UsersPage() {
 
   const facultyShort = useMemo(() => new Map((faculties ?? []).map((f) => [f.id, f.shortName])), [faculties]);
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['users'] });
+  // Lista prowadzacych niesie powiazane konto (kto jest juz zajety) — odswiezamy ja razem z kontami.
+  const invalidate = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['users'] }),
+      queryClient.invalidateQueries({ queryKey: ['instructors'] }),
+    ]);
 
   const saveMutation = useMutation({
     mutationFn: (values: UserValues) => {
