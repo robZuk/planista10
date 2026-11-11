@@ -58,6 +58,17 @@ async function assertSpecialization(fieldOfStudyId: string, specializationId: st
   }
 }
 
+/**
+ * Pozycja bez zadnych godzin i bez ECTS nic nie wnosi do programu (i nie da zajec). Bez godzin,
+ * ale z ECTS — dozwolona (np. praktyka zawodowa, praca dyplomowa).
+ */
+function assertEntryHasContent(input: ProgramEntryInput) {
+  const hours = input.hoursLecture + input.hoursExercise + input.hoursLab + input.hoursProject + input.hoursSeminar;
+  if (hours === 0 && input.ects === 0) {
+    throw new AppError(400, 'Podaj godziny zajec albo punkty ECTS — pozycja bez godzin i bez ECTS nic nie wnosi do programu');
+  }
+}
+
 /** Ten sam przedmiot w tym samym semestrze nie moze byc jednoczesnie wspolny i specjalnosciowy. */
 async function assertNoOverlap(versionId: string, input: ProgramEntryInput, exceptId?: string) {
   const others = await prisma.programEntry.findMany({
@@ -278,6 +289,7 @@ export const addEntry = asyncHandler(async (req, res) => {
   await assertFacultyScope(req, version.program.fieldOfStudy.facultyId);
   assertDraft(version.status);
   const input = req.body as ProgramEntryInput;
+  assertEntryHasContent(input);
   if (input.semester > version.totalSemesters) {
     throw new AppError(400, `Semestr musi byc w zakresie 1-${version.totalSemesters}`);
   }
@@ -308,6 +320,7 @@ export const updateEntry = asyncHandler(async (req, res) => {
   await assertFacultyScope(req, version.program.fieldOfStudy.facultyId);
   assertDraft(version.status);
   const input = req.body as ProgramEntryInput;
+  assertEntryHasContent(input);
   if (input.semester > version.totalSemesters) {
     throw new AppError(400, `Semestr musi byc w zakresie 1-${version.totalSemesters}`);
   }

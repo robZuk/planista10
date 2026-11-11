@@ -91,6 +91,38 @@ describe('API — programy studiow', () => {
     expect(res.status).toBe(409);
   });
 
+  it('pozycja bez godzin i bez ECTS -> 400 z wyjasnieniem', async () => {
+    prismaMock.programVersion.findUnique.mockResolvedValueOnce(version('wm', 'DRAFT'));
+    const res = await request(app)
+      .post('/api/program-versions/v1/entries')
+      .set('Authorization', `Bearer ${dean}`)
+      .send({ ...entry, hoursLecture: 0, ects: 0 });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/bez godzin i bez ECTS/);
+  });
+
+  it('pozycja bez godzin, ale z ECTS (np. praktyka) przechodzi te kontrole', async () => {
+    prismaMock.programVersion.findUnique.mockResolvedValueOnce(version('wm', 'DRAFT'));
+    const res = await request(app)
+      .post('/api/program-versions/v1/entries')
+      .set('Authorization', `Bearer ${dean}`)
+      .send({ ...entry, hoursLecture: 0, ects: 4, semester: 9 });
+    // Semestr 9 poza zakresem — dochodzi do kolejnej kontroli, wiec ECTS bez godzin nie zostal odrzucony.
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Semestr musi byc/);
+  });
+
+  it('edycja do pustej pozycji -> 400', async () => {
+    prismaMock.programEntry.findUnique.mockResolvedValueOnce({
+      id: 'e1', ...entry, hoursExercise: 0, hoursLab: 0, hoursProject: 0, hoursSeminar: 0, version: version('wm', 'DRAFT'),
+    });
+    const res = await request(app)
+      .put('/api/program-entries/e1')
+      .set('Authorization', `Bearer ${dean}`)
+      .send({ ...entry, hoursLecture: 0, ects: 0 });
+    expect(res.status).toBe(400);
+  });
+
   it('ujemne godziny odrzuca walidacja -> 400', async () => {
     const res = await request(app)
       .post('/api/program-versions/v1/entries')
