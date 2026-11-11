@@ -27,6 +27,7 @@ import {
 import { getErrorMessage } from '@/lib/errors';
 import { defaultSubPartition } from '@/lib/subPartition';
 import { partitionOverflows } from '@/lib/groupSizes';
+import { useSyncHint } from '@/hooks/useSyncHint';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import type { CohortGroup, TermCohort } from '@/types';
 
@@ -59,6 +60,7 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
   const [addTarget, setAddTarget] = useState<AddTarget>(null);
   const [deleting, setDeleting] = useState<CohortGroup | null>(null);
 
+  const syncHint = useSyncHint();
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['cohort-groups', cohort.id] });
     await queryClient.invalidateQueries({ queryKey: ['term-cohorts'] });
@@ -76,7 +78,7 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
   const remove = useMutation({
     mutationFn: (id: string) => deleteCohortGroup(id),
     onSuccess: async () => {
-      toast.success('Grupa usunieta');
+      syncHint('Grupa usunieta');
       setDeleting(null);
       await refresh();
     },
@@ -251,6 +253,7 @@ function AddGroupsDialog({
   onClose: () => void;
   onDone: () => void;
 }) {
+  const syncHint = useSyncHint();
   const specs = cohort.program.fieldOfStudy.specializations;
   const [partition, setPartition] = useState(defaultSubPartition(target.parent.partitionKey));
   const [custom, setCustom] = useState('');
@@ -281,7 +284,7 @@ function AddGroupsDialog({
       return result.message;
     },
     onSuccess: (message) => {
-      toast.success(message);
+      syncHint(message);
       onDone();
     },
     onError: (error) => toast.error(getErrorMessage(error)),

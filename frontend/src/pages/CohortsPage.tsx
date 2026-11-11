@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, ChevronUp, FilterX, Search, UserPlus, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSyncHint } from '@/hooks/useSyncHint';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -85,11 +86,12 @@ export default function CohortsPage() {
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
+  const syncHint = useSyncHint();
   const lectureMutation = useMutation({
     mutationFn: ({ cohort, joint }: { cohort: TermCohort; joint: boolean }) =>
       updateCohort(cohort.id, { lectureMode: joint ? 'JOINT' : 'SEPARATE' }),
-    onSuccess: async () => {
-      toast.success('Zapisano');
+    onSuccess: async (_d, vars) => {
+      syncHint(vars.joint ? 'Wyklady wspolne dla calego rocznika' : 'Wyklady osobno dla specjalnosci');
       await refresh();
     },
     onError: (error) => toast.error(getErrorMessage(error)),

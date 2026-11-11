@@ -20,3 +20,8 @@ export async function createSpecialization(input: {
 export async function deleteSpecialization(id: string): Promise<void> {
   await api.delete(`/specializations/${id}`);
 }
+
+export async function updateSpecialization(id: string, input: { name: string; shortName: string }): Promise<Specialization> {
+  const res = await api.put(`/specializations/${id}`, input);
+  return res.data.data;
+}

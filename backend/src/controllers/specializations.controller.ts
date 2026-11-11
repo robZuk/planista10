@@ -25,6 +25,19 @@ export const create = asyncHandler(async (req, res) => {
   res.status(201).json({ data, message: 'Specjalnosc utworzona' });
 });
 
+export const update = asyncHandler(async (req, res) => {
+  const id = String(req.params.id);
+  const { name, shortName } = req.body as { name: string; shortName: string };
+  const spec = await prisma.specialization.findUnique({ where: { id } });
+  if (!spec) throw new AppError(404, 'Specjalnosc nie znaleziona');
+  const clash = await prisma.specialization.findFirst({
+    where: { fieldOfStudyId: spec.fieldOfStudyId, name: { equals: name, mode: 'insensitive' }, NOT: { id } },
+  });
+  if (clash) throw new AppError(409, `Specjalnosc „${clash.name}” juz istnieje na tym kierunku`);
+  const data = await prisma.specialization.update({ where: { id }, data: { name, shortName } });
+  res.json({ data, message: 'Specjalnosc zaktualizowana' });
+});
+
 export const remove = asyncHandler(async (req, res) => {
   const spec = await prisma.specialization.findUnique({
     where: { id: req.params.id },

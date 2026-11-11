@@ -36,8 +36,9 @@ export function AppShell() {
           <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
+            {/* min-w-0 + truncate: na telefonie dluga nazwa strony skraca sie zamiast wypychac naglowek. */}
+            <Breadcrumb className="min-w-0">
+              <BreadcrumbList className="flex-nowrap">
                 {crumb && (
                   <>
                     <BreadcrumbItem className="hidden md:block">
@@ -46,13 +47,13 @@ export function AppShell() {
                     <BreadcrumbSeparator className="hidden md:block" />
                   </>
                 )}
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{crumb?.item.label ?? 'Planista'}</BreadcrumbPage>
+                <BreadcrumbItem className="min-w-0">
+                  <BreadcrumbPage className="truncate">{crumb?.item.label ?? 'Planista'}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
             {/* Przelacznik semestru tylko na stronach semestralnych (sam sie ukrywa). */}
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex shrink-0 items-center gap-2">
               <TermSelector />
               <NotificationBell />
             </div>

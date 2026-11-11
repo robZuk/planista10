@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { GitBranch, Plus, Trash2 } from 'lucide-react';
+import { GitBranch, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Accordion,
@@ -39,11 +39,13 @@ import {
   createFieldOfStudy,
   deleteFieldOfStudy,
   fetchFieldsOfStudy,
+  updateFieldOfStudy,
 } from '@/api/fieldsOfStudy';
 import {
   createSpecialization,
   deleteSpecialization,
   fetchSpecializations,
+  updateSpecialization,
 } from '@/api/specializations';
 import { fetchFaculties } from '@/api/faculties';
 import { getErrorMessage } from '@/lib/errors';
@@ -72,6 +74,9 @@ export default function StructureTab() {
 
   const [fieldDialog, setFieldDialog] = useState(false);
   const [specDialogFor, setSpecDialogFor] = useState<FieldOfStudy | null>(null);
+  // null = nowy rekord; inaczej edycja nazwy i skrotu (wydzialu/kierunku sie nie przenosi).
+  const [editingField, setEditingField] = useState<FieldOfStudy | null>(null);
+  const [editingSpec, setEditingSpec] = useState<Specialization | null>(null);
   const [deletingField, setDeletingField] = useState<FieldOfStudy | null>(null);
   const [deletingSpec, setDeletingSpec] = useState<Specialization | null>(null);
 
@@ -108,9 +113,12 @@ export default function StructureTab() {
   });
 
   const saveField = useMutation({
-    mutationFn: (values: FieldValues) => createFieldOfStudy(values),
+    mutationFn: (values: FieldValues) =>
+      editingField
+        ? updateFieldOfStudy(editingField.id, { name: values.name, shortName: values.shortName })
+        : createFieldOfStudy(values),
     onSuccess: () => {
-      toast.success('Kierunek dodany');
+      toast.success(editingField ? 'Kierunek zaktualizowany' : 'Kierunek dodany');
       setFieldDialog(false);
       invalidate();
     },
@@ -130,10 +138,12 @@ export default function StructureTab() {
   const saveSpec = useMutation({
     mutationFn: (values: SpecValues) => {
       if (!specDialogFor) throw new Error('Brak kierunku');
-      return createSpecialization({ ...values, fieldOfStudyId: specDialogFor.id });
+      return editingSpec
+        ? updateSpecialization(editingSpec.id, values)
+        : createSpecialization({ ...values, fieldOfStudyId: specDialogFor.id });
     },
     onSuccess: () => {
-      toast.success('Specjalnosc dodana');
+      toast.success(editingSpec ? 'Specjalnosc zaktualizowana' : 'Specjalnosc dodana');
       setSpecDialogFor(null);
       invalidate();
     },
@@ -166,6 +176,7 @@ export default function StructureTab() {
         <div className="flex justify-end">
           <Button
             onClick={() => {
+              setEditingField(null);
               fieldForm.reset({ name: '', shortName: '', facultyId: '' });
               setFieldDialog(true);
             }}
@@ -187,7 +198,7 @@ export default function StructureTab() {
             </EmptyTitle>
             <EmptyDescription>
               {facultyId === 'all'
-                ? 'Kierunek nalezy do wydzialu, a specjalnosci do kierunku. Bez tego nie da sie utworzyc siatki godzin.'
+                ? 'Kierunek nalezy do wydzialu, a specjalnosci do kierunku. Bez kierunku nie da sie utworzyc programu studiow.'
                 : 'Zmien wydzial w przelaczniku powyzej albo dodaj tu nowy kierunek.'}
             </EmptyDescription>
           </EmptyHeader>
@@ -221,12 +232,25 @@ export default function StructureTab() {
                       <Button
                         size="sm"
                         onClick={() => {
+                          setEditingSpec(null);
                           specForm.reset({ name: '', shortName: '' });
                           setSpecDialogFor(field);
                         }}
                       >
                         <Plus />
                         Dodaj specjalnosc
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingField(field);
+                          fieldForm.reset({ name: field.name, shortName: field.shortName, facultyId: field.facultyId });
+                          setFieldDialog(true);
+                        }}
+                      >
+                        <Pencil />
+                        Edytuj kierunek
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => setDeletingField(field)}>
                         <Trash2 />
@@ -254,6 +278,19 @@ export default function StructureTab() {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="size-8"
+                                aria-label={`Edytuj specjalnosc ${spec.name}`}
+                                onClick={() => {
+                                  setEditingSpec(spec);
+                                  specForm.reset({ name: spec.name, shortName: spec.shortName });
+                                  setSpecDialogFor(field);
+                                }}
+                              >
+                                <Pencil />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 className="size-8 text-destructive hover:text-destructive"
                                 aria-label={`Usun specjalnosc ${spec.name}`}
                                 onClick={() => setDeletingSpec(spec)}
@@ -277,8 +314,12 @@ export default function StructureTab() {
       <Dialog open={fieldDialog} onOpenChange={setFieldDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nowy kierunek</DialogTitle>
-            <DialogDescription>Kierunek zawsze nalezy do jednego wydzialu.</DialogDescription>
+            <DialogTitle>{editingField ? 'Edytuj kierunek' : 'Nowy kierunek'}</DialogTitle>
+            <DialogDescription>
+              {editingField
+                ? 'Zmiana nazwy i skrotu. Wydzialu kierunku nie zmienia sie — kierunek z programami zostaje tam, gdzie jest.'
+                : 'Kierunek zawsze nalezy do jednego wydzialu.'}
+            </DialogDescription>
           </DialogHeader>
 
           <form
@@ -316,7 +357,7 @@ export default function StructureTab() {
                     control={fieldForm.control}
                     name="facultyId"
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select value={field.value} onValueChange={field.onChange} disabled={!!editingField}>
                         <SelectTrigger
                           id="fieldFaculty"
                           aria-invalid={!!fieldForm.formState.errors.facultyId}
@@ -345,7 +386,7 @@ export default function StructureTab() {
             </Button>
             <Button type="submit" form="field-form" disabled={saveField.isPending}>
               {saveField.isPending && <Spinner />}
-              Dodaj
+              {editingField ? 'Zapisz' : 'Dodaj'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -355,9 +396,11 @@ export default function StructureTab() {
       <Dialog open={!!specDialogFor} onOpenChange={(open) => !open && setSpecDialogFor(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nowa specjalnosc</DialogTitle>
+            <DialogTitle>{editingSpec ? 'Edytuj specjalnosc' : 'Nowa specjalnosc'}</DialogTitle>
             <DialogDescription>
-              Dla kierunku: {specDialogFor?.name}. To do specjalnosci przypina sie siatke godzin.
+              {editingSpec
+                ? `Kierunek: ${specDialogFor?.name}. Skrot jest czescia nazw grup (np. ${editingSpec.shortName}-1-W) — zmieni sie wszedzie, takze w planach.`
+                : `Dla kierunku: ${specDialogFor?.name}. Do specjalnosci przypisuje sie przedmioty w programie studiow i grupy rocznikow.`}
             </DialogDescription>
           </DialogHeader>
 
@@ -397,7 +440,7 @@ export default function StructureTab() {
             </Button>
             <Button type="submit" form="spec-form" disabled={saveSpec.isPending}>
               {saveSpec.isPending && <Spinner />}
-              Dodaj
+              {editingSpec ? 'Zapisz' : 'Dodaj'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -407,7 +450,7 @@ export default function StructureTab() {
         open={!!deletingField}
         onOpenChange={(open) => !open && setDeletingField(null)}
         title={`Usunac kierunek ${deletingField?.shortName ?? ''}?`}
-        description="Kierunek z przypisanymi specjalnosciami lub grupami nie zostanie usuniety."
+        description="Usunac mozna tylko kierunek bez specjalnosci i bez programow studiow."
         isPending={removeField.isPending}
         onConfirm={() => deletingField && removeField.mutate(deletingField.id)}
       />
@@ -416,7 +459,7 @@ export default function StructureTab() {
         open={!!deletingSpec}
         onOpenChange={(open) => !open && setDeletingSpec(null)}
         title={`Usunac specjalnosc ${deletingSpec?.shortName ?? ''}?`}
-        description="Specjalnosc z przypisana siatka godzin nie zostanie usunieta."
+        description="Usunac mozna tylko specjalnosc bez przedmiotow w programach studiow i bez grup studenckich."
         isPending={removeSpec.isPending}
         onConfirm={() => deletingSpec && removeSpec.mutate(deletingSpec.id)}
       />

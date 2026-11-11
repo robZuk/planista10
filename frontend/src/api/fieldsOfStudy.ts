@@ -18,3 +18,8 @@ export async function createFieldOfStudy(input: {
 export async function deleteFieldOfStudy(id: string): Promise<void> {
   await api.delete(`/fields-of-study/${id}`);
 }
+
+export async function updateFieldOfStudy(id: string, input: { name: string; shortName: string }): Promise<FieldOfStudy> {
+  const res = await api.put(`/fields-of-study/${id}`, input);
+  return res.data.data;
+}

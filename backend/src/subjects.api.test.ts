@@ -13,6 +13,16 @@ const prismaMock = vi.hoisted(() => ({
     create: vi.fn((args: { data: object }) => Promise.resolve({ id: 's-new', ...args.data })),
     update: vi.fn((args: { data: object }) => Promise.resolve({ id: 's1', ...args.data })),
   },
+  fieldOfStudy: {
+    findUnique: vi.fn(),
+    findFirst: vi.fn(),
+    update: vi.fn((args: { data: object }) => Promise.resolve({ id: 'f1', ...args.data })),
+  },
+  specialization: {
+    findUnique: vi.fn(),
+    findFirst: vi.fn(),
+    update: vi.fn((args: { data: object }) => Promise.resolve({ id: 'sp1', ...args.data })),
+  },
   instructor: {
     findFirst: vi.fn(),
     create: vi.fn((args: { data: object }) => Promise.resolve({ id: 'i-new', ...args.data })),
@@ -36,6 +46,8 @@ beforeAll(() => {
 beforeEach(() => {
   prismaMock.subject.findFirst.mockReset().mockResolvedValue(null);
   prismaMock.instructor.findFirst.mockReset().mockResolvedValue(null);
+  prismaMock.fieldOfStudy.findFirst.mockReset().mockResolvedValue(null);
+  prismaMock.specialization.findFirst.mockReset().mockResolvedValue(null);
 });
 
 describe('API — przedmioty', () => {
@@ -91,5 +103,34 @@ describe('API — prowadzacy: duplikat e-maila', () => {
     const res = await request(app).put('/api/instructors/i1').set('Authorization', `Bearer ${admin}`).send(body);
     expect(res.status).toBe(200);
     expect(prismaMock.instructor.findFirst).toHaveBeenCalledWith({ where: expect.objectContaining({ NOT: { id: 'i1' } }) });
+  });
+});
+
+describe('API — kierunki i specjalnosci: edycja', () => {
+  it('kierunek: zmiana nazwy i skrotu (tylko admin)', async () => {
+    expect((await request(app).put('/api/fields-of-study/f1').set('Authorization', `Bearer ${dean}`).send({ name: 'X', shortName: 'X' })).status).toBe(403);
+    prismaMock.fieldOfStudy.findUnique.mockResolvedValueOnce({ id: 'f1', facultyId: 'wm', name: 'Eksploatacja', shortName: 'EDST' });
+    const res = await request(app).put('/api/fields-of-study/f1').set('Authorization', `Bearer ${admin}`).send({ name: ' Eksploatacja i Diagnostyka ', shortName: 'EDST' });
+    expect(res.status).toBe(200);
+    expect(prismaMock.fieldOfStudy.update).toHaveBeenCalledWith({ where: { id: 'f1' }, data: { name: 'Eksploatacja i Diagnostyka', shortName: 'EDST' } });
+  });
+
+  it('kierunek: nazwa zajeta na tym wydziale -> 409 z nazwa', async () => {
+    prismaMock.fieldOfStudy.findUnique.mockResolvedValueOnce({ id: 'f1', facultyId: 'wm' });
+    prismaMock.fieldOfStudy.findFirst.mockResolvedValueOnce({ id: 'f2', name: 'Mechanika i Budowa Maszyn' });
+    const res = await request(app).put('/api/fields-of-study/f1').set('Authorization', `Bearer ${admin}`).send({ name: 'mechanika i budowa maszyn', shortName: 'MBM' });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('Kierunek „Mechanika i Budowa Maszyn” juz istnieje na tym wydziale');
+  });
+
+  it('specjalnosc: zmiana skrotu; duplikat nazwy na kierunku -> 409', async () => {
+    prismaMock.specialization.findUnique.mockResolvedValueOnce({ id: 'sp1', fieldOfStudyId: 'f1' });
+    const ok = await request(app).put('/api/specializations/sp1').set('Authorization', `Bearer ${admin}`).send({ name: 'Diagnostyka', shortName: 'DIAG' });
+    expect(ok.status).toBe(200);
+    prismaMock.specialization.findUnique.mockResolvedValueOnce({ id: 'sp1', fieldOfStudyId: 'f1' });
+    prismaMock.specialization.findFirst.mockResolvedValueOnce({ id: 'sp2', name: 'Zarzadzanie' });
+    const clash = await request(app).put('/api/specializations/sp1').set('Authorization', `Bearer ${admin}`).send({ name: 'Zarzadzanie', shortName: 'Z' });
+    expect(clash.status).toBe(409);
+    expect(clash.body.error).toBe('Specjalnosc „Zarzadzanie” juz istnieje na tym kierunku');
   });
 });

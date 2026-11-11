@@ -224,7 +224,7 @@ export default function PlanPage() {
   );
   const placementOwner = new Map(sections.flatMap((s) => s.placements.map((p) => [p.id, { section: s, placement: p }] as const)));
 
-  // Kopiowanie zjazdu k -> m: swiadoma akcja planisty, dopisuje numer m do umieszczen z zjazdu k.
+  // Kopiowanie zjazdu k -> m: swiadoma akcja planisty, dopisuje numer m do umieszczen ze zjazdu k.
   const toCopy = zjazd && copyTo ? copyCandidates(sections.flatMap((s) => s.placements), zjazd, Number(copyTo)) : [];
   const copyZjazd = useMutation({
     mutationFn: async () => {
@@ -477,7 +477,7 @@ export default function PlanPage() {
                         disabled={toCopy.length === 0 || copyZjazd.isPending}
                         title={
                           copyTo && toCopy.length === 0
-                            ? `Nic do skopiowania: kopiuja sie zajecia "na wybranych zjazdach" z zjazdu ${zjazd}, ktorych jeszcze nie ma w zjezdzie ${copyTo}`
+                            ? `Nic do skopiowania: kopiuja sie zajecia "na wybranych zjazdach" ze zjazdu ${zjazd}, ktorych jeszcze nie ma w zjezdzie ${copyTo}`
                             : undefined
                         }
                         onClick={() => copyZjazd.mutate()}
