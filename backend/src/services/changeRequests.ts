@@ -113,6 +113,9 @@ export async function requestOptions(occurrenceId: string, instructorId: string)
       endOrder: occ.endOrder,
       roomId: occ.roomId,
       status: occ.status,
+      // Forma zajec i liczebnosc grupy — lista sal w propozycji (typ sali, "za mala").
+      classType: occ.section.classType,
+      groupSize: (await prisma.studentGroup.findUnique({ where: { id: occ.groupId }, select: { size: true } }))?.size ?? 0,
       ...(await describe(occ, term)),
     },
     blocks: grid.blocks.map((b) => ({ order: b.order, startTime: b.startTime, endTime: b.endTime })),

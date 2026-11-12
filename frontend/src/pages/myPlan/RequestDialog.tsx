@@ -13,6 +13,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { Combobox } from '@/components/Combobox';
 import { fetchBuildings } from '@/api/buildings';
+import { roomOptionsFor, roomTooSmallMessage } from '@/lib/roomOptions';
 import { createChangeRequest, fetchRequestOptions } from '@/api/requests';
 import { getErrorMessage } from '@/lib/errors';
 import { WEEKDAY_LABELS } from '@/lib/labels';
@@ -58,13 +59,12 @@ export function RequestDialog({ occurrenceId, onClose }: { occurrenceId: string;
 
   const needsSlot = kind === 'MOVE' || kind === 'MAKEUP';
   const { data: buildings } = useQuery({ queryKey: ['buildings'], queryFn: fetchBuildings, enabled: needsSlot && roomMode === 'other' });
+  // Tylko sale pasujace do formy zajec; za male dla grupy — z dopiskiem (lib/roomOptions).
   const roomOptions = useMemo(
-    () =>
-      (buildings ?? []).flatMap((b) =>
-        (b.rooms ?? []).map((r) => ({ value: r.id, label: `${r.number} — ${b.name} (${r.capacity} miejsc)`, keywords: b.name })),
-      ),
-    [buildings],
+    () => roomOptionsFor(buildings ?? [], options?.occurrence.classType, options?.occurrence.groupSize ?? 0),
+    [buildings, options],
   );
+  const roomNote = roomTooSmallMessage(roomOptions.find((r) => r.value === roomId), options?.occurrence.groupSize ?? 0);
 
   const send = useMutation({
     mutationFn: () => {
@@ -158,7 +158,10 @@ export function RequestDialog({ occurrenceId, onClose }: { occurrenceId: string;
                     <NativeSelectOption value="online">Zajecia online (bez sali)</NativeSelectOption>
                   </NativeSelect>
                   {roomMode === 'other' && (
-                    <Combobox options={roomOptions} value={roomId} onChange={setRoomId} placeholder="Wybierz sale" searchPlaceholder="Numer, budynek…" />
+                    <>
+                      <Combobox options={roomOptions} value={roomId} onChange={setRoomId} placeholder="Wybierz sale" searchPlaceholder="Numer, budynek…" />
+                      {roomNote && <p className="text-xs text-amber-700 dark:text-amber-400">{roomNote}</p>}
+                    </>
                   )}
                 </Field>
               </div>

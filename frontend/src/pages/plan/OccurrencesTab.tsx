@@ -29,6 +29,7 @@ import { getErrorMessage, isNotFound, slotWarningsOf } from '@/lib/errors';
 import { matchesAllWords } from '@/lib/searchMatch';
 import { SlotWarnings } from '@/components/SlotWarnings';
 import { CLASS_LABELS } from '@/lib/scheduleDisplay';
+import { roomOptionsFor, roomTooSmallMessage, type RoomOption } from '@/lib/roomOptions';
 import { formatMinutes } from '@/lib/timeGrid';
 import { formatDayMonth } from '@/lib/planHours';
 import { occurrenceMarker } from '@/lib/occurrenceWeek';
@@ -285,7 +286,16 @@ export function OccurrencesTab({
         isPending={remove.isPending}
         onConfirm={() => remove.mutate(removing!.id)}
       />
-      {editing && <MoveDialog termKey={termKey} occurrence={editing} blocks={blocks} onClose={() => setEditing(null)} onDone={refresh} />}
+      {editing && (
+        <MoveDialog
+          termKey={termKey}
+          occurrence={editing}
+          section={sections.find((s) => s.id === editing.sectionId)}
+          blocks={blocks}
+          onClose={() => setEditing(null)}
+          onDone={refresh}
+        />
+      )}
       {adding && (
         <ManualDialog termKey={termKey} sections={sections} blocks={blocks} onClose={() => setAdding(false)} onDone={refresh} />
       )}
@@ -293,11 +303,15 @@ export function OccurrencesTab({
   );
 }
 
-function useRoomOptions() {
+/** Sale pasujace do formy zajec, za male dla grupy z dopiskiem (lib/roomOptions). */
+function useRoomOptions(section: PlanSection | undefined) {
   const { data: buildings } = useQuery({ queryKey: ['buildings'], queryFn: fetchBuildings });
-  return (buildings ?? []).flatMap((b) =>
-    (b.rooms ?? []).map((r) => ({ value: r.id, label: `${r.number} — ${b.name} (${r.capacity})`, keywords: b.name })),
-  );
+  return useMemo(() => roomOptionsFor(buildings ?? [], section?.classType, section?.group.size ?? 0), [buildings, section]);
+}
+
+function RoomSizeNote({ rooms, roomId, section }: { rooms: RoomOption[]; roomId: string; section: PlanSection | undefined }) {
+  const message = roomTooSmallMessage(rooms.find((r) => r.value === roomId), section?.group.size ?? 0);
+  return message ? <p className="text-xs text-amber-700 dark:text-amber-400">{message}</p> : null;
 }
 
 /** Ostrzezenie przy zmianie terminu, dla ktorego prowadzacy ma zgloszenie czekajace na decyzje. */
@@ -325,17 +339,19 @@ function PendingRequestNote({ request, termKey }: { request: NonNullable<Occurre
 function MoveDialog({
   termKey,
   occurrence,
+  section,
   blocks,
   onClose,
   onDone,
 }: {
   termKey: string;
   occurrence: OccurrenceRow;
+  section: PlanSection | undefined;
   blocks: TimeBlock[];
   onClose: () => void;
   onDone: () => void;
 }) {
-  const rooms = useRoomOptions();
+  const rooms = useRoomOptions(section);
   const length = occurrence.endOrder - occurrence.startOrder + 1;
   const [date, setDate] = useState(occurrence.date);
   const [start, setStart] = useState(occurrence.startOrder);
@@ -398,6 +414,7 @@ function MoveDialog({
           <Field className="col-span-2">
             <FieldLabel htmlFor="mv-room">Sala</FieldLabel>
             {!online && <Combobox id="mv-room" options={rooms} value={roomId} onChange={setRoomId} placeholder="Sala" />}
+            {!online && <RoomSizeNote rooms={rooms} roomId={roomId} section={section} />}
             <label className="flex items-center gap-2 text-sm">
               <Checkbox checked={online} onCheckedChange={(v) => setOnline(v === true)} />
               Zajecia online (bez sali)
@@ -436,7 +453,6 @@ function ManualDialog({
   onClose: () => void;
   onDone: () => void;
 }) {
-  const rooms = useRoomOptions();
   const [sectionId, setSectionId] = useState('');
   const [date, setDate] = useState('');
   const [start, setStart] = useState(blocks[0]?.order ?? 1);
@@ -445,6 +461,7 @@ function ManualDialog({
   const [online, setOnline] = useState(false);
   const [note, setNote] = useState('Odrobienie');
   const section = sections.find((s) => s.id === sectionId);
+  const rooms = useRoomOptions(section);
   const slotKey = `${sectionId}|${date}|${start}|${length}`;
   const [warned, setWarned] = useState<{ key: string; warnings: string[] } | null>(null);
   const warnings = warned?.key === slotKey ? warned.warnings : null;
@@ -515,6 +532,7 @@ function ManualDialog({
           <Field className="col-span-2">
             <FieldLabel htmlFor="mn-room">Sala</FieldLabel>
             {!online && <Combobox id="mn-room" options={rooms} value={roomId} onChange={setRoomId} placeholder="Sala" />}
+            {!online && <RoomSizeNote rooms={rooms} roomId={roomId} section={section} />}
             <label className="flex items-center gap-2 text-sm">
               <Checkbox checked={online} onCheckedChange={(v) => setOnline(v === true)} />
               Zajecia online (bez sali)

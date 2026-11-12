@@ -842,6 +842,9 @@ export interface RequestOptions {
     endOrder: number;
     roomId: string | null;
     status: EntryStatus;
+    /** Forma zajec i liczebnosc grupy — lista sal w propozycji (typ, "za mala"). */
+    classType: ClassType;
+    groupSize: number;
     subject: string;
     classLabel: string;
     group: string;
