@@ -137,6 +137,8 @@ export async function restoreOccurrence(occ: OccurrenceFull, grid: GridTime): Pr
         instructorId: p.instructorId,
         jointKey: p.jointKey,
         status: 'SCHEDULED',
+        // Powod odwolania/przeniesienia nie dotyczy terminu wg wzorca (generowanie tez go nie niesie).
+        note: null,
       },
     }),
   ]);

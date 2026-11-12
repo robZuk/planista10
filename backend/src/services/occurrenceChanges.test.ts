@@ -4,16 +4,23 @@ import type { AcademicTerm, ClassSection } from '@prisma/client';
 // Termin reczny jako odrobienie: wskazany klucz musi byc odwolanym terminem tych samych
 // zajec i nie miec jeszcze odrobienia (te same reguly co przy zgloszeniu prowadzacego).
 const prismaMock = vi.hoisted(() => ({
-  occurrence: { findUnique: vi.fn(), findFirst: vi.fn() },
+  occurrence: { findUnique: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
+  academicTerm: { findUniqueOrThrow: vi.fn() },
+  studentGroup: { findUniqueOrThrow: vi.fn(), findMany: vi.fn() },
+  placementException: { deleteMany: vi.fn() },
+  $transaction: vi.fn(),
 }));
 vi.mock('../lib/prisma', () => ({ prisma: prismaMock }));
+// Zajetosc uczelni (kolizje) — w testach przywracania pusta.
+vi.mock('./plan', async (importOriginal) => ({ ...(await importOriginal<typeof import('./plan')>()), termOccupancy: vi.fn() }));
 
 import { createManualOccurrence, restoreOccurrence, type OccurrenceFull } from './occurrenceChanges';
 import type { GridTime } from '../lib/timeGrid';
+import { termOccupancy } from './plan';
 
 const term = { id: 't1' } as AcademicTerm;
 const section = { id: 's1', cohortId: 'c1', facultyId: 'wm', groupId: 'g1' } as ClassSection;
-const grid = {} as GridTime;
+const grid = { range: () => ({ startMinute: 615, endMinute: 720 }) } as unknown as GridTime;
 const input = (makeupOfKey: string) => ({ date: '2027-03-11', startOrder: 1, endOrder: 2, online: true, makeupOfKey });
 
 beforeEach(() => {
@@ -51,7 +58,7 @@ describe('createManualOccurrence — odrobienie', () => {
   });
 });
 
-describe('restoreOccurrence — odwolany termin z odrobieniem', () => {
+describe('restoreOccurrence', () => {
   const cancelled = {
     id: 'occ1',
     kind: 'DERIVED',
@@ -69,6 +76,18 @@ describe('restoreOccurrence — odwolany termin z odrobieniem', () => {
     });
     expect(prismaMock.occurrence.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { makeupOfKey: 'p:pl1|2027-03-08', status: { not: 'CANCELLED' } } }),
+    );
+  });
+
+  it('wraca na miejsce z wzorca bez powodu odwolania', async () => {
+    prismaMock.occurrence.findFirst.mockResolvedValue(null);
+    prismaMock.academicTerm.findUniqueOrThrow.mockResolvedValue({ id: 't1' });
+    prismaMock.studentGroup.findUniqueOrThrow.mockResolvedValue({ cohortId: 'c1' });
+    prismaMock.studentGroup.findMany.mockResolvedValue([]);
+    vi.mocked(termOccupancy).mockResolvedValue([]);
+    await restoreOccurrence({ ...cancelled, groupId: 'g1', note: 'Choroba prowadzacego' } as OccurrenceFull, grid);
+    expect(prismaMock.occurrence.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: 'SCHEDULED', note: null, startMinute: 615, endMinute: 720 }) }),
     );
   });
 });
