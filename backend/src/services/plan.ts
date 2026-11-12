@@ -98,6 +98,44 @@ export async function calendarUsage(calendar: Pick<TermCalendar, 'id' | 'termId'
 }
 
 /**
+ * Umieszczenia "na wybranych zjazdach/tygodniach" rocznikow tego kalendarza, ktorych numerow
+ * kalendarz juz nie ma (np. usuniety zjazd, krotszy semestr). Zapis kalendarza nie jest
+ * blokowany — zwracamy liczbe i numery do ostrzezenia; plan pokazuje je jako niezgodnosc.
+ */
+export async function placementsWithMissingPeriods(
+  calendar: Parameters<typeof toCalendarInput>[0] & Pick<TermCalendar, 'id' | 'termId' | 'facultyId' | 'studyMode'>,
+): Promise<{ placements: number; numbers: number[] }> {
+  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: calendar.termId } });
+  const contexts = (await activeCohorts(term, calendar.facultyId)).filter((c) => c.cohort.program.studyMode === calendar.studyMode);
+  const chosen = await calendarsFor(term, contexts);
+  const cohortIds = contexts.filter((c) => chosen.get(c.cohort.id)?.id === calendar.id).map((c) => c.cohort.id);
+  if (cohortIds.length === 0) return { placements: 0, numbers: [] };
+  const listed = await prisma.placement.findMany({
+    where: { termId: term.id, pattern: 'LIST', section: { cohortId: { in: cohortIds } } },
+    select: { cycle: true, numbers: true },
+  });
+  const input = toCalendarInput(calendar);
+  const zjazdy = new Set(input.zjazdy.map((z) => z.number));
+  const weeks = new Set(
+    new TeachingCalendar(input)
+      .teachingWeeks()
+      .map((w) => w.index)
+      .filter((i): i is number => i !== null),
+  );
+  const missing = new Set<number>();
+  let placements = 0;
+  for (const p of listed) {
+    const known = p.cycle === 'ZJAZD' ? zjazdy : weeks;
+    const lost = p.numbers.filter((n) => !known.has(n));
+    if (lost.length > 0) {
+      placements++;
+      lost.forEach((n) => missing.add(n));
+    }
+  }
+  return { placements, numbers: [...missing].sort((a, b) => a - b) };
+}
+
+/**
  * Zajecia laczone (wspolny jointKey) moga laczyc wydzialy o roznych siatkach godzin — dziela
  * rzeczywisty czas, nie numery blokow. Nowe umieszczenie dolacza w tym samym dniu i godzinach;
  * zmiana istniejacego przenosi pozostale umieszczenia po godzinach, wiec te godziny musza

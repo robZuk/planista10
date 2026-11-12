@@ -181,22 +181,23 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
   });
 
   const saveMutation = useMutation({
-    mutationFn: async (values: FormValues): Promise<string> => {
+    mutationFn: async (values: FormValues): Promise<{ message: string; warning?: string | null }> => {
       const body = toBody(values);
       if (target?.mode === 'edit') {
-        await updateTermCalendar(target.calendar.id, body);
-        return 'Kalendarz zapisany';
+        const { warning } = await updateTermCalendar(target.calendar.id, body);
+        return { message: 'Kalendarz zapisany', warning };
       }
-      if (target?.mode !== 'create') return '';
+      if (target?.mode !== 'create') return { message: '' };
       const result = await createTermCalendar(term.key, {
         ...body,
         studyMode: target.studyMode,
         ...(values.allFaculties ? { allFaculties: true } : { facultyId: target.facultyId }),
       });
-      return result.message;
+      return { message: result.message };
     },
-    onSuccess: (message) => {
-      toast.success(message);
+    onSuccess: ({ message, warning }) => {
+      if (warning) toast.warning(message, { description: warning, duration: 12000 });
+      else toast.success(message);
       onSaved();
     },
     onError: (error) => toast.error(getErrorMessage(error)),

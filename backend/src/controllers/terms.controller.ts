@@ -18,7 +18,8 @@ import {
   toCalendarInput,
 } from '../services/termCalendars';
 import type { CalendarBody } from '../schemas/termCalendar';
-import { calendarUsage, type CalendarUsage } from '../services/plan';
+import { calendarUsage, placementsWithMissingPeriods, type CalendarUsage } from '../services/plan';
+import { plural } from '../lib/plural';
 
 /** Semestr z klucza URL ("2026-Z") albo 404. */
 async function findTerm(key: string) {
@@ -280,7 +281,18 @@ export const updateCalendar = asyncHandler(async (req, res) => {
     }),
     prisma.termCalendar.findUniqueOrThrow({ where: { id: current.id }, include: calendarInclude }),
   ]);
-  res.json({ data: serializeCalendar(updated), message: 'Kalendarz zapisany' });
+  // Usuniety zjazd albo krotszy semestr: umieszczenia "na wybranych zjazdach/tygodniach" moga
+  // wskazywac numery, ktorych juz nie ma — zapis przechodzi, ale mowimy o tym od razu.
+  const lost = await placementsWithMissingPeriods(updated);
+  const warning =
+    lost.placements > 0
+      ? `${plural(lost.placements, 'umieszczenie ma', 'umieszczenia maja', 'umieszczen ma')} ${
+          lost.numbers.length === 1
+            ? `wybrany ${updated.kind === 'ZJAZD' ? 'zjazd' : 'tydzien'} nr ${lost.numbers[0]}, ktorego`
+            : `wybrane ${updated.kind === 'ZJAZD' ? 'zjazdy' : 'tygodnie'} nr ${lost.numbers.join(', ')}, ktorych`
+        } w kalendarzu juz nie ma — w te dni zajecia sie nie odbeda. Popraw je w Ukladaniu planu (Niezgodnosci w planie).`
+      : null;
+  res.json({ data: serializeCalendar(updated), message: 'Kalendarz zapisany', warning });
 });
 
 /**

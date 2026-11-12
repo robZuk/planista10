@@ -26,7 +26,12 @@ const prismaMock = vi.hoisted(() => ({
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
 const usageMock = vi.hoisted(() => vi.fn());
-vi.mock('./services/plan', async (importOriginal) => ({ ...(await importOriginal<object>()), calendarUsage: usageMock }));
+const missingPeriodsMock = vi.hoisted(() => vi.fn().mockResolvedValue({ placements: 0, numbers: [] }));
+vi.mock('./services/plan', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  calendarUsage: usageMock,
+  placementsWithMissingPeriods: missingPeriodsMock,
+}));
 
 import { createApp } from './index';
 import { signAccessToken } from './lib/jwt';
@@ -214,6 +219,23 @@ describe('API — edycja dat kalendarza (terminy nieaktualne)', () => {
   it('nowa przerwa — znacznik zmiany dat', async () => {
     const args = await save({ ...validCalendar, breaks: [...validCalendar.breaks, { name: 'Rektorskie', startDate: '2026-11-02', endDate: '2026-11-02' }] });
     expect(args.data.datesChangedAt).toBeInstanceOf(Date);
+  });
+  it('umieszczenia z tygodniami, ktorych juz nie ma -> zapis przechodzi z ostrzezeniem', async () => {
+    prismaMock.termCalendar.findUnique.mockResolvedValueOnce(stored);
+    prismaMock.$transaction.mockResolvedValueOnce([{}, {}, {}, {}, stored]);
+    missingPeriodsMock.mockResolvedValueOnce({ placements: 2, numbers: [17, 18] });
+    const res = await request(app).put('/api/term-calendars/c4').set('Authorization', `Bearer ${dean}`).send(validCalendar);
+    expect(res.status).toBe(200);
+    expect(res.body.warning).toBe(
+      '2 umieszczenia maja wybrane tygodnie nr 17, 18, ktorych w kalendarzu juz nie ma — w te dni zajecia sie nie odbeda. Popraw je w Ukladaniu planu (Niezgodnosci w planie).',
+    );
+  });
+
+  it('bez takich umieszczen — bez ostrzezenia', async () => {
+    prismaMock.termCalendar.findUnique.mockResolvedValueOnce(stored);
+    prismaMock.$transaction.mockResolvedValueOnce([{}, {}, {}, {}, stored]);
+    const res = await request(app).put('/api/term-calendars/c4').set('Authorization', `Bearer ${dean}`).send(validCalendar);
+    expect(res.body.warning).toBeNull();
   });
 });
 
