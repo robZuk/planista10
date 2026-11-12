@@ -11,6 +11,9 @@ const prismaMock = vi.hoisted(() => ({
   cohort: { findUnique: vi.fn(), findMany: vi.fn() },
   termCalendar: { findMany: vi.fn(), findUnique: vi.fn() },
   cohortTerm: { upsert: vi.fn().mockResolvedValue({}), findUnique: vi.fn().mockResolvedValue(null) },
+  program: { findUnique: vi.fn() },
+  txCohortCreate: vi.fn((args: { data: object }) => Promise.resolve({ id: 'c-new', ...args.data })),
+  $transaction: vi.fn(),
   studentGroup: {
     findUnique: vi.fn(),
     findMany: vi.fn().mockResolvedValue([]),
@@ -128,5 +131,24 @@ describe('API — nowa grupa: liczebnosc i zakres semestrow', () => {
     const res = await post({ size: 30, fromSemester: 3 });
     expect(res.status).toBe(201);
     expect(prismaMock.studentGroup.create).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('API — nowy nabor', () => {
+  it('przejmuje tryb wykladow (wspolne dla rocznika) z poprzedniego naboru', async () => {
+    prismaMock.program.findUnique.mockResolvedValueOnce({ id: 'p1', fieldOfStudy: { facultyId: 'wm' }, versions: [{ id: 'v1', status: 'APPROVED' }] });
+    prismaMock.cohort.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(cohortRow);
+    prismaMock.cohort.findMany.mockResolvedValueOnce([
+      { id: 'prev', programId: 'p1', programVersionId: 'v1', lectureMode: 'JOINT', startTerm: { startYear: 2025, type: 'WINTER' } },
+    ]);
+    prismaMock.$transaction.mockImplementationOnce(async (fn: (tx: unknown) => Promise<unknown>) =>
+      fn({ cohort: { create: prismaMock.txCohortCreate }, studentGroup: { create: vi.fn().mockResolvedValue({ id: 'root' }) } }),
+    );
+    const res = await request(app)
+      .post('/api/cohorts')
+      .set('Authorization', `Bearer ${dean}`)
+      .send({ programId: 'p1', startTermKey: '2026-L', copyStructure: false });
+    expect(res.status).toBe(201);
+    expect(prismaMock.txCohortCreate).toHaveBeenCalledWith({ data: expect.objectContaining({ lectureMode: 'JOINT', programVersionId: 'v1' }) });
   });
 });

@@ -172,7 +172,15 @@ export const createCohort = asyncHandler(async (req, res) => {
 
   const cohort = await prisma.$transaction(async (tx) => {
     const created = await tx.cohort.create({
-      data: { programId: program.id, programVersionId: versionId, startTermId: startTerm.id },
+      data: {
+        programId: program.id,
+        programVersionId: versionId,
+        startTermId: startTerm.id,
+        // Tryb wykladow (wspolne dla rocznika / osobno dla specjalnosci) jak w poprzednim naborze —
+        // inaczej domyslne SEPARATE rozbijalo wyklady na specjalnosci i "Obsada z poprzedniego roku"
+        // ani "Przenies plan" nie znajdowaly odpowiednikow.
+        ...(previous ? { lectureMode: previous.lectureMode } : {}),
+      },
     });
     const base = { cohortId: created.id, fromSemester: 1 };
     const sourceRoot = sourceGroups.find((g) => g.partitionKey === ROOT);
