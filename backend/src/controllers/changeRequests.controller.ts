@@ -4,7 +4,7 @@ import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { assertFacultyScope, getCallerScope } from '../lib/facultyScope';
-import { parseTermKey } from '../lib/terms';
+import { parseTermKey, termKey, termLabel } from '../lib/terms';
 import type { RequestInput } from '../lib/changeRequests';
 import {
   approveRequest,
@@ -103,4 +103,35 @@ export const withdraw = asyncHandler(async (req, res) => {
   const request = await loadRequest(String(req.params.id));
   const data = await withdrawRequest(request, await caller(req));
   res.json({ data, message: 'Zgloszenie wycofane' });
+});
+
+/**
+ * Liczba zgloszen czekajacych na decyzje — licznik przy "Zgloszeniach zmian" w menu planisty.
+ * Administrator: cala uczelnia (nie dostaje powiadomien wydzialowych), dziekanat: swoj wydzial.
+ */
+export const pendingCount = asyncHandler(async (req, res) => {
+  const scope = await getCallerScope(req);
+  if (!scope.isAdmin && !scope.facultyId) {
+    res.json({ data: { pending: 0, groups: [] } });
+    return;
+  }
+  const where = { status: 'PENDING' as const, ...(scope.isAdmin ? {} : { facultyId: scope.facultyId! }) };
+  const pending = await prisma.changeRequest.count({ where });
+  // Podzial na semestr i wydzial — strona zgloszen pokazuje, gdzie czekaja zgloszenia ukryte
+  // przez biezacy semestr albo filtr wydzialu (licznik w menu liczy wszystko).
+  const rows = pending > 0 ? await prisma.changeRequest.groupBy({ by: ['termId', 'facultyId'], where, _count: { _all: true } }) : [];
+  const [terms, faculties] = await Promise.all([
+    prisma.academicTerm.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.termId))] } } }),
+    prisma.faculty.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.facultyId))] } }, select: { id: true, shortName: true } }),
+  ]);
+  const termOf = new Map(terms.map((t) => [t.id, t]));
+  const shortOf = new Map(faculties.map((f) => [f.id, f.shortName]));
+  const groups = rows.map((r) => ({
+    termKey: termKey(termOf.get(r.termId)!),
+    termLabel: termLabel(termOf.get(r.termId)!),
+    facultyId: r.facultyId,
+    faculty: shortOf.get(r.facultyId) ?? '',
+    count: r._count._all,
+  }));
+  res.json({ data: { pending, groups } });
 });

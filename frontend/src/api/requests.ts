@@ -50,3 +50,15 @@ export async function withdrawChangeRequest(id: string): Promise<{ message: stri
   const res = await api.post(`/change-requests/${id}/withdraw`);
   return res.data;
 }
+
+export interface PendingRequests {
+  pending: number;
+  /** Gdzie czekaja: semestr i wydzial (do podpowiedzi na stronie zgloszen). */
+  groups: { termKey: string; termLabel: string; facultyId: string; faculty: string; count: number }[];
+}
+
+/** Zgloszenia czekajace na decyzje w zakresie planisty (admin: uczelnia, dziekanat: wydzial). */
+export async function fetchPendingRequests(): Promise<PendingRequests> {
+  const res = await api.get('/change-requests/pending-count');
+  return res.data.data;
+}

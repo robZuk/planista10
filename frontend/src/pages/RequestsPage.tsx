@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { PageHeader } from '@/components/PageHeader';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { FacultySelector } from '@/components/FacultySelector';
-import { approveChangeRequest, fetchMakeups, fetchRequests, rejectChangeRequest, withdrawChangeRequest } from '@/api/requests';
+import { approveChangeRequest, fetchMakeups, fetchPendingRequests, fetchRequests, rejectChangeRequest, withdrawChangeRequest } from '@/api/requests';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage, slotWarningsOf } from '@/lib/errors';
 import { SlotWarnings } from '@/components/SlotWarnings';
@@ -25,6 +25,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 import type { ChangeRequestRow, MakeupRow } from '@/types';
 import { RequestDialog } from './myPlan/RequestDialog';
+import { useNavigate } from 'react-router-dom';
 
 const STATUS_VARIANT: Record<ChangeRequestRow['status'], 'default' | 'secondary' | 'destructive' | 'outline'> = {
   PENDING: 'outline',
@@ -134,7 +135,19 @@ export default function RequestsPage() {
   const isInstructor = role === 'INSTRUCTOR';
   const isAdmin = role === 'ADMIN';
   const facultyFilter = useFacultyFilterStore((s) => s.facultyId);
+  const setFacultyFilter = useFacultyFilterStore((s) => s.setFacultyId);
   const facultyId = isAdmin ? facultyFilter : undefined;
+  const navigate = useNavigate();
+  // Zgloszenia czekajace poza biezacym widokiem (inny semestr albo wydzial ukryty filtrem) —
+  // licznik w menu liczy wszystkie, wiec mowimy, gdzie sa, zamiast pokazywac pusta liste.
+  const { data: pendingAll } = useQuery({
+    queryKey: ['requests', 'pending-count'],
+    queryFn: fetchPendingRequests,
+    enabled: !isInstructor && !!role,
+  });
+  const pendingElsewhere = (pendingAll?.groups ?? []).filter(
+    (g) => g.termKey !== term?.key || (isAdmin && facultyFilter !== 'all' && g.facultyId !== facultyFilter),
+  );
   const queryClient = useQueryClient();
   const refresh = () => {
     for (const key of ['requests', 'makeups', 'my-plan', 'notifications']) void queryClient.invalidateQueries({ queryKey: [key] });
@@ -235,6 +248,26 @@ export default function RequestsPage() {
               ))}
             </ul>
           </section>
+        </div>
+      )}
+
+      {!isInstructor && pendingElsewhere.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+          <span>Czekaja tez zgloszenia poza tym widokiem:</span>
+          {pendingElsewhere.map((g) => (
+            <Button
+              key={`${g.termKey}|${g.facultyId}`}
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                if (isAdmin) setFacultyFilter(g.facultyId);
+                navigate(`/requests/${g.termKey}`);
+              }}
+            >
+              {isAdmin ? `${g.faculty} · ` : ''}
+              {g.termLabel} ({g.count})
+            </Button>
+          ))}
         </div>
       )}
 

@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { CalendarRange } from 'lucide-react';
 import {
   Sidebar,
@@ -9,6 +10,7 @@ import {
   SidebarHeader,
   SidebarFooter,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
@@ -17,6 +19,8 @@ import {
 import { NavUser } from './NavUser';
 import { useAuthStore } from '@/store/authStore';
 import { visibleGroups } from '@/lib/navigation';
+import { fetchPendingRequests } from '@/api/requests';
+import { plural } from '@/lib/setupSteps';
 
 /**
  * Lewa nawigacja aplikacji.
@@ -28,6 +32,17 @@ export function AppSidebar() {
   const role = useAuthStore((s) => s.user?.role);
   const { pathname } = useLocation();
   const groups = visibleGroups(role);
+  // Zgloszenia czekajace na decyzje — admin nie dostaje powiadomien wydzialowych, a dziekanat po
+  // przeczytaniu powiadomienia nie widzi, ile jeszcze czeka. Klucz pod "requests" — strona
+  // zgloszen odswieza go po kazdej decyzji.
+  const planner = role === 'ADMIN' || role === 'DEAN_OFFICE';
+  const { data: pendingData } = useQuery({
+    queryKey: ['requests', 'pending-count'],
+    queryFn: fetchPendingRequests,
+    enabled: planner,
+    refetchInterval: 60_000,
+  });
+  const pending = pendingData?.pending ?? 0;
   const { isMobile, setOpenMobile, state } = useSidebar();
 
   // Na mobile panel to wysuwany Sheet — po wyborze pozycji zamykamy go,
@@ -78,6 +93,14 @@ export function AppSidebar() {
                           <span>{item.label}</span>
                         </NavLink>
                       </SidebarMenuButton>
+                      {item.to === '/requests' && planner && !!pending && (
+                        <SidebarMenuBadge
+                          className="bg-amber-500/20 text-amber-700 dark:text-amber-300"
+                          title={`${plural(pending, 'zgloszenie czeka', 'zgloszenia czekaja', 'zgloszen czeka')} na decyzje`}
+                        >
+                          {pending > 99 ? '99+' : pending}
+                        </SidebarMenuBadge>
+                      )}
                     </SidebarMenuItem>
                   );
                 })}

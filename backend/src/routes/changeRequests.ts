@@ -22,6 +22,7 @@ termRequestsRouter.get('/makeups', authenticate, involved, requests.makeups);
 occurrenceRequestsRouter.get('/:id/request-options', authenticate, instructors, requests.options);
 occurrenceRequestsRouter.post('/:id/requests', authenticate, instructors, requests.create);
 
+changeRequestsRouter.get('/pending-count', authenticate, planners, requests.pendingCount);
 changeRequestsRouter.post('/:id/approve', authenticate, planners, requests.approve);
 changeRequestsRouter.post('/:id/reject', authenticate, planners, requests.reject);
 changeRequestsRouter.post('/:id/withdraw', authenticate, instructors, requests.withdraw);

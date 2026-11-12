@@ -9,7 +9,9 @@ process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn() },
   occurrence: { findUnique: vi.fn() },
-  changeRequest: { findUnique: vi.fn(), update: vi.fn() },
+  changeRequest: { findUnique: vi.fn(), update: vi.fn(), count: vi.fn(), groupBy: vi.fn() },
+  academicTerm: { findMany: vi.fn() },
+  faculty: { findMany: vi.fn() },
   notification: { findUnique: vi.fn(), update: vi.fn(), findMany: vi.fn().mockResolvedValue([]), count: vi.fn().mockResolvedValue(0) },
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
@@ -112,5 +114,29 @@ describe('API — powiadomienia', () => {
 
   it('bez logowania -> 401', async () => {
     expect((await request(app).get('/api/notifications')).status).toBe(401);
+  });
+});
+
+describe('API — licznik zgloszen w menu', () => {
+  const url = '/api/change-requests/pending-count';
+
+  it('administrator — cala uczelnia; dziekanat — tylko swoj wydzial', async () => {
+    const admin = signAccessToken({ sub: 'u-admin', role: 'ADMIN' });
+    prismaMock.changeRequest.count.mockResolvedValueOnce(5).mockResolvedValueOnce(2);
+    prismaMock.changeRequest.groupBy.mockResolvedValue([{ termId: 't1', facultyId: 'wm', _count: { _all: 5 } }]);
+    prismaMock.academicTerm.findMany.mockResolvedValue([{ id: 't1', startYear: 2026, type: 'WINTER' }]);
+    prismaMock.faculty.findMany.mockResolvedValue([{ id: 'wm', shortName: 'WM' }]);
+    const adminRes = await request(app).get(url).set('Authorization', `Bearer ${admin}`);
+    expect(adminRes.body.data).toEqual({
+      pending: 5,
+      groups: [{ termKey: '2026-Z', termLabel: '2026/27 zimowy', facultyId: 'wm', faculty: 'WM', count: 5 }],
+    });
+    expect(prismaMock.changeRequest.count).toHaveBeenLastCalledWith({ where: { status: 'PENDING' } });
+    expect((await request(app).get(url).set(as('u-dean'))).body.data.pending).toBe(2);
+    expect(prismaMock.changeRequest.count).toHaveBeenLastCalledWith({ where: { status: 'PENDING', facultyId: 'wm' } });
+  });
+
+  it('prowadzacy nie ma licznika -> 403', async () => {
+    expect((await request(app).get(url).set(as('u-i1'))).status).toBe(403);
   });
 });
