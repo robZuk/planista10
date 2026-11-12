@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { planLocked, termOfRequest } from '../middleware/planLocked';
+import { planLocked, termOfOccurrence, termOfRequest } from '../middleware/planLocked';
 import { authenticate, authorize } from '../middleware/authenticate';
 import * as requests from '../controllers/changeRequests.controller';
 import * as notifications from '../controllers/notifications.controller';
@@ -21,12 +21,15 @@ termRequestsRouter.get('/requests', authenticate, involved, requests.list);
 termRequestsRouter.get('/makeups', authenticate, involved, requests.makeups);
 
 occurrenceRequestsRouter.get('/:id/request-options', authenticate, instructors, requests.options);
-occurrenceRequestsRouter.post('/:id/requests', authenticate, instructors, requests.create);
+// Pod blokada semestru: kontrola "czeka juz zgloszenie" i zapis bez wyscigu (podwojne klikniecie).
+occurrenceRequestsRouter.post('/:id/requests', authenticate, instructors, planLocked(termOfOccurrence), requests.create);
 
 changeRequestsRouter.get('/pending-count', authenticate, planners, requests.pendingCount);
 changeRequestsRouter.post('/:id/approve', authenticate, planners, planLocked(termOfRequest), requests.approve);
-changeRequestsRouter.post('/:id/reject', authenticate, planners, requests.reject);
-changeRequestsRouter.post('/:id/withdraw', authenticate, instructors, requests.withdraw);
+// Zatwierdzenie, odrzucenie i wycofanie tego samego zgloszenia nie moga sie przeplatac — kazde
+// sprawdza status PENDING i zapisuje decyzje; bez blokady wygrywaly wszystkie naraz.
+changeRequestsRouter.post('/:id/reject', authenticate, planners, planLocked(termOfRequest), requests.reject);
+changeRequestsRouter.post('/:id/withdraw', authenticate, instructors, planLocked(termOfRequest), requests.withdraw);
 
 notificationsRouter.get('/', authenticate, notifications.list);
 notificationsRouter.post('/read-all', authenticate, notifications.markAllRead);
