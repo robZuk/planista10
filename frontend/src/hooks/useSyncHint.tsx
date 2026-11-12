@@ -11,10 +11,12 @@ import { Button } from '@/components/ui/button';
  */
 export function useSyncHint() {
   const navigate = useNavigate();
-  return (message: string) => {
-    const id = toast.success(message, {
+  /** `warning` (np. zajecia w planie poza nowym zakresem grupy) — ten sam komunikat jako ostrzezenie. */
+  return (message: string, warning?: string | null) => {
+    const id = (warning ? toast.warning : toast.success)(message, {
       description: (
         <div className="mt-1 space-y-2">
+          {warning && <p>{warning}</p>}
           <p>Zajecia rocznika zmienia sie dopiero po „Synchronizuj zajecia” (z podgladem zmian).</p>
           <Button
             size="sm"
@@ -28,7 +30,7 @@ export function useSyncHint() {
           </Button>
         </div>
       ),
-      duration: 10000,
+      duration: warning ? 20000 : 10000,
     });
   };
 }

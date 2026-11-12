@@ -80,8 +80,10 @@ export async function createCohortGroupsBulk(
 export async function updateCohortGroup(
   id: string,
   input: { code?: string; size?: number; fromSemester?: number; toSemester?: number | null },
-): Promise<void> {
-  await api.put(`/cohort-groups/${id}`, input);
+): Promise<{ warning?: string | null }> {
+  const res = await api.put(`/cohort-groups/${id}`, input);
+  // Ostrzezenie: grupa nie obejmuje juz semestrow, w ktorych ma zajecia w planie.
+  return { warning: res.data?.warning ?? null };
 }
 
 export async function deleteCohortGroup(id: string): Promise<void> {

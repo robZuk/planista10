@@ -18,7 +18,9 @@ const prismaMock = vi.hoisted(() => ({
     findUnique: vi.fn(),
     findMany: vi.fn().mockResolvedValue([]),
     create: vi.fn((args: { data: object }) => Promise.resolve({ id: 'g-new', ...args.data })),
+    update: vi.fn((args: { data: object }) => Promise.resolve({ id: 'g1', ...args.data })),
   },
+  classSection: { findMany: vi.fn().mockResolvedValue([]) },
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
 
@@ -150,5 +152,29 @@ describe('API — nowy nabor', () => {
       .send({ programId: 'p1', startTermKey: '2026-L', copyStructure: false });
     expect(res.status).toBe(201);
     expect(prismaMock.txCohortCreate).toHaveBeenCalledWith({ data: expect.objectContaining({ lectureMode: 'JOINT', programVersionId: 'v1' }) });
+  });
+});
+
+describe('API — zmiana zakresu grupy z zajeciami w planie', () => {
+  const groupRow = { id: 'g1', cohortId: 'c1', partitionKey: 'L', code: 'A1', fromSemester: 1, toSemester: null, size: 12 };
+  // Zajecia grupy z umieszczeniami w 2026 letnim — dla naboru 2025 zimowego to semestr 4.
+  const planned = { term: { id: 't1', startYear: 2026, type: 'SUMMER' }, cohort: { startTerm: { startYear: 2025, type: 'WINTER' }, terms: [] } };
+
+  it('zakonczenie grupy przed semestrem z planem — zapis z ostrzezeniem', async () => {
+    prismaMock.studentGroup.findUnique.mockResolvedValueOnce(groupRow);
+    prismaMock.cohort.findUnique.mockResolvedValueOnce(cohortRow);
+    prismaMock.classSection.findMany.mockResolvedValueOnce([planned, planned]);
+    const res = await request(app).put('/api/cohort-groups/g1').set('Authorization', `Bearer ${dean}`).send({ toSemester: 3 });
+    expect(res.status).toBe(200);
+    expect(res.body.warning).toMatch(/semestr 4 \(2026\/27 letni\): 2/);
+  });
+
+  it('zakres obejmuje semestr z planem — bez ostrzezenia', async () => {
+    prismaMock.studentGroup.findUnique.mockResolvedValueOnce(groupRow);
+    prismaMock.cohort.findUnique.mockResolvedValueOnce(cohortRow);
+    prismaMock.classSection.findMany.mockResolvedValueOnce([planned]);
+    const res = await request(app).put('/api/cohort-groups/g1').set('Authorization', `Bearer ${dean}`).send({ toSemester: 5 });
+    expect(res.status).toBe(200);
+    expect(res.body.warning).toBeNull();
   });
 });

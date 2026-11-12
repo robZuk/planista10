@@ -4,7 +4,7 @@ import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { assertFacultyScope } from '../lib/facultyScope';
 import { assertCohortTermWritable } from '../services/plan';
-import { cohortSemesterInTerm, parseTermKey, termOfDate, termOrdinal, type TermRef } from '../lib/terms';
+import { cohortSemesterInTerm, parseTermKey, termLabel, termOfDate, termOrdinal, type TermRef } from '../lib/terms';
 import { nextCodes, ROOT, SPEC } from '../lib/groupTree';
 import {
   cohortDto,
@@ -448,8 +448,37 @@ export const updateGroup = asyncHandler(async (req, res) => {
       toSemester: to,
     },
   });
-  res.json({ data, message: 'Grupa zapisana' });
+  res.json({ data, message: 'Grupa zapisana', warning: await plannedOutsideRange(group.id, from, to) });
 });
+
+/**
+ * Zajecia grupy w planie (umieszczenia albo terminy) w semestrach, ktorych grupa po zmianie
+ * zakresu juz nie obejmuje — synchronizacja oznaczy je jako osierocone. Ostrzezenie po zapisie
+ * (jak przy kalendarzu), bo zakonczenie grupy bywa zamierzone; null — nic takiego nie ma.
+ */
+async function plannedOutsideRange(groupId: string, from: number, to: number | null): Promise<string | null> {
+  const sections = await prisma.classSection.findMany({
+    where: { groupId, OR: [{ placements: { some: {} } }, { occurrences: { some: {} } }] },
+    select: {
+      term: { select: { id: true, startYear: true, type: true } },
+      cohort: { select: { startTerm: { select: { startYear: true, type: true } }, terms: { select: { termId: true, semester: true } } } },
+    },
+  });
+  const outside = new Map<string, { label: string; semester: number; count: number; ordinal: number }>();
+  for (const s of sections) {
+    const semester = s.cohort.terms.find((t) => t.termId === s.term.id)?.semester ?? cohortSemesterInTerm(s.cohort.startTerm, s.term);
+    if (semester >= from && (to === null || semester <= to)) continue;
+    const entry = outside.get(s.term.id) ?? { label: termLabel(s.term), semester, count: 0, ordinal: termOrdinal(s.term) };
+    entry.count++;
+    outside.set(s.term.id, entry);
+  }
+  if (outside.size === 0) return null;
+  const list = [...outside.values()]
+    .sort((a, b) => a.ordinal - b.ordinal)
+    .map((e) => `semestr ${e.semester} (${e.label}): ${e.count}`)
+    .join(', ');
+  return `Grupa nie obejmuje juz semestrow, w ktorych ma zajecia w planie — ${list}. Synchronizacja zajec oznaczy je jako osierocone; usun ich umieszczenia w Ukladaniu planu albo przywroc zakres grupy.`;
+}
 
 export const deleteGroup = asyncHandler(async (req, res) => {
   const { group, cohort } = await loadGroupInCohort(String(req.params.id));
