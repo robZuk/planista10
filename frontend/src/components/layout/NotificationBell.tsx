@@ -11,6 +11,7 @@ import type { AppNotification } from '@/types';
 import { plural } from '@/lib/setupSteps';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/errors';
+import { useAuthStore } from '@/store/authStore';
 
 /**
  * Dzwonek powiadomien w naglowku: zgloszenia zmian (dziekanat) i decyzje / zmiany terminow
@@ -28,9 +29,12 @@ export function NotificationBell() {
   const readOne = useMutation({ mutationFn: markNotificationRead, onSuccess: refresh, onError });
   const readAll = useMutation({ mutationFn: markAllNotificationsRead, onSuccess: refresh, onError });
   const unread = data?.unread ?? 0;
+  // Podglad (impersonacja) jest tylko do odczytu — nie oznaczamy cudzych powiadomien jako przeczytane
+  // (serwer i tak odmowi, a czerwony blad przy samym przegladaniu tylko przeszkadza).
+  const previewing = useAuthStore((s) => s.originalAuth !== null);
 
   const openItem = (n: AppNotification) => {
-    if (!n.readAt) readOne.mutate(n.id);
+    if (!n.readAt && !previewing) readOne.mutate(n.id);
     setOpen(false);
     if (n.link) {
       navigate(n.link);
@@ -57,7 +61,13 @@ export function NotificationBell() {
         <div className="flex items-center justify-between border-b px-3 py-2">
           <span className="text-sm font-medium">Powiadomienia</span>
           {unread > 0 && (
-            <Button variant="ghost" size="sm" onClick={() => readAll.mutate()} disabled={readAll.isPending}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => readAll.mutate()}
+              disabled={readAll.isPending || previewing}
+              title={previewing ? 'Podglad jest tylko do odczytu' : undefined}
+            >
               <CheckCheck /> Oznacz wszystkie
             </Button>
           )}
