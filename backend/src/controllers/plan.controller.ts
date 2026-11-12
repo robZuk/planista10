@@ -195,7 +195,27 @@ export const deletePlacement = asyncHandler(async (req, res) => {
   // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania. Odlaczamy je
   // jawnie (a nie przez ON DELETE SET NULL), zeby updatedAt zapisal chwile usuniecia — po niej
   // plan pokazuje "terminy nieaktualne", dopoki terminow nie wygeneruje sie od nowa.
+  // Trwaly klucz odlaczonego terminu zmienia sie z "umieszczenie + data" na jego id — odrobienia
+  // i zgloszenia przepinamy na nowy klucz, inaczej odwolanie z odrobieniem wrociloby "do odrobienia".
+  const detached = await prisma.occurrence.findMany({
+    where: { placementId: current.id, originalDate: { not: null } },
+    select: { id: true, originalDate: true },
+  });
+  const rekey = detached.map((o) => ({ from: `p:${current.id}|${toIsoDate(o.originalDate!)}`, to: `o:${o.id}` }));
+  const keys = rekey.map((k) => k.from);
+  const [madeUp, requested] = keys.length
+    ? await Promise.all([
+        prisma.occurrence.findMany({ where: { makeupOfKey: { in: keys } }, select: { makeupOfKey: true }, distinct: ['makeupOfKey'] }),
+        prisma.changeRequest.findMany({ where: { occurrenceKey: { in: keys } }, select: { occurrenceKey: true }, distinct: ['occurrenceKey'] }),
+      ])
+    : [[], []];
+  const usedMakeup = new Set(madeUp.map((m) => m.makeupOfKey));
+  const usedRequest = new Set(requested.map((r) => r.occurrenceKey));
   await prisma.$transaction([
+    ...rekey.flatMap((k) => [
+      ...(usedMakeup.has(k.from) ? [prisma.occurrence.updateMany({ where: { makeupOfKey: k.from }, data: { makeupOfKey: k.to } })] : []),
+      ...(usedRequest.has(k.from) ? [prisma.changeRequest.updateMany({ where: { occurrenceKey: k.from }, data: { occurrenceKey: k.to } })] : []),
+    ]),
     prisma.occurrence.updateMany({ where: { placementId: current.id }, data: { placementId: null } }),
     prisma.placement.delete({ where: { id: current.id } }),
   ]);

@@ -150,7 +150,7 @@ export function GenerateTermsDialog({
                       {e.makeup && (
                         <span className="text-destructive">
                           {' '}
-                          — ma odrobienie {e.makeup}, ktore zostanie jako dodatkowe zajecia (usun je albo odwolaj nowy termin)
+                          — ma odrobienie {e.makeup}, ktore zostanie jako dodatkowe zajecia (usun je, jesli nie jest juz potrzebne)
                         </span>
                       )}
                     </li>

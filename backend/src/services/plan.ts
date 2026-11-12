@@ -880,7 +880,12 @@ export async function generate(
   report.beyondHours = mat.beyondHours.length;
   report.shortfalls = mat.shortfalls;
   // Odrobienia osieroconych odwolan: ich odwolany termin zniknie, a one zostana jako dodatkowe zajecia.
-  const orphanCancelKeys = mat.orphanExceptions.filter((e) => e.action === 'CANCEL').map((e) => `p:${e.placementId}|${e.originalDate}`);
+  // Osierocone sa tez odwolane terminy usunietych umieszczen (placementId = null, klucz "o:id").
+  const detachedCancelled = existing.filter((o) => o.placementId === null && o.status === 'CANCELLED');
+  const orphanCancelKeys = [
+    ...mat.orphanExceptions.filter((e) => e.action === 'CANCEL').map((e) => `p:${e.placementId}|${e.originalDate}`),
+    ...detachedCancelled.map((o) => `o:${o.id}`),
+  ];
   const makeups = orphanCancelKeys.length
     ? await prisma.occurrence.findMany({
         where: { makeupOfKey: { in: orphanCancelKeys }, status: { not: 'CANCELLED' } },
@@ -904,6 +909,12 @@ export async function generate(
       ...(makeup ? { makeup } : {}),
     };
   });
+  for (const o of detachedCancelled) {
+    const makeup = makeupOf.get(`o:${o.id}`);
+    if (makeup) {
+      report.orphanExceptions.push({ section: labelOf.get(o.sectionId) ?? '?', date: toIsoDate(o.originalDate ?? o.date), action: 'CANCEL', makeup });
+    }
+  }
 
   if (!opts.dryRun) {
     const sectionById = new Map(sections.map((s) => [s.id, s]));
