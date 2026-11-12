@@ -251,7 +251,7 @@ export async function createManualOccurrence(term: AcademicTerm, section: ClassS
   }
   if (!input.online && !roomId) throw new AppError(400, 'Wybierz sale (albo zaznacz zajecia online)');
   // Odrobienie wskazanych zajec: musza to byc odwolane zajecia tej samej sekcji.
-  let original: { instructorId: string | null } | null = null;
+  let original: { id: string; instructorId: string | null } | null = null;
   if (input.makeupOfKey) {
     const parsed = parseOccurrenceKey(input.makeupOfKey);
     const found = !parsed
@@ -297,6 +297,7 @@ export async function createManualOccurrence(term: AcademicTerm, section: ClassS
       status: 'MAKEUP',
       note: input.note ?? null,
       makeupOfKey: input.makeupOfKey ?? null,
+      makeupOfId: original?.id ?? null,
     },
   });
 }

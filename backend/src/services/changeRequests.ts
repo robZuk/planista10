@@ -191,6 +191,7 @@ export async function createRequest(occurrenceId: string, user: { id: string; in
       requestedById: user.id,
       kind: input.kind,
       occurrenceKey: key,
+      occurrenceId: occ.id,
       originalDate: occ.date,
       originalStartMinute: occ.startMinute,
       originalEndMinute: occ.endMinute,

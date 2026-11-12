@@ -504,40 +504,46 @@ model PlacementException {
 }
 
 model Occurrence {
-  id           String         @id @default(uuid())
-  term         AcademicTerm   @relation(fields: [termId], references: [id])
-  termId       String
-  faculty      Faculty        @relation(fields: [facultyId], references: [id])
-  facultyId    String
-  section      ClassSection   @relation(fields: [sectionId], references: [id])
-  sectionId    String
-  placement    Placement?     @relation(fields: [placementId], references: [id], onDelete: SetNull)
-  placementId  String?
-  originalDate DateTime?      @db.Date // data z wzorca (przed wyjatkiem)
-  date         DateTime       @db.Date
-  startOrder   Int
-  endOrder     Int
+  id             String          @id @default(uuid())
+  term           AcademicTerm    @relation(fields: [termId], references: [id])
+  termId         String
+  faculty        Faculty         @relation(fields: [facultyId], references: [id])
+  facultyId      String
+  section        ClassSection    @relation(fields: [sectionId], references: [id])
+  sectionId      String
+  placement      Placement?      @relation(fields: [placementId], references: [id], onDelete: SetNull)
+  placementId    String?
+  originalDate   DateTime?       @db.Date // data z wzorca (przed wyjatkiem)
+  date           DateTime        @db.Date
+  startOrder     Int
+  endOrder       Int
   // Rzeczywisty czas (minuty od polnocy) z siatki rocznika w chwili zapisu — kolizje miedzy
   // siatkami roznych wydzialow i "Moj plan" licza sie w minutach.
-  startMinute  Int
-  endMinute    Int
-  room         Room?          @relation(fields: [roomId], references: [id])
-  roomId       String? // null = zajecia online (bez sali)
-  instructor   Instructor?    @relation(fields: [instructorId], references: [id])
-  instructorId String?
-  group        StudentGroup   @relation(fields: [groupId], references: [id])
-  groupId      String
-  kind         OccurrenceKind @default(DERIVED)
-  status       EntryStatus    @default(SCHEDULED)
-  jointKey     String?
-  note         String?
+  startMinute    Int
+  endMinute      Int
+  room           Room?           @relation(fields: [roomId], references: [id])
+  roomId         String? // null = zajecia online (bez sali)
+  instructor     Instructor?     @relation(fields: [instructorId], references: [id])
+  instructorId   String?
+  group          StudentGroup    @relation(fields: [groupId], references: [id])
+  groupId        String
+  kind           OccurrenceKind  @default(DERIVED)
+  status         EntryStatus     @default(SCHEDULED)
+  jointKey       String?
+  note           String?
   // Odrobienie (MANUAL, MAKEUP) za odwolany termin — jego trwaly klucz (lib/occurrenceKey):
   // "p:<umieszczenie>|<data z wzorca>" albo "o:<id terminu>". Pozostalosc z czasu, gdy generowanie
   // nadawalo terminom nowe id (dzis je zachowuje) — docelowo klucz obcy do terminu. Odrobienie
   // z kluczem nie zuzywa godzin drugi raz — odwolany termin juz je zuzyl.
-  makeupOfKey  String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  makeupOfKey    String?
+  // Ten sam odwolany termin jako klucz obcy (etap przejsciowy: wypelniany razem z makeupOfKey).
+  // Termin usuniety przy generowaniu (zniknal z wzorca) -> odrobienie zostaje jako zajecia dodatkowe.
+  makeupOf       Occurrence?     @relation("Makeup", fields: [makeupOfId], references: [id], onDelete: SetNull)
+  makeupOfId     String?
+  makeups        Occurrence[]    @relation("Makeup")
+  changeRequests ChangeRequest[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   // Jeden termin na date wzorca umieszczenia — "Generuj terminy" aktualizuje go w miejscu (to samo id).
   // Terminy reczne i odlaczone od usunietych umieszczen maja placementId = null (NULL-e sie nie zderzaja).
@@ -547,6 +553,7 @@ model Occurrence {
   @@index([date, instructorId])
   @@index([sectionId])
   @@index([makeupOfKey])
+  @@index([makeupOfId])
 }
 
 // Rocznik w konkretnym semestrze: numer semestru programu (wyliczany, wyjatkowo do
@@ -768,6 +775,10 @@ model ChangeRequest {
   // Termin, ktorego dotyczy: trwaly klucz (lib/occurrenceKey) i jego stan w chwili zgloszenia
   // (do wyswietlania, gdyby termin zniknal przy ponownym generowaniu).
   occurrenceKey       String
+  // Ten sam termin jako klucz obcy (etap przejsciowy). Termin, ktory zniknal, -> null; zgloszenie
+  // zostaje z zapisanym stanem terminu.
+  occurrence          Occurrence?         @relation(fields: [occurrenceId], references: [id], onDelete: SetNull)
+  occurrenceId        String?
   originalDate        DateTime            @db.Date
   originalStartMinute Int
   originalEndMinute   Int
@@ -790,6 +801,7 @@ model ChangeRequest {
   @@index([facultyId, status])
   @@index([instructorId, status])
   @@index([occurrenceKey])
+  @@index([occurrenceId])
 }
 
 // Powiadomienie w aplikacji (dzwonek w naglowku). Tworza je zgloszenia i zmiany terminow
