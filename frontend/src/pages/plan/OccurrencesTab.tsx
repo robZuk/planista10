@@ -173,6 +173,16 @@ export function OccurrencesTab({
                   <TableCell>
                     {CLASS_LABELS[o.classType]} · {o.subject}
                     {o.kind === 'MANUAL' && <Badge className="ml-2">reczny</Badge>}
+                    {o.makeupOf && (
+                      <Badge variant="outline" className="ml-2">
+                        odrobienie za {formatDayMonth(o.makeupOf)}
+                      </Badge>
+                    )}
+                    {o.madeUpBy && (
+                      <Badge variant="outline" className="ml-2">
+                        odrobione {formatDayMonth(o.madeUpBy.date)}
+                      </Badge>
+                    )}
                     {o.changed && o.status !== 'CANCELLED' && (
                       <Badge variant="outline" className="ml-2">
                         zmieniony
@@ -195,7 +205,7 @@ export function OccurrencesTab({
                             </Button>
                           </>
                         )}
-                        {o.kind === 'DERIVED' && (o.changed || o.status === 'CANCELLED') && (
+                        {o.kind === 'DERIVED' && (o.changed || o.status === 'CANCELLED') && !o.madeUpBy && (
                           <Button variant="ghost" size="sm" onClick={() => act.mutate({ id: o.id, action: 'RESTORE' })}>
                             Przywroc
                           </Button>
@@ -233,6 +243,21 @@ export function OccurrencesTab({
               <dd>{details.room.label}</dd>
               <dt className="text-muted-foreground">Prowadzacy</dt>
               <dd>{details.instructor}</dd>
+              {details.makeupOf && (
+                <>
+                  <dt className="text-muted-foreground">Odrabia zajecia</dt>
+                  <dd>z {formatDayMonth(details.makeupOf)}</dd>
+                </>
+              )}
+              {details.madeUpBy && (
+                <>
+                  <dt className="text-muted-foreground">Odrobione</dt>
+                  <dd>
+                    {formatDayMonth(details.madeUpBy.date)}, {formatMinutes(details.madeUpBy.startMinute)}–{formatMinutes(details.madeUpBy.endMinute)} — zeby
+                    przywrocic ten termin, najpierw usun albo odwolaj odrobienie
+                  </dd>
+                </>
+              )}
               {details.note && (
                 <>
                   <dt className="text-muted-foreground">Uwaga</dt>
@@ -258,7 +283,7 @@ export function OccurrencesTab({
                     </Button>
                   </>
                 )}
-                {details.kind === 'DERIVED' && (details.changed || details.status === 'CANCELLED') && (
+                {details.kind === 'DERIVED' && (details.changed || details.status === 'CANCELLED') && !details.madeUpBy && (
                   <Button variant="outline" disabled={act.isPending} onClick={() => act.mutate({ id: details.id, action: 'RESTORE' })}>
                     Przywroc wg wzorca
                   </Button>

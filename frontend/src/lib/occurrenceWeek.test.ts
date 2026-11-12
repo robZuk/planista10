@@ -45,6 +45,8 @@ const occ = (date: string, extra: Partial<OccurrenceRow> = {}): OccurrenceRow =>
   group: 'EDST-1-W',
   groupId: 'g1',
   pendingRequest: null,
+  madeUpBy: null,
+  makeupOf: null,
   room: { id: 'r1', label: '101' },
   instructor: 'dr Nowak',
   instructorId: 'i1',
@@ -97,6 +99,11 @@ describe('occurrencesIn / dayNote / occurrenceMarker / periodLabel', () => {
       occurrenceMarker(occ('2026-11-02', { status: 'CANCELLED', pendingRequest: { id: 'r1', kind: 'MAKEUP', instructor: 'dr X', proposal: '09.12' } })),
     ).toBe('zgloszenie: odrobienie');
     expect(occurrenceMarker(occ('2026-11-02', { kind: 'MANUAL', originalDate: null }))).toBe('reczny');
+    // Powiazanie odwolanie <-> odrobienie.
+    expect(
+      occurrenceMarker(occ('2026-11-02', { status: 'CANCELLED', madeUpBy: { date: '2026-11-06', startMinute: 600, endMinute: 690 } })),
+    ).toBe('odwolany, odrobiony 06.11');
+    expect(occurrenceMarker(occ('2026-11-06', { kind: 'MANUAL', originalDate: null, makeupOf: '2026-11-02' }))).toBe('odrobienie za 02.11');
     expect(occurrenceMarker(occ('2026-11-03', { originalDate: '2026-11-11', changed: true }))).toBe('przeniesiony z 11.11');
     expect(occurrenceMarker(occ('2026-11-02', { changed: true }))).toBe('zmieniony');
     expect(occurrenceMarker(occ('2026-11-02'))).toBeUndefined();
