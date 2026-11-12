@@ -12,7 +12,7 @@ import { activeCohorts } from '../services/sections';
 import { conflictMessage } from '../lib/conflictMessage';
 import { closePendingOnDirectChange, keyOf, notifyClassChange, pendingByKeys } from '../services/changeRequests';
 import type { DirectChange } from '../lib/changeRequests';
-import { occurrenceKey } from '../lib/occurrenceKey';
+import { occurrenceKey, parseOccurrenceKey } from '../lib/occurrenceKey';
 import {
   assertPlanEditable,
   cancelOccurrence,
@@ -267,6 +267,35 @@ export const listOccurrences = asyncHandler(async (req, res) => {
   const keyOfRow = (o: (typeof rows)[number]) =>
     occurrenceKey({ id: o.id, kind: o.kind, placementId: o.placementId, originalDate: o.originalDate ? toIsoDate(o.originalDate) : null });
   const pending = await pendingByKeys(rows.map(keyOfRow));
+  // Powiazanie odwolanie <-> odrobienie: odwolany termin pokazuje swoje odrobienie, odrobienie —
+  // date odrabianych zajec (zeby nie trzeba bylo zgadywac, czemu "Przywroc" jest zablokowane).
+  const cancelledKeys = rows.filter((o) => o.status === 'CANCELLED').map(keyOfRow);
+  const makeups = cancelledKeys.length
+    ? await prisma.occurrence.findMany({
+        where: { makeupOfKey: { in: cancelledKeys }, status: { not: 'CANCELLED' } },
+        select: { makeupOfKey: true, date: true, startMinute: true, endMinute: true },
+        orderBy: { date: 'asc' },
+      })
+    : [];
+  const madeUpBy = new Map<string, { date: string; startMinute: number; endMinute: number }>();
+  for (const m of makeups) {
+    if (!madeUpBy.has(m.makeupOfKey!)) madeUpBy.set(m.makeupOfKey!, { date: toIsoDate(m.date), startMinute: m.startMinute, endMinute: m.endMinute });
+  }
+  const originalIds = rows.flatMap((o) => {
+    const parsed = o.makeupOfKey ? parseOccurrenceKey(o.makeupOfKey) : null;
+    return parsed && 'occurrenceId' in parsed ? [parsed.occurrenceId] : [];
+  });
+  const originalDates = new Map(
+    (originalIds.length
+      ? await prisma.occurrence.findMany({ where: { id: { in: originalIds } }, select: { id: true, date: true, originalDate: true } })
+      : []
+    ).map((o) => [o.id, toIsoDate(o.originalDate ?? o.date)]),
+  );
+  const makeupOf = (key: string | null): string | null => {
+    const parsed = key ? parseOccurrenceKey(key) : null;
+    if (!parsed) return null;
+    return 'occurrenceId' in parsed ? (originalDates.get(parsed.occurrenceId) ?? null) : parsed.originalDate;
+  };
   res.json({
     data: rows.map((o) => ({
       id: o.id,
@@ -290,6 +319,8 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       status: o.status,
       changed: !!o.placementId && !!o.originalDate && exceptionKeys.has(`${o.placementId}|${toIsoDate(o.originalDate)}`),
       note: o.note,
+      madeUpBy: o.status === 'CANCELLED' ? (madeUpBy.get(keyOfRow(o)) ?? null) : null,
+      makeupOf: o.kind === 'MANUAL' ? makeupOf(o.makeupOfKey) : null,
     })),
   });
 });

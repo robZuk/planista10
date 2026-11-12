@@ -695,6 +695,10 @@ export interface OccurrenceRow {
   note: string | null;
   /** Zgloszenie prowadzacego czekajace na decyzje — zmiana wprost je zamknie. */
   pendingRequest: { id: string; kind: ChangeRequestKind; instructor: string; proposal: string | null } | null;
+  /** Odwolany termin, ktory ma juz odrobienie — kiedy (wtedy nie da sie go przywrocic). */
+  madeUpBy: { date: string; startMinute: number; endMinute: number } | null;
+  /** Termin reczny bedacy odrobieniem — data odrabianych zajec (YYYY-MM-DD). */
+  makeupOf: string | null;
 }
 
 // ─── Etap 6: przenoszenie planu, przygotowanie semestru, moj plan ──

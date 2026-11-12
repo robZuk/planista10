@@ -52,8 +52,8 @@ export function dayNote(day: PeriodDay): string | null {
 export function occurrenceMarker(o: OccurrenceRow): string | undefined {
   // Zgloszenie prowadzacego czeka na decyzje — planista ma to widziec, zanim zmieni termin wprost.
   if (o.pendingRequest) return `zgloszenie: ${REQUEST_KIND_LABELS[o.pendingRequest.kind].toLowerCase()}`;
-  if (o.status === 'CANCELLED') return 'odwolany';
-  if (o.kind === 'MANUAL') return 'reczny';
+  if (o.status === 'CANCELLED') return o.madeUpBy ? `odwolany, odrobiony ${formatDayMonth(o.madeUpBy.date)}` : 'odwolany';
+  if (o.kind === 'MANUAL') return o.makeupOf ? `odrobienie za ${formatDayMonth(o.makeupOf)}` : 'reczny';
   if (o.originalDate && o.originalDate !== o.date) return `przeniesiony z ${formatDayMonth(o.originalDate)}`;
   if (o.changed) return 'zmieniony';
   return undefined;
