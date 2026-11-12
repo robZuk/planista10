@@ -85,7 +85,7 @@ function MakeupTable({ rows, showInstructor, onPropose }: { rows: MakeupRow[]; s
         </TableHeader>
         <TableBody>
           {rows.map((m) => (
-            <TableRow key={m.key}>
+            <TableRow key={m.occurrenceId}>
               <TableCell className="whitespace-nowrap tabular-nums">
                 {formatDate(m.date)} {m.time}
               </TableCell>

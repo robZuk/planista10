@@ -531,13 +531,12 @@ model Occurrence {
   status         EntryStatus     @default(SCHEDULED)
   jointKey       String?
   note           String?
-  // Odrobienie (MANUAL, MAKEUP) za odwolany termin — jego trwaly klucz (lib/occurrenceKey):
-  // "p:<umieszczenie>|<data z wzorca>" albo "o:<id terminu>". Pozostalosc z czasu, gdy generowanie
-  // nadawalo terminom nowe id (dzis je zachowuje) — docelowo klucz obcy do terminu. Odrobienie
-  // z kluczem nie zuzywa godzin drugi raz — odwolany termin juz je zuzyl.
+  // Tekstowy klucz odrabianego terminu (lib/occurrenceKey) — juz tylko zapisywany, nikt go nie
+  // czyta; do usuniecia (etap 4). Powiazanie to makeupOfId.
   makeupOfKey    String?
-  // Ten sam odwolany termin jako klucz obcy (etap przejsciowy: wypelniany razem z makeupOfKey).
-  // Termin usuniety przy generowaniu (zniknal z wzorca) -> odrobienie zostaje jako zajecia dodatkowe.
+  // Odrobienie (MANUAL, MAKEUP) za odwolany termin: nie zuzywa godzin drugi raz (odwolany termin
+  // juz je zuzyl). Termin usuniety przy generowaniu -> null: odrobienie zostaje jako zajecia
+  // dodatkowe i liczy sie do godzin.
   makeupOf       Occurrence?     @relation("Makeup", fields: [makeupOfId], references: [id], onDelete: SetNull)
   makeupOfId     String?
   makeups        Occurrence[]    @relation("Makeup")
@@ -772,11 +771,11 @@ model ChangeRequest {
   requestedById       String?
   kind                ChangeRequestKind
   status              ChangeRequestStatus @default(PENDING)
-  // Termin, ktorego dotyczy: trwaly klucz (lib/occurrenceKey) i jego stan w chwili zgloszenia
-  // (do wyswietlania, gdyby termin zniknal przy ponownym generowaniu).
+  // Tekstowy klucz terminu (lib/occurrenceKey) — juz tylko zapisywany; do usuniecia (etap 4).
+  // Stan terminu w chwili zgloszenia (originalDate...) zostaje do wyswietlania, gdy termin zniknie.
   occurrenceKey       String
-  // Ten sam termin jako klucz obcy (etap przejsciowy). Termin, ktory zniknal, -> null; zgloszenie
-  // zostaje z zapisanym stanem terminu.
+  // Termin, ktorego dotyczy zgloszenie. Termin, ktory zniknal, -> null; zgloszenie zostaje
+  // z zapisanym stanem terminu.
   occurrence          Occurrence?         @relation(fields: [occurrenceId], references: [id], onDelete: SetNull)
   occurrenceId        String?
   originalDate        DateTime            @db.Date

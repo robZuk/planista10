@@ -111,15 +111,18 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   względem kalendarza rocznika i okna godzin siatki (`lib/occurrenceSlot`): data poza semestrem
   blokuje, a święto, przerwa, dzień poza zjazdami czy godziny poza oknem wymagają potwierdzenia
   (`409 { code: 'SLOT_WARNINGS', warnings }` → ponowienie z `confirmWarnings: true`).
-  Odrobienie konkretnego odwołanego terminu ma `makeupOfKey` (jego trwały klucz) i **nie zużywa
-  godzin drugi raz** — odwołany termin z wzorca już je zużył.
+  Odrobienie konkretnego odwołanego terminu wskazuje go kluczem obcym `makeupOfId` i **nie zużywa
+  godzin drugi raz** — odwołany termin z wzorca już je zużył. Gdy odwołany termin zniknie przy
+  generowaniu (data wypadła z wzorca, umieszczenie usunięto), `makeupOfId` = null i odrobienie liczy
+  się jak zwykłe zajęcia dodatkowe (podgląd generowania o tym ostrzega).
 - **Stałe id terminów:** „Generuj terminy" robi diff (`lib/occurrenceDiff`) — termin o tym samym
   kluczu (umieszczenie + data z wzorca, unikalny indeks `Occurrence(placementId, originalDate)`)
   jest aktualizowany w miejscu i zachowuje id; nowe daty wzorca → nowe terminy, daty, których już
   nie ma (i terminy usuniętych umieszczeń) → usunięte. Zakres „od dnia" liczony jest po dacie z wzorca.
-- **Trwały klucz terminu** (`lib/occurrenceKey`): zgłoszenia i odrobienia wskazują termin kluczem
-  `p:<umieszczenie>|<data z wzorca>` (jak wyjątki); terminy ręczne i odłączone — `o:<id>`. To pozostałość
-  z czasu, gdy generowanie nadawało nowe id — docelowo zastąpią go klucze obce do terminu.
+- **Powiązania z terminem** są kluczami obcymi: `Occurrence.makeupOfId` (odrobienie → odwołany termin)
+  i `ChangeRequest.occurrenceId` (zgłoszenie → termin), oba `ON DELETE SET NULL`. Kolumny tekstowe
+  `makeupOfKey` / `ChangeRequest.occurrenceKey` (`lib/occurrenceKey`) są jeszcze zapisywane, ale nic ich
+  nie czyta — do usunięcia (etap 4).
 - Zmiana wzorca po generowaniu → „terminy nieaktualne" — liczone per rocznik od jego ostatniego
   generowania (`CohortGeneration`, nie od kalendarza, który dzieli wiele roczników);
   jedno źródło dla planu i „Przygotowania semestru" (`services/staleness.ts`).
@@ -144,7 +147,7 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   termin), inaczej `SUPERSEDED` (nieaktualne). Prowadzący dostaje jedno powiadomienie
   (`lib/changeRequests.resolveOnDirectChange`).
 - Lista **do odrobienia**: odwołane terminy prowadzącego ze stanem — do odrobienia / termin
-  zgłoszony / odrobione (jest termin ręczny z jego `makeupOfKey`).
+  zgłoszony / odrobione (jest termin ręczny z `makeupOfId` wskazującym ten termin).
 - `Notification` — powiadomienia w aplikacji (dzwonek): nowe i wycofane zgłoszenia do dziekanatu
   wydziału (bez kont dziekanatu — do adminów), decyzje do prowadzącego oraz bezpośrednie zmiany
   jego terminów przez dziekanat (tylko w planie opublikowanym).

@@ -99,7 +99,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `timeGrid.ts` — siatki godzin: walidacja bloków, bloki → minuty, przerwy, dni z oknem godzin, kolizje w minutach
   - `scheduleTime.ts` — typy sal dla form zajęć
   - `facultyScope.ts` — zakres wydziału wywołującego (`assertFacultyScope`)
-  - `occurrenceKey.ts` — trwały klucz terminu (zgłoszenia, odrobienia; docelowo do zastąpienia kluczami obcymi)
+  - `occurrenceKey.ts` — tekstowy klucz terminu (już tylko zapisywany obok kluczy obcych; do usunięcia)
   - `occurrenceDiff.ts` — diff „Generuj terminy”: terminy z wzorca zachowują id (aktualizacja w miejscu)
   - `changeRequests.ts` — reguły zgłoszeń zmian (co wolno zgłosić, walidacja propozycji)
   - `occurrenceSlot.ts` — ocena nowego miejsca terminu (blokada poza semestrem, ostrzeżenia do potwierdzenia)

@@ -10,9 +10,8 @@ import { mapRangeByTime } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from '../services/timeGrids';
 import { activeCohorts } from '../services/sections';
 import { conflictMessage } from '../lib/conflictMessage';
-import { closePendingOnDirectChange, keyOf, notifyClassChange, pendingByKeys } from '../services/changeRequests';
+import { closePendingOnDirectChange, notifyClassChange, pendingByOccurrence } from '../services/changeRequests';
 import type { DirectChange } from '../lib/changeRequests';
-import { occurrenceKey, parseOccurrenceKey } from '../lib/occurrenceKey';
 import {
   assertPlanEditable,
   cancelOccurrence,
@@ -195,27 +194,8 @@ export const deletePlacement = asyncHandler(async (req, res) => {
   // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania. Odlaczamy je
   // jawnie (a nie przez ON DELETE SET NULL), zeby updatedAt zapisal chwile usuniecia — po niej
   // plan pokazuje "terminy nieaktualne", dopoki terminow nie wygeneruje sie od nowa.
-  // Trwaly klucz odlaczonego terminu zmienia sie z "umieszczenie + data" na jego id — odrobienia
-  // i zgloszenia przepinamy na nowy klucz, inaczej odwolanie z odrobieniem wrociloby "do odrobienia".
-  const detached = await prisma.occurrence.findMany({
-    where: { placementId: current.id, originalDate: { not: null } },
-    select: { id: true, originalDate: true },
-  });
-  const rekey = detached.map((o) => ({ from: `p:${current.id}|${toIsoDate(o.originalDate!)}`, to: `o:${o.id}` }));
-  const keys = rekey.map((k) => k.from);
-  const [madeUp, requested] = keys.length
-    ? await Promise.all([
-        prisma.occurrence.findMany({ where: { makeupOfKey: { in: keys } }, select: { makeupOfKey: true }, distinct: ['makeupOfKey'] }),
-        prisma.changeRequest.findMany({ where: { occurrenceKey: { in: keys } }, select: { occurrenceKey: true }, distinct: ['occurrenceKey'] }),
-      ])
-    : [[], []];
-  const usedMakeup = new Set(madeUp.map((m) => m.makeupOfKey));
-  const usedRequest = new Set(requested.map((r) => r.occurrenceKey));
+  // Odrobienia i zgloszenia wskazuja terminy kluczem obcym (id), wiec odlaczenie ich nie rusza.
   await prisma.$transaction([
-    ...rekey.flatMap((k) => [
-      ...(usedMakeup.has(k.from) ? [prisma.occurrence.updateMany({ where: { makeupOfKey: k.from }, data: { makeupOfKey: k.to } })] : []),
-      ...(usedRequest.has(k.from) ? [prisma.changeRequest.updateMany({ where: { occurrenceKey: k.from }, data: { occurrenceKey: k.to } })] : []),
-    ]),
     prisma.occurrence.updateMany({ where: { placementId: current.id }, data: { placementId: null } }),
     prisma.placement.delete({ where: { id: current.id } }),
   ]);
@@ -252,6 +232,8 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       section: { select: { classType: true, programEntry: { select: { subject: { select: { name: true } } } } } },
       room: { select: { number: true, building: { select: { name: true } } } },
       instructor: { select: { title: true, firstName: true, lastName: true } },
+      // Odrobienie: data odrabianych zajec (z wzorca, gdy byly przeniesione).
+      makeupOf: { select: { date: true, originalDate: true } },
     },
     orderBy: [{ date: 'asc' }, { startMinute: 'asc' }],
   });
@@ -264,42 +246,25 @@ export const listOccurrences = asyncHandler(async (req, res) => {
     ).map((e) => `${e.placementId}|${toIsoDate(e.originalDate)}`),
   );
   // Czekajace zgloszenia prowadzacych — okno terminu ostrzega planiste przed zmiana wprost.
-  const keyOfRow = (o: (typeof rows)[number]) =>
-    occurrenceKey({ id: o.id, kind: o.kind, placementId: o.placementId, originalDate: o.originalDate ? toIsoDate(o.originalDate) : null });
-  const pending = await pendingByKeys(rows.map(keyOfRow));
+  const pending = await pendingByOccurrence(rows.map((o) => o.id));
   // Powiazanie odwolanie <-> odrobienie: odwolany termin pokazuje swoje odrobienie, odrobienie —
   // date odrabianych zajec (zeby nie trzeba bylo zgadywac, czemu "Przywroc" jest zablokowane).
-  const cancelledKeys = rows.filter((o) => o.status === 'CANCELLED').map(keyOfRow);
-  const makeups = cancelledKeys.length
+  const cancelledIds = rows.filter((o) => o.status === 'CANCELLED').map((o) => o.id);
+  const makeups = cancelledIds.length
     ? await prisma.occurrence.findMany({
-        where: { makeupOfKey: { in: cancelledKeys }, status: { not: 'CANCELLED' } },
-        select: { makeupOfKey: true, date: true, startMinute: true, endMinute: true },
+        where: { makeupOfId: { in: cancelledIds }, status: { not: 'CANCELLED' } },
+        select: { makeupOfId: true, date: true, startMinute: true, endMinute: true },
         orderBy: { date: 'asc' },
       })
     : [];
   const madeUpBy = new Map<string, { date: string; startMinute: number; endMinute: number }>();
   for (const m of makeups) {
-    if (!madeUpBy.has(m.makeupOfKey!)) madeUpBy.set(m.makeupOfKey!, { date: toIsoDate(m.date), startMinute: m.startMinute, endMinute: m.endMinute });
+    if (!madeUpBy.has(m.makeupOfId!)) madeUpBy.set(m.makeupOfId!, { date: toIsoDate(m.date), startMinute: m.startMinute, endMinute: m.endMinute });
   }
-  const originalIds = rows.flatMap((o) => {
-    const parsed = o.makeupOfKey ? parseOccurrenceKey(o.makeupOfKey) : null;
-    return parsed && 'occurrenceId' in parsed ? [parsed.occurrenceId] : [];
-  });
-  const originalDates = new Map(
-    (originalIds.length
-      ? await prisma.occurrence.findMany({ where: { id: { in: originalIds } }, select: { id: true, date: true, originalDate: true } })
-      : []
-    ).map((o) => [o.id, toIsoDate(o.originalDate ?? o.date)]),
-  );
-  const makeupOf = (key: string | null): string | null => {
-    const parsed = key ? parseOccurrenceKey(key) : null;
-    if (!parsed) return null;
-    return 'occurrenceId' in parsed ? (originalDates.get(parsed.occurrenceId) ?? null) : parsed.originalDate;
-  };
   res.json({
     data: rows.map((o) => ({
       id: o.id,
-      pendingRequest: pending.get(keyOfRow(o)) ?? null,
+      pendingRequest: pending.get(o.id) ?? null,
       sectionId: o.sectionId,
       placementId: o.placementId,
       date: toIsoDate(o.date),
@@ -319,8 +284,8 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       status: o.status,
       changed: !!o.placementId && !!o.originalDate && exceptionKeys.has(`${o.placementId}|${toIsoDate(o.originalDate)}`),
       note: o.note,
-      madeUpBy: o.status === 'CANCELLED' ? (madeUpBy.get(keyOfRow(o)) ?? null) : null,
-      makeupOf: o.kind === 'MANUAL' ? makeupOf(o.makeupOfKey) : null,
+      madeUpBy: o.status === 'CANCELLED' ? (madeUpBy.get(o.id) ?? null) : null,
+      makeupOf: o.makeupOf ? toIsoDate(o.makeupOf.originalDate ?? o.makeupOf.date) : null,
     })),
   });
 });
@@ -337,11 +302,10 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
   const grid = await assertPlanEditable(occ.termId, occ.section.cohortId);
   const body = req.body as { action: 'CANCEL' | 'MODIFY' | 'RESTORE' } & MoveInput;
   const before = { date: occ.date, startMinute: occ.startMinute, endMinute: occ.endMinute };
-  const key = keyOf(occ);
   // Czekajace zgloszenie prowadzacego dla tego terminu zamyka sie samo (zalatwione albo
   // nieaktualne) i wtedy to ono niesie powiadomienie; inaczej zwykle powiadomienie o zmianie.
   const after = async (change: DirectChange, fallback: 'CLASS_CHANGED' | 'CLASS_CANCELLED') => {
-    if (!(await closePendingOnDirectChange(key, change, req.user!.id, before, occ.id))) {
+    if (!(await closePendingOnDirectChange(occ.id, change, req.user!.id, before, occ.id))) {
       await notifyClassChange(occ.id, fallback, req.user!.id, before);
     }
   };
@@ -374,9 +338,9 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
   const grid = await assertPlanEditable(term.id, section.cohortId);
   const data = await createManual(term, section, grid, body);
   // Odrobienie wskazanego odwolanego terminu zamyka czekajaca propozycje odrobienia prowadzacego.
-  const closed = body.makeupOfKey
+  const closed = data.makeupOfId
     ? await closePendingOnDirectChange(
-        body.makeupOfKey,
+        data.makeupOfId,
         { action: 'MAKEUP', date: toIsoDate(data.date), startOrder: data.startOrder, endOrder: data.endOrder },
         req.user!.id,
         { date: data.date, startMinute: data.startMinute, endMinute: data.endMinute },

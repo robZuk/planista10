@@ -16,6 +16,7 @@ import {
   type MatSection,
 } from '../lib/materializer';
 import { diffOccurrences, type DerivedRow } from '../lib/occurrenceDiff';
+import { slotLabel } from '../lib/changeRequests';
 import { toCalendarInput } from './termCalendars';
 import { calendarFor, calendarsFor, type CalendarRow } from './cohortCalendar';
 import { activeCohorts, type CohortContext } from './sections';
@@ -565,7 +566,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
   const manual = await prisma.occurrence.groupBy({
     by: ['sectionId'],
     // Bez odrobien odwolanych terminow — ich godziny liczy juz odwolany termin z wzorca.
-    where: { termId: term.id, kind: 'MANUAL', makeupOfKey: null, status: { not: 'CANCELLED' }, section: { cohortId } },
+    where: { termId: term.id, kind: 'MANUAL', makeupOfId: null, status: { not: 'CANCELLED' }, section: { cohortId } },
     _sum: { endOrder: true, startOrder: true },
     _count: { _all: true },
     _max: { date: true },
@@ -794,13 +795,14 @@ export async function generate(
     : {};
 
   // Godziny zuzyte poza generowaniem: terminy MANUAL i zachowane terminy sprzed "od kiedy".
-  // Odrobienie odwolanego terminu (makeupOfKey) sie nie liczy — odwolany termin z wzorca juz
-  // zuzyl te godziny; liczone dwa razy ucielyby zajecia na koncu semestru.
+  // Odrobienie odwolanego terminu (makeupOfId) sie nie liczy — odwolany termin z wzorca juz
+  // zuzyl te godziny; liczone dwa razy ucielyby zajecia na koncu semestru. Odrobienie, ktorego
+  // odwolany termin zniknal (makeupOfId = null), liczy sie jak zwykle zajecia dodatkowe.
   const kept = await prisma.occurrence.findMany({
     where: {
       sectionId: { in: sectionIds },
       status: { not: 'CANCELLED' },
-      OR: [{ kind: 'MANUAL', makeupOfKey: null }, ...(from ? [{ kind: 'DERIVED' as const, ...beforeRange }] : [])],
+      OR: [{ kind: 'MANUAL', makeupOfId: null }, ...(from ? [{ kind: 'DERIVED' as const, ...beforeRange }] : [])],
     },
     select: { sectionId: true, startOrder: true, endOrder: true },
   });
@@ -909,29 +911,29 @@ export async function generate(
   report.conflicts = mat.conflicts;
   report.beyondHours = mat.beyondHours.length;
   report.shortfalls = mat.shortfalls;
-  // Odrobienia osieroconych odwolan: ich odwolany termin zniknie, a one zostana jako dodatkowe zajecia.
-  // Osierocone sa tez odwolane terminy usunietych umieszczen (placementId = null, klucz "o:id").
-  const detachedCancelled = existing.filter((o) => o.placementId === null && o.status === 'CANCELLED');
-  const orphanCancelKeys = [
-    ...mat.orphanExceptions.filter((e) => e.action === 'CANCEL').map((e) => `p:${e.placementId}|${e.originalDate}`),
-    ...detachedCancelled.map((o) => `o:${o.id}`),
-  ];
-  const makeups = orphanCancelKeys.length
+  // Odrobienia odwolanych terminow, ktore znikna (data wypadla z wzorca albo umieszczenie usunieto):
+  // odrobienie zostanie jako zajecia dodatkowe — podglad mowi o tym przy poprawce terminu.
+  const deleted = new Set(diff.toDelete);
+  const vanishingCancelled = existing.filter((o) => deleted.has(o.id) && o.status === 'CANCELLED');
+  const makeups = vanishingCancelled.length
     ? await prisma.occurrence.findMany({
-        where: { makeupOfKey: { in: orphanCancelKeys }, status: { not: 'CANCELLED' } },
-        select: { makeupOfKey: true, date: true, startMinute: true, endMinute: true },
+        where: { makeupOfId: { in: vanishingCancelled.map((o) => o.id) }, status: { not: 'CANCELLED' } },
+        select: { makeupOfId: true, date: true, startMinute: true, endMinute: true },
         orderBy: { date: 'asc' },
       })
     : [];
   const makeupOf = new Map<string, string>();
   for (const m of makeups) {
-    if (!makeupOf.has(m.makeupOfKey!)) {
-      const d = toIsoDate(m.date);
-      makeupOf.set(m.makeupOfKey!, `${d.slice(8, 10)}.${d.slice(5, 7)} ${formatMinutes(m.startMinute)}–${formatMinutes(m.endMinute)}`);
-    }
+    if (!makeupOf.has(m.makeupOfId!)) makeupOf.set(m.makeupOfId!, slotLabel(toIsoDate(m.date), m.startMinute, m.endMinute));
   }
+  // Odwolany termin osieroconej poprawki (umieszczenie + data z wzorca) -> jego odrobienie.
+  const makeupByPatternKey = new Map(
+    vanishingCancelled
+      .filter((o) => o.placementId && o.originalDate && makeupOf.has(o.id))
+      .map((o) => [`${o.placementId}|${toIsoDate(o.originalDate!)}`, makeupOf.get(o.id)!]),
+  );
   report.orphanExceptions = mat.orphanExceptions.map((e) => {
-    const makeup = e.action === 'CANCEL' ? makeupOf.get(`p:${e.placementId}|${e.originalDate}`) : undefined;
+    const makeup = e.action === 'CANCEL' ? makeupByPatternKey.get(`${e.placementId}|${e.originalDate}`) : undefined;
     return {
       section: labelOf.get(placementSection.get(e.placementId) ?? '') ?? '?',
       date: e.originalDate,
@@ -939,9 +941,10 @@ export async function generate(
       ...(makeup ? { makeup } : {}),
     };
   });
-  for (const o of detachedCancelled) {
-    const makeup = makeupOf.get(`o:${o.id}`);
-    if (makeup) {
+  // Odwolane terminy usunietych umieszczen (bez poprawki we wzorcu) — tez z ich odrobieniem.
+  for (const o of vanishingCancelled) {
+    const makeup = makeupOf.get(o.id);
+    if (makeup && o.placementId === null) {
       report.orphanExceptions.push({ section: labelOf.get(o.sectionId) ?? '?', date: toIsoDate(o.originalDate ?? o.date), action: 'CANCEL', makeup });
     }
   }

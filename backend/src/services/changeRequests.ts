@@ -6,7 +6,7 @@ import { fromIsoDate, toIsoDate, todayIso } from '../lib/isoDate';
 import { termKey } from '../lib/terms';
 import { dayWindowProblem, formatMinutes } from '../lib/timeGrid';
 import { singleConflictMessage } from '../lib/conflictMessage';
-import { occurrenceKey, parseOccurrenceKey } from '../lib/occurrenceKey';
+import { occurrenceKey } from '../lib/occurrenceKey';
 import {
   classLabel,
   KIND_LABEL,
@@ -45,17 +45,12 @@ import { facultyPlannerIds, instructorUserIds, notify } from './notifications';
 
 const occurrenceInclude = { placement: true, section: true } satisfies Prisma.OccurrenceInclude;
 
-/** Termin wg trwalego klucza (umieszczenie + data z wzorca albo id terminu). */
-export async function findByKey(key: string): Promise<OccurrenceFull | null> {
-  const parsed = parseOccurrenceKey(key);
-  if (!parsed) return null;
-  if ('occurrenceId' in parsed) return prisma.occurrence.findUnique({ where: { id: parsed.occurrenceId }, include: occurrenceInclude });
-  return prisma.occurrence.findFirst({
-    where: { placementId: parsed.placementId, originalDate: fromIsoDate(parsed.originalDate), kind: 'DERIVED' },
-    include: occurrenceInclude,
-  });
+/** Termin zgloszenia (klucz obcy); null — termin zniknal (np. data wypadla z wzorca). */
+async function occurrenceOf(request: { occurrenceId: string | null }): Promise<OccurrenceFull | null> {
+  return request.occurrenceId ? prisma.occurrence.findUnique({ where: { id: request.occurrenceId }, include: occurrenceInclude }) : null;
 }
 
+/** Trwaly klucz tekstowy — zapisywany jeszcze w zgloszeniu obok klucza obcego (do usuniecia w etapie 4). */
 export const keyOf = (o: OccurrenceFull) =>
   occurrenceKey({ id: o.id, kind: o.kind, placementId: o.placementId, originalDate: o.originalDate ? toIsoDate(o.originalDate) : null });
 
@@ -81,26 +76,25 @@ async function assertPublished(term: AcademicTerm, cohortId: string) {
   return ctx!;
 }
 
-/** Czy odwolany termin ma juz odrobienie (termin reczny wskazujacy jego klucz). */
-async function isMadeUp(key: string): Promise<boolean> {
-  return (await activeMakeup(key)) !== null;
+/** Czy odwolany termin ma juz odrobienie. */
+async function isMadeUp(occurrenceId: string): Promise<boolean> {
+  return (await activeMakeup(occurrenceId)) !== null;
 }
 
 /** Termin odrobienia odwolanego terminu ("26.02 14:00–16:00") albo null. */
-async function madeUpAt(key: string): Promise<string | null> {
-  const m = await activeMakeup(key);
+async function madeUpAt(occurrenceId: string): Promise<string | null> {
+  const m = await activeMakeup(occurrenceId);
   return m ? slotLabel(toIsoDate(m.date), m.startMinute, m.endMinute) : null;
 }
 
-async function hasPending(key: string): Promise<boolean> {
-  return (await prisma.changeRequest.count({ where: { occurrenceKey: key, status: 'PENDING' } })) > 0;
+async function hasPending(occurrenceId: string): Promise<boolean> {
+  return (await prisma.changeRequest.count({ where: { occurrenceId, status: 'PENDING' } })) > 0;
 }
 
 /** Co prowadzacy moze zglosic dla swojego terminu + siatka godzin do formularza propozycji. */
 export async function requestOptions(occurrenceId: string, instructorId: string) {
   const occ = await prisma.occurrence.findUnique({ where: { id: occurrenceId }, include: occurrenceInclude });
   if (!occ || occ.instructorId !== instructorId) throw new AppError(404, 'Termin nie znaleziony wsrod Twoich zajec');
-  const key = keyOf(occ);
   const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: occ.termId } });
   const ctx = await assertPublished(term, occ.section.cohortId);
   const grid = await gridFor(occ.facultyId, ctx.cohort.program.studyMode);
@@ -108,8 +102,8 @@ export async function requestOptions(occurrenceId: string, instructorId: string)
     status: occ.status,
     date: toIsoDate(occ.date),
     today: todayIso(),
-    pending: await hasPending(key),
-    madeUp: occ.status === 'CANCELLED' ? await madeUpAt(key) : null,
+    pending: await hasPending(occ.id),
+    madeUp: occ.status === 'CANCELLED' ? await madeUpAt(occ.id) : null,
   });
   return {
     ...allowed,
@@ -144,8 +138,8 @@ export async function createRequest(occurrenceId: string, user: { id: string; in
     status: occ.status,
     date: toIsoDate(occ.date),
     today,
-    pending: await hasPending(key),
-    madeUp: occ.status === 'CANCELLED' ? await madeUpAt(key) : null,
+    pending: await hasPending(occ.id),
+    madeUp: occ.status === 'CANCELLED' ? await madeUpAt(occ.id) : null,
   });
   if (!allowed.kinds.includes(input.kind)) {
     throw new AppError(409, allowed.reason ?? `Dla tego terminu nie mozna zglosic: ${KIND_LABEL[input.kind]}`);
@@ -230,7 +224,7 @@ export interface DecisionOverride {
 /** Zatwierdzenie: wykonuje zmiane (dziekanat moze poprawic propozycje: date, godziny, sale). */
 export async function approveRequest(request: ChangeRequest, actorId: string, note: string | null, override: DecisionOverride = {}) {
   if (request.status !== 'PENDING') throw new AppError(409, 'Zgloszenie zostalo juz rozpatrzone');
-  const occ = await findByKey(request.occurrenceKey);
+  const occ = await occurrenceOf(request);
   if (!occ) throw new AppError(409, 'Tego terminu juz nie ma w planie (plan wygenerowano od nowa) — odrzuc zgloszenie z wyjasnieniem');
   const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: request.termId } });
   const grid = await assertPlanEditable(request.termId, occ.section.cohortId);
@@ -262,7 +256,7 @@ export async function approveRequest(request: ChangeRequest, actorId: string, no
     outcome = `Zajecia ${original} przeniesione na ${slotLabel(toIsoDate(moved.date), moved.startMinute, moved.endMinute)}.`;
   } else {
     if (occ.status !== 'CANCELLED') throw new AppError(409, 'Odrabiac mozna tylko odwolane zajecia');
-    if (await isMadeUp(request.occurrenceKey)) throw new AppError(409, 'Te zajecia maja juz termin odrobienia');
+    if (await isMadeUp(occ.id)) throw new AppError(409, 'Te zajecia maja juz termin odrobienia');
     const section = await prisma.classSection.findUniqueOrThrow({ where: { id: occ.sectionId } });
     const made = await createManualOccurrence(term, section, grid, {
       date: final.date!,
@@ -272,7 +266,7 @@ export async function approveRequest(request: ChangeRequest, actorId: string, no
       online: final.online,
       instructorId: request.instructorId,
       note: `Odrobienie zajec z ${original}`,
-      makeupOfKey: request.occurrenceKey,
+      makeupOfId: occ.id,
       confirmWarnings: final.confirmWarnings,
     });
     outcome = `Odrobienie zajec z ${original}: ${slotLabel(toIsoDate(made.date), made.startMinute, made.endMinute)}.`;
@@ -398,7 +392,7 @@ export async function listRequests(term: AcademicTerm, scope: { instructorId?: s
   return Promise.all(
     rows.map(async (r) => {
       const blocks = r.newStartOrder !== null ? await blocksFor(r.facultyId, r.section.cohortId) : null;
-      const occ = r.status === 'PENDING' ? await findByKey(r.occurrenceKey) : null;
+      const occ = r.status === 'PENDING' ? await occurrenceOf(r) : null;
       return {
         id: r.id,
         kind: r.kind,
@@ -454,24 +448,22 @@ export async function listMakeups(term: AcademicTerm, scope: { instructorId?: st
     },
     orderBy: [{ date: 'asc' }, { startMinute: 'asc' }],
   });
-  const keys = cancelled.map((o) =>
-    occurrenceKey({ id: o.id, kind: o.kind, placementId: o.placementId, originalDate: o.originalDate ? toIsoDate(o.originalDate) : null }),
-  );
+  const ids = cancelled.map((o) => o.id);
   const [makeups, pending] = await Promise.all([
-    prisma.occurrence.findMany({ where: { makeupOfKey: { in: keys }, status: { not: 'CANCELLED' } } }),
-    prisma.changeRequest.findMany({ where: { occurrenceKey: { in: keys }, kind: 'MAKEUP', status: 'PENDING' } }),
+    prisma.occurrence.findMany({ where: { makeupOfId: { in: ids }, status: { not: 'CANCELLED' } }, orderBy: { date: 'asc' } }),
+    prisma.changeRequest.findMany({ where: { occurrenceId: { in: ids }, kind: 'MAKEUP', status: 'PENDING' } }),
   ]);
-  const madeUp = new Map(makeups.map((m) => [m.makeupOfKey!, m]));
-  const pendingByKey = new Map(pending.map((p) => [p.occurrenceKey, p]));
+  const madeUp = new Map<string, (typeof makeups)[number]>();
+  for (const m of makeups) if (!madeUp.has(m.makeupOfId!)) madeUp.set(m.makeupOfId!, m);
+  const pendingOf = new Map(pending.map((p) => [p.occurrenceId!, p]));
   const contexts = await activeCohorts(term, null, [...new Set(cancelled.map((o) => o.section.cohortId))].filter(Boolean));
   const nameOf = new Map(contexts.map((c) => [c.cohort.id, c.nameOf]));
-  return cancelled.map((o, i) => {
-    const m = madeUp.get(keys[i]!);
-    const p = pendingByKey.get(keys[i]!);
+  return cancelled.map((o) => {
+    const m = madeUp.get(o.id);
+    const p = pendingOf.get(o.id);
     return {
       occurrenceId: o.id,
       sectionId: o.section.id,
-      key: keys[i]!,
       date: toIsoDate(o.date),
       time: `${formatMinutes(o.startMinute)}–${formatMinutes(o.endMinute)}`,
       subject: o.section.programEntry.subject.name,
@@ -532,13 +524,13 @@ export async function notifyClassChange(
  * kontroler nie wysyla juz zwyklego powiadomienia o zmianie terminu.
  */
 export async function closePendingOnDirectChange(
-  key: string,
+  occurrenceId: string,
   change: DirectChange,
   actorId: string,
   before: { date: Date; startMinute: number; endMinute: number },
   resultOccurrenceId: string,
 ): Promise<boolean> {
-  const pending = await prisma.changeRequest.findMany({ where: { occurrenceKey: key, status: 'PENDING' } });
+  const pending = await prisma.changeRequest.findMany({ where: { occurrenceId, status: 'PENDING' } });
   if (pending.length === 0) return false;
   const occ = await prisma.occurrence.findUnique({ where: { id: resultOccurrenceId }, include: occurrenceInclude });
   const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: pending[0]!.termId } });
@@ -586,16 +578,16 @@ export async function closePendingOnDirectChange(
   return true;
 }
 
-/** Czekajace zgloszenia terminow (klucze) — ostrzezenie dla planisty w "Terminach". */
-export async function pendingByKeys(keys: string[]) {
-  if (keys.length === 0) return new Map<string, { id: string; kind: ChangeRequest['kind']; instructor: string; proposal: string | null }>();
+/** Czekajace zgloszenia terminow (po id terminu) — ostrzezenie dla planisty w "Terminach". */
+export async function pendingByOccurrence(ids: string[]) {
+  if (ids.length === 0) return new Map<string, { id: string; kind: ChangeRequest['kind']; instructor: string; proposal: string | null }>();
   const rows = await prisma.changeRequest.findMany({
-    where: { occurrenceKey: { in: keys }, status: 'PENDING' },
+    where: { occurrenceId: { in: ids }, status: 'PENDING' },
     include: { instructor: { select: { title: true, firstName: true, lastName: true } } },
   });
   return new Map(
     rows.map((r) => [
-      r.occurrenceKey,
+      r.occurrenceId!,
       {
         id: r.id,
         kind: r.kind,

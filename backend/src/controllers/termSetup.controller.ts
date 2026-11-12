@@ -6,7 +6,6 @@ import { asyncHandler } from '../middleware/asyncHandler';
 import { getCallerScope, assertCohortsInScope } from '../lib/facultyScope';
 import { addDays, fromIsoDate, isIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
 import { personalDaysOff, TeachingCalendar } from '../lib/teachingCalendar';
-import { occurrenceKey } from '../lib/occurrenceKey';
 import { toCalendarInput } from '../services/termCalendars';
 import { parseTermKey } from '../lib/terms';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
@@ -251,16 +250,14 @@ export const myPlan = asyncHandler(async (req, res) => {
   const chosenCalendars = contexts.length > 0 ? await calendarsFor(term, contexts) : new Map();
   const archivedCohorts = new Set(contexts.filter((c) => chosenCalendars.get(c.cohort.id)?.status === 'ARCHIVED').map((c) => c.cohort.id));
   // Prowadzacy: zgloszenia czekajace na dziekanat — kafelek pokazuje "zgloszono odwolanie" itp.
-  const keyOfRow = (o: (typeof shown)[number]) =>
-    occurrenceKey({ id: o.id, kind: o.kind, placementId: o.placementId, originalDate: o.originalDate ? toIsoDate(o.originalDate) : null });
   const pending =
     user.role === 'INSTRUCTOR' && shown.length > 0
       ? await prisma.changeRequest.findMany({
-          where: { instructorId: user.instructorId!, status: 'PENDING', occurrenceKey: { in: shown.map(keyOfRow) } },
-          select: { occurrenceKey: true, kind: true },
+          where: { instructorId: user.instructorId!, status: 'PENDING', occurrenceId: { in: shown.map((o) => o.id) } },
+          select: { occurrenceId: true, kind: true },
         })
       : [];
-  const pendingByKey = new Map(pending.map((p) => [p.occurrenceKey, p.kind]));
+  const pendingOf = new Map(pending.map((p) => [p.occurrenceId!, p.kind]));
   const data = shown
     .map((o) => ({
       id: o.id,
@@ -277,7 +274,7 @@ export const myPlan = asyncHandler(async (req, res) => {
       instructor: o.instructor ? `${o.instructor.title ?? ''} ${o.instructor.firstName} ${o.instructor.lastName}`.trim() : 'NN',
       status: o.status,
       note: o.note,
-      pendingRequest: pendingByKey.get(keyOfRow(o)) ?? null,
+      pendingRequest: pendingOf.get(o.id) ?? null,
       archived: archivedCohorts.has(o.section.cohortId),
     }));
   const calendars = await personCalendars(term, personCohortIds);

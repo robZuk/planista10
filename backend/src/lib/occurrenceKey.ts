@@ -1,9 +1,8 @@
 /**
- * Trwaly klucz terminu: zgloszenia prowadzacych i odrobienia wskazuja termin z wzorca kluczem
- * umieszczenie + data z wzorca (tym samym, ktorym wyjatki PlacementException przezywaja generowanie),
- * a terminy reczne i odlaczone — ich id. Pozostalosc z czasu, gdy "Generuj terminy" nadawalo
- * terminom nowe id; dzis generowanie zachowuje id (lib/occurrenceDiff), docelowo klucz zastapia
- * klucze obce do terminu.
+ * Tekstowy klucz terminu: "p:<umieszczenie>|<data z wzorca>" albo "o:<id>". Pozostalosc z czasu,
+ * gdy "Generuj terminy" nadawalo terminom nowe id. Dzis odrobienia i zgloszenia wskazuja termin
+ * kluczem obcym (Occurrence.makeupOfId, ChangeRequest.occurrenceId); klucz tekstowy jest juz tylko
+ * zapisywany obok nich — do usuniecia razem z kolumnami (etap 4).
  */
 export interface KeyedOccurrence {
   id: string;

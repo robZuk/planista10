@@ -136,38 +136,6 @@ describe('API — plan', () => {
     ]);
   });
 
-  it('usuniecie umieszczenia przepina odrobienia i zgloszenia na klucz odlaczonego terminu', async () => {
-    prismaMock.placement.findUnique.mockResolvedValueOnce({
-      id: 'p1',
-      facultyId: 'wm',
-      term: { id: 't1', startYear: 2026, type: 'SUMMER' },
-      section: {
-        cohort: {
-          id: 'c1',
-          name: null,
-          program: { code: 'EDST-S1' },
-          programVersion: { label: 'Wersja 1', status: 'APPROVED' },
-          startTerm: { startYear: 2026, type: 'WINTER' },
-        },
-      },
-    });
-    prismaMock.occurrence.findMany
-      .mockResolvedValueOnce([
-        { id: 'o1', originalDate: new Date('2027-02-22T00:00:00Z') },
-        { id: 'o2', originalDate: new Date('2027-03-01T00:00:00Z') },
-      ])
-      .mockResolvedValueOnce([{ makeupOfKey: 'p:p1|2027-02-22' }]);
-    prismaMock.changeRequest.findMany.mockResolvedValueOnce([{ occurrenceKey: 'p:p1|2027-03-01' }]);
-    const res = await request(app).delete('/api/placements/p1').set('Authorization', `Bearer ${dean}`);
-    expect(res.status).toBe(200);
-    expect(prismaMock.$transaction).toHaveBeenLastCalledWith([
-      { op: 'occurrence.updateMany', args: { where: { makeupOfKey: 'p:p1|2027-02-22' }, data: { makeupOfKey: 'o:o1' } } },
-      { op: 'changeRequest.updateMany', args: { where: { occurrenceKey: 'p:p1|2027-03-01' }, data: { occurrenceKey: 'o:o2' } } },
-      { op: 'occurrence.updateMany', args: { where: { placementId: 'p1' }, data: { placementId: null } } },
-      { op: 'placement.delete', args: { where: { id: 'p1' } } },
-    ]);
-  });
-
   it('usuniecie umieszczenia, gdy kalendarz rocznika jest w archiwum -> 409', async () => {
     prismaMock.placement.findUnique.mockResolvedValueOnce({
       id: 'p1',

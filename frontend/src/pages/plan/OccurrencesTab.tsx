@@ -512,9 +512,9 @@ function ManualDialog({
   // (inaczej zostaje na liscie "Do odrobienia" na zawsze). Domyslnie pierwszy z nich.
   const { data: makeups } = useQuery({ queryKey: ['makeups', termKey, 'manual'], queryFn: () => fetchMakeups(termKey) });
   const toMakeUp = (makeups ?? []).filter((m) => m.sectionId === sectionId && m.state === 'TODO');
-  const [makeupChoice, setMakeupChoice] = useState<{ sectionId: string; key: string } | null>(null);
-  const makeupKey = makeupChoice?.sectionId === sectionId ? makeupChoice.key : (toMakeUp[0]?.key ?? '');
-  const madeUp = toMakeUp.find((m) => m.key === makeupKey);
+  const [makeupChoice, setMakeupChoice] = useState<{ sectionId: string; occurrenceId: string } | null>(null);
+  const makeupOfId = makeupChoice?.sectionId === sectionId ? makeupChoice.occurrenceId : (toMakeUp[0]?.occurrenceId ?? '');
+  const madeUp = toMakeUp.find((m) => m.occurrenceId === makeupOfId);
   const noteValue = note ?? (madeUp ? `Odrobienie zajec z ${formatDayMonth(madeUp.date)} ${madeUp.time}` : 'Zajecia dodatkowe');
   const slotKey = `${sectionId}|${date}|${start}|${length}`;
   const [warned, setWarned] = useState<{ key: string; warnings: string[] } | null>(null);
@@ -529,7 +529,7 @@ function ManualDialog({
         roomId: online ? null : roomId,
         online,
         // Odrobienie: prowadzacy z odwolanych zajec (dobiera serwer); zajecia dodatkowe — pierwszy z obsady.
-        ...(makeupKey ? { makeupOfKey: makeupKey } : { instructorId: section?.instructors.find((i) => i.instructorId)?.instructorId ?? null }),
+        ...(makeupOfId ? { makeupOfId } : { instructorId: section?.instructors.find((i) => i.instructorId)?.instructorId ?? null }),
         note: noteValue.trim() || undefined,
         confirmWarnings: warnings !== null,
       }),
@@ -566,15 +566,15 @@ function ManualDialog({
               <FieldLabel htmlFor="mn-makeup">Odrabia zajecia z</FieldLabel>
               <NativeSelect
                 id="mn-makeup"
-                value={makeupKey}
+                value={makeupOfId}
                 onChange={(e) => {
-                  setMakeupChoice({ sectionId, key: e.target.value });
-                  const row = toMakeUp.find((m) => m.key === e.target.value);
+                  setMakeupChoice({ sectionId, occurrenceId: e.target.value });
+                  const row = toMakeUp.find((m) => m.occurrenceId === e.target.value);
                   if (row) setLength(Math.min(4, row.hours));
                 }}
               >
                 {toMakeUp.map((m) => (
-                  <NativeSelectOption key={m.key} value={m.key}>
+                  <NativeSelectOption key={m.occurrenceId} value={m.occurrenceId}>
                     {m.date} {m.time} (odwolane{m.note ? `: ${m.note}` : ''})
                   </NativeSelectOption>
                 ))}

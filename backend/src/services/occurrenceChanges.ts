@@ -6,7 +6,7 @@ import { findConflict, type BusySlot } from '../lib/materializer';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
 import { dayWindowProblem, type GridTime } from '../lib/timeGrid';
 import { singleConflictMessage } from '../lib/conflictMessage';
-import { occurrenceKey, parseOccurrenceKey } from '../lib/occurrenceKey';
+import { occurrenceKey } from '../lib/occurrenceKey';
 import { slotLabel } from '../lib/changeRequests';
 import { TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
 import { assessSlot, SLOT_WARNINGS_CODE, type SlotAssessment } from '../lib/occurrenceSlot';
@@ -87,10 +87,14 @@ function assertWarningsConfirmed(assessment: SlotAssessment, confirmed: boolean 
 
 const isDerived = (occ: OccurrenceFull) => occ.kind === 'DERIVED' && !!occ.placement && !!occ.originalDate;
 
-/** Aktywne odrobienie odwolanego terminu (termin reczny wskazujacy jego trwaly klucz) albo null. */
-export function activeMakeup(key: string) {
-  return prisma.occurrence.findFirst({ where: { makeupOfKey: key, status: { not: 'CANCELLED' } }, orderBy: { date: 'asc' } });
+/** Aktywne odrobienie odwolanego terminu (termin reczny wskazujacy go kluczem obcym) albo null. */
+export function activeMakeup(occurrenceId: string) {
+  return prisma.occurrence.findFirst({ where: { makeupOfId: occurrenceId, status: { not: 'CANCELLED' } }, orderBy: { date: 'asc' } });
 }
+
+/** Trwaly klucz tekstowy terminu — zapisywany jeszcze obok klucza obcego (do usuniecia w etapie 4). */
+const textKeyOf = (o: { id: string; kind: 'DERIVED' | 'MANUAL'; placementId: string | null; originalDate: Date | null }) =>
+  occurrenceKey({ id: o.id, kind: o.kind, placementId: o.placementId, originalDate: o.originalDate ? toIsoDate(o.originalDate) : null });
 
 /**
  * Odwolany termin, ktory ma juz odrobienie, nie wraca do planu (przywrocenie, przeniesienie) —
@@ -98,8 +102,7 @@ export function activeMakeup(key: string) {
  */
 async function assertNotMadeUp(occ: OccurrenceFull, what: string): Promise<void> {
   if (occ.status !== 'CANCELLED') return;
-  const key = occurrenceKey({ ...occ, originalDate: occ.originalDate ? toIsoDate(occ.originalDate) : null });
-  const makeup = await activeMakeup(key);
+  const makeup = await activeMakeup(occ.id);
   if (makeup) {
     throw new AppError(
       409,
@@ -237,8 +240,8 @@ export interface ManualInput {
   online?: boolean;
   instructorId?: string | null;
   note?: string | null;
-  /** Odrobienie konkretnego odwolanego terminu (jego trwaly klucz) — nie zuzywa godzin drugi raz. */
-  makeupOfKey?: string | null;
+  /** Odrobienie konkretnego odwolanego terminu (jego id) — nie zuzywa godzin drugi raz. */
+  makeupOfId?: string | null;
   /** Planista potwierdzil ostrzezenia o dniu/godzinach (patrz lib/occurrenceSlot). */
   confirmWarnings?: boolean;
 }
@@ -251,18 +254,13 @@ export async function createManualOccurrence(term: AcademicTerm, section: ClassS
   }
   if (!input.online && !roomId) throw new AppError(400, 'Wybierz sale (albo zaznacz zajecia online)');
   // Odrobienie wskazanych zajec: musza to byc odwolane zajecia tej samej sekcji.
-  let original: { id: string; instructorId: string | null } | null = null;
-  if (input.makeupOfKey) {
-    const parsed = parseOccurrenceKey(input.makeupOfKey);
-    const found = !parsed
-      ? null
-      : 'occurrenceId' in parsed
-        ? await prisma.occurrence.findUnique({ where: { id: parsed.occurrenceId } })
-        : await prisma.occurrence.findFirst({ where: { placementId: parsed.placementId, originalDate: fromIsoDate(parsed.originalDate), kind: 'DERIVED' } });
+  let original: Occurrence | null = null;
+  if (input.makeupOfId) {
+    const found = await prisma.occurrence.findUnique({ where: { id: input.makeupOfId } });
     if (!found || found.sectionId !== section.id || found.status !== 'CANCELLED') {
       throw new AppError(400, 'Odrabiany termin nie jest odwolanym terminem tych zajec');
     }
-    if (await activeMakeup(input.makeupOfKey)) throw new AppError(409, 'Te zajecia maja juz termin odrobienia');
+    if (await activeMakeup(found.id)) throw new AppError(409, 'Te zajecia maja juz termin odrobienia');
     original = found;
   }
   // Prowadzacy: wskazany (null = NN); bez wskazania — z odrabianych zajec albo pierwszy z obsady.
@@ -296,8 +294,8 @@ export async function createManualOccurrence(term: AcademicTerm, section: ClassS
       kind: 'MANUAL',
       status: 'MAKEUP',
       note: input.note ?? null,
-      makeupOfKey: input.makeupOfKey ?? null,
       makeupOfId: original?.id ?? null,
+      makeupOfKey: original ? textKeyOf(original) : null,
     },
   });
 }

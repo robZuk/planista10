@@ -828,7 +828,6 @@ export interface ChangeRequestRow {
 export interface MakeupRow {
   occurrenceId: string;
   sectionId: string;
-  key: string;
   date: string;
   time: string;
   subject: string;
