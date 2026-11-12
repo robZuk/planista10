@@ -99,7 +99,7 @@ export function RequestDialog({ occurrenceId, onClose }: { occurrenceId: string;
         <DialogHeader>
           <DialogTitle>Zgloszenie do dziekanatu</DialogTitle>
           <DialogDescription>
-            {o ? `${o.subject} (${o.classLabel}) · ${o.group} · ${formatDate(o.date)}` : 'Wczytuje termin…'}
+            {o ? `${o.subject} (${o.classLabel}) · ${o.group} · ${formatDate(o.date)}` : error ? 'Zgloszenie niedostepne' : 'Wczytuje termin…'}
           </DialogDescription>
         </DialogHeader>
 

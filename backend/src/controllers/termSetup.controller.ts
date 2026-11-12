@@ -246,6 +246,10 @@ export const myPlan = asyncHandler(async (req, res) => {
   const visibleCohorts = await publishedCohortKeys(cohortIds.map((cohortId) => ({ termId: term.id, cohortId })));
   const shown = rows.filter((o) => visibleCohorts.has(`${term.id}|${o.section.cohortId}`));
   const nameOf = new Map(contexts.map((c) => [c.cohort.id, c.nameOf]));
+  // Roczniki z kalendarzem w archiwum — plan jest zapisem tego, co sie odbylo; prowadzacy nie
+  // zglasza do niego zmian (front nie oferuje klikniecia, serwer i tak odmowi).
+  const chosenCalendars = contexts.length > 0 ? await calendarsFor(term, contexts) : new Map();
+  const archivedCohorts = new Set(contexts.filter((c) => chosenCalendars.get(c.cohort.id)?.status === 'ARCHIVED').map((c) => c.cohort.id));
   // Prowadzacy: zgloszenia czekajace na dziekanat — kafelek pokazuje "zgloszono odwolanie" itp.
   const keyOfRow = (o: (typeof shown)[number]) =>
     occurrenceKey({ id: o.id, kind: o.kind, placementId: o.placementId, originalDate: o.originalDate ? toIsoDate(o.originalDate) : null });
@@ -274,6 +278,7 @@ export const myPlan = asyncHandler(async (req, res) => {
       status: o.status,
       note: o.note,
       pendingRequest: pendingByKey.get(keyOfRow(o)) ?? null,
+      archived: archivedCohorts.has(o.section.cohortId),
     }));
   const calendars = await personCalendars(term, personCohortIds);
   // Zakres semestru wg opublikowanych kalendarzy osoby — front przestawia tydzien albo mowi,

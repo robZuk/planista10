@@ -168,7 +168,8 @@ export default function PlanPage() {
     >;
   }, [plan, days]);
   // Zablokowany na stale (archiwum / brak uprawnien) — akcji nie pokazujemy wcale.
-  const locked = plan?.calendar?.status === 'ARCHIVED' || !(isAdmin || me?.role === 'DEAN_OFFICE');
+  const archived = plan?.calendar?.status === 'ARCHIVED';
+  const locked = archived || !(isAdmin || me?.role === 'DEAN_OFFICE');
   // Brak kalendarza i wersja programu w projekcie da sie naprawic — akcje widoczne, ale
   // wylaczone (uklad naglowka nie skacze), z podpowiedzia, co zrobic.
   const noCalendar = !!plan && !plan.calendar;
@@ -619,8 +620,9 @@ export default function PlanPage() {
                       ))}
                     </ul>
                     <p className="text-muted-foreground">
-                      Rytm wyczerpuje godziny wczesniej. Jesli to niezamierzone, zmniejsz liczbe umieszczen albo ustaw
-                      „Od/Do tygodnia”.
+                      {archived
+                        ? 'Kalendarz w archiwum — tylko informacja, planu juz sie nie zmienia.'
+                        : 'Rytm wyczerpuje godziny wczesniej. Jesli to niezamierzone, zmniejsz liczbe umieszczen albo ustaw „Od/Do tygodnia”.'}
                     </p>
                   </div>
                 )}
@@ -652,7 +654,9 @@ export default function PlanPage() {
                       })}
                     </ul>
                     <p className="text-muted-foreground">
-                      Zmiany obsady, sal, grup lub kalendarza po umieszczeniu zajec. Kliknij zajecia, zeby poprawic umieszczenie.
+                      {archived
+                        ? 'Kalendarz w archiwum — tylko informacja, planu juz sie nie zmienia.'
+                        : 'Zmiany obsady, sal, grup lub kalendarza po umieszczeniu zajec. Kliknij zajecia, zeby poprawic umieszczenie.'}
                     </p>
                   </div>
                 )}

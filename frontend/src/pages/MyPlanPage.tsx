@@ -132,14 +132,18 @@ export default function MyPlanPage() {
               </h3>
               {dayRows.length > 0 && (
                 <ul className="divide-y rounded-lg border">
-                  {dayRows.map((r) => (
+                  {dayRows.map((r) => {
+                    // Zajecia z archiwum — bez zgloszen zmian (zapis tego, co sie odbylo).
+                    const select = onSelect && !r.archived ? () => onSelect(r) : undefined;
+                    return (
                     <li
                       key={r.id}
-                      role={onSelect ? 'button' : undefined}
-                      tabIndex={onSelect ? 0 : undefined}
-                      onClick={onSelect ? () => onSelect(r) : undefined}
-                      onKeyDown={onSelect ? (e) => (e.key === 'Enter' || e.key === ' ') && onSelect(r) : undefined}
-                      className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 text-sm ${r.status === 'CANCELLED' ? 'text-muted-foreground line-through' : ''} ${onSelect ? 'cursor-pointer hover:bg-muted' : ''}`}
+                      role={select ? 'button' : undefined}
+                      tabIndex={select ? 0 : undefined}
+                      onClick={select}
+                      onKeyDown={select ? (e) => (e.key === 'Enter' || e.key === ' ') && select() : undefined}
+                      title={onSelect && r.archived ? 'Plan w archiwum — zgloszenia zmian niedostepne' : undefined}
+                      className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 text-sm ${r.status === 'CANCELLED' ? 'text-muted-foreground line-through' : ''} ${select ? 'cursor-pointer hover:bg-muted' : ''}`}
                     >
                       <span className="w-28 tabular-nums">
                         {formatMinutes(r.startMinute)}–{formatMinutes(r.endMinute)}
@@ -160,7 +164,8 @@ export default function MyPlanPage() {
                       )}
                       {r.note && <span className="text-xs text-muted-foreground">{r.note}</span>}
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               )}
             </section>

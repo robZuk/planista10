@@ -782,6 +782,8 @@ export interface MyPlanRow {
   note: string | null;
   /** Prowadzacy: zgloszenie tego terminu czekajace na dziekanat. */
   pendingRequest: ChangeRequestKind | null;
+  /** Kalendarz rocznika w archiwum — zapis tego, co sie odbylo; bez zgloszen zmian. */
+  archived?: boolean;
 }
 
 // ─── Zgloszenia zmian i powiadomienia ──────────────────────────

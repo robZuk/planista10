@@ -96,16 +96,19 @@ export function MyPlanWeek({
                 const lines = [r.room, ...(showInstructor ? [r.instructor] : [])];
                 const pending = r.pendingRequest ? `zgloszono: ${REQUEST_KIND_LABELS[r.pendingRequest].toLowerCase()}` : null;
                 const status = pending ?? (r.status === 'CANCELLED' ? 'odwolane' : r.status === 'MAKEUP' ? 'odrobienie' : null);
+                // Zajecia z archiwum to zapis tego, co sie odbylo — nie oferujemy zgloszenia zmiany.
+                const select = onSelect && !r.archived ? () => onSelect(r) : undefined;
                 return (
                   <div
                     key={r.id}
-                    role={onSelect ? 'button' : undefined}
-                    tabIndex={onSelect ? 0 : undefined}
-                    onClick={onSelect ? () => onSelect(r) : undefined}
-                    onKeyDown={onSelect ? (e) => (e.key === 'Enter' || e.key === ' ') && onSelect(r) : undefined}
+                    role={select ? 'button' : undefined}
+                    tabIndex={select ? 0 : undefined}
+                    onClick={select}
+                    onKeyDown={select ? (e) => (e.key === 'Enter' || e.key === ' ') && select() : undefined}
                     title={[
                       `${time} ${CLASS_LABELS[r.classType]} · ${r.subject}`,
                       who,
+                      ...(onSelect && r.archived ? ['Plan w archiwum — zgloszenia zmian niedostepne'] : []),
                       ...lines,
                       ...(status ? [status] : []),
                       ...(r.note ? [r.note] : []),
@@ -121,7 +124,7 @@ export function MyPlanWeek({
                       'overflow-hidden rounded-md border-l-4 px-1.5 py-1 text-[11px] leading-tight shadow-sm',
                       CLASS_COLORS[r.classType],
                       r.status === 'CANCELLED' && 'line-through opacity-50 grayscale',
-                      onSelect && 'cursor-pointer hover:ring-2 hover:ring-primary/50',
+                      select && 'cursor-pointer hover:ring-2 hover:ring-primary/50',
                       pending && 'ring-2 ring-amber-500',
                     )}
                   >
