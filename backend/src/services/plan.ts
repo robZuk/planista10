@@ -633,6 +633,8 @@ export async function planView(term: AcademicTerm, cohortId: string) {
         group: {
           id: s.groupId,
           name: ctx.nameOf(s.groupId),
+          // Liczebnosc — okno umieszczenia oznacza sale mniejsze niz grupa.
+          size: groupById.get(s.groupId)?.size ?? 0,
           // Przodkowie od korzenia (bez samej grupy) — drzewo filtra i widok "co ma student tej grupy".
           ancestors: pathFromRoot(s.groupId, ctx.index)
             .slice(0, -1)

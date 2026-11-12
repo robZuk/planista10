@@ -102,15 +102,24 @@ export function PlacementDialog({
   const [jointKey, setJointKey] = useState(placement?.jointKey ?? '');
 
   const { data: buildings } = useQuery({ queryKey: ['buildings'], queryFn: fetchBuildings });
+  // Sale mniejsze niz grupa sa do wyboru (zapis przejdzie, plan pokaze niezgodnosc), ale z dopiskiem.
+  const groupSize = section.group.size;
   const roomOptions = useMemo(
     () =>
       (buildings ?? []).flatMap((b) =>
         (b.rooms ?? [])
           .filter((r) => ROOM_TYPES_FOR_CLASS[section.classType].includes(r.type))
-          .map((r) => ({ value: r.id, label: `${r.number} — ${b.name} (${r.capacity} miejsc)`, keywords: b.name })),
+          .map((r) => ({
+            value: r.id,
+            label: `${r.number} — ${b.name} (${r.capacity} miejsc)`,
+            keywords: b.name,
+            capacity: r.capacity,
+            hint: groupSize > r.capacity ? `za mala — grupa ma ${groupSize} os.` : undefined,
+          })),
       ),
-    [buildings, section.classType],
+    [buildings, section.classType, groupSize],
   );
+  const chosenRoom = online ? undefined : roomOptions.find((r) => r.value === roomId);
 
   const payload = {
     sectionId: section.id,
@@ -202,6 +211,11 @@ export function PlacementDialog({
               <div className="flex h-9 items-center rounded-md border border-dashed px-3 text-sm text-muted-foreground">ON-LINE — bez sali</div>
             ) : (
               <Combobox id="pl-room" options={roomOptions} value={roomId} onChange={setRoomId} placeholder="Wybierz sale" searchPlaceholder="Numer, budynek…" />
+            )}
+            {chosenRoom && groupSize > chosenRoom.capacity && (
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                Sala ma {chosenRoom.capacity} miejsc, a grupa {groupSize} osob — zapis jest mozliwy, ale plan pokaze niezgodnosc.
+              </p>
             )}
             <label className="flex items-center gap-2 text-sm">
               <Checkbox checked={online} onCheckedChange={(v) => setOnline(v === true)} />

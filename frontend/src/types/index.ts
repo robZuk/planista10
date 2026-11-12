@@ -564,8 +564,8 @@ export interface PlanSection {
   order: number;
   specialization: string | null;
   classType: ClassType;
-  /** ancestors: przodkowie grupy od korzenia (bez niej samej). */
-  group: { id: string; name: string; ancestors: { id: string; name: string }[] };
+  /** ancestors: przodkowie grupy od korzenia (bez niej samej); size: liczebnosc grupy. */
+  group: { id: string; name: string; size: number; ancestors: { id: string; name: string }[] };
   hours: number;
   plannedHours: number;
   /** Ostatnia data, na ktora starcza godzin (umieszczenia + terminy reczne); null = brak terminow. */
