@@ -40,7 +40,10 @@ function RowList({ rows, empty }: { rows: SyncRow[] | CarryRow[]; empty?: string
           {'oldHours' in r && r.oldHours !== undefined && <span>(bylo {r.oldHours} h)</span>}
           {'fallback' in r && r.fallback && <Badge variant="outline">podzial zastepczy</Badge>}
           {'instructors' in r && r.instructors && (
-            <span>→ {r.instructors.map((x) => `${x.name} ${x.hours} h`).join(', ')}</span>
+            <span>
+              → {'oldHours' in r && r.oldHours !== undefined ? 'obsada: ' : ''}
+              {r.instructors.map((x) => `${x.name} ${x.hours} h`).join(', ')}
+            </span>
           )}
         </li>
       ))}

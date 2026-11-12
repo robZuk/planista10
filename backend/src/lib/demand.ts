@@ -171,3 +171,18 @@ export function scaleHours(source: number[], targetTotal: number): number[] {
   scaled[0]! += targetTotal - scaled.reduce((a, b) => a + b, 0);
   return scaled;
 }
+
+/**
+ * Obsada po zmianie godzin zajec (synchronizacja z programem). Pelna obsada zostaje pelna
+ * (godziny prowadzacych skalowane do nowych godzin), a obsada wieksza niz nowe godziny jest
+ * przycinana proporcjonalnie. Niepelna obsada, ktora sie miesci, zostaje bez zmian.
+ * Zwraca nowe godziny prowadzacych albo null, gdy nic sie nie zmienia.
+ */
+export function rescaleStaff(staffHours: number[], oldHours: number, newHours: number): number[] | null {
+  if (staffHours.length === 0 || oldHours === newHours) return null;
+  const total = staffHours.reduce((a, b) => a + b, 0);
+  const full = total === oldHours;
+  if (!full && total <= newHours) return null;
+  const scaled = scaleHours(staffHours, newHours);
+  return scaled.every((h, i) => h === staffHours[i]) ? null : scaled;
+}

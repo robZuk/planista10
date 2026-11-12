@@ -299,6 +299,11 @@ export default function ObsadaPage() {
                             {row.assignedHours < row.hours && (
                               <Badge variant="outline">brakuje {row.hours - row.assignedHours} h</Badge>
                             )}
+                            {row.assignedHours > row.hours && (
+                              <Badge variant="destructive" title="Obsada ma wiecej godzin niz zajecia — popraw podzial godzin">
+                                nadmiar {row.assignedHours - row.hours} h
+                              </Badge>
+                            )}
                           </div>
                         )}
                       </TableCell>

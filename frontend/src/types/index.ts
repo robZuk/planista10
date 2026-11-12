@@ -492,6 +492,8 @@ export interface SyncRow {
   hours: number;
   oldHours?: number;
   fallback?: boolean;
+  /** Obsada po zmianie godzin (przeskalowana do nowych godzin zajec). */
+  instructors?: { name: string; hours: number }[];
 }
 
 export interface SyncReport {

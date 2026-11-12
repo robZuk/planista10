@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deriveSections, scaleHours, type DemandEntry } from './demand';
+import { deriveSections, rescaleStaff, scaleHours, type DemandEntry } from './demand';
 import type { TreeGroup } from './groupTree';
 
 const g = (id: string, parentId: string | null, partitionKey: string, extra: Partial<TreeGroup> = {}): TreeGroup => ({
@@ -90,4 +90,16 @@ describe('scaleHours', () => {
   it('bez zmiany godzin kopiuje', () => expect(scaleHours([20, 10], 30)).toEqual([20, 10]));
   it('skaluje proporcjonalnie, reszta dla pierwszego', () => expect(scaleHours([20, 10], 45)).toEqual([30, 15]));
   it('zaokraglenia', () => expect(scaleHours([10, 10, 10], 20)).toEqual([8, 6, 6]));
+});
+
+describe('rescaleStaff — obsada po zmianie godzin zajec', () => {
+  it('pelna obsada jednej osoby idzie za godzinami (30 -> 20)', () => expect(rescaleStaff([30], 30, 20)).toEqual([20]));
+  it('pelna obsada dzielona — proporcjonalnie, suma = nowe godziny', () => expect(rescaleStaff([20, 10], 30, 15)).toEqual([10, 5]));
+  it('pelna obsada przy zwiekszeniu godzin zostaje pelna', () => expect(rescaleStaff([15], 15, 30)).toEqual([30]));
+  it('niepelna obsada, ktora sie miesci — bez zmian', () => expect(rescaleStaff([10], 30, 20)).toBeNull());
+  it('niepelna obsada wieksza niz nowe godziny — przycieta do nowych godzin', () => expect(rescaleStaff([25], 30, 20)).toEqual([20]));
+  it('bez obsady albo bez zmiany godzin — nic', () => {
+    expect(rescaleStaff([], 30, 20)).toBeNull();
+    expect(rescaleStaff([30], 30, 30)).toBeNull();
+  });
 });

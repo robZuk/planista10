@@ -1,6 +1,6 @@
 import type { AcademicTerm, ClassType, Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
-import { deriveSections, scaleHours, sectionKey, type DemandProblem } from '../lib/demand';
+import { deriveSections, rescaleStaff, scaleHours, sectionKey, type DemandProblem } from '../lib/demand';
 import { displayName, indexGroups, pathFromRoot, ROOT, type GroupIndex, type TreeGroup } from '../lib/groupTree';
 import { cohortSemesterInTerm, termLabel, termOrdinal } from '../lib/terms';
 import { cohortLabel, toTreeGroup } from './cohorts';
@@ -92,6 +92,8 @@ export interface SyncRow {
   hours: number;
   oldHours?: number;
   fallback?: boolean;
+  /** Obsada po zmianie godzin (przeskalowana do nowych godzin zajec). */
+  instructors?: { name: string; hours: number }[];
 }
 
 export interface SyncReport {
@@ -195,6 +197,10 @@ export async function syncSections(
       include: {
         _count: { select: { instructors: true, placements: true, occurrences: true, changeRequests: true } },
         programEntry: { include: { subject: { select: { name: true } } } },
+        instructors: {
+          select: { id: true, hours: true, instructor: { select: { title: true, firstName: true, lastName: true } } },
+          orderBy: { hours: 'desc' },
+        },
       },
     });
     const existingByKey = new Map(existing.map((s) => [sectionKey(s), s]));
@@ -227,8 +233,23 @@ export async function syncSections(
         continue;
       }
       if (found.status === 'ORPHANED') report.reactivated.push(row(d));
-      else if (found.hours !== d.hours) report.hoursChanged.push({ ...row(d), oldHours: found.hours });
-      else report.unchanged++;
+      else if (found.hours !== d.hours) {
+        // Obsada idzie za godzinami: pelna zostaje pelna, nadmiarowa jest przycinana.
+        const staff = rescaleStaff(found.instructors.map((i) => i.hours), found.hours, d.hours);
+        report.hoursChanged.push({
+          ...row(d),
+          oldHours: found.hours,
+          ...(staff
+            ? {
+                instructors: found.instructors.map((i, n) => ({
+                  name: i.instructor ? `${i.instructor.title ?? ''} ${i.instructor.firstName} ${i.instructor.lastName}`.trim() : 'NN',
+                  hours: staff[n]!,
+                })),
+              }
+            : {}),
+        });
+        if (staff) found.instructors.forEach((i, n) => ops.push(prisma.sectionInstructor.update({ where: { id: i.id }, data: { hours: staff[n]! } })));
+      } else report.unchanged++;
       if (found.status === 'ORPHANED' || found.hours !== d.hours) {
         ops.push(prisma.classSection.update({ where: { id: found.id }, data: { status: 'ACTIVE', hours: d.hours } }));
       }
