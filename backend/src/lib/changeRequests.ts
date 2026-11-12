@@ -15,15 +15,15 @@ export interface RequestableState {
   today: string;
   /** Zgloszenie tego terminu czekajace na dziekanat. */
   pending: boolean;
-  /** Odwolany termin ma juz termin odrobienia. */
-  madeUp: boolean;
+  /** Odwolany termin ma juz odrobienie — jego termin ("26.02 14:00–16:00"), inaczej null. */
+  madeUp: string | null;
 }
 
 /** Rodzaje zgloszen dozwolone dla terminu; pusta lista z powodem, gdy nic nie wolno. */
 export function requestableKinds(s: RequestableState): { kinds: RequestKind[]; reason: string | null } {
   if (s.pending) return { kinds: [], reason: 'Zgloszenie tego terminu czeka juz na dziekanat' };
   if (s.status === 'CANCELLED') {
-    return s.madeUp ? { kinds: [], reason: 'Zajecia sa juz odrobione' } : { kinds: ['MAKEUP'], reason: null };
+    return s.madeUp ? { kinds: [], reason: `Zajecia sa juz odrobione (${s.madeUp})` } : { kinds: ['MAKEUP'], reason: null };
   }
   if (s.date < s.today) return { kinds: [], reason: 'Zajecia juz sie odbyly' };
   return { kinds: ['CANCEL', 'MOVE'], reason: null };

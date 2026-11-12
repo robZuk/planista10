@@ -8,7 +8,7 @@ const state = (over: Partial<Parameters<typeof requestableKinds>[0]> = {}) => ({
   date: '2026-11-12',
   today,
   pending: false,
-  madeUp: false,
+  madeUp: null,
   ...over,
 });
 
@@ -23,7 +23,7 @@ describe('requestableKinds', () => {
 
   it('odwolany: tylko odrobienie, chyba ze juz odrobiony', () => {
     expect(requestableKinds(state({ status: 'CANCELLED', date: '2026-11-05' })).kinds).toEqual(['MAKEUP']);
-    expect(requestableKinds(state({ status: 'CANCELLED', madeUp: true })).reason).toMatch(/odrobione/);
+    expect(requestableKinds(state({ status: 'CANCELLED', madeUp: '26.02 14:00–16:00' })).reason).toBe('Zajecia sa juz odrobione (26.02 14:00–16:00)');
   });
 
   it('zgloszenie w toku blokuje kolejne', () => {

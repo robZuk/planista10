@@ -86,6 +86,12 @@ async function isMadeUp(key: string): Promise<boolean> {
   return (await activeMakeup(key)) !== null;
 }
 
+/** Termin odrobienia odwolanego terminu ("26.02 14:00–16:00") albo null. */
+async function madeUpAt(key: string): Promise<string | null> {
+  const m = await activeMakeup(key);
+  return m ? slotLabel(toIsoDate(m.date), m.startMinute, m.endMinute) : null;
+}
+
 async function hasPending(key: string): Promise<boolean> {
   return (await prisma.changeRequest.count({ where: { occurrenceKey: key, status: 'PENDING' } })) > 0;
 }
@@ -103,7 +109,7 @@ export async function requestOptions(occurrenceId: string, instructorId: string)
     date: toIsoDate(occ.date),
     today: todayIso(),
     pending: await hasPending(key),
-    madeUp: occ.status === 'CANCELLED' ? await isMadeUp(key) : false,
+    madeUp: occ.status === 'CANCELLED' ? await madeUpAt(key) : null,
   });
   return {
     ...allowed,
@@ -139,7 +145,7 @@ export async function createRequest(occurrenceId: string, user: { id: string; in
     date: toIsoDate(occ.date),
     today,
     pending: await hasPending(key),
-    madeUp: occ.status === 'CANCELLED' ? await isMadeUp(key) : false,
+    madeUp: occ.status === 'CANCELLED' ? await madeUpAt(key) : null,
   });
   if (!allowed.kinds.includes(input.kind)) {
     throw new AppError(409, allowed.reason ?? `Dla tego terminu nie mozna zglosic: ${KIND_LABEL[input.kind]}`);
