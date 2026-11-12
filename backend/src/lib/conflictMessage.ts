@@ -84,8 +84,17 @@ export function conflictMessage(conflicts: ConflictLike[], maxGroups = 3): strin
     const restDates = rest.reduce((n, g) => n + g.dates.length, 0);
     lines.push(`Pozostale kolizje: ${restDates}`);
   }
+  // Prowadzacy albo sala zajeta przez inne zajecia to czesto zamierzony wspolny wyklad kilku
+  // kierunkow — wtedy wystarczy ten sam klucz w obu umieszczeniach (zajecia laczone).
+  if (groups.some((g) => g.reason === 'INSTRUCTOR' || g.reason === 'ROOM')) {
+    lines.push(JOINT_HINT);
+  }
   return lines.join('\n');
 }
+
+/** Podpowiedz przy kolizji prowadzacego/sali: wspolny wyklad wymaga tego samego klucza w obu umieszczeniach. */
+export const JOINT_HINT =
+  'Jesli to zajecia laczone (wspolne dla kilku kierunkow), wpisz ten sam klucz w polu „Zajecia laczone” w obu umieszczeniach.';
 
 /** Jedna kolizja (termin reczny, przeniesienie terminu): "Kolizja: sala zajeta — X". */
 export function singleConflictMessage(conflict: { reason: string; with: string }): string {

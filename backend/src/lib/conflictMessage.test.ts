@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { conflictMessage, conflictShort, datesList, shortDate, singleConflictMessage } from './conflictMessage';
+import { JOINT_HINT, conflictMessage, conflictShort, datesList, shortDate, singleConflictMessage } from './conflictMessage';
 
 const PKM = 'MIBM-N1 s3: Podst. konstr. maszyn I,II,III (C) TRUOiP-SN-3-C-A';
 const c = (date: string, reason = 'GROUP', withWhat = PKM) => ({ date, reason, with: withWhat });
@@ -36,7 +36,13 @@ describe('conflictMessage', () => {
       '  daty: 11.10, 18.10',
       '• Sala zajeta — 112 (Budynek A)',
       '  daty: 4.10',
+      JOINT_HINT,
     ]);
+  });
+
+  it('kolizja prowadzacego podpowiada zajecia laczone; sama kolizja grupy — nie', () => {
+    expect(conflictMessage([c('2026-10-04', 'INSTRUCTOR', 'ET-S1 s2: Podstawy elektrotechniki (W)')]).split('\n').at(-1)).toBe(JOINT_HINT);
+    expect(conflictMessage([c('2026-10-04')])).not.toContain('Zajecia laczone');
   });
 
   it('liczba terminow to liczba dat (dwie kolizje jednego dnia = jeden termin)', () => {
