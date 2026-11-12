@@ -738,6 +738,7 @@ export default function PlanPage() {
           termKey={term.key}
           cohortId={cohortId}
           cohortLabel={`${cohort.program.code} · semestr ${cohort.semester}`}
+          filteredCohortIds={cohorts.map((c) => c.id)}
           onClose={() => setCarrying(false)}
           onDone={async () => {
             setCarrying(false);
