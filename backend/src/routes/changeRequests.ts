@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { planLocked, termOfRequest } from '../middleware/planLocked';
 import { authenticate, authorize } from '../middleware/authenticate';
 import * as requests from '../controllers/changeRequests.controller';
 import * as notifications from '../controllers/notifications.controller';
@@ -23,7 +24,7 @@ occurrenceRequestsRouter.get('/:id/request-options', authenticate, instructors, 
 occurrenceRequestsRouter.post('/:id/requests', authenticate, instructors, requests.create);
 
 changeRequestsRouter.get('/pending-count', authenticate, planners, requests.pendingCount);
-changeRequestsRouter.post('/:id/approve', authenticate, planners, requests.approve);
+changeRequestsRouter.post('/:id/approve', authenticate, planners, planLocked(termOfRequest), requests.approve);
 changeRequestsRouter.post('/:id/reject', authenticate, planners, requests.reject);
 changeRequestsRouter.post('/:id/withdraw', authenticate, instructors, requests.withdraw);
 

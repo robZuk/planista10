@@ -87,6 +87,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   generowanie terminów), `occurrenceChanges` (odwołanie / przeniesienie / termin ręczny z kontrolą
   kolizji — wspólne dla planisty i zgłoszeń), `changeRequests` (zgłoszenia prowadzących,
   odrobienia), `notifications`, `carryPlan`, `staleness` (terminy nieaktualne per rocznik), `visibility`
+  `planLock` (zapisy planu po kolei w obrebie semestru — kontrola kolizji i zapis bez wyscigu;
+  na trasach zapisu middleware `planLocked`)
 - `src/lib/*` — czyste funkcje domeny (bez bazy, testowane jednostkowo):
   - `prisma.ts` — **singleton PrismaClient**; nigdy nie rób `new PrismaClient()`, importuj `prisma` stąd
   - `isoDate.ts` — daty jako tekst `YYYY-MM-DD` (arytmetyka w UTC)

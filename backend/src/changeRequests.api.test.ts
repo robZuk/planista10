@@ -15,6 +15,11 @@ const prismaMock = vi.hoisted(() => ({
   notification: { findUnique: vi.fn(), update: vi.fn(), findMany: vi.fn().mockResolvedValue([]), count: vi.fn().mockResolvedValue(0) },
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
+// Blokada zapisow planu (services/planLock) — testowana osobno; tu przepuszczamy.
+vi.mock('./middleware/planLocked', async (orig) => ({
+  ...(await orig<typeof import('./middleware/planLocked')>()),
+  planLocked: () => (_req: unknown, _res: unknown, next: () => void) => next(),
+}));
 
 import { createApp } from './index';
 import { signAccessToken } from './lib/jwt';
