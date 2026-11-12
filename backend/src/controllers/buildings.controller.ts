@@ -1,5 +1,6 @@
-import type { RoomType } from '@prisma/client';
+import type { ClassType, RoomType } from '@prisma/client';
 import { prisma } from '../lib/prisma';
+import { roomTypeMap } from '../lib/scheduleTime';
 import { plural } from '../lib/plural';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
@@ -122,10 +123,22 @@ export const updateRoom = asyncHandler(async (req, res) => {
       term: { calendars: { some: { status: { not: 'ARCHIVED' } } } },
     },
   });
-  const warning =
-    tooSmall > 0
-      ? `W planie jest ${plural(tooSmall, 'umieszczenie', 'umieszczenia', 'umieszczen')} tej sali z grupa wieksza niz ${data.capacity} os. — zobacz „Niezgodnosci w planie”`
-      : null;
+  // Typ sali: formy zajec, ktorym nowy typ nie pasuje (lib/scheduleTime.roomTypeMap).
+  const misfitClassTypes = (Object.keys(roomTypeMap) as ClassType[]).filter((c) => !roomTypeMap[c].includes(data.type));
+  const wrongType = misfitClassTypes.length
+    ? await prisma.placement.count({
+        where: {
+          roomId: data.id,
+          section: { classType: { in: misfitClassTypes } },
+          term: { calendars: { some: { status: { not: 'ARCHIVED' } } } },
+        },
+      })
+    : 0;
+  const problems = [
+    ...(tooSmall > 0 ? [`${plural(tooSmall, 'umieszczenie', 'umieszczenia', 'umieszczen')} z grupa wieksza niz ${data.capacity} os.`] : []),
+    ...(wrongType > 0 ? [`${plural(wrongType, 'umieszczenie', 'umieszczenia', 'umieszczen')} zajec, do ktorych ten typ sali nie pasuje`] : []),
+  ];
+  const warning = problems.length > 0 ? `W planie tej sali: ${problems.join('; ')} — zobacz „Niezgodnosci w planie”` : null;
   res.json({ data, message: 'Sala zaktualizowana', warning });
 });
 

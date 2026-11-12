@@ -10,6 +10,7 @@ const prismaMock = vi.hoisted(() => ({
   faculty: { findFirst: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
   building: { findFirst: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn() },
   room: { findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
+  placement: { count: vi.fn() },
   program: { findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
   programVersion: { findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn() },
   fieldOfStudy: { findUnique: vi.fn() },
@@ -76,6 +77,20 @@ describe('API — duplikaty w slownikach', () => {
     const updated = await send('put', '/api/buildings/b2/rooms/r1', { number: '7' });
     expect(updated.status).toBe(409);
     expect(prismaMock.room.findFirst).toHaveBeenLastCalledWith({ where: expect.objectContaining({ buildingId: 'b2', NOT: { id: 'r1' } }) });
+  });
+
+  it('sala: zmiana typu na niepasujacy do ulozonych zajec — zapis z ostrzezeniem', async () => {
+    prismaMock.room.findUnique.mockResolvedValueOnce({ buildingId: 'b1' });
+    prismaMock.room.findFirst.mockResolvedValueOnce(null);
+    prismaMock.room.update.mockResolvedValueOnce({ id: 'r1', number: '115', type: 'LAB', capacity: 200 });
+    prismaMock.placement.count.mockResolvedValueOnce(0).mockResolvedValueOnce(3);
+    const res = await send('put', '/api/buildings/b1/rooms/r1', { type: 'LAB' });
+    expect(res.status).toBe(200);
+    expect(res.body.warning).toBe('W planie tej sali: 3 umieszczenia zajec, do ktorych ten typ sali nie pasuje — zobacz „Niezgodnosci w planie”');
+    // Liczymy tylko formy zajec, ktorym laboratorium nie pasuje (wyklad, cwiczenia, projekt, seminarium).
+    expect(prismaMock.placement.count).toHaveBeenLastCalledWith({
+      where: expect.objectContaining({ section: { classType: { in: ['LECTURE', 'EXERCISE', 'PROJECT', 'SEMINAR'] } } }),
+    });
   });
 
   it('program: kod zajety -> 409 z nazwa programu', async () => {
