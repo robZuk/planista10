@@ -735,6 +735,8 @@ export interface SetupCohort {
   vacancies: number;
   placedSections: number;
   occurrences: number;
+  /** Ulozone zajecia, ktorych terminy maja mniej godzin niz program (0, gdy terminow jeszcze nie ma). */
+  shortSections: number;
   stale: boolean;
   /** Powody nieaktualnych terminow — te same co w "Ukladaniu planu". */
   staleReasons: StaleReason[];
@@ -755,6 +757,7 @@ export interface SetupStatus {
     vacancies: number;
     placedSections: number;
     staleCohorts: number;
+    shortSections: number;
     published: number;
   };
 }

@@ -53,6 +53,12 @@ export function setupSteps(data: SetupStatus, termKey: string): SetupStep[] {
   else if (data.calendars.length === 0) step7Todos.push('najpierw kalendarz semestru (krok 1)');
   if (t.staleCohorts > 0) step7Todos.push(`„Generuj terminy” ${rocznikom(t.staleCohorts)} z nieaktualnymi terminami`);
   if (withoutOccurrences > 0) step7Todos.push(`„Generuj terminy” ${rocznikom(withoutOccurrences)} bez terminow`);
+  // Terminy sa, ale nie wyczerpuja godzin programu (np. swieta wypadaja w inne dni niz rok temu).
+  if (t.shortSections > 0) {
+    step7Todos.push(
+      `uzupelnij godziny ${plural(t.shortSections, 'zajeciom', 'zajeciom', 'zajeciom')} — terminy daja mniej godzin niz program (odrobienia albo zmiana wzorca)`,
+    );
+  }
   if (unpublished > 0) {
     step7Todos.push(`opublikuj ${plural(unpublished, 'kalendarz', 'kalendarze', 'kalendarzy')} w przygotowaniu`);
   }

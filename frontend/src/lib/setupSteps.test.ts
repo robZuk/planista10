@@ -22,6 +22,7 @@ const cohort = (over: Partial<SetupCohort> = {}): SetupCohort => ({
   vacancies: 0,
   placedSections: 40,
   occurrences: 500,
+  shortSections: 0,
   stale: false,
   staleReasons: [],
   ...over,
@@ -45,6 +46,7 @@ const ready = (over: Partial<SetupStatus> = {}, totals: Partial<SetupStatus['tot
     vacancies: 0,
     placedSections: 80,
     staleCohorts: 0,
+    shortSections: 0,
     published: 2,
     ...totals,
   },
@@ -120,6 +122,12 @@ describe('setupSteps', () => {
     const data = ready({ calendars: [] }, { published: 0 });
     expect(step(data, 7).state).not.toBe('done');
     expect(step(data, 7).todo).toBe('Najpierw kalendarz semestru (krok 1)');
+  });
+
+  it('krok 7: terminy nie wyczerpuja godzin -> "!" z podpowiedzia', () => {
+    const data = ready({ cohorts: [cohort({ id: 'a', shortSections: 6 }), cohort({ id: 'b' })] }, { shortSections: 6 });
+    expect(step(data, 7).state).toBe('warn');
+    expect(step(data, 7).todo).toBe('Uzupelnij godziny 6 zajeciom — terminy daja mniej godzin niz program (odrobienia albo zmiana wzorca)');
   });
 
   it('braki obsady i roczniki bez kalendarza -> "!" z czynnoscia', () => {

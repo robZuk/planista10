@@ -76,7 +76,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
   // Liczniki wszystkich rocznikow zbiorczo (kilka zapytan zamiast kilku na rocznik).
   const active = { termId: term.id, cohortId: { in: cohortIds }, status: 'ACTIVE' as const };
   const versionIds = [...new Set(contexts.map((c) => c.cohort.programVersion.id))];
-  const [cohortCalendars, sectionRows, placedRows, vacancyRows, termSections, occurrenceRows, staleByCohort, entryRows] = await Promise.all([
+  const [cohortCalendars, sectionRows, placedRows, vacancyRows, termSections, occurrenceRows, staleByCohort, entryRows, heldRows] = await Promise.all([
     calendarsFor(term, contexts),
     prisma.classSection.groupBy({ by: ['cohortId'], where: active, _count: { _all: true } }),
     prisma.classSection.groupBy({ by: ['cohortId'], where: { ...active, placements: { some: {} } }, _count: { _all: true } }),
@@ -85,14 +85,25 @@ export const setupStatus = asyncHandler(async (req, res) => {
       where: { ...active, OR: [{ instructors: { none: {} } }, { instructors: { some: { instructorId: null } } }] },
       _count: { _all: true },
     }),
-    prisma.classSection.findMany({ where: { termId: term.id, cohortId: { in: cohortIds } }, select: { id: true, cohortId: true } }),
+    prisma.classSection.findMany({
+      where: { termId: term.id, cohortId: { in: cohortIds } },
+      select: { id: true, cohortId: true, hours: true, status: true, _count: { select: { placements: true } } },
+    }),
     prisma.occurrence.groupBy({ by: ['sectionId'], where: { termId: term.id, section: { cohortId: { in: cohortIds } } }, _count: { _all: true } }),
     // Terminy nieaktualne: ta sama funkcja co w "Ukladaniu planu" (services/staleness).
     staleReasonsByCohort(term, contexts),
     // Przedmioty programu wg semestru — rocznik bez zajec, ktorego program nie ma nic w tym
     // semestrze (np. praktyka), nie jest zaleglosci: synchronizacja i tak niczego nie doda.
     prisma.programEntry.groupBy({ by: ['versionId', 'semester'], where: { versionId: { in: versionIds } }, _count: { _all: true } }),
+    // Godziny w terminach (bez odwolanych; 1 blok = 1 godzina programu) — zajecia, ktore po
+    // generowaniu nie wyczerpia godzin (np. swieta w nowym roku wypadaja w inne dni).
+    prisma.occurrence.findMany({
+      where: { termId: term.id, status: { not: 'CANCELLED' }, section: { cohortId: { in: cohortIds } } },
+      select: { sectionId: true, startOrder: true, endOrder: true },
+    }),
   ]);
+  const heldHours = new Map<string, number>();
+  for (const o of heldRows) heldHours.set(o.sectionId, (heldHours.get(o.sectionId) ?? 0) + o.endOrder - o.startOrder + 1);
   const entriesIn = new Map(entryRows.map((r) => [`${r.versionId}|${r.semester}`, r._count._all]));
   const countOf = (rows: { cohortId: string; _count: { _all: number } }[]) => new Map(rows.map((r) => [r.cohortId, r._count._all]));
   const sectionCount = countOf(sectionRows);
@@ -103,6 +114,12 @@ export const setupStatus = asyncHandler(async (req, res) => {
   for (const r of occurrenceRows) {
     const cohortId = cohortOfSection.get(r.sectionId);
     if (cohortId) occurrenceCount.set(cohortId, (occurrenceCount.get(cohortId) ?? 0) + r._count._all);
+  }
+  // Ulozone zajecia, ktorych terminy maja mniej godzin niz program (liczone, gdy rocznik ma juz terminy).
+  const shortCount = new Map<string, number>();
+  for (const s of termSections) {
+    if (s.status !== 'ACTIVE' || s._count.placements === 0) continue;
+    if ((heldHours.get(s.id) ?? 0) < s.hours) shortCount.set(s.cohortId, (shortCount.get(s.cohortId) ?? 0) + 1);
   }
 
   const cohorts = [];
@@ -138,6 +155,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
       vacancies,
       placedSections: withPlacement,
       occurrences,
+      shortSections: occurrences > 0 ? (shortCount.get(ctx.cohort.id) ?? 0) : 0,
       stale: reasons.length > 0,
       staleReasons: reasons,
     });
@@ -158,6 +176,7 @@ export const setupStatus = asyncHandler(async (req, res) => {
         vacancies: cohorts.reduce((s, c) => s + c.vacancies, 0),
         placedSections: cohorts.reduce((s, c) => s + c.placedSections, 0),
         staleCohorts: cohorts.filter((c) => c.stale).length,
+        shortSections: cohorts.reduce((s, c) => s + c.shortSections, 0),
         published: calendars.filter((c) => c.status === 'PUBLISHED').length,
       },
     },

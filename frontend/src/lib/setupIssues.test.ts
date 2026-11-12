@@ -10,6 +10,7 @@ const ready: Parameters<typeof setupIssues>[0] = {
   vacancies: 0,
   placedSections: 42,
   occurrences: 669,
+  shortSections: 0,
   stale: false,
 };
 const cohort = (code: string, semester: number, over: Partial<typeof ready> = {}) => ({ code, semester, ...ready, ...over });
@@ -60,5 +61,8 @@ describe('sortSetupCohorts', () => {
       'MIBM-S2 s2',
       'MIBM-S2 s10',
     ]);
+  });
+  it('terminy z mniejsza liczba godzin niz program -> SHORT_HOURS', () => {
+    expect(issues({ shortSections: 3 })).toEqual(['SHORT_HOURS']);
   });
 });

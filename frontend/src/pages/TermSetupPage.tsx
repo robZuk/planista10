@@ -219,6 +219,15 @@ export default function TermSetupPage() {
                     </TableCell>
                     <TableCell className={cn('text-right tabular-nums', warn(issues.has('NO_OCCURRENCES')))}>
                       {c.occurrences}
+                      {c.shortSections > 0 && (
+                        <Badge
+                          variant="outline"
+                          className="ml-1 cursor-help border-amber-500/60 text-amber-600 dark:text-amber-400"
+                          title="Terminy tych zajec daja mniej godzin niz program (np. przez swieta). Szczegoly: „Do zaplanowania” w Ukladaniu planu."
+                        >
+                          brak godzin: {c.shortSections}
+                        </Badge>
+                      )}
                       {c.stale && (
                         <Badge
                           variant="outline"

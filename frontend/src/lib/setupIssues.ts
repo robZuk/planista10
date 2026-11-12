@@ -13,11 +13,12 @@ export type SetupIssue =
   | 'VACANCIES' // zajecia bez pelnej obsady (krok 5)
   | 'UNPLACED' // nie wszystkie zajecia sa w planie (krok 6)
   | 'NO_OCCURRENCES' // plan jest, terminow brak (krok 7)
-  | 'STALE'; // terminy nieaktualne (krok 7)
+  | 'STALE' // terminy nieaktualne (krok 7)
+  | 'SHORT_HOURS'; // terminy nie wyczerpuja godzin programu (krok 7)
 
 type IssueInput = Pick<
   SetupCohort,
-  'calendar' | 'groups' | 'programVersion' | 'programEntries' | 'sections' | 'vacancies' | 'placedSections' | 'occurrences' | 'stale'
+  'calendar' | 'groups' | 'programVersion' | 'programEntries' | 'sections' | 'vacancies' | 'placedSections' | 'occurrences' | 'stale' | 'shortSections'
 >;
 
 export function setupIssues(c: IssueInput): Set<SetupIssue> {
@@ -32,6 +33,7 @@ export function setupIssues(c: IssueInput): Set<SetupIssue> {
   // Terminy 0 to brak tylko wtedy, gdy jest juz z czego je wygenerowac.
   if (c.placedSections > 0 && c.occurrences === 0) issues.add('NO_OCCURRENCES');
   if (c.stale) issues.add('STALE');
+  if (c.shortSections > 0) issues.add('SHORT_HOURS');
   return issues;
 }
 
