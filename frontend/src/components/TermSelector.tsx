@@ -38,7 +38,9 @@ export function TermSelector() {
 
   return (
     <Select
-      value={current ?? undefined}
+      // Zawsze kontrolowany: na adresie bez semestru (/plan) klucz pojawia sie dopiero po
+      // przekierowaniu — undefined przelaczalby Select miedzy trybami (ostrzezenie Reacta).
+      value={current ?? ''}
       onValueChange={(key) => {
         setLastTermKey(key);
         navigate(`${item.to}/${key}`);

@@ -36,6 +36,7 @@ import { PlacementDialog, type PlacementTarget } from './plan/PlacementDialog';
 import { GenerateTermsDialog } from './plan/GenerateTermsDialog';
 import { OccurrencesTab } from './plan/OccurrencesTab';
 import { CarryPlanDialog } from './plan/CarryPlanDialog';
+import { plural } from '@/lib/setupSteps';
 
 
 function patternLabel(p: PlanPlacement): string {
@@ -258,7 +259,7 @@ export default function PlanPage() {
     },
     onSuccess: async ({ done, errors }) => {
       if (errors.length) toast.error(`Skopiowano ${done}, bledy: ${errors.length} — ${errors[0]}`, { duration: 10000 });
-      else toast.success(`Skopiowano ${done} zajec na zjazd ${copyTo}`);
+      else toast.success(`Skopiowano ${plural(done, 'zajecia', 'zajecia', 'zajec')} na zjazd ${copyTo}`);
       await refresh();
     },
   });
