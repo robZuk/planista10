@@ -150,7 +150,7 @@ export default function CohortsPage() {
       {term && (
         <div className="flex flex-wrap items-center gap-3 text-sm">
           {isAdmin && <FacultySelector />}
-          <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} />
+          <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} loading={isPending} />
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -166,7 +166,11 @@ export default function CohortsPage() {
             Tylko bez kalendarza
           </label>
           <span className="text-muted-foreground">
-            {filtered ? `${visibleCohorts.length} z ${allCohorts.length} rocznikow` : `${allCohorts.length} rocznikow`}
+            {isPending
+              ? 'wczytywanie rocznikow…'
+              : filtered
+                ? `${visibleCohorts.length} z ${allCohorts.length} rocznikow`
+                : `${allCohorts.length} rocznikow`}
           </span>
           {filtered && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>

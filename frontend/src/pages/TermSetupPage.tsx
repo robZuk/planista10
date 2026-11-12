@@ -136,13 +136,17 @@ export default function TermSetupPage() {
           )}
 
           <div className="flex flex-wrap items-center gap-3 text-sm">
-            <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} />
+            <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} loading={isPending} />
             <label className="flex items-center gap-2">
               <Checkbox checked={onlyIssues} onCheckedChange={(v) => setOnlyIssues(v === true)} />
               Tylko roczniki z brakami ({withIssues})
             </label>
             <span className="text-muted-foreground">
-              {filtered ? `${visibleRows.length} z ${allCohorts.length} rocznikow` : `${allCohorts.length} rocznikow`}
+              {isPending
+                ? 'wczytywanie rocznikow…'
+                : filtered
+                  ? `${visibleRows.length} z ${allCohorts.length} rocznikow`
+                  : `${allCohorts.length} rocznikow`}
             </span>
             {filtered && (
               <Button variant="ghost" size="sm" onClick={clearFilters}>

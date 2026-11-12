@@ -4,15 +4,18 @@ import type { CohortFacets, FacetFilters } from './cohortFilters';
 /**
  * Pola filtrow rocznikow w kolejnosci zaleznosci: tryb, kierunek, stopien, semestr.
  * Kazda lista ma tylko opcje mozliwe przy pozostalych filtrach, z liczba rocznikow.
+ * Podczas ladowania rocznikow liczby pomijamy — zapamietany filtr pokazywalby "(0)".
  */
 export function CohortFacetFilters({
   filters,
   facets,
   onChange,
+  loading = false,
 }: {
   filters: FacetFilters;
   facets: CohortFacets;
   onChange: <K extends keyof FacetFilters>(key: K, value: FacetFilters[K]) => void;
+  loading?: boolean;
 }) {
   const fields: {
     key: keyof FacetFilters;
@@ -39,7 +42,7 @@ export function CohortFacetFilters({
           <NativeSelectOption value="all">{all}</NativeSelectOption>
           {facets[key].map((o) => (
             <NativeSelectOption key={o.value} value={o.value}>
-              {o.label} ({o.count})
+              {loading ? o.label : `${o.label} (${o.count})`}
             </NativeSelectOption>
           ))}
         </NativeSelect>

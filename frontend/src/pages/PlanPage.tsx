@@ -86,7 +86,7 @@ export default function PlanPage() {
   const [carrying, setCarrying] = useState(false);
   const [copyTo, setCopyTo] = useState('');
 
-  const { data: cohortsData } = useQuery({
+  const { data: cohortsData, isPending: cohortsPending } = useQuery({
     queryKey: ['term-cohorts', term?.key, facultyParam],
     queryFn: () => fetchTermCohorts(term!.key, facultyParam),
     enabled: !!term,
@@ -296,10 +296,14 @@ export default function PlanPage() {
       {term && (
         <div className="flex flex-wrap items-center gap-3 text-sm">
           {isAdmin && <FacultySelector />}
-          <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} />
+          <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} loading={cohortsPending} />
           {/* Licznik i czyszczenie przed strzalka: dotycza filtrow po lewej, nie wyboru rocznika. */}
           <span className="text-muted-foreground">
-            {cohortFilter.facetsActive ? `${cohorts.length} z ${allCohorts.length} rocznikow` : `${allCohorts.length} rocznikow`}
+            {cohortsPending
+              ? 'wczytywanie rocznikow…'
+              : cohortFilter.facetsActive
+                ? `${cohorts.length} z ${allCohorts.length} rocznikow`
+                : `${allCohorts.length} rocznikow`}
           </span>
           {cohortFilter.facetsActive && (
             <Button variant="ghost" size="sm" onClick={cohortFilter.clearFacets}>
