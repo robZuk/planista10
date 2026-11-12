@@ -113,6 +113,8 @@ export default function UsersPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<UserListItem | null>(null);
+  // Administrator nie odbiera roli sam sobie (backend tez to blokuje).
+  const editingSelf = !!editing && editing.id === me?.id;
   const [deleting, setDeleting] = useState<UserListItem | null>(null);
   const [roleFilter, setRoleFilter] = useState<string>('all');
 
@@ -467,7 +469,7 @@ export default function UsersPage() {
                     control={form.control}
                     name="role"
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select value={field.value} onValueChange={field.onChange} disabled={editingSelf}>
                         <SelectTrigger id="role">
                           <SelectValue />
                         </SelectTrigger>
@@ -481,6 +483,7 @@ export default function UsersPage() {
                       </Select>
                     )}
                   />
+                  {editingSelf && <FieldDescription>Wlasnej roli nie zmienisz — zrobi to inny administrator.</FieldDescription>}
                 </Field>
               </div>
 

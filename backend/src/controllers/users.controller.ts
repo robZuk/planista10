@@ -119,6 +119,13 @@ export const update = asyncHandler(async (req, res) => {
   if (!current) throw new AppError(404, 'Uzytkownik nie znaleziony');
   await assertDeanFaculty(role ?? current.role, facultyId !== undefined ? facultyId || null : current.facultyId);
   await assertUnique(current.id, email, instructorId);
+  // Odebranie roli administratora: nie sobie (zamknieta droga powrotu) i nie ostatniemu adminowi.
+  if (current.role === 'ADMIN' && role && role !== 'ADMIN') {
+    if (current.id === req.user!.id) throw new AppError(400, 'Nie mozesz odebrac sobie roli administratora');
+    if ((await prisma.user.count({ where: { role: 'ADMIN' } })) <= 1) {
+      throw new AppError(409, 'To ostatnie konto administratora — najpierw nadaj te role komus innemu');
+    }
+  }
 
   // Powiazania sa juz zawezone przez rolę po stronie frontendu
   // (instructorId=null gdy nie-INSTRUCTOR, studentGroupIds=[] gdy nie-STUDENT).

@@ -6,7 +6,7 @@ process.env.JWT_ACCESS_SECRET ??= 'test-access-secret';
 process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 
 const prismaMock = vi.hoisted(() => ({
-  user: { findUnique: vi.fn(), findFirst: vi.fn().mockResolvedValue(null), create: vi.fn(), update: vi.fn() },
+  user: { findUnique: vi.fn(), findFirst: vi.fn().mockResolvedValue(null), create: vi.fn(), update: vi.fn(), count: vi.fn() },
   faculty: { findUnique: vi.fn() },
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
@@ -126,5 +126,31 @@ describe('API — podglad (impersonacja) jest tylko do odczytu', () => {
     prismaMock.user.update.mockResolvedValueOnce(user);
     const res = await request(app).put('/api/users/u1').set('Authorization', `Bearer ${admin}`).send({ name: 'Nowa nazwa' });
     expect(res.status).toBe(200);
+  });
+});
+
+describe('API — rola administratora nie znika', () => {
+  it('admin nie odbiera roli sobie -> 400, bez zapisu', async () => {
+    prismaMock.user.update.mockClear();
+    prismaMock.user.findUnique.mockResolvedValueOnce({ id: 'u-admin', role: 'ADMIN', facultyId: null });
+    const res = await request(app).put('/api/users/u-admin').set('Authorization', `Bearer ${admin}`).send({ role: 'STUDENT', studentGroupIds: [] });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Nie mozesz odebrac sobie roli administratora');
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+
+  it('ostatni administrator zostaje adminem -> 409; gdy jest drugi — zmiana przechodzi', async () => {
+    prismaMock.user.update.mockClear();
+    prismaMock.user.findUnique.mockResolvedValueOnce({ id: 'u-inny', role: 'ADMIN', facultyId: null });
+    prismaMock.user.count.mockResolvedValueOnce(1);
+    const res = await request(app).put('/api/users/u-inny').set('Authorization', `Bearer ${admin}`).send({ role: 'STUDENT', studentGroupIds: [] });
+    expect(res.status).toBe(409);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+
+    prismaMock.user.findUnique.mockResolvedValueOnce({ id: 'u-inny', role: 'ADMIN', facultyId: null });
+    prismaMock.user.count.mockResolvedValueOnce(2);
+    prismaMock.user.update.mockResolvedValueOnce({ ...user, id: 'u-inny', role: 'STUDENT', facultyId: null });
+    const ok = await request(app).put('/api/users/u-inny').set('Authorization', `Bearer ${admin}`).send({ role: 'STUDENT', studentGroupIds: [] });
+    expect(ok.status).toBe(200);
   });
 });
