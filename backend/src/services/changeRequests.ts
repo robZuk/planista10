@@ -30,6 +30,7 @@ import {
   createManualOccurrence,
   minutesOf,
   moveOccurrence,
+  activeMakeup,
   occurrenceConflicts,
   type OccurrenceFull,
 } from './occurrenceChanges';
@@ -82,7 +83,7 @@ async function assertPublished(term: AcademicTerm, cohortId: string) {
 
 /** Czy odwolany termin ma juz odrobienie (termin reczny wskazujacy jego klucz). */
 async function isMadeUp(key: string): Promise<boolean> {
-  return (await prisma.occurrence.count({ where: { makeupOfKey: key, status: { not: 'CANCELLED' } } })) > 0;
+  return (await activeMakeup(key)) !== null;
 }
 
 async function hasPending(key: string): Promise<boolean> {

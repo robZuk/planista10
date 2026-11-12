@@ -6,7 +6,8 @@ import { findConflict, type BusySlot } from '../lib/materializer';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
 import { dayWindowProblem, type GridTime } from '../lib/timeGrid';
 import { singleConflictMessage } from '../lib/conflictMessage';
-import { parseOccurrenceKey } from '../lib/occurrenceKey';
+import { occurrenceKey, parseOccurrenceKey } from '../lib/occurrenceKey';
+import { slotLabel } from '../lib/changeRequests';
 import { TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
 import { assessSlot, SLOT_WARNINGS_CODE, type SlotAssessment } from '../lib/occurrenceSlot';
 import { gridFor } from './timeGrids';
@@ -86,18 +87,57 @@ function assertWarningsConfirmed(assessment: SlotAssessment, confirmed: boolean 
 
 const isDerived = (occ: OccurrenceFull) => occ.kind === 'DERIVED' && !!occ.placement && !!occ.originalDate;
 
-/** Przywrocenie terminu z wzorca (usuwa wyjatek). */
+/** Aktywne odrobienie odwolanego terminu (termin reczny wskazujacy jego trwaly klucz) albo null. */
+export function activeMakeup(key: string) {
+  return prisma.occurrence.findFirst({ where: { makeupOfKey: key, status: { not: 'CANCELLED' } }, orderBy: { date: 'asc' } });
+}
+
+/**
+ * Odwolany termin, ktory ma juz odrobienie, nie wraca do planu (przywrocenie, przeniesienie) —
+ * zajecia odbylyby sie dwa razy i liczyly podwojnie do godzin.
+ */
+async function assertNotMadeUp(occ: OccurrenceFull, what: string): Promise<void> {
+  if (occ.status !== 'CANCELLED') return;
+  const key = occurrenceKey({ ...occ, originalDate: occ.originalDate ? toIsoDate(occ.originalDate) : null });
+  const makeup = await activeMakeup(key);
+  if (makeup) {
+    throw new AppError(
+      409,
+      `Te zajecia sa juz odrobione (${slotLabel(toIsoDate(makeup.date), makeup.startMinute, makeup.endMinute)}) — usun albo odwolaj odrobienie, zanim ${what}`,
+    );
+  }
+}
+
+/** Przywrocenie terminu z wzorca (usuwa wyjatek). Wraca na miejsce z wzorca — z kontrola kolizji. */
 export async function restoreOccurrence(occ: OccurrenceFull, grid: GridTime): Promise<void> {
   if (!isDerived(occ)) throw new AppError(400, 'Przywracac mozna tylko terminy z wzorca');
+  await assertNotMadeUp(occ, 'przywrocisz termin');
   const p = occ.placement!;
   const length = occ.endOrder - occ.startOrder + 1;
   const endOrder = Math.min(p.endOrder, p.startOrder + length - 1);
   const time = minutesOf(grid, p.startOrder, endOrder);
+  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: occ.termId } });
+  const date = toIsoDate(occ.originalDate!);
+  const conflict = await occurrenceConflicts(
+    term,
+    { date, ...time, roomId: p.roomId, instructorId: p.instructorId, groupId: occ.groupId, jointKey: p.jointKey },
+    { excludePatternKey: `${p.id}|${date}`, excludeOccurrenceId: occ.id },
+  );
+  if (conflict) throw new AppError(409, singleConflictMessage(conflict));
   await prisma.$transaction([
     prisma.placementException.deleteMany({ where: { placementId: p.id, originalDate: occ.originalDate! } }),
     prisma.occurrence.update({
       where: { id: occ.id },
-      data: { date: occ.originalDate!, startOrder: p.startOrder, endOrder, ...time, roomId: p.roomId, instructorId: p.instructorId, status: 'SCHEDULED' },
+      data: {
+        date: occ.originalDate!,
+        startOrder: p.startOrder,
+        endOrder,
+        ...time,
+        roomId: p.roomId,
+        instructorId: p.instructorId,
+        jointKey: p.jointKey,
+        status: 'SCHEDULED',
+      },
     }),
   ]);
 }
@@ -144,6 +184,7 @@ export async function moveOccurrence(occ: OccurrenceFull, grid: GridTime, input:
   };
   if (next.endOrder < next.startOrder) throw new AppError(400, 'Nieprawidlowy zakres godzin');
   if (input.online === false && !next.roomId) throw new AppError(400, 'Wybierz sale (albo zostaw zajecia online)');
+  await assertNotMadeUp(occ, 'przeniesiesz termin');
   const time = minutesOf(grid, next.startOrder, next.endOrder);
   const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: occ.termId } });
   // Dzien i godziny oceniamy tylko przy zmianie miejsca w czasie (sama zmiana sali/prowadzacego ich nie rusza).
@@ -219,9 +260,7 @@ export async function createManualOccurrence(term: AcademicTerm, section: ClassS
     if (!found || found.sectionId !== section.id || found.status !== 'CANCELLED') {
       throw new AppError(400, 'Odrabiany termin nie jest odwolanym terminem tych zajec');
     }
-    if ((await prisma.occurrence.count({ where: { makeupOfKey: input.makeupOfKey, status: { not: 'CANCELLED' } } })) > 0) {
-      throw new AppError(409, 'Te zajecia maja juz termin odrobienia');
-    }
+    if (await activeMakeup(input.makeupOfKey)) throw new AppError(409, 'Te zajecia maja juz termin odrobienia');
     original = found;
   }
   // Prowadzacy: wskazany (null = NN); bez wskazania — z odrabianych zajec albo pierwszy z obsady.
