@@ -45,7 +45,7 @@ import { facultyPlannerIds, instructorUserIds, notify } from './notifications';
 
 const occurrenceInclude = { placement: true, section: true } satisfies Prisma.OccurrenceInclude;
 
-/** Termin wg trwalego klucza (terminy z wzorca maja nowe id po kazdym generowaniu). */
+/** Termin wg trwalego klucza (umieszczenie + data z wzorca albo id terminu). */
 export async function findByKey(key: string): Promise<OccurrenceFull | null> {
   const parsed = parseOccurrenceKey(key);
   if (!parsed) return null;

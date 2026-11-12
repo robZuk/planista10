@@ -15,6 +15,7 @@ import {
   type MatPlacement,
   type MatSection,
 } from '../lib/materializer';
+import { diffOccurrences, type DerivedRow } from '../lib/occurrenceDiff';
 import { toCalendarInput } from './termCalendars';
 import { calendarFor, calendarsFor, type CalendarRow } from './cohortCalendar';
 import { activeCohorts, type CohortContext } from './sections';
@@ -740,6 +741,14 @@ export interface GenerateReport {
   draftVersions: string[];
 }
 
+/** Duze listy id dzielimy na porcje — limit parametrow zapytania w Postgresie. */
+const ID_CHUNK = 5000;
+function chunks<T>(items: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
 export async function generate(
   term: AcademicTerm,
   opts: { facultyId: string | null; cohortIds?: string[]; fromDate?: IsoDate | null; dryRun: boolean },
@@ -775,6 +784,14 @@ export async function generate(
   });
   const sectionIds = sections.map((s) => s.id);
   const from = opts.fromDate ? fromIsoDate(opts.fromDate) : null;
+  // Zakres generowania liczymy po dacie z wzorca (jak materializer), nie po dacie terminu —
+  // termin przeniesiony przez granice "od dnia" nalezy tam, gdzie jego data z wzorca.
+  const inRange: Prisma.OccurrenceWhereInput = from
+    ? { OR: [{ originalDate: { gte: from } }, { originalDate: null, date: { gte: from } }] }
+    : {};
+  const beforeRange: Prisma.OccurrenceWhereInput = from
+    ? { OR: [{ originalDate: { lt: from } }, { originalDate: null, date: { lt: from } }] }
+    : {};
 
   // Godziny zuzyte poza generowaniem: terminy MANUAL i zachowane terminy sprzed "od kiedy".
   // Odrobienie odwolanego terminu (makeupOfKey) sie nie liczy — odwolany termin z wzorca juz
@@ -783,7 +800,7 @@ export async function generate(
     where: {
       sectionId: { in: sectionIds },
       status: { not: 'CANCELLED' },
-      OR: [{ kind: 'MANUAL', makeupOfKey: null }, ...(from ? [{ kind: 'DERIVED' as const, date: { lt: from } }] : [])],
+      OR: [{ kind: 'MANUAL', makeupOfKey: null }, ...(from ? [{ kind: 'DERIVED' as const, ...beforeRange }] : [])],
     },
     select: { sectionId: true, startOrder: true, endOrder: true },
   });
@@ -829,7 +846,7 @@ export async function generate(
   const busy: BusySlot[] = await termOccupancy(term, { excludeCohortIds: cohortIds });
   if (from) {
     const past = await prisma.occurrence.findMany({
-      where: { sectionId: { in: sectionIds }, kind: 'DERIVED', date: { lt: from }, status: { not: 'CANCELLED' } },
+      where: { sectionId: { in: sectionIds }, kind: 'DERIVED', status: { not: 'CANCELLED' }, ...beforeRange },
     });
     for (const o of past) {
       busy.push({
@@ -854,27 +871,40 @@ export async function generate(
     fromDate: opts.fromDate ?? null,
   });
 
-  // Diff z obecnymi terminami DERIVED w zakresie (klucz: umieszczenie + data z wzorca).
+  // Diff z obecnymi terminami DERIVED w zakresie (klucz: umieszczenie + data z wzorca). Termin
+  // o tym samym kluczu zostaje tym samym wierszem (to samo id) — zmienia sie tylko jego tresc.
   const existing = await prisma.occurrence.findMany({
-    where: { sectionId: { in: sectionIds }, kind: 'DERIVED', ...(from ? { date: { gte: from } } : {}) },
+    where: { sectionId: { in: sectionIds }, kind: 'DERIVED', ...inRange },
   });
-  const sig = (o: { date: string; startOrder: number; endOrder: number; startMinute: number; endMinute: number; roomId: string | null; instructorId: string | null; status: string }) =>
-    `${o.date}|${o.startOrder}|${o.endOrder}|${o.startMinute}|${o.endMinute}|${o.roomId}|${o.instructorId}|${o.status}`;
-  const before = new Map(
-    existing.map((o) => [
-      `${o.placementId}|${o.originalDate ? toIsoDate(o.originalDate) : toIsoDate(o.date)}`,
-      sig({ ...o, date: toIsoDate(o.date) }),
-    ]),
+  const sectionById = new Map(sections.map((s) => [s.id, s]));
+  // Uwaga z wyjatku (powod odwolania/przeniesienia) — termin wg wzorca uwagi nie ma.
+  const noteOf = new Map(
+    sections.flatMap((s) => s.placements.flatMap((p) => p.exceptions.map((e) => [`${p.id}|${toIsoDate(e.originalDate)}`, e.note] as const))),
   );
-  for (const o of mat.occurrences) {
-    const key = `${o.placementId}|${o.originalDate}`;
-    const old = before.get(key);
-    if (old === undefined) report.added++;
-    else if (old !== sig(o)) report.changed++;
-    else report.unchanged++;
-    before.delete(key);
-  }
-  report.removed = before.size;
+  const planned: DerivedRow[] = mat.occurrences.map((o) => ({
+    termId: term.id,
+    facultyId: sectionById.get(o.sectionId)!.facultyId,
+    sectionId: o.sectionId,
+    placementId: o.placementId,
+    originalDate: fromIsoDate(o.originalDate),
+    date: fromIsoDate(o.date),
+    startOrder: o.startOrder,
+    endOrder: o.endOrder,
+    startMinute: o.startMinute,
+    endMinute: o.endMinute,
+    roomId: o.roomId,
+    instructorId: o.instructorId,
+    groupId: o.groupId,
+    kind: 'DERIVED',
+    status: o.status,
+    jointKey: o.jointKey,
+    note: noteOf.get(`${o.placementId}|${o.originalDate}`) ?? null,
+  }));
+  const diff = diffOccurrences(existing, planned);
+  report.added = diff.added;
+  report.changed = diff.changed;
+  report.unchanged = diff.unchanged;
+  report.removed = diff.toDelete.length;
   report.total = mat.occurrences.length;
   report.conflicts = mat.conflicts;
   report.beyondHours = mat.beyondHours.length;
@@ -917,32 +947,13 @@ export async function generate(
   }
 
   if (!opts.dryRun) {
-    const sectionById = new Map(sections.map((s) => [s.id, s]));
     const now = new Date();
     await prisma.$transaction([
-      prisma.occurrence.deleteMany({
-        where: { sectionId: { in: sectionIds }, kind: 'DERIVED', ...(from ? { date: { gte: from } } : {}) },
-      }),
-      prisma.occurrence.createMany({
-        data: mat.occurrences.map((o) => ({
-          termId: term.id,
-          facultyId: sectionById.get(o.sectionId)!.facultyId,
-          sectionId: o.sectionId,
-          placementId: o.placementId,
-          originalDate: fromIsoDate(o.originalDate),
-          date: fromIsoDate(o.date),
-          startOrder: o.startOrder,
-          endOrder: o.endOrder,
-          startMinute: o.startMinute,
-          endMinute: o.endMinute,
-          roomId: o.roomId,
-          instructorId: o.instructorId,
-          groupId: o.groupId,
-          kind: 'DERIVED' as const,
-          status: o.status,
-          jointKey: o.jointKey,
-        })),
-      }),
+      // Najpierw usuniecia (zwalniaja klucze), potem nowe i zmienione — terminy bez zmian
+      // zostaja nietkniete (to samo id, ta sama data utworzenia).
+      ...chunks(diff.toDelete, ID_CHUNK).map((ids) => prisma.occurrence.deleteMany({ where: { id: { in: ids } } })),
+      ...chunks(diff.toCreate, ID_CHUNK).map((data) => prisma.occurrence.createMany({ data })),
+      ...diff.toUpdate.map((u) => prisma.occurrence.update({ where: { id: u.id }, data: u.data })),
       prisma.termCalendar.updateMany({
         where: { id: { in: [...new Set(ctxs.map((c) => scope.calendars.get(c.cohort.id)!.id))] } },
         data: { lastGeneratedAt: now },

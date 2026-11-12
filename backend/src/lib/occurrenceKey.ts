@@ -1,8 +1,9 @@
 /**
- * Trwaly klucz terminu. Terminy z wzorca (DERIVED) dostaja nowe id przy kazdym "Generuj terminy",
- * wiec zgloszenia prowadzacych i odrobienia wskazuja je kluczem umieszczenie + data z wzorca —
- * tym samym, ktorym wyjatki (PlacementException) przezywaja generowanie. Terminy reczne (MANUAL)
- * nie znikaja przy generowaniu, wiec wystarcza ich id.
+ * Trwaly klucz terminu: zgloszenia prowadzacych i odrobienia wskazuja termin z wzorca kluczem
+ * umieszczenie + data z wzorca (tym samym, ktorym wyjatki PlacementException przezywaja generowanie),
+ * a terminy reczne i odlaczone — ich id. Pozostalosc z czasu, gdy "Generuj terminy" nadawalo
+ * terminom nowe id; dzis generowanie zachowuje id (lib/occurrenceDiff), docelowo klucz zastapia
+ * klucze obce do terminu.
  */
 export interface KeyedOccurrence {
   id: string;

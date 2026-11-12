@@ -113,9 +113,13 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   (`409 { code: 'SLOT_WARNINGS', warnings }` → ponowienie z `confirmWarnings: true`).
   Odrobienie konkretnego odwołanego terminu ma `makeupOfKey` (jego trwały klucz) i **nie zużywa
   godzin drugi raz** — odwołany termin z wzorca już je zużył.
-- **Trwały klucz terminu** (`lib/occurrenceKey`): terminy `DERIVED` dostają nowe id przy każdym
-  „Generuj terminy", więc zgłoszenia i odrobienia wskazują je kluczem `p:<umieszczenie>|<data z wzorca>`
-  (jak wyjątki); terminy ręczne — `o:<id>`.
+- **Stałe id terminów:** „Generuj terminy" robi diff (`lib/occurrenceDiff`) — termin o tym samym
+  kluczu (umieszczenie + data z wzorca, unikalny indeks `Occurrence(placementId, originalDate)`)
+  jest aktualizowany w miejscu i zachowuje id; nowe daty wzorca → nowe terminy, daty, których już
+  nie ma (i terminy usuniętych umieszczeń) → usunięte. Zakres „od dnia" liczony jest po dacie z wzorca.
+- **Trwały klucz terminu** (`lib/occurrenceKey`): zgłoszenia i odrobienia wskazują termin kluczem
+  `p:<umieszczenie>|<data z wzorca>` (jak wyjątki); terminy ręczne i odłączone — `o:<id>`. To pozostałość
+  z czasu, gdy generowanie nadawało nowe id — docelowo zastąpią go klucze obce do terminu.
 - Zmiana wzorca po generowaniu → „terminy nieaktualne" — liczone per rocznik od jego ostatniego
   generowania (`CohortGeneration`, nie od kalendarza, który dzieli wiele roczników);
   jedno źródło dla planu i „Przygotowania semestru" (`services/staleness.ts`).

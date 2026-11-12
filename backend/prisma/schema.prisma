@@ -532,13 +532,16 @@ model Occurrence {
   jointKey     String?
   note         String?
   // Odrobienie (MANUAL, MAKEUP) za odwolany termin — jego trwaly klucz (lib/occurrenceKey):
-  // "p:<umieszczenie>|<data z wzorca>" albo "o:<id terminu recznego>". Terminy z wzorca dostaja
-  // nowe id przy kazdym "Generuj terminy", wiec nie wskazujemy ich kluczem obcym. Odrobienie
+  // "p:<umieszczenie>|<data z wzorca>" albo "o:<id terminu>". Pozostalosc z czasu, gdy generowanie
+  // nadawalo terminom nowe id (dzis je zachowuje) — docelowo klucz obcy do terminu. Odrobienie
   // z kluczem nie zuzywa godzin drugi raz — odwolany termin juz je zuzyl.
   makeupOfKey  String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
+  // Jeden termin na date wzorca umieszczenia — "Generuj terminy" aktualizuje go w miejscu (to samo id).
+  // Terminy reczne i odlaczone od usunietych umieszczen maja placementId = null (NULL-e sie nie zderzaja).
+  @@unique([placementId, originalDate])
   @@index([termId, facultyId])
   @@index([date, roomId])
   @@index([date, instructorId])
