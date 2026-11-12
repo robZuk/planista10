@@ -89,6 +89,8 @@ export async function createManualOccurrence(
     online?: boolean;
     instructorId?: string | null;
     note?: string;
+    /** Odrobienie odwolanego terminu (jego klucz) — zamyka go na liscie "Do odrobienia". */
+    makeupOfKey?: string | null;
     confirmWarnings?: boolean;
   },
 ): Promise<{ message: string }> {

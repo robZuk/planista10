@@ -462,6 +462,7 @@ export async function listMakeups(term: AcademicTerm, scope: { instructorId?: st
     const p = pendingByKey.get(keys[i]!);
     return {
       occurrenceId: o.id,
+      sectionId: o.section.id,
       key: keys[i]!,
       date: toIsoDate(o.date),
       time: `${formatMinutes(o.startMinute)}–${formatMinutes(o.endMinute)}`,

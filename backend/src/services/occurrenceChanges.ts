@@ -6,6 +6,7 @@ import { findConflict, type BusySlot } from '../lib/materializer';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
 import { dayWindowProblem, type GridTime } from '../lib/timeGrid';
 import { singleConflictMessage } from '../lib/conflictMessage';
+import { parseOccurrenceKey } from '../lib/occurrenceKey';
 import { TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
 import { assessSlot, SLOT_WARNINGS_CODE, type SlotAssessment } from '../lib/occurrenceSlot';
 import { gridFor } from './timeGrids';
@@ -206,11 +207,35 @@ export async function createManualOccurrence(term: AcademicTerm, section: ClassS
     throw new AppError(400, 'Podaj date i godziny');
   }
   if (!input.online && !roomId) throw new AppError(400, 'Wybierz sale (albo zaznacz zajecia online)');
+  // Odrobienie wskazanych zajec: musza to byc odwolane zajecia tej samej sekcji.
+  let original: { instructorId: string | null } | null = null;
+  if (input.makeupOfKey) {
+    const parsed = parseOccurrenceKey(input.makeupOfKey);
+    const found = !parsed
+      ? null
+      : 'occurrenceId' in parsed
+        ? await prisma.occurrence.findUnique({ where: { id: parsed.occurrenceId } })
+        : await prisma.occurrence.findFirst({ where: { placementId: parsed.placementId, originalDate: fromIsoDate(parsed.originalDate), kind: 'DERIVED' } });
+    if (!found || found.sectionId !== section.id || found.status !== 'CANCELLED') {
+      throw new AppError(400, 'Odrabiany termin nie jest odwolanym terminem tych zajec');
+    }
+    if ((await prisma.occurrence.count({ where: { makeupOfKey: input.makeupOfKey, status: { not: 'CANCELLED' } } })) > 0) {
+      throw new AppError(409, 'Te zajecia maja juz termin odrobienia');
+    }
+    original = found;
+  }
+  // Prowadzacy: wskazany (null = NN); bez wskazania — z odrabianych zajec albo pierwszy z obsady.
+  const instructorId =
+    input.instructorId !== undefined
+      ? input.instructorId
+      : (original?.instructorId ??
+        (await prisma.sectionInstructor.findFirst({ where: { sectionId: section.id, instructorId: { not: null } } }))?.instructorId ??
+        null);
   const time = minutesOf(grid, input.startOrder, input.endOrder);
   const assessment = await slotAssessment(term, section.cohortId, input.date, time);
   const conflict = await occurrenceConflicts(
     term,
-    { date: input.date, ...time, roomId, instructorId: input.instructorId ?? null, groupId: section.groupId, jointKey: null },
+    { date: input.date, ...time, roomId, instructorId, groupId: section.groupId, jointKey: null },
     {},
   );
   if (conflict) throw new AppError(409, singleConflictMessage(conflict));
@@ -225,7 +250,7 @@ export async function createManualOccurrence(term: AcademicTerm, section: ClassS
       endOrder: input.endOrder,
       ...time,
       roomId,
-      instructorId: input.instructorId ?? null,
+      instructorId,
       groupId: section.groupId,
       kind: 'MANUAL',
       status: 'MAKEUP',

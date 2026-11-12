@@ -24,6 +24,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Combobox } from '@/components/Combobox';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { changeOccurrence, createManualOccurrence, deleteManualOccurrence, fetchOccurrences } from '@/api/plan';
+import { fetchMakeups } from '@/api/requests';
 import { fetchBuildings } from '@/api/buildings';
 import { getErrorMessage, isNotFound, slotWarningsOf } from '@/lib/errors';
 import { matchesAllWords } from '@/lib/searchMatch';
@@ -82,6 +83,8 @@ export function OccurrencesTab({
     setDetails(null);
     await queryClient.invalidateQueries({ queryKey: ['occurrences'] });
     await queryClient.invalidateQueries({ queryKey: ['plan'] });
+    // Odwolanie/odrobienie zmienia liste "Do odrobienia" (okno terminu recznego, Zgloszenia zmian).
+    await queryClient.invalidateQueries({ queryKey: ['makeups'] });
   };
   // Termin zniknal w miedzyczasie (ponowne generowanie, usuniecie przez kogos innego).
   const termGone = () => {
@@ -462,6 +465,12 @@ function ManualDialog({
   const [note, setNote] = useState('Odrobienie');
   const section = sections.find((s) => s.id === sectionId);
   const rooms = useRoomOptions(section);
+  // Odwolane, jeszcze nieodrobione terminy tych zajec — odrobienie wskazuje, ktory odrabia
+  // (inaczej zostaje na liscie "Do odrobienia" na zawsze). Domyslnie pierwszy z nich.
+  const { data: makeups } = useQuery({ queryKey: ['makeups', termKey, 'manual'], queryFn: () => fetchMakeups(termKey) });
+  const toMakeUp = (makeups ?? []).filter((m) => m.sectionId === sectionId && m.state === 'TODO');
+  const [makeupChoice, setMakeupChoice] = useState<{ sectionId: string; key: string } | null>(null);
+  const makeupKey = makeupChoice?.sectionId === sectionId ? makeupChoice.key : (toMakeUp[0]?.key ?? '');
   const slotKey = `${sectionId}|${date}|${start}|${length}`;
   const [warned, setWarned] = useState<{ key: string; warnings: string[] } | null>(null);
   const warnings = warned?.key === slotKey ? warned.warnings : null;
@@ -474,7 +483,8 @@ function ManualDialog({
         endOrder: start + length - 1,
         roomId: online ? null : roomId,
         online,
-        instructorId: section?.instructors.find((i) => i.instructorId)?.instructorId ?? null,
+        // Odrobienie: prowadzacy z odwolanych zajec (dobiera serwer); zajecia dodatkowe — pierwszy z obsady.
+        ...(makeupKey ? { makeupOfKey: makeupKey } : { instructorId: section?.instructors.find((i) => i.instructorId)?.instructorId ?? null }),
         note,
         confirmWarnings: warnings !== null,
       }),
@@ -506,6 +516,27 @@ function ManualDialog({
               placeholder="Wybierz zajecia"
             />
           </Field>
+          {toMakeUp.length > 0 && (
+            <Field className="col-span-2">
+              <FieldLabel htmlFor="mn-makeup">Odrabia zajecia z</FieldLabel>
+              <NativeSelect
+                id="mn-makeup"
+                value={makeupKey}
+                onChange={(e) => {
+                  setMakeupChoice({ sectionId, key: e.target.value });
+                  const row = toMakeUp.find((m) => m.key === e.target.value);
+                  if (row) setLength(Math.min(4, row.hours));
+                }}
+              >
+                {toMakeUp.map((m) => (
+                  <NativeSelectOption key={m.key} value={m.key}>
+                    {m.date} {m.time} (odwolane{m.note ? `: ${m.note}` : ''})
+                  </NativeSelectOption>
+                ))}
+                <NativeSelectOption value="">— nic, to zajecia dodatkowe</NativeSelectOption>
+              </NativeSelect>
+            </Field>
+          )}
           <Field>
             <FieldLabel htmlFor="mn-date">Data</FieldLabel>
             <Input id="mn-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
