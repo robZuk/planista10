@@ -6,6 +6,9 @@ import { toTreeGroup, cohortLabel } from './cohorts';
 import { activeCohorts, groupSignature } from './sections';
 import { calendarFor, checkPlacement, type PlacementInput } from './plan';
 import { conflictShort } from '../lib/conflictMessage';
+import { TeachingCalendar } from '../lib/teachingCalendar';
+import { plural } from '../lib/plural';
+import { toCalendarInput } from './termCalendars';
 
 /**
  * "Przenies plan z zeszlego roku" — uruchamiane WYLACZNIE przyciskiem planisty, dla
@@ -44,6 +47,17 @@ export async function carryPlan(
   for (const ctx of contexts) {
     const label = cohortLabel(ctx.cohort);
     const calendar = await calendarFor(term, ctx);
+    // Numery zjazdow/tygodni nowego kalendarza — "wybrane zjazdy" z zeszlego roku moga ich nie miec
+    // (np. 10 zjazdow rok temu, 9 teraz). Umieszczenie przechodzi, ale podglad mowi o brakach.
+    const zjazdNumbers = new Set(calendar?.zjazdy.map((z) => z.number) ?? []);
+    const weekNumbers = new Set(
+      calendar
+        ? new TeachingCalendar(toCalendarInput(calendar))
+            .teachingWeeks()
+            .map((w) => w.index)
+            .filter((i): i is number => i !== null)
+        : [],
+    );
     // Kandydaci na zrodlo: umieszczenia tego programu we wczesniejszych semestrach tego samego typu,
     // w zajeciach rocznikow, ktore byly wtedy w tym samym semestrze programu.
     const candidates = await prisma.placement.findMany({
@@ -128,7 +142,19 @@ export async function carryPlan(
           });
           continue;
         }
-        report.created.push({ ...row, source: sourceLabel });
+        const known = input.cycle === 'ZJAZD' ? zjazdNumbers : weekNumbers;
+        const missing = input.pattern === 'LIST' && calendar ? input.numbers.filter((n) => !known.has(n)) : [];
+        report.created.push({
+          ...row,
+          source: sourceLabel,
+          ...(missing.length > 0
+            ? {
+                problem: `${input.cycle === 'ZJAZD' ? 'zjazdu' : 'tygodnia'} nr ${missing.join(', ')} nie ma w nowym kalendarzu (ma ${
+                  input.cycle === 'ZJAZD' ? plural(known.size, 'zjazd', 'zjazdy', 'zjazdow') : plural(known.size, 'tydzien', 'tygodnie', 'tygodni')
+                }) — popraw numery po przeniesieniu`,
+              }
+            : {}),
+        });
         if (!opts.dryRun) {
           await prisma.placement.create({ data: { ...input, termId: term.id, facultyId: t.facultyId } });
         }

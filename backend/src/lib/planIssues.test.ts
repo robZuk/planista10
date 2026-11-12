@@ -23,6 +23,19 @@ describe('sectionIssues', () => {
     ]);
   });
 
+  it('wybrane zjazdy, ktorych nie ma w kalendarzu (np. po przeniesieniu planu)', () => {
+    const p = { ...ok.placements[0]!, missingPeriods: { cycle: 'ZJAZD' as const, numbers: [10], available: 9 } };
+    expect(sectionIssues({ ...ok, placements: [p] }, 3)).toEqual([
+      {
+        kind: 'MISSING_PERIODS',
+        placementId: 'p1',
+        message: 'Zjazdu nr 10 nie ma w kalendarzu rocznika (ma 9 zjazdow) — w te dni zajecia sie nie odbeda; wybierz inne numery',
+      },
+    ]);
+    // Wszystkie numery istnieja -> bez uwag.
+    expect(kinds({ ...ok, placements: [{ ...p, missingPeriods: { cycle: 'ZJAZD', numbers: [], available: 9 } }] })).toEqual([]);
+  });
+
   it('umieszczenie NN (bez prowadzacego) nie jest niezgodne', () => {
     expect(kinds({ ...ok, placements: [{ ...ok.placements[0]!, instructorId: null }] })).toEqual([]);
   });

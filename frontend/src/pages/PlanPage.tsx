@@ -652,7 +652,7 @@ export default function PlanPage() {
                       })}
                     </ul>
                     <p className="text-muted-foreground">
-                      Zmiany obsady, sal lub grup po umieszczeniu zajec. Kliknij zajecia, zeby poprawic umieszczenie.
+                      Zmiany obsady, sal, grup lub kalendarza po umieszczeniu zajec. Kliknij zajecia, zeby poprawic umieszczenie.
                     </p>
                   </div>
                 )}

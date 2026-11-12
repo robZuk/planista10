@@ -578,7 +578,7 @@ export interface PlanSection {
 }
 
 export interface PlanIssue {
-  kind: 'INSTRUCTOR_NOT_STAFFED' | 'ROOM_TYPE' | 'ROOM_CAPACITY' | 'GROUP_INACTIVE' | 'STAFF_HOURS' | 'OUTSIDE_GRID';
+  kind: 'INSTRUCTOR_NOT_STAFFED' | 'ROOM_TYPE' | 'ROOM_CAPACITY' | 'GROUP_INACTIVE' | 'STAFF_HOURS' | 'OUTSIDE_GRID' | 'MISSING_PERIODS';
   /** null = problem zajec (grupa, obsada), nie jednego umieszczenia. */
   placementId: string | null;
   message: string;

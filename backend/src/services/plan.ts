@@ -569,6 +569,19 @@ export async function planView(term: AcademicTerm, cohortId: string) {
     const range = facultyGrid.time.range(p.startOrder, p.endOrder);
     return range ? dayWindowProblem(facultyGrid.days, p.dayOfWeek, range.startMinute, range.endMinute) : 'bloki spoza siatki';
   };
+  // Numery zjazdow/tygodni z kalendarza rocznika — "wybrane zjazdy" spoza nich nic nie dadza.
+  const zjazdNumbers = new Set(calendar?.zjazdy.map((z) => z.number) ?? []);
+  const weekNumbers = new Set(
+    cal
+      ?.teachingWeeks()
+      .map((w) => w.index)
+      .filter((i): i is number => i !== null) ?? [],
+  );
+  const missingPeriodsOf = (p: { pattern: string; cycle: 'WEEK' | 'ZJAZD'; numbers: number[] }) => {
+    if (!calendar || p.pattern !== 'LIST') return undefined;
+    const known = p.cycle === 'ZJAZD' ? zjazdNumbers : weekNumbers;
+    return { cycle: p.cycle, numbers: p.numbers.filter((n) => !known.has(n)), available: known.size };
+  };
   const issuesOf = (s: (typeof sections)[number]) => {
     const group = groupById.get(s.groupId);
     if (!group) return [];
@@ -584,6 +597,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
           instructorName: p.instructorId ? name(p.instructor) : undefined,
           room: p.room,
           gridProblem: gridProblemOf(p),
+          missingPeriods: missingPeriodsOf(p),
         })),
       },
       ctx.semester,

@@ -1,6 +1,7 @@
 import type { ClassType, RoomType } from '@prisma/client';
 import { isActiveIn } from './groupTree';
 import { roomTypeMap } from './scheduleTime';
+import { plural } from './plural';
 
 /**
  * Niezgodnosci planu rocznika, ktore powstaja PO umieszczeniu zajec: "Umiesc" sprawdza je
@@ -15,7 +16,8 @@ export type PlanIssueKind =
   | 'ROOM_CAPACITY' // sala mniejsza niz grupa
   | 'GROUP_INACTIVE' // grupy nie ma w semestrze rocznika, a jej zajecia sa w planie
   | 'STAFF_HOURS' // obsada ma wiecej godzin niz zajecia
-  | 'OUTSIDE_GRID'; // dzien albo godziny umieszczenia poza dniami/oknem siatki wydzialu
+  | 'OUTSIDE_GRID' // dzien albo godziny umieszczenia poza dniami/oknem siatki wydzialu
+  | 'MISSING_PERIODS'; // wybrane zjazdy/tygodnie, ktorych nie ma w kalendarzu (np. po "Przenies plan")
 
 export interface PlanIssue {
   kind: PlanIssueKind;
@@ -37,6 +39,8 @@ export interface IssueSection {
     room: { number: string; type: RoomType; capacity: number } | null;
     /** Problem z dniem/oknem siatki (lib/timeGrid.dayWindowProblem) albo null. */
     gridProblem?: string | null;
+    /** Rytm "wybrane zjazdy/tygodnie": numery, ktorych nie ma w kalendarzu rocznika. */
+    missingPeriods?: { cycle: 'WEEK' | 'ZJAZD'; numbers: number[]; available: number };
   }[];
 }
 
@@ -68,6 +72,16 @@ export function sectionIssues(section: IssueSection, semester: number): PlanIssu
         kind: 'OUTSIDE_GRID',
         placementId: p.id,
         message: `Zajecia poza siatka godzin wydzialu: ${p.gridProblem} — przenies je w dozwolony dzien i godziny`,
+      });
+    }
+    if (p.missingPeriods && p.missingPeriods.numbers.length > 0) {
+      const { cycle, numbers, available } = p.missingPeriods;
+      const what = cycle === 'ZJAZD' ? (numbers.length === 1 ? 'Zjazdu' : 'Zjazdow') : numbers.length === 1 ? 'Tygodnia' : 'Tygodni';
+      const has = cycle === 'ZJAZD' ? plural(available, 'zjazd', 'zjazdy', 'zjazdow') : plural(available, 'tydzien', 'tygodnie', 'tygodni') + ' zajec';
+      issues.push({
+        kind: 'MISSING_PERIODS',
+        placementId: p.id,
+        message: `${what} nr ${numbers.join(', ')} nie ma w kalendarzu rocznika (ma ${has}) — w te dni zajecia sie nie odbeda; wybierz inne numery`,
       });
     }
     if (p.instructorId && !staff.has(p.instructorId)) {

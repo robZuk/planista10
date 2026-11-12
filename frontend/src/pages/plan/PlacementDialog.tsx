@@ -149,6 +149,9 @@ export function PlacementDialog({
   const listOptions = zjazdCalendar
     ? (plan.calendar?.zjazdy ?? []).map((z) => z.number)
     : Array.from({ length: plan.calendar?.teachingWeeks ?? 15 }, (_, i) => i + 1);
+  // Numery z umieszczenia, ktorych nie ma w kalendarzu (np. po "Przenies plan" z roku z wieksza liczba
+  // zjazdow) — widoczne i do odznaczenia, zamiast cicho zostawac w zapisie.
+  const missingNumbers = pattern === 'LIST' ? numbers.filter((n) => !listOptions.includes(n)) : [];
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -271,6 +274,26 @@ export function PlacementDialog({
                   </Button>
                 );
               })}
+              {missingNumbers.map((n) => (
+                <Button
+                  key={`missing-${n}`}
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  className="w-10 line-through"
+                  title="Nie ma w kalendarzu rocznika — kliknij, zeby odznaczyc"
+                  onClick={() => setNumbers(numbers.filter((x) => x !== n))}
+                >
+                  {n}
+                </Button>
+              ))}
+              {missingNumbers.length > 0 && (
+                <p className="w-full text-xs text-destructive">
+                  {zjazdCalendar ? (missingNumbers.length === 1 ? 'Zjazdu' : 'Zjazdow') : missingNumbers.length === 1 ? 'Tygodnia' : 'Tygodni'} nr{' '}
+                  {missingNumbers.join(', ')} nie ma w kalendarzu rocznika — odznacz{' '}
+                  {missingNumbers.length === 1 ? 'go' : 'je'} i wybierz inne.
+                </p>
+              )}
             </div>
           )}
           {pattern !== 'LIST' && (
