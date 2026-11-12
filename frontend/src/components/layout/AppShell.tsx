@@ -27,7 +27,7 @@ export function AppShell() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         {/* Pasek podgladu i naglowek przyklejamy razem — dwa osobne `sticky top-0`
             nachodzilyby na siebie i pasek zaslanialby breadcrumby. */}
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -60,7 +60,7 @@ export function AppShell() {
           </header>
         </div>
 
-        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <main className="flex min-w-0 flex-1 flex-col gap-4 p-4 md:p-6">
           <Outlet />
         </main>
       </SidebarInset>
