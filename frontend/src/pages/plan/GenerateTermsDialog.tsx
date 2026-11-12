@@ -147,6 +147,12 @@ export function GenerateTermsDialog({
                   {report.orphanExceptions.map((e, i) => (
                     <li key={i}>
                       {e.date} · {e.section} ({e.action === 'CANCEL' ? 'odwolanie' : 'przeniesienie'})
+                      {e.makeup && (
+                        <span className="text-destructive">
+                          {' '}
+                          — ma odrobienie {e.makeup}, ktore zostanie jako dodatkowe zajecia (usun je albo odwolaj nowy termin)
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>

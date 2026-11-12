@@ -730,7 +730,11 @@ export interface GenerateReport {
   conflicts: { date: IsoDate; section: string; reason: string; with: string }[];
   beyondHours: number;
   shortfalls: { section: string; missing: number }[];
-  orphanExceptions: { section: string; date: IsoDate; action: string }[];
+  /**
+   * Poprawki terminow, ktorych daty juz nie ma we wzorcu. `makeup` — odwolanie ma odrobienie,
+   * ktore po generowaniu zostanie jako dodatkowe zajecia (wzorzec rozpisze pelne godziny).
+   */
+  orphanExceptions: { section: string; date: IsoDate; action: string; makeup?: string }[];
   calendarsMissing: string[];
   /** Roczniki pominiete, bo ich wersja programu jest w projekcie. */
   draftVersions: string[];
@@ -875,11 +879,31 @@ export async function generate(
   report.conflicts = mat.conflicts;
   report.beyondHours = mat.beyondHours.length;
   report.shortfalls = mat.shortfalls;
-  report.orphanExceptions = mat.orphanExceptions.map((e) => ({
-    section: labelOf.get(placementSection.get(e.placementId) ?? '') ?? '?',
-    date: e.originalDate,
-    action: e.action,
-  }));
+  // Odrobienia osieroconych odwolan: ich odwolany termin zniknie, a one zostana jako dodatkowe zajecia.
+  const orphanCancelKeys = mat.orphanExceptions.filter((e) => e.action === 'CANCEL').map((e) => `p:${e.placementId}|${e.originalDate}`);
+  const makeups = orphanCancelKeys.length
+    ? await prisma.occurrence.findMany({
+        where: { makeupOfKey: { in: orphanCancelKeys }, status: { not: 'CANCELLED' } },
+        select: { makeupOfKey: true, date: true, startMinute: true, endMinute: true },
+        orderBy: { date: 'asc' },
+      })
+    : [];
+  const makeupOf = new Map<string, string>();
+  for (const m of makeups) {
+    if (!makeupOf.has(m.makeupOfKey!)) {
+      const d = toIsoDate(m.date);
+      makeupOf.set(m.makeupOfKey!, `${d.slice(8, 10)}.${d.slice(5, 7)} ${formatMinutes(m.startMinute)}–${formatMinutes(m.endMinute)}`);
+    }
+  }
+  report.orphanExceptions = mat.orphanExceptions.map((e) => {
+    const makeup = e.action === 'CANCEL' ? makeupOf.get(`p:${e.placementId}|${e.originalDate}`) : undefined;
+    return {
+      section: labelOf.get(placementSection.get(e.placementId) ?? '') ?? '?',
+      date: e.originalDate,
+      action: e.action,
+      ...(makeup ? { makeup } : {}),
+    };
+  });
 
   if (!opts.dryRun) {
     const sectionById = new Map(sections.map((s) => [s.id, s]));

@@ -643,7 +643,8 @@ export interface GenerateReport {
   conflicts: { date: string; section: string; reason: string; with: string }[];
   beyondHours: number;
   shortfalls: { section: string; missing: number }[];
-  orphanExceptions: { section: string; date: string; action: string }[];
+  /** `makeup` — odwolanie ma odrobienie, ktore zostanie jako dodatkowe zajecia. */
+  orphanExceptions: { section: string; date: string; action: string; makeup?: string }[];
   calendarsMissing: string[];
   /** Roczniki pominiete, bo ich wersja programu jest w projekcie. */
   draftVersions: string[];
