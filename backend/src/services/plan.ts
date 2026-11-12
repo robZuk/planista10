@@ -559,7 +559,8 @@ export async function planView(term: AcademicTerm, cohortId: string) {
 
   const name = (i: { title: string | null; firstName: string; lastName: string } | null) =>
     i ? `${i.title ?? ''} ${i.firstName} ${i.lastName}`.trim() : 'NN';
-  const derivedCount = await prisma.occurrence.count({ where: { termId: term.id, kind: 'DERIVED', section: { cohortId } } });
+  // Wszystkie terminy rocznika (z wzorca i reczne) — licznik zakladki "Terminy".
+  const occurrenceCount = await prisma.occurrence.count({ where: { termId: term.id, section: { cohortId } } });
   // Terminy nieaktualne: ta sama funkcja co w "Przygotowaniu semestru" (services/staleness).
   const reasons = (await staleReasonsByCohort(term, [ctx])).get(cohortId) ?? [];
   // Niezgodnosci powstale po umieszczeniu (obsada, sala, grupa, godziny) — lib/planIssues.
@@ -622,7 +623,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
     stale: reasons.length > 0,
     // Powody (do komunikatu): zmiana wzorca i/lub zmiana godzin zajec po generowaniu.
     staleReasons: reasons,
-    generatedOccurrences: derivedCount,
+    occurrenceCount,
     sections: sections
       .map((s) => ({
         id: s.id,

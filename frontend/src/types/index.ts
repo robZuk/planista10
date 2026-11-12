@@ -613,7 +613,8 @@ export interface PlanView {
   timeGrid: { id: string; studyMode: StudyMode; days: GridDay[]; blocks: TimeBlock[] };
   stale: boolean;
   staleReasons: StaleReason[];
-  generatedOccurrences: number;
+  /** Wszystkie terminy rocznika w semestrze (z wzorca i reczne). */
+  occurrenceCount: number;
   sections: PlanSection[];
 }
 

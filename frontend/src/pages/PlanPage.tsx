@@ -435,7 +435,7 @@ export default function PlanPage() {
         <Tabs defaultValue="pattern">
           <TabsList>
             <TabsTrigger value="pattern">Wzorzec {zjazdCalendar ? 'zjazdu' : 'tygodnia'}</TabsTrigger>
-            <TabsTrigger value="occurrences">Terminy ({plan.generatedOccurrences})</TabsTrigger>
+            <TabsTrigger value="occurrences">Terminy ({plan.occurrenceCount})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pattern" className="mt-3 space-y-3">
