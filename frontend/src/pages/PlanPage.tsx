@@ -752,6 +752,7 @@ export default function PlanPage() {
           cohortId={cohortId}
           cohortLabel={`${cohort.program.code} · semestr ${cohort.semester}`}
           published={plan.calendar?.status === 'PUBLISHED'}
+          filteredCohortIds={cohorts.map((c) => c.id)}
           onClose={() => setGenerating(false)}
           onDone={async () => {
             setGenerating(false);

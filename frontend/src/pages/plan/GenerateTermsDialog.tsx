@@ -23,13 +23,15 @@ const REASON: Record<string, string> = { ROOM: 'sala', INSTRUCTOR: 'prowadzacy',
 /**
  * "Generuj terminy" — jedyne miejsce, gdzie powstaja terminy z wzorca. Najpierw podglad
  * (co dojdzie, zniknie, zmieni sie; kolizje; braki godzin; wyjatki bez daty), potem zapis.
- * Reczne poprawki terminow i terminy reczne zostaja.
+ * Reczne poprawki terminow i terminy reczne zostaja. Zakres: wybrany rocznik albo wszystkie
+ * roczniki z biezacych filtrow (po "Przenies plan" dla calego wydzialu).
  */
 export function GenerateTermsDialog({
   termKey,
   cohortId,
   cohortLabel,
   published,
+  filteredCohortIds,
   onClose,
   onDone,
 }: {
@@ -37,18 +39,22 @@ export function GenerateTermsDialog({
   cohortId: string;
   cohortLabel: string;
   published: boolean;
+  /** Roczniki widoczne przy biezacych filtrach — zakres "wszystkie z filtrow". */
+  filteredCohortIds: string[];
   onClose: () => void;
   onDone: () => void;
 }) {
   const [fromDate, setFromDate] = useState(published ? new Date().toISOString().slice(0, 10) : '');
+  const [scope, setScope] = useState<'one' | 'all'>('one');
+  const ids = scope === 'one' ? [cohortId] : filteredCohortIds;
   const [report, setReport] = useState<GenerateReport | null>(null);
   const preview = useMutation({
-    mutationFn: () => generateOccurrences(termKey, { cohortIds: [cohortId], fromDate: fromDate || null, dryRun: true }),
+    mutationFn: () => generateOccurrences(termKey, { cohortIds: ids, fromDate: fromDate || null, dryRun: true }),
     onSuccess: (r) => setReport(r.data),
     onError: (e) => toast.error(getErrorMessage(e)),
   });
   const apply = useMutation({
-    mutationFn: () => generateOccurrences(termKey, { cohortIds: [cohortId], fromDate: fromDate || null, dryRun: false }),
+    mutationFn: () => generateOccurrences(termKey, { cohortIds: ids, fromDate: fromDate || null, dryRun: false }),
     onSuccess: (r) => {
       toast.success(r.message);
       onDone();
@@ -58,18 +64,32 @@ export function GenerateTermsDialog({
   useEffect(() => {
     preview.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromDate]);
+  }, [fromDate, scope]);
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Generuj terminy — {cohortLabel}</DialogTitle>
+          <DialogTitle>Generuj terminy</DialogTitle>
           <DialogDescription>
             Terminy powstaja z umieszczen we wzorcu i kalendarza rocznika, do wyczerpania godzin. Reczne poprawki
             pojedynczych terminow i terminy reczne zostaja.
           </DialogDescription>
         </DialogHeader>
+        <div className="flex rounded-md border p-0.5 text-sm" role="group" aria-label="Zakres generowania">
+          <Button size="sm" variant={scope === 'one' ? 'secondary' : 'ghost'} aria-pressed={scope === 'one'} onClick={() => setScope('one')}>
+            Ten rocznik ({cohortLabel})
+          </Button>
+          <Button
+            size="sm"
+            variant={scope === 'all' ? 'secondary' : 'ghost'}
+            aria-pressed={scope === 'all'}
+            onClick={() => setScope('all')}
+            disabled={filteredCohortIds.length <= 1}
+          >
+            Wszystkie roczniki z filtrow ({filteredCohortIds.length})
+          </Button>
+        </div>
         <Field className="w-56">
           <FieldLabel htmlFor="gen-from">Generuj od dnia (puste = caly semestr)</FieldLabel>
           <Input id="gen-from" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
