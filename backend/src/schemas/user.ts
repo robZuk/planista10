@@ -5,7 +5,7 @@ const role = z.enum(['ADMIN', 'DEAN_OFFICE', 'INSTRUCTOR', 'STUDENT'], {
 });
 
 export const userCreateSchema = z.object({
-  name: z.string().min(1, 'Imie i nazwisko sa wymagane'),
+  name: z.string().trim().min(1, 'Imie i nazwisko sa wymagane').max(120),
   email: z.email('Nieprawidlowy adres email'),
   // Minimalna dlugosc hasla wymuszona juz na wejsciu API (nie tylko na froncie).
   password: z.string().min(8, 'Haslo musi miec min. 8 znakow'),

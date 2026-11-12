@@ -145,6 +145,15 @@ describe('API — plan', () => {
     expect(res.status).toBe(400);
   });
 
+  it('umieszczenie z numerami tygodni spoza zakresu -> 400 (np. 100 000 numerow)', async () => {
+    const res = await request(app)
+      .post('/api/terms/2026-L/placements')
+      .set('Authorization', `Bearer ${dean}`)
+      .send({ sectionId: 's1', dayOfWeek: 'MONDAY', startOrder: 1, endOrder: 2, online: true, pattern: 'LIST', numbers: [1, 2, 999] });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Numery tygodni i zjazdow musza byc od 1 do 60');
+  });
+
   it('umieszczenie zajec innego wydzialu -> 403', async () => {
     prismaMock.classSection.findUnique.mockResolvedValueOnce({ id: 's1', facultyId: 'inny' });
     const res = await request(app)

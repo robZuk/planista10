@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
 export const buildingCreateSchema = z.object({
-  name: z.string().min(1, 'Nazwa jest wymagana'),
-  address: z.string().optional(),
+  name: z.string().trim().min(1, 'Nazwa jest wymagana').max(120),
+  address: z.string().trim().max(200).optional(),
   facultyId: z.string().optional(),
 });
 export const buildingUpdateSchema = buildingCreateSchema.partial();
 
 export const roomCreateSchema = z.object({
-  number: z.string().min(1, 'Numer sali jest wymagany'),
+  number: z.string().trim().min(1, 'Numer sali jest wymagany').max(30),
   type: z.enum(['LECTURE', 'EXERCISE', 'LAB', 'COMPUTER_LAB', 'SEMINAR', 'SPORTS'], {
     error: 'Nieprawidlowy typ sali',
   }),

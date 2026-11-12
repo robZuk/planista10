@@ -56,6 +56,8 @@ async function facultyOf(req: Request): Promise<string | null> {
 
 const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 
+const MAX_PERIOD = 60;
+
 function parsePlacement(body: Record<string, unknown>): PlacementInput {
   const int = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) ? v : null);
   const startOrder = int(body.startOrder);
@@ -65,6 +67,9 @@ function parsePlacement(body: Record<string, unknown>): PlacementInput {
   if (typeof body.sectionId !== 'string' || !DAYS.includes(String(body.dayOfWeek)) || startOrder === null || endOrder === null || (!online && typeof body.roomId !== 'string')) {
     throw new AppError(400, 'Podaj zajecia, dzien, godziny i sale (albo zaznacz zajecia online)');
   }
+  // Wybrane tygodnie/zjazdy: numery z sensownego zakresu, bez powtorzen (semestr nie ma ich wiecej niz 60).
+  const numbers = Array.isArray(body.numbers) ? body.numbers.filter((n): n is number => Number.isInteger(n)) : [];
+  if (numbers.some((n) => n < 1 || n > MAX_PERIOD)) throw new AppError(400, `Numery tygodni i zjazdow musza byc od 1 do ${MAX_PERIOD}`);
   const cycle = body.cycle === 'ZJAZD' ? 'ZJAZD' : 'WEEK';
   const pattern = ['ALL', 'EVEN', 'ODD', 'LIST'].includes(String(body.pattern)) ? (body.pattern as PlacementInput['pattern']) : 'ALL';
   return {
@@ -76,7 +81,7 @@ function parsePlacement(body: Record<string, unknown>): PlacementInput {
     instructorId: typeof body.instructorId === 'string' && body.instructorId ? body.instructorId : null,
     cycle,
     pattern,
-    numbers: Array.isArray(body.numbers) ? body.numbers.filter((n): n is number => Number.isInteger(n)) : [],
+    numbers: [...new Set(numbers)].sort((a, b) => a - b),
     fromIndex: int(body.fromIndex),
     toIndex: int(body.toIndex),
     jointKey: typeof body.jointKey === 'string' && body.jointKey.trim() ? body.jointKey.trim() : null,
