@@ -17,7 +17,6 @@ const prismaMock = vi.hoisted(() => ({
     delete: vi.fn(),
     updateMany: vi.fn((args: unknown) => ({ op: 'occurrence.updateMany', args })),
   },
-  changeRequest: { findMany: vi.fn().mockResolvedValue([]), updateMany: vi.fn((args: unknown) => ({ op: 'changeRequest.updateMany', args })) },
   placement: { findUnique: vi.fn(), delete: vi.fn((args: unknown) => ({ op: 'placement.delete', args })) },
   $transaction: vi.fn().mockResolvedValue([]),
 }));
@@ -62,6 +61,68 @@ describe('API — plan', () => {
       const res = await request(app).get(path).set('Authorization', `Bearer ${instructor}`);
       expect(res.status).toBe(403);
     }
+  });
+
+  it('odwolac, przeniesc albo dodac termin moze tylko planista — prowadzacy i student -> 403', async () => {
+    const instructor = signAccessToken({ sub: 'u-i', role: 'INSTRUCTOR' });
+    prismaMock.occurrence.findUnique.mockClear();
+    for (const token of [instructor, student]) {
+      for (const call of [
+        request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${token}`).send({ action: 'CANCEL', note: 'choroba' }),
+        request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${token}`).send({ action: 'MODIFY', date: '2026-03-10' }),
+        request(app).post('/api/terms/2026-L/occurrences').set('Authorization', `Bearer ${token}`).send({ sectionId: 's1' }),
+        request(app).delete('/api/occurrences/o1').set('Authorization', `Bearer ${token}`),
+      ]) {
+        const res = await call;
+        expect(res.status).toBe(403);
+      }
+    }
+    expect(prismaMock.occurrence.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('nie ma juz zgloszen zmian ani powiadomien — dawne trasy -> 404', async () => {
+    const instructor = signAccessToken({ sub: 'u-i', role: 'INSTRUCTOR' });
+    for (const call of [
+      request(app).post('/api/occurrences/o1/requests').set('Authorization', `Bearer ${instructor}`).send({ kind: 'CANCEL', reason: 'choroba' }),
+      request(app).get('/api/terms/2026-L/requests').set('Authorization', `Bearer ${dean}`),
+      request(app).get('/api/change-requests/pending-count').set('Authorization', `Bearer ${dean}`),
+      request(app).get('/api/notifications').set('Authorization', `Bearer ${instructor}`),
+    ]) {
+      const res = await call;
+      expect(res.status).toBe(404);
+    }
+  });
+
+  it('liste "Do odrobienia" widzi tylko planista; dziekanat — swojego wydzialu, ze stanem odrobienia', async () => {
+    const instructor = signAccessToken({ sub: 'u-i', role: 'INSTRUCTOR' });
+    const denied = await request(app).get('/api/terms/2026-L/makeups').set('Authorization', `Bearer ${instructor}`);
+    expect(denied.status).toBe(403);
+
+    const cancelled = (id: string) => ({
+      id,
+      date: new Date('2026-03-10T00:00:00Z'),
+      startMinute: 480,
+      endMinute: 570,
+      startOrder: 1,
+      endOrder: 2,
+      groupId: 'g1',
+      note: 'choroba',
+      instructor: { title: 'dr', firstName: 'Jan', lastName: 'Nowak' },
+      section: { id: 's1', classType: 'LAB', cohortId: 'c1', programEntry: { subject: { name: 'Fizyka' } }, cohort: { program: { code: 'EDST-S1' } } },
+    });
+    prismaMock.occurrence.findMany
+      .mockResolvedValueOnce([cancelled('o1'), cancelled('o2')])
+      .mockResolvedValueOnce([{ makeupOfId: 'o2', date: new Date('2026-03-17T00:00:00Z'), startMinute: 480, endMinute: 570 }]);
+    const res = await request(app).get('/api/terms/2026-L/makeups').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(200);
+    expect(prismaMock.occurrence.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ termId: 't1', status: 'CANCELLED', facultyId: 'wm' }) }),
+    );
+    expect(res.body.data.map((m: { occurrenceId: string; state: string }) => [m.occurrenceId, m.state])).toEqual([
+      ['o1', 'TODO'],
+      ['o2', 'MADE_UP'],
+    ]);
+    expect(res.body.data[1].makeup).toEqual({ date: '2026-03-17', time: '08:00–09:30' });
   });
 
   it('dziekanat WM generuje terminy rocznika innego wydzialu -> 403, a nie "0 terminow"', async () => {

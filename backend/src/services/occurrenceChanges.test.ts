@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AcademicTerm, ClassSection } from '@prisma/client';
 
 // Termin reczny jako odrobienie: wskazany termin musi byc odwolanym terminem tych samych
-// zajec i nie miec jeszcze odrobienia (te same reguly co przy zgloszeniu prowadzacego).
+// zajec i nie miec jeszcze odrobienia (te same reguly co na liscie "Do odrobienia").
 const prismaMock = vi.hoisted(() => ({
   occurrence: { findUnique: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
   academicTerm: { findUniqueOrThrow: vi.fn() },

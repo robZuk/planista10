@@ -11,7 +11,6 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 import { AppSidebar } from './AppSidebar';
 import { ImpersonationBanner } from './ImpersonationBanner';
 import { TermSelector } from '@/components/TermSelector';
-import { NotificationBell } from './NotificationBell';
 import { breadcrumbFor } from '@/lib/navigation';
 
 /**
@@ -55,7 +54,6 @@ export function AppShell() {
             {/* Przelacznik semestru tylko na stronach semestralnych (sam sie ukrywa). */}
             <div className="ml-auto flex shrink-0 items-center gap-2">
               <TermSelector />
-              <NotificationBell />
             </div>
           </header>
         </div>

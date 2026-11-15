@@ -115,17 +115,17 @@ describe('API — prowadzacy: duplikat e-maila', () => {
 });
 
 describe('API — prowadzacy: usuwanie', () => {
-  const counts = (c: object) => ({ id: 'i1', _count: { placements: 0, occurrences: 0, sectionAssignments: 0, changeRequests: 0, ...c } });
+  const counts = (c: object) => ({ id: 'i1', _count: { placements: 0, occurrences: 0, sectionAssignments: 0, ...c } });
 
-  it('prowadzacy ze zgloszeniami zmian -> 409 z powodem, bez usuwania', async () => {
-    prismaMock.instructor.findUnique.mockResolvedValueOnce(counts({ changeRequests: 2 }));
+  it('prowadzacy z terminami w planie -> 409 z powodem, bez usuwania', async () => {
+    prismaMock.instructor.findUnique.mockResolvedValueOnce(counts({ occurrences: 2 }));
     const res = await request(app).delete('/api/instructors/i1').set('Authorization', `Bearer ${admin}`);
     expect(res.status).toBe(409);
-    expect(res.body.error).toContain('zgloszenia zmian');
+    expect(res.body.error).toContain('planu zajec');
     expect(prismaMock.instructor.delete).not.toHaveBeenCalled();
   });
 
-  it('prowadzacy bez obsady, planu i zgloszen jest usuwany', async () => {
+  it('prowadzacy bez obsady i planu jest usuwany', async () => {
     prismaMock.instructor.findUnique.mockResolvedValueOnce(counts({}));
     const res = await request(app).delete('/api/instructors/i1').set('Authorization', `Bearer ${admin}`);
     expect(res.status).toBe(200);

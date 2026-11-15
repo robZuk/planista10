@@ -12,7 +12,7 @@ import ObsadaPage from '@/pages/ObsadaPage';
 import PlanPage from '@/pages/PlanPage';
 import TermSetupPage from '@/pages/TermSetupPage';
 import MyPlanPage from '@/pages/MyPlanPage';
-import RequestsPage from '@/pages/RequestsPage';
+import MakeupsPage from '@/pages/MakeupsPage';
 import TermCalendarPage from '@/pages/TermCalendarPage';
 import DashboardPage from '@/pages/DashboardPage';
 import UsersPage from '@/pages/UsersPage';
@@ -28,9 +28,9 @@ const PAGES: Record<string, ComponentType> = {
   '/cohorts': CohortsPage,
   '/obsada': ObsadaPage,
   '/plan': PlanPage,
+  '/makeups': MakeupsPage,
   '/setup': TermSetupPage,
   '/my-plan': MyPlanPage,
-  '/requests': RequestsPage,
   '/calendar': TermCalendarPage,
   '/faculties': FacultiesPage,
   '/buildings': BuildingsPage,

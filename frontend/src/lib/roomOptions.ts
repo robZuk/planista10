@@ -7,8 +7,7 @@ export interface RoomOption extends ComboboxOption {
 }
 
 /**
- * Lista sal do wyboru (umieszczenie, przeniesienie terminu, termin reczny, zgloszenie
- * prowadzacego): tylko typy sal pasujace do formy zajec, a sale mniejsze niz grupa —
+ * Lista sal do wyboru (umieszczenie, przeniesienie terminu, termin reczny): tylko typy sal pasujace do formy zajec, a sale mniejsze niz grupa —
  * do wyboru, ale z dopiskiem (zapis przejdzie, plan pokaze niezgodnosc).
  * Bez formy zajec (np. jeszcze nie wybrano zajec) — wszystkie sale.
  */

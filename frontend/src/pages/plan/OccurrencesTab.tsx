@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { CalendarDays, Inbox, List, Plus } from 'lucide-react';
+import { CalendarDays, List, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,8 +21,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Combobox } from '@/components/Combobox';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { changeOccurrence, createManualOccurrence, deleteManualOccurrence, fetchOccurrences } from '@/api/plan';
-import { fetchMakeups } from '@/api/requests';
+import { changeOccurrence, createManualOccurrence, deleteManualOccurrence, fetchMakeups, fetchOccurrences } from '@/api/plan';
 import { fetchBuildings } from '@/api/buildings';
 import { getErrorMessage, isNotFound, slotWarningsOf } from '@/lib/errors';
 import { matchesAllWords } from '@/lib/searchMatch';
@@ -34,7 +31,6 @@ import { roomOptionsFor, roomTooSmallMessage, type RoomOption } from '@/lib/room
 import { formatMinutes } from '@/lib/timeGrid';
 import { formatDayMonth } from '@/lib/planHours';
 import { occurrenceMarker } from '@/lib/occurrenceWeek';
-import { REQUEST_KIND_LABELS } from '@/lib/requestLabels';
 import type { CalendarPeriod, DayOfWeek, OccurrenceRow, PlanSection, TimeBlock } from '@/types';
 import { OccurrencesWeek } from './OccurrencesWeek';
 
@@ -75,7 +71,7 @@ export function OccurrencesTab({
   const [view, setView] = useState<'week' | 'list'>('week');
   const [details, setDetails] = useState<OccurrenceRow | null>(null);
   const [removing, setRemoving] = useState<OccurrenceRow | null>(null);
-  // Odwolanie idzie do prowadzacego (powiadomienie) — najpierw potwierdzenie z powodem.
+  // Odwolanie najpierw potwierdzamy — z powodem, ktory prowadzacy i studenci zobacza w swoim planie.
   const [cancelling, setCancelling] = useState<OccurrenceRow | null>(null);
 
   const refresh = async () => {
@@ -86,7 +82,7 @@ export function OccurrencesTab({
     setDetails(null);
     await queryClient.invalidateQueries({ queryKey: ['occurrences'] });
     await queryClient.invalidateQueries({ queryKey: ['plan'] });
-    // Odwolanie/odrobienie zmienia liste "Do odrobienia" (okno terminu recznego, Zgloszenia zmian).
+    // Odwolanie/odrobienie zmienia liste "Do odrobienia" (okno terminu recznego, strona Odrobienia).
     await queryClient.invalidateQueries({ queryKey: ['makeups'] });
   };
   // Termin zniknal w miedzyczasie (ponowne generowanie, usuniecie przez kogos innego).
@@ -268,7 +264,6 @@ export function OccurrencesTab({
                 </>
               )}
             </dl>
-            {details.pendingRequest && <PendingRequestNote request={details.pendingRequest} termKey={termKey} />}
             {!readOnly && (
               <DialogFooter className="sm:justify-start">
                 {details.status !== 'CANCELLED' && (
@@ -333,7 +328,6 @@ export function OccurrencesTab({
       )}
       {editing && (
         <MoveDialog
-          termKey={termKey}
           occurrence={editing}
           section={sections.find((s) => s.id === editing.sectionId)}
           blocks={blocks}
@@ -359,37 +353,13 @@ function RoomSizeNote({ rooms, roomId, section }: { rooms: RoomOption[]; roomId:
   return message ? <p className="text-xs text-amber-700 dark:text-amber-400">{message}</p> : null;
 }
 
-/** Ostrzezenie przy zmianie terminu, dla ktorego prowadzacy ma zgloszenie czekajace na decyzje. */
-function PendingRequestNote({ request, termKey }: { request: NonNullable<OccurrenceRow['pendingRequest']>; termKey: string }) {
-  return (
-    <Alert>
-      <Inbox />
-      <AlertTitle>
-        Zgloszenie prowadzacego ({request.instructor}): {REQUEST_KIND_LABELS[request.kind].toLowerCase()}
-        {request.proposal && ` na ${request.proposal}`}
-      </AlertTitle>
-      <AlertDescription>
-        <p>
-          Zmiana wprost zamknie zgloszenie — jako zalatwione, gdy jest zgodna z prosba, inaczej jako nieaktualne — a prowadzacy dostanie
-          powiadomienie.{' '}
-          <Link to={`/requests/${termKey}`} className="font-medium underline underline-offset-4">
-            Rozpatrz w „Zgloszeniach zmian”
-          </Link>
-        </p>
-      </AlertDescription>
-    </Alert>
-  );
-}
-
 function MoveDialog({
-  termKey,
   occurrence,
   section,
   blocks,
   onClose,
   onDone,
 }: {
-  termKey: string;
   occurrence: OccurrenceRow;
   section: PlanSection | undefined;
   blocks: TimeBlock[];
@@ -440,7 +410,6 @@ function MoveDialog({
             {occurrence.subject} · {occurrence.group}. Zmiana dotyczy tylko tego terminu i przetrwa ponowne generowanie.
           </DialogDescription>
         </DialogHeader>
-        {occurrence.pendingRequest && <PendingRequestNote request={occurrence.pendingRequest} termKey={termKey} />}
         <div className="grid grid-cols-2 gap-3">
           <Field>
             <FieldLabel htmlFor="mv-date">Data</FieldLabel>
@@ -504,7 +473,7 @@ function ManualDialog({
   const [length, setLength] = useState(2);
   const [roomId, setRoomId] = useState('');
   const [online, setOnline] = useState(false);
-  // null = nie ruszana: domyslna wynika z wyboru odrabianych zajec (jak notatka odrobienia ze zgloszenia).
+  // null = nie ruszana: domyslna wynika z wyboru odrabianych zajec ("Odrobienie zajec z ...").
   const [note, setNote] = useState<string | null>(null);
   const section = sections.find((s) => s.id === sectionId);
   const rooms = useRoomOptions(section);
@@ -634,7 +603,7 @@ function ManualDialog({
   );
 }
 
-/** Potwierdzenie odwolania terminu z powodem — prowadzacy dostaje go w powiadomieniu. */
+/** Potwierdzenie odwolania terminu z powodem — powod widac w planie prowadzacego i studentow. */
 function CancelDialog({
   occurrence,
   isPending,
@@ -654,8 +623,8 @@ function CancelDialog({
           <DialogTitle>Odwolac zajecia?</DialogTitle>
           <DialogDescription>
             {CLASS_LABELS[occurrence.classType]} · {occurrence.subject} · {occurrence.group}, {formatDayMonth(occurrence.date)}{' '}
-            {formatMinutes(occurrence.startMinute)}–{formatMinutes(occurrence.endMinute)}. Zajecia trafia na liste do odrobienia, a prowadzacy — gdy
-            plan jest opublikowany — dostanie powiadomienie z powodem.
+            {formatMinutes(occurrence.startMinute)}–{formatMinutes(occurrence.endMinute)}. Zajecia trafia na liste do odrobienia, a powod — gdy plan
+            jest opublikowany — zobacza prowadzacy i studenci w swoim planie.
           </DialogDescription>
         </DialogHeader>
         <Field>

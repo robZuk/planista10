@@ -39,6 +39,3 @@ export const termOfPlacement = async (req: Request) =>
 
 export const termOfOccurrence = async (req: Request) =>
   (await prisma.occurrence.findUnique({ where: { id: String(req.params.id) }, select: { termId: true } }))?.termId ?? null;
-
-export const termOfRequest = async (req: Request) =>
-  (await prisma.changeRequest.findUnique({ where: { id: String(req.params.id) }, select: { termId: true } }))?.termId ?? null;

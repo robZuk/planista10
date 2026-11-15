@@ -13,8 +13,6 @@ import { formatDayMonth } from '@/lib/planHours';
 import { useAuthStore } from '@/store/authStore';
 import { addDaysKey } from './calendar/calendarUtils';
 import { MyPlanWeek } from './myPlan/MyPlanWeek';
-import { RequestDialog } from './myPlan/RequestDialog';
-import { REQUEST_KIND_LABELS } from '@/lib/requestLabels';
 import type { MyPlanRow } from '@/types';
 
 const WEEKDAY = ['Niedziela', 'Poniedzialek', 'Wtorek', 'Sroda', 'Czwartek', 'Piatek', 'Sobota'];
@@ -33,9 +31,6 @@ export default function MyPlanPage() {
   // Prowadzacy nie potrzebuje wlasnego nazwiska w kazdym wierszu; student — tak.
   const isInstructor = useAuthStore((s) => s.user?.role) === 'INSTRUCTOR';
   const showInstructor = !isInstructor;
-  // Prowadzacy: klikniecie zajec otwiera zgloszenie do dziekanatu (odwolanie, przeniesienie, odrobienie).
-  const [requestFor, setRequestFor] = useState<string | null>(null);
-  const onSelect = isInstructor ? (r: MyPlanRow) => setRequestFor(r.id) : undefined;
   const [view, setView] = useState<'week' | 'list'>('week');
   const [monday, setMonday] = useState(() => mondayOf(new Date().toISOString().slice(0, 10)));
   const sunday = addDaysKey(monday, 6);
@@ -63,7 +58,7 @@ export default function MyPlanPage() {
         title="Moj plan"
         description={
           term
-            ? `Semestr ${term.label}. Widzisz tylko plan opublikowany przez dziekanat.${isInstructor ? ' Kliknij zajecia, zeby poprosic o odwolanie, przeniesienie albo odrobienie.' : ''}`
+            ? `Semestr ${term.label}. Widzisz tylko plan opublikowany przez dziekanat.${isInstructor ? ' Zmiany terminow (odwolanie, przeniesienie, odrobienie) wprowadza dziekanat.' : ''}`
             : 'Wybierz semestr w naglowku.'
         }
         actions={
@@ -100,7 +95,7 @@ export default function MyPlanPage() {
       />
       {isPending && term && <Skeleton className="h-48 w-full" />}
       {data && view === 'week' && byDay.length > 0 && (
-        <MyPlanWeek monday={monday} rows={rows} daysOff={daysOff} showInstructor={showInstructor} onSelect={onSelect} />
+        <MyPlanWeek monday={monday} rows={rows} daysOff={daysOff} showInstructor={showInstructor} />
       )}
       {data && !range && (
         <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
@@ -132,18 +127,10 @@ export default function MyPlanPage() {
               </h3>
               {dayRows.length > 0 && (
                 <ul className="divide-y rounded-lg border">
-                  {dayRows.map((r) => {
-                    // Zajecia z archiwum — bez zgloszen zmian (zapis tego, co sie odbylo).
-                    const select = onSelect && !r.archived ? () => onSelect(r) : undefined;
-                    return (
+                  {dayRows.map((r) => (
                     <li
                       key={r.id}
-                      role={select ? 'button' : undefined}
-                      tabIndex={select ? 0 : undefined}
-                      onClick={select}
-                      onKeyDown={select ? (e) => (e.key === 'Enter' || e.key === ' ') && select() : undefined}
-                      title={onSelect && r.archived ? 'Plan w archiwum — zgloszenia zmian niedostepne' : undefined}
-                      className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 text-sm ${r.status === 'CANCELLED' ? 'text-muted-foreground line-through' : ''} ${select ? 'cursor-pointer hover:bg-muted' : ''}`}
+                      className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 text-sm ${r.status === 'CANCELLED' ? 'text-muted-foreground line-through' : ''}`}
                     >
                       <span className="w-28 tabular-nums">
                         {formatMinutes(r.startMinute)}–{formatMinutes(r.endMinute)}
@@ -157,21 +144,14 @@ export default function MyPlanPage() {
                       {showInstructor && <span className="text-muted-foreground">{r.instructor}</span>}
                       {r.status === 'CANCELLED' && <Badge variant="destructive">odwolane</Badge>}
                       {r.status === 'MAKEUP' && <Badge>odrobienie</Badge>}
-                      {r.pendingRequest && (
-                        <Badge variant="outline" className="border-amber-500 text-amber-700 dark:text-amber-400">
-                          zgloszono: {REQUEST_KIND_LABELS[r.pendingRequest].toLowerCase()}
-                        </Badge>
-                      )}
                       {r.note && <span className="text-xs text-muted-foreground">{r.note}</span>}
                     </li>
-                    );
-                  })}
+                  ))}
                 </ul>
               )}
             </section>
           ))}
       </div>
-      {requestFor && <RequestDialog occurrenceId={requestFor} onClose={() => setRequestFor(null)} />}
     </>
   );
 }

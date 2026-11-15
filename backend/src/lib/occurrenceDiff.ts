@@ -1,7 +1,7 @@
 /**
  * Diff terminow z wzorca przy "Generuj terminy": obecne terminy w zakresie vs. wyliczone przez
  * materializer. Termin o tym samym kluczu (umieszczenie + data z wzorca) zostaje tym samym
- * wierszem — zachowuje id, wiec odrobienia, zgloszenia i linki do niego nie gina. Zmienia sie
+ * wierszem — zachowuje id, wiec odrobienia i linki do niego nie gina. Zmienia sie
  * tylko tresc (data po wyjatku, godziny, sala, status...). Czysta funkcja, bez bazy.
  */
 

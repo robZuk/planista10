@@ -1,7 +1,7 @@
 /**
  * Tekstowy klucz terminu: "p:<umieszczenie>|<data z wzorca>" albo "o:<id>". Pozostalosc z czasu,
- * gdy "Generuj terminy" nadawalo terminom nowe id. Dzis odrobienia i zgloszenia wskazuja termin
- * kluczem obcym (Occurrence.makeupOfId, ChangeRequest.occurrenceId); klucz tekstowy jest juz tylko
+ * gdy "Generuj terminy" nadawalo terminom nowe id. Dzis odrobienie wskazuje odwolany termin
+ * kluczem obcym (Occurrence.makeupOfId); klucz tekstowy jest juz tylko
  * zapisywany obok nich — do usuniecia razem z kolumnami (etap 4).
  */
 export interface KeyedOccurrence {

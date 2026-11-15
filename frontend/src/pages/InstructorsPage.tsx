@@ -349,7 +349,7 @@ export default function InstructorsPage() {
         title={`Usunac ${deleting?.firstName ?? ''} ${deleting?.lastName ?? ''}?`}
         description={
           deleting?.user
-            ? `Tej operacji nie da sie cofnac. Prowadzacy ma konto ${deleting.user.email} — po usunieciu konto zostanie bez powiazania i jego wlasciciel przestanie widziec swoj plan i zgloszenia. Prowadzacy przypisany do zajec w planie nie zostanie usuniety.`
+            ? `Tej operacji nie da sie cofnac. Prowadzacy ma konto ${deleting.user.email} — po usunieciu konto zostanie bez powiazania i jego wlasciciel przestanie widziec swoj plan. Prowadzacy przypisany do zajec w planie nie zostanie usuniety.`
             : 'Tej operacji nie da sie cofnac. Prowadzacy przypisany do zajec w planie nie zostanie usuniety.'
         }
         isPending={deleteMutation.isPending}

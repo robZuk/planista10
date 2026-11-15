@@ -107,7 +107,7 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 - `PlacementException(placement, originalDate)` — odwołanie albo przeniesienie pojedynczego
   terminu; **przeżywa ponowne generowanie**. Wyjątek bez daty we wzorcu trafia do raportu.
 - `Occurrence.kind = MANUAL` — odrobienia i terminy jednorazowe; liczą się do godzin, nie znikają.
-- Nowe miejsce terminu (przeniesienie, termin ręczny, zatwierdzenie zgłoszenia) jest oceniane
+- Nowe miejsce terminu (przeniesienie, termin ręczny) jest oceniane
   względem kalendarza rocznika i okna godzin siatki (`lib/occurrenceSlot`): data poza semestrem
   blokuje, a święto, przerwa, dzień poza zjazdami czy godziny poza oknem wymagają potwierdzenia
   (`409 { code: 'SLOT_WARNINGS', warnings }` → ponowienie z `confirmWarnings: true`).
@@ -119,10 +119,9 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   kluczu (umieszczenie + data z wzorca, unikalny indeks `Occurrence(placementId, originalDate)`)
   jest aktualizowany w miejscu i zachowuje id; nowe daty wzorca → nowe terminy, daty, których już
   nie ma (i terminy usuniętych umieszczeń) → usunięte. Zakres „od dnia" liczony jest po dacie z wzorca.
-- **Powiązania z terminem** są kluczami obcymi: `Occurrence.makeupOfId` (odrobienie → odwołany termin)
-  i `ChangeRequest.occurrenceId` (zgłoszenie → termin), oba `ON DELETE SET NULL`. Kolumny tekstowe
-  `makeupOfKey` / `ChangeRequest.occurrenceKey` (`lib/occurrenceKey`) są jeszcze zapisywane, ale nic ich
-  nie czyta — do usunięcia (etap 4).
+- **Powiązanie z terminem** jest kluczem obcym: `Occurrence.makeupOfId` (odrobienie → odwołany termin),
+  `ON DELETE SET NULL`. Kolumna tekstowa `makeupOfKey` (`lib/occurrenceKey`) jest jeszcze zapisywana,
+  ale nic jej nie czyta — do usunięcia (etap 4).
 - Zmiana wzorca po generowaniu → „terminy nieaktualne" — liczone per rocznik od jego ostatniego
   generowania (`CohortGeneration`, nie od kalendarza, który dzieli wiele roczników);
   jedno źródło dla planu i „Przygotowania semestru" (`services/staleness.ts`).
@@ -134,23 +133,16 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   Rocznik przypięty do wariantu „w planowaniu" nie pokazuje planu, choć wydział ma inne
   opublikowane kalendarze.
 
-## 6a. Zgłoszenia zmian i powiadomienia
+## 6a. Odwołania i odrobienia
 
-- `ChangeRequest` — prośba prowadzącego do dziekanatu: odwołanie (`CANCEL`) albo przeniesienie
-  (`MOVE`) swojego terminu, albo termin odrobienia odwołanych zajęć (`MAKEUP`). Propozycja jest
-  sprawdzana od razu (dzień zajęć rocznika, siatka i okno godzin wydziału, kolizje). Zgłoszenie
-  niczego nie zmienia; dziekanat wydziału **zatwierdza** (zmiana wykonuje się tymi samymi
-  funkcjami co ręczna zmiana planisty — `services/occurrenceChanges`) albo **odrzuca** z
-  uzasadnieniem; prowadzący może **wycofać** czekające. Stany: `PENDING → APPROVED | REJECTED | WITHDRAWN | SUPERSEDED`.
-- Planista zmienia termin **wprost** (Terminy), a zgłoszenie czeka: okno terminu ostrzega, a zmiana
-  zamyka zgłoszenie — `APPROVED`, gdy to dokładnie to, o co proszono (odwołanie / proponowany
-  termin), inaczej `SUPERSEDED` (nieaktualne). Prowadzący dostaje jedno powiadomienie
-  (`lib/changeRequests.resolveOnDirectChange`).
-- Lista **do odrobienia**: odwołane terminy prowadzącego ze stanem — do odrobienia / termin
-  zgłoszony / odrobione (jest termin ręczny z `makeupOfId` wskazującym ten termin).
-- `Notification` — powiadomienia w aplikacji (dzwonek): nowe i wycofane zgłoszenia do dziekanatu
-  wydziału (bez kont dziekanatu — do adminów), decyzje do prowadzącego oraz bezpośrednie zmiany
-  jego terminów przez dziekanat (tylko w planie opublikowanym).
+- Terminy odwołuje, przenosi, przywraca i odrabia **tylko planista** (ADMIN, DEAN_OFFICE swojego
+  wydziału) — wprost w „Układaniu planu” → Terminy (`services/occurrenceChanges`). Prowadzący
+  i student plan tylko oglądają; powód odwołania (`Occurrence.note`) widać w ich „Moim planie”.
+- Lista **do odrobienia** (strona „Odrobienia”, okno terminu ręcznego): odwołane terminy semestru
+  ze stanem — do odrobienia / odrobione (jest termin ręczny z `makeupOfId` wskazującym ten termin);
+  `services/makeups`.
+- planista10 nie ma zgłoszeń zmian prowadzących ani powiadomień w aplikacji (tabele
+  `ChangeRequest` i `Notification` usunięte migracją `20261115120000_drop_change_requests_notifications`).
 
 ## 7. Widoczność i uprawnienia
 

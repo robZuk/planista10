@@ -1,6 +1,5 @@
 import type { CalendarPeriod, DayOfWeek, OccurrenceRow, PeriodDay } from '@/types';
 import { formatDayMonth } from './planHours';
-import { REQUEST_KIND_LABELS } from './requestLabels';
 
 /**
  * Widok tygodnia w "Terminach": terminy jednego tygodnia (albo zjazdu) na siatce dni x godzin,
@@ -50,8 +49,6 @@ export function dayNote(day: PeriodDay): string | null {
 
 /** Oznaczenie terminu na karcie: odwolany, przeniesiony (skad), reczny. */
 export function occurrenceMarker(o: OccurrenceRow): string | undefined {
-  // Zgloszenie prowadzacego czeka na decyzje — planista ma to widziec, zanim zmieni termin wprost.
-  if (o.pendingRequest) return `zgloszenie: ${REQUEST_KIND_LABELS[o.pendingRequest.kind].toLowerCase()}`;
   if (o.status === 'CANCELLED') return o.madeUpBy ? `odwolany, odrobiony ${formatDayMonth(o.madeUpBy.date)}` : 'odwolany';
   if (o.kind === 'MANUAL') return o.makeupOf ? `odrobienie za ${formatDayMonth(o.makeupOf)}` : 'reczny';
   if (o.originalDate && o.originalDate !== o.date) return `przeniesiony z ${formatDayMonth(o.originalDate)}`;

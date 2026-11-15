@@ -10,8 +10,7 @@ import { mapRangeByTime } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from '../services/timeGrids';
 import { activeCohorts } from '../services/sections';
 import { conflictMessage } from '../lib/conflictMessage';
-import { closePendingOnDirectChange, notifyClassChange, pendingByOccurrence } from '../services/changeRequests';
-import type { DirectChange } from '../lib/changeRequests';
+import { listMakeups } from '../services/makeups';
 import {
   assertPlanEditable,
   cancelOccurrence,
@@ -194,7 +193,7 @@ export const deletePlacement = asyncHandler(async (req, res) => {
   // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania. Odlaczamy je
   // jawnie (a nie przez ON DELETE SET NULL), zeby updatedAt zapisal chwile usuniecia — po niej
   // plan pokazuje "terminy nieaktualne", dopoki terminow nie wygeneruje sie od nowa.
-  // Odrobienia i zgloszenia wskazuja terminy kluczem obcym (id), wiec odlaczenie ich nie rusza.
+  // Odrobienia wskazuja terminy kluczem obcym (id), wiec odlaczenie ich nie rusza.
   await prisma.$transaction([
     prisma.occurrence.updateMany({ where: { placementId: current.id }, data: { placementId: null } }),
     prisma.placement.delete({ where: { id: current.id } }),
@@ -245,8 +244,6 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       })
     ).map((e) => `${e.placementId}|${toIsoDate(e.originalDate)}`),
   );
-  // Czekajace zgloszenia prowadzacych — okno terminu ostrzega planiste przed zmiana wprost.
-  const pending = await pendingByOccurrence(rows.map((o) => o.id));
   // Powiazanie odwolanie <-> odrobienie: odwolany termin pokazuje swoje odrobienie, odrobienie —
   // date odrabianych zajec (zeby nie trzeba bylo zgadywac, czemu "Przywroc" jest zablokowane).
   const cancelledIds = rows.filter((o) => o.status === 'CANCELLED').map((o) => o.id);
@@ -264,7 +261,6 @@ export const listOccurrences = asyncHandler(async (req, res) => {
   res.json({
     data: rows.map((o) => ({
       id: o.id,
-      pendingRequest: pending.get(o.id) ?? null,
       sectionId: o.sectionId,
       placementId: o.placementId,
       date: toIsoDate(o.date),
@@ -293,7 +289,8 @@ export const listOccurrences = asyncHandler(async (req, res) => {
 /**
  * Zmiana pojedynczego terminu: odwolanie, przeniesienie (data/godziny/sala/prowadzacy)
  * albo przywrocenie wg wzorca. Dla terminow z wzorca zapisujemy wyjatek, ktory przezyje
- * ponowne generowanie; terminy reczne zmieniamy wprost.
+ * ponowne generowanie; terminy reczne zmieniamy wprost. Tylko planista (admin, dziekanat
+ * wydzialu terminu) — prowadzacy nie odwoluje ani nie przenosi zajec.
  */
 export const changeOccurrence = asyncHandler(async (req, res) => {
   const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) }, include: { placement: true, section: true } });
@@ -301,31 +298,25 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
   await assertFacultyScope(req, occ.facultyId);
   const grid = await assertPlanEditable(occ.termId, occ.section.cohortId);
   const body = req.body as { action: 'CANCEL' | 'MODIFY' | 'RESTORE' } & MoveInput;
-  const before = { date: occ.date, startMinute: occ.startMinute, endMinute: occ.endMinute };
-  // Czekajace zgloszenie prowadzacego dla tego terminu zamyka sie samo (zalatwione albo
-  // nieaktualne) i wtedy to ono niesie powiadomienie; inaczej zwykle powiadomienie o zmianie.
-  const after = async (change: DirectChange, fallback: 'CLASS_CHANGED' | 'CLASS_CANCELLED') => {
-    if (!(await closePendingOnDirectChange(occ.id, change, req.user!.id, before, occ.id))) {
-      await notifyClassChange(occ.id, fallback, req.user!.id, before);
-    }
-  };
 
   if (body.action === 'RESTORE') {
     await restoreOccurrence(occ, grid);
-    await after({ action: 'RESTORE' }, 'CLASS_CHANGED');
     res.json({ message: 'Termin przywrocony wg wzorca' });
     return;
   }
   if (body.action === 'CANCEL') {
     await cancelOccurrence(occ, body.note ?? null);
-    await after({ action: 'CANCEL' }, 'CLASS_CANCELLED');
     res.json({ message: 'Termin odwolany' });
     return;
   }
   await moveOccurrence(occ, grid, body);
-  const moved = await prisma.occurrence.findUniqueOrThrow({ where: { id: occ.id } });
-  await after({ action: 'MODIFY', date: toIsoDate(moved.date), startOrder: moved.startOrder, endOrder: moved.endOrder }, 'CLASS_CHANGED');
   res.json({ message: 'Termin zmieniony' });
+});
+
+/** Odwolane zajecia semestru i ich odrobienia (lista "Do odrobienia"); admin: ?facultyId albo wszystko. */
+export const listCancelledToMakeUp = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  res.json({ data: await listMakeups(term, { facultyId: await facultyOf(req) }) });
 });
 
 /** Termin reczny (odrobienie, zajecia jednorazowe) — liczy sie do godzin i nie znika przy generowaniu. */
@@ -337,17 +328,6 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
   await assertFacultyScope(req, section.facultyId);
   const grid = await assertPlanEditable(term.id, section.cohortId);
   const data = await createManual(term, section, grid, body);
-  // Odrobienie wskazanego odwolanego terminu zamyka czekajaca propozycje odrobienia prowadzacego.
-  const closed = data.makeupOfId
-    ? await closePendingOnDirectChange(
-        data.makeupOfId,
-        { action: 'MAKEUP', date: toIsoDate(data.date), startOrder: data.startOrder, endOrder: data.endOrder },
-        req.user!.id,
-        { date: data.date, startMinute: data.startMinute, endMinute: data.endMinute },
-        data.id,
-      )
-    : false;
-  if (!closed) await notifyClassChange(data.id, 'MAKEUP_SCHEDULED', req.user!.id);
   res.status(201).json({ data, message: 'Termin reczny dodany' });
 });
 

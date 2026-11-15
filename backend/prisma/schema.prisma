@@ -26,12 +26,11 @@ model Faculty {
 
   // Wydzial jest jednostka organizacyjna planu: kalendarze semestru, zajecia,
   // umieszczenia i terminy naleza do konkretnego wydzialu.
-  termCalendars  TermCalendar[]
-  timeGrids      TimeGrid[]
-  classSections  ClassSection[]
-  placements     Placement[]
-  occurrences    Occurrence[]
-  changeRequests ChangeRequest[]
+  termCalendars TermCalendar[]
+  timeGrids     TimeGrid[]
+  classSections ClassSection[]
+  placements    Placement[]
+  occurrences   Occurrence[]
 
   createdAt DateTime @default(now())
 }
@@ -161,17 +160,16 @@ model Building {
 }
 
 model Room {
-  id              String          @id @default(uuid())
+  id              String         @id @default(uuid())
   number          String
   type            RoomType
   capacity        Int
-  building        Building        @relation(fields: [buildingId], references: [id])
+  building        Building       @relation(fields: [buildingId], references: [id])
   buildingId      String
   placements      Placement[]
   occurrences     Occurrence[]
   preferredGroups StudentGroup[]
-  changeRequests  ChangeRequest[]
-  createdAt       DateTime        @default(now())
+  createdAt       DateTime       @default(now())
 
   @@unique([number, buildingId])
 }
@@ -192,7 +190,6 @@ model Instructor {
   sectionAssignments SectionInstructor[]
   placements         Placement[]
   occurrences        Occurrence[]
-  changeRequests     ChangeRequest[]
   createdAt          DateTime            @default(now())
 }
 
@@ -254,7 +251,6 @@ model AcademicTerm {
   sections       ClassSection[]
   placements     Placement[]
   occurrences    Occurrence[]
-  changeRequests ChangeRequest[]
   createdAt      DateTime           @default(now())
 
   @@unique([startYear, type])
@@ -425,7 +421,6 @@ model ClassSection {
   instructors    SectionInstructor[]
   placements     Placement[]
   occurrences    Occurrence[]
-  changeRequests ChangeRequest[]
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
 
@@ -504,45 +499,44 @@ model PlacementException {
 }
 
 model Occurrence {
-  id             String          @id @default(uuid())
-  term           AcademicTerm    @relation(fields: [termId], references: [id])
-  termId         String
-  faculty        Faculty         @relation(fields: [facultyId], references: [id])
-  facultyId      String
-  section        ClassSection    @relation(fields: [sectionId], references: [id])
-  sectionId      String
-  placement      Placement?      @relation(fields: [placementId], references: [id], onDelete: SetNull)
-  placementId    String?
-  originalDate   DateTime?       @db.Date // data z wzorca (przed wyjatkiem)
-  date           DateTime        @db.Date
-  startOrder     Int
-  endOrder       Int
+  id           String         @id @default(uuid())
+  term         AcademicTerm   @relation(fields: [termId], references: [id])
+  termId       String
+  faculty      Faculty        @relation(fields: [facultyId], references: [id])
+  facultyId    String
+  section      ClassSection   @relation(fields: [sectionId], references: [id])
+  sectionId    String
+  placement    Placement?     @relation(fields: [placementId], references: [id], onDelete: SetNull)
+  placementId  String?
+  originalDate DateTime?      @db.Date // data z wzorca (przed wyjatkiem)
+  date         DateTime       @db.Date
+  startOrder   Int
+  endOrder     Int
   // Rzeczywisty czas (minuty od polnocy) z siatki rocznika w chwili zapisu — kolizje miedzy
   // siatkami roznych wydzialow i "Moj plan" licza sie w minutach.
-  startMinute    Int
-  endMinute      Int
-  room           Room?           @relation(fields: [roomId], references: [id])
-  roomId         String? // null = zajecia online (bez sali)
-  instructor     Instructor?     @relation(fields: [instructorId], references: [id])
-  instructorId   String?
-  group          StudentGroup    @relation(fields: [groupId], references: [id])
-  groupId        String
-  kind           OccurrenceKind  @default(DERIVED)
-  status         EntryStatus     @default(SCHEDULED)
-  jointKey       String?
-  note           String?
+  startMinute  Int
+  endMinute    Int
+  room         Room?          @relation(fields: [roomId], references: [id])
+  roomId       String? // null = zajecia online (bez sali)
+  instructor   Instructor?    @relation(fields: [instructorId], references: [id])
+  instructorId String?
+  group        StudentGroup   @relation(fields: [groupId], references: [id])
+  groupId      String
+  kind         OccurrenceKind @default(DERIVED)
+  status       EntryStatus    @default(SCHEDULED)
+  jointKey     String?
+  note         String?
   // Tekstowy klucz odrabianego terminu (lib/occurrenceKey) — juz tylko zapisywany, nikt go nie
   // czyta; do usuniecia (etap 4). Powiazanie to makeupOfId.
-  makeupOfKey    String?
+  makeupOfKey  String?
   // Odrobienie (MANUAL, MAKEUP) za odwolany termin: nie zuzywa godzin drugi raz (odwolany termin
   // juz je zuzyl). Termin usuniety przy generowaniu -> null: odrobienie zostaje jako zajecia
   // dodatkowe i liczy sie do godzin.
-  makeupOf       Occurrence?     @relation("Makeup", fields: [makeupOfId], references: [id], onDelete: SetNull)
-  makeupOfId     String?
-  makeups        Occurrence[]    @relation("Makeup")
-  changeRequests ChangeRequest[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  makeupOf     Occurrence?    @relation("Makeup", fields: [makeupOfId], references: [id], onDelete: SetNull)
+  makeupOfId   String?
+  makeups      Occurrence[]   @relation("Makeup")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
   // Jeden termin na date wzorca umieszczenia — "Generuj terminy" aktualizuje go w miejscu (to samo id).
   // Terminy reczne i odlaczone od usunietych umieszczen maja placementId = null (NULL-e sie nie zderzaja).
@@ -614,10 +608,6 @@ model User {
   studentGroups StudentGroup[] @relation("StudentGroupMembers")
 
   refreshTokens RefreshToken[]
-
-  requestsMade    ChangeRequest[] @relation("RequestAuthor")
-  requestsDecided ChangeRequest[] @relation("RequestDecider")
-  notifications   Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -748,101 +738,4 @@ enum Role {
   DEAN_OFFICE
   INSTRUCTOR
   STUDENT
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  ZGLOSZENIA ZMIAN I POWIADOMIENIA
-// ═══════════════════════════════════════════════════════════════
-
-// Prowadzacy prosi dziekanat o odwolanie albo przeniesienie swojego terminu, albo proponuje
-// termin odrobienia odwolanych zajec. Dziekanat zatwierdza (zmiana wykonuje sie wtedy,
-// z pelnym sprawdzeniem kolizji) albo odrzuca z uzasadnieniem.
-model ChangeRequest {
-  id                  String              @id @default(uuid())
-  term                AcademicTerm        @relation(fields: [termId], references: [id])
-  termId              String
-  faculty             Faculty             @relation(fields: [facultyId], references: [id])
-  facultyId           String
-  section             ClassSection        @relation(fields: [sectionId], references: [id])
-  sectionId           String
-  instructor          Instructor          @relation(fields: [instructorId], references: [id])
-  instructorId        String
-  requestedBy         User?               @relation("RequestAuthor", fields: [requestedById], references: [id], onDelete: SetNull)
-  requestedById       String?
-  kind                ChangeRequestKind
-  status              ChangeRequestStatus @default(PENDING)
-  // Tekstowy klucz terminu (lib/occurrenceKey) — juz tylko zapisywany; do usuniecia (etap 4).
-  // Stan terminu w chwili zgloszenia (originalDate...) zostaje do wyswietlania, gdy termin zniknie.
-  occurrenceKey       String
-  // Termin, ktorego dotyczy zgloszenie. Termin, ktory zniknal, -> null; zgloszenie zostaje
-  // z zapisanym stanem terminu.
-  occurrence          Occurrence?         @relation(fields: [occurrenceId], references: [id], onDelete: SetNull)
-  occurrenceId        String?
-  originalDate        DateTime            @db.Date
-  originalStartMinute Int
-  originalEndMinute   Int
-  // Propozycja (MOVE, MAKEUP): data i bloki siatki rocznika; sala albo online.
-  newDate             DateTime?           @db.Date
-  newStartOrder       Int?
-  newEndOrder         Int?
-  newRoom             Room?               @relation(fields: [newRoomId], references: [id], onDelete: SetNull)
-  newRoomId           String?
-  newOnline           Boolean             @default(false)
-  reason              String
-  decidedBy           User?               @relation("RequestDecider", fields: [decidedById], references: [id], onDelete: SetNull)
-  decidedById         String?
-  decidedAt           DateTime?
-  decisionNote        String?
-  notifications       Notification[]
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-
-  @@index([facultyId, status])
-  @@index([instructorId, status])
-  @@index([occurrenceKey])
-  @@index([occurrenceId])
-}
-
-// Powiadomienie w aplikacji (dzwonek w naglowku). Tworza je zgloszenia i zmiany terminow
-// prowadzacego wprowadzone przez dziekanat.
-model Notification {
-  id        String           @id @default(uuid())
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  kind      NotificationKind
-  title     String
-  body      String
-  // Sciezka w aplikacji, np. "/requests/2026-Z".
-  link      String?
-  request   ChangeRequest?   @relation(fields: [requestId], references: [id], onDelete: SetNull)
-  requestId String?
-  readAt    DateTime?
-  createdAt DateTime         @default(now())
-
-  @@index([userId, readAt])
-}
-
-enum ChangeRequestKind {
-  CANCEL // odwolanie terminu
-  MOVE // przeniesienie terminu
-  MAKEUP // termin odrobienia odwolanych zajec
-}
-
-enum ChangeRequestStatus {
-  PENDING // czeka na dziekanat
-  APPROVED // zatwierdzone i wykonane
-  REJECTED // odrzucone (z uzasadnieniem)
-  WITHDRAWN // wycofane przez prowadzacego
-  SUPERSEDED // nieaktualne: planista zmienil termin wprost, inaczej niz w prosbie
-}
-
-enum NotificationKind {
-  REQUEST_CREATED // do dziekanatu: nowe zgloszenie
-  REQUEST_WITHDRAWN // do dziekanatu: prowadzacy wycofal zgloszenie
-  REQUEST_APPROVED // do prowadzacego
-  REQUEST_REJECTED // do prowadzacego
-  REQUEST_SUPERSEDED // do prowadzacego: termin zmieniony wprost, zgloszenie nieaktualne
-  CLASS_CANCELLED // do prowadzacego: dziekanat odwolal jego zajecia
-  CLASS_CHANGED // do prowadzacego: dziekanat przeniosl / przywrocil jego zajecia
-  MAKEUP_SCHEDULED // do prowadzacego: dziekanat dodal termin (odrobienie) z jego udzialem
 }

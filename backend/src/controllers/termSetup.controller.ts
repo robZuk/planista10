@@ -245,19 +245,6 @@ export const myPlan = asyncHandler(async (req, res) => {
   const visibleCohorts = await publishedCohortKeys(cohortIds.map((cohortId) => ({ termId: term.id, cohortId })));
   const shown = rows.filter((o) => visibleCohorts.has(`${term.id}|${o.section.cohortId}`));
   const nameOf = new Map(contexts.map((c) => [c.cohort.id, c.nameOf]));
-  // Roczniki z kalendarzem w archiwum — plan jest zapisem tego, co sie odbylo; prowadzacy nie
-  // zglasza do niego zmian (front nie oferuje klikniecia, serwer i tak odmowi).
-  const chosenCalendars = contexts.length > 0 ? await calendarsFor(term, contexts) : new Map();
-  const archivedCohorts = new Set(contexts.filter((c) => chosenCalendars.get(c.cohort.id)?.status === 'ARCHIVED').map((c) => c.cohort.id));
-  // Prowadzacy: zgloszenia czekajace na dziekanat — kafelek pokazuje "zgloszono odwolanie" itp.
-  const pending =
-    user.role === 'INSTRUCTOR' && shown.length > 0
-      ? await prisma.changeRequest.findMany({
-          where: { instructorId: user.instructorId!, status: 'PENDING', occurrenceId: { in: shown.map((o) => o.id) } },
-          select: { occurrenceId: true, kind: true },
-        })
-      : [];
-  const pendingOf = new Map(pending.map((p) => [p.occurrenceId!, p.kind]));
   const data = shown
     .map((o) => ({
       id: o.id,
@@ -274,8 +261,6 @@ export const myPlan = asyncHandler(async (req, res) => {
       instructor: o.instructor ? `${o.instructor.title ?? ''} ${o.instructor.firstName} ${o.instructor.lastName}`.trim() : 'NN',
       status: o.status,
       note: o.note,
-      pendingRequest: pendingOf.get(o.id) ?? null,
-      archived: archivedCohorts.has(o.section.cohortId),
     }));
   const calendars = await personCalendars(term, personCohortIds);
   // Zakres semestru wg opublikowanych kalendarzy osoby — front przestawia tydzien albo mowi,

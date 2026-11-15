@@ -2,7 +2,7 @@ import type { DayBlockReason } from './teachingCalendar';
 
 /**
  * Ocena nowego miejsca terminu zmienianego wprost przez planiste (przeniesienie, termin
- * reczny, zatwierdzenie zgloszenia z poprawka). Data poza semestrem blokuje — takiego
+ * reczny, odrobienie). Data poza semestrem blokuje — takiego
  * terminu nie pokaze zaden widok semestru. Swieto, przerwa, dzien poza zjazdami albo
  * godziny poza oknem dnia sa dozwolone (np. odrobienie w sobote), ale dopiero po
  * swiadomym potwierdzeniu ostrzezen.

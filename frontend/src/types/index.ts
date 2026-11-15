@@ -695,8 +695,6 @@ export interface OccurrenceRow {
   status: EntryStatus;
   changed: boolean;
   note: string | null;
-  /** Zgloszenie prowadzacego czekajace na decyzje — zmiana wprost je zamknie. */
-  pendingRequest: { id: string; kind: ChangeRequestKind; instructor: string; proposal: string | null } | null;
   /** Odwolany termin, ktory ma juz odrobienie — kiedy (wtedy nie da sie go przywrocic). */
   madeUpBy: { date: string; startMinute: number; endMinute: number } | null;
   /** Termin reczny bedacy odrobieniem — data odrabianych zajec (YYYY-MM-DD). */
@@ -787,46 +785,11 @@ export interface MyPlanRow {
   instructor: string;
   status: EntryStatus;
   note: string | null;
-  /** Prowadzacy: zgloszenie tego terminu czekajace na dziekanat. */
-  pendingRequest: ChangeRequestKind | null;
-  /** Kalendarz rocznika w archiwum — zapis tego, co sie odbylo; bez zgloszen zmian. */
-  archived?: boolean;
 }
 
-// ─── Zgloszenia zmian i powiadomienia ──────────────────────────
+// ─── Odrobienia ──────────────────────────────────────────────
 
-export type ChangeRequestKind = 'CANCEL' | 'MOVE' | 'MAKEUP';
-export type ChangeRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN' | 'SUPERSEDED';
-
-export interface ChangeRequestRow {
-  id: string;
-  kind: ChangeRequestKind;
-  status: ChangeRequestStatus;
-  instructor: string;
-  subject: string;
-  classType: ClassType;
-  program: string;
-  group: string;
-  original: { date: string; time: string };
-  /** Przeniesienie / odrobienie: proponowany termin; odwolanie — null. */
-  proposal: {
-    date: string | null;
-    startOrder: number | null;
-    endOrder: number | null;
-    time: string | null;
-    roomId: string | null;
-    room: string | null;
-    online: boolean;
-  } | null;
-  reason: string;
-  decisionNote: string | null;
-  decidedBy: string | null;
-  decidedAt: string | null;
-  createdAt: string;
-  /** Czeka, ale terminu juz nie ma (plan wygenerowano od nowa) — do odrzucenia. */
-  stale: boolean;
-}
-
+/** Odwolane zajecia semestru i ich odrobienie (lista "Do odrobienia" planisty). */
 export interface MakeupRow {
   occurrenceId: string;
   sectionId: string;
@@ -839,39 +802,7 @@ export interface MakeupRow {
   instructor: string;
   hours: number;
   note: string | null;
-  /** TODO — do odrobienia, REQUESTED — zgloszony termin czeka, MADE_UP — odrobione. */
-  state: 'TODO' | 'REQUESTED' | 'MADE_UP';
+  /** TODO — do odrobienia, MADE_UP — odrobione (jest termin reczny wskazujacy te zajecia). */
+  state: 'TODO' | 'MADE_UP';
   makeup: { date: string; time: string } | null;
-}
-
-export interface RequestOptions {
-  kinds: ChangeRequestKind[];
-  /** Dlaczego nic nie wolno zglosic (gdy kinds puste). */
-  reason: string | null;
-  occurrence: {
-    id: string;
-    date: string;
-    startOrder: number;
-    endOrder: number;
-    roomId: string | null;
-    status: EntryStatus;
-    /** Forma zajec i liczebnosc grupy — lista sal w propozycji (typ, "za mala"). */
-    classType: ClassType;
-    groupSize: number;
-    subject: string;
-    classLabel: string;
-    group: string;
-  };
-  blocks: { order: number; startTime: string; endTime: string }[];
-  days: DayOfWeek[];
-}
-
-export interface AppNotification {
-  id: string;
-  kind: string;
-  title: string;
-  body: string;
-  link: string | null;
-  readAt: string | null;
-  createdAt: string;
 }

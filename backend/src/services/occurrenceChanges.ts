@@ -4,10 +4,9 @@ import { AppError } from '../lib/AppError';
 import { fromIsoDate, isIsoDate, toIsoDate } from '../lib/isoDate';
 import { findConflict, type BusySlot } from '../lib/materializer';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
-import { dayWindowProblem, type GridTime } from '../lib/timeGrid';
+import { dayWindowProblem, slotLabel, type GridTime } from '../lib/timeGrid';
 import { singleConflictMessage } from '../lib/conflictMessage';
 import { occurrenceKey } from '../lib/occurrenceKey';
-import { slotLabel } from '../lib/changeRequests';
 import { TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
 import { assessSlot, SLOT_WARNINGS_CODE, type SlotAssessment } from '../lib/occurrenceSlot';
 import { gridFor } from './timeGrids';
@@ -17,8 +16,8 @@ import { activeCohorts } from './sections';
 import { assertVersionApproved, calendarFor, termOccupancy, type OccupancyOptions } from './plan';
 
 /**
- * Zmiany pojedynczych terminow — jedno miejsce dla planisty (Ukladanie planu → Terminy)
- * i dla zatwierdzanych zgloszen prowadzacych (services/changeRequests). Terminy z wzorca
+ * Zmiany pojedynczych terminow — odwolanie, przeniesienie, przywrocenie i termin reczny
+ * (odrobienie) wprowadza tylko planista (Ukladanie planu → Terminy). Terminy z wzorca
  * zmieniamy wyjatkiem (PlacementException), ktory przezyje ponowne generowanie; terminy
  * reczne — wprost. Kazda zmiana daty/godzin/sali sprawdza kolizje w calej uczelni.
  */

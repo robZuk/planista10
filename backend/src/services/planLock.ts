@@ -2,7 +2,7 @@ import { prisma } from '../lib/prisma';
 
 /**
  * Zapisy planu semestru (umieszczenia, zmiany terminow, terminy reczne, generowanie, przeniesienie
- * planu, zatwierdzanie zgloszen) ida po kolei w obrebie semestru. Kontrola kolizji i zapis to osobne
+ * planu, import obsady) ida po kolei w obrebie semestru. Kontrola kolizji i zapis to osobne
  * zapytania — bez tego dwa rownolegle zapisy (np. dwa dziekanaty) mogly oba przejsc kontrole
  * i zajac te sama sale o tej samej godzinie. Kolizje licza sie w calej uczelni, wiec klucz to semestr.
  *

@@ -5,7 +5,7 @@ import { fromIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
 import { calendarPeriods, expandDates, TeachingCalendar } from '../lib/teachingCalendar';
 import { groupsOverlap, indexGroups, pathFromRoot } from '../lib/groupTree';
 import { roomTypeMap } from '../lib/scheduleTime';
-import { dayWindowProblem, formatMinutes, mapRangeByTime, minutesOverlap, weekdayLabel, type GridTime, type MinuteRange, type WeekdayName } from '../lib/timeGrid';
+import { dayWindowProblem, formatMinutes, mapRangeByTime, slotLabel, minutesOverlap, weekdayLabel, type GridTime, type MinuteRange, type WeekdayName } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from './timeGrids';
 import {
   findConflict,
@@ -16,7 +16,6 @@ import {
   type MatSection,
 } from '../lib/materializer';
 import { diffOccurrences, type DerivedRow } from '../lib/occurrenceDiff';
-import { slotLabel } from '../lib/changeRequests';
 import { toCalendarInput } from './termCalendars';
 import { calendarFor, calendarsFor, type CalendarRow } from './cohortCalendar';
 import { activeCohorts, type CohortContext } from './sections';

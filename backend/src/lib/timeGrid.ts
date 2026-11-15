@@ -28,6 +28,11 @@ export function formatMinutes(minutes: number): string {
   return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 }
 
+/** Termin dla ludzi: ("2026-11-12", 660, 720) -> "12.11 11:00–12:00". */
+export function slotLabel(date: string, startMinute: number, endMinute: number): string {
+  return `${date.slice(8, 10)}.${date.slice(5, 7)} ${formatMinutes(startMinute)}–${formatMinutes(endMinute)}`;
+}
+
 export function blockLabel(startTime: string, endTime: string): string {
   return `${startTime}-${endTime}`;
 }

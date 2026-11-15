@@ -59,7 +59,7 @@ function stale(id: string, counts: { instructors?: number; placements?: number; 
     groupId: 'g-root',
     hours: 30,
     programEntry: { subject: { name: `Przedmiot ${id}` } },
-    _count: { instructors: 0, placements: 0, occurrences: 0, changeRequests: 0, ...counts },
+    _count: { instructors: 0, placements: 0, occurrences: 0, ...counts },
   };
 }
 
@@ -104,7 +104,7 @@ describe('syncSections — zbedne zajecia', () => {
     prismaMock.classSection.findMany.mockResolvedValue([]);
     await syncSections(term, { facultyId: null, dryRun: true });
     const args = prismaMock.classSection.findMany.mock.calls[0]![0];
-    expect(args.include._count.select).toEqual({ instructors: true, placements: true, occurrences: true, changeRequests: true });
+    expect(args.include._count.select).toEqual({ instructors: true, placements: true, occurrences: true });
   });
 
   it('juz osierocone zajecia w planie nie sa ponownie raportowane ani usuwane', async () => {

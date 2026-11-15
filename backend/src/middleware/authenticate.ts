@@ -11,8 +11,8 @@ const READ_ONLY_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
  * ustawia `req.user = { id, role }`. W razie braku/niewaznosci -> 401.
  *
  * Token podgladu (impersonacja, `imp` = id admina) jest tylko do odczytu: zapis
- * w podgladzie wygladalby w bazie jak dzialanie podgladanej osoby (zgloszenie
- * prowadzacego, decyzja dziekanatu, przeczytane powiadomienia) -> 403.
+ * w podgladzie wygladalby w bazie jak dzialanie podgladanej osoby (np. zmiana
+ * planu przez dziekanat) -> 403.
  */
 export function authenticate(req: Request, res: Response, next: NextFunction): void {
   const header = req.headers.authorization;

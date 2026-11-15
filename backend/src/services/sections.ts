@@ -195,7 +195,7 @@ export async function syncSections(
     const existing = await prisma.classSection.findMany({
       where: { termId: term.id, cohortId: cohort.id },
       include: {
-        _count: { select: { instructors: true, placements: true, occurrences: true, changeRequests: true } },
+        _count: { select: { instructors: true, placements: true, occurrences: true } },
         programEntry: { include: { subject: { select: { name: true } } } },
         instructors: {
           select: { id: true, hours: true, instructor: { select: { title: true, firstName: true, lastName: true } } },
@@ -260,8 +260,7 @@ export async function syncSections(
       const r = row(s, s.programEntry.subject.name);
       // Umieszczenia i terminy trzymaja zajecia kluczem obcym (RESTRICT) — usuniecie wywrociloby
       // cala transakcje synchronizacji. Poza tym to praca planisty, ktorej nie kasujemy po cichu.
-      // Zgloszenia prowadzacych tez trzymaja zajecia kluczem obcym (historia decyzji dziekanatu).
-      if (s._count.instructors > 0 || s._count.placements > 0 || s._count.occurrences > 0 || s._count.changeRequests > 0) {
+      if (s._count.instructors > 0 || s._count.placements > 0 || s._count.occurrences > 0) {
         if (s.status !== 'ORPHANED') {
           report.orphaned.push(r);
           ops.push(prisma.classSection.update({ where: { id: s.id }, data: { status: 'ORPHANED' } }));

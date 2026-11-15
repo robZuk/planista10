@@ -2,6 +2,7 @@ import { api } from '@/lib/api';
 import type {
   CarryPlanReport,
   GenerateReport,
+  MakeupRow,
   MyPlanRow,
   OccurrenceRow,
   PlacementPayload,
@@ -76,6 +77,12 @@ export async function changeOccurrence(
 ): Promise<{ message: string }> {
   const res = await api.put(`/occurrences/${id}`, input);
   return res.data;
+}
+
+/** Odwolane zajecia semestru i ich odrobienie — tylko planista; admin: wybrany wydzial albo wszystkie. */
+export async function fetchMakeups(termKey: string, facultyId?: string | null): Promise<MakeupRow[]> {
+  const res = await api.get(`/terms/${termKey}/makeups`, { params: facultyId && facultyId !== 'all' ? { facultyId } : {} });
+  return res.data.data;
 }
 
 export async function createManualOccurrence(

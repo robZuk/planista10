@@ -68,15 +68,11 @@ export const update = asyncHandler(async (req, res) => {
 export const remove = asyncHandler(async (req, res) => {
   const instructor = await prisma.instructor.findUnique({
     where: { id: req.params.id },
-    include: { _count: { select: { placements: true, occurrences: true, sectionAssignments: true, changeRequests: true } } },
+    include: { _count: { select: { placements: true, occurrences: true, sectionAssignments: true } } },
   });
   if (!instructor) throw new AppError(404, 'Prowadzacy nie znaleziony');
   if (instructor._count.placements > 0 || instructor._count.occurrences > 0 || instructor._count.sectionAssignments > 0) {
     throw new AppError(409, 'Nie mozna usunac prowadzacego z obsady albo planu zajec');
-  }
-  // Zgloszenia zmian trzymaja prowadzacego kluczem obcym (historia decyzji dziekanatu).
-  if (instructor._count.changeRequests > 0) {
-    throw new AppError(409, 'Nie mozna usunac prowadzacego, ktory ma zgloszenia zmian (historia decyzji dziekanatu)');
   }
   await prisma.instructor.delete({ where: { id: req.params.id } });
   res.json({ message: 'Prowadzacy usuniety' });
