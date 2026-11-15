@@ -25,7 +25,7 @@ services:
   backend:
     # Obraz w rejestrze GHCR (build w CI wypycha go tu; serwer robi 'pull').
     # 'build' zostaje jako fallback do budowania lokalnego (docker compose up --build).
-    image: ghcr.io/robzuk/planista-backend:latest
+    image: ghcr.io/robzuk/planista10-backend:latest
     build:
       context: ./backend
       target: runner
@@ -44,7 +44,7 @@ services:
         condition: service_healthy
 
   frontend:
-    image: ghcr.io/robzuk/planista-frontend:latest
+    image: ghcr.io/robzuk/planista10-frontend:latest
     build:
       context: ./frontend
       target: runner
