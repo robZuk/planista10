@@ -1,0 +1,5 @@
+# Skrypty powloki zawsze z LF — takze po klonowaniu na Windows (core.autocrlf). Skrypt seeda
+# (db/initdb/10-seed.sh) wykonuje Postgres w kontenerze; z CRLF baza nie wgralaby danych.
+*.sh text eol=lf
+# Zrzut bazy (seed) to plik binarny — bez zamian koncow linii i bez diffu tekstowego.
+*.sql.gz binary
