@@ -22,7 +22,6 @@ import { formatDateLong, toDateKey } from '@/lib/scheduleDates';
 import { useAuthStore } from '@/store/authStore';
 import { StatTile } from './dashboard/StatTile';
 import { WeekLoadChart } from './dashboard/WeekLoadChart';
-import { EntryStatusMeter } from './dashboard/EntryStatusMeter';
 import { plural } from '@/lib/setupSteps';
 import { TodayCard } from './dashboard/TodayCard';
 
@@ -60,7 +59,6 @@ export default function DashboardPage() {
   if (role === 'INSTRUCTOR' || role === 'STUDENT') {
     const isInstructor = role === 'INSTRUCTOR';
     const weekHours = (weekEntries ?? [])
-      .filter((entry) => entry.status !== 'CANCELLED')
       .reduce((sum, entry) => sum + (entry.endBlock.order - entry.startBlock.order + 1), 0);
 
     return (
@@ -187,15 +185,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <WeekLoadChart entries={weekEntries ?? []} />
-        <EntryStatusMeter
-          scheduled={stats?.entries.scheduled ?? 0}
-          cancelled={stats?.entries.cancelled ?? 0}
-          makeup={stats?.entries.makeup ?? 0}
-          scopeName={stats?.scope.kind === 'FACULTY' ? stats.scope.name : undefined}
-        />
-      </div>
+      <WeekLoadChart entries={weekEntries ?? []} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <TodayCard

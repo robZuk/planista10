@@ -56,7 +56,7 @@ export function setupSteps(data: SetupStatus, termKey: string): SetupStep[] {
   // Terminy sa, ale nie wyczerpuja godzin programu (np. swieta wypadaja w inne dni niz rok temu).
   if (t.shortSections > 0) {
     step7Todos.push(
-      `uzupelnij godziny ${plural(t.shortSections, 'zajeciom', 'zajeciom', 'zajeciom')} — terminy daja mniej godzin niz program (odrobienia albo zmiana wzorca)`,
+      `uzupelnij godziny ${plural(t.shortSections, 'zajeciom', 'zajeciom', 'zajeciom')} — terminy daja mniej godzin niz program (zmiana wzorca albo termin reczny)`,
     );
   }
   if (unpublished > 0) {

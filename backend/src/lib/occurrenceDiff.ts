@@ -1,8 +1,8 @@
 /**
  * Diff terminow z wzorca przy "Generuj terminy": obecne terminy w zakresie vs. wyliczone przez
  * materializer. Termin o tym samym kluczu (umieszczenie + data z wzorca) zostaje tym samym
- * wierszem — zachowuje id, wiec odrobienia i linki do niego nie gina. Zmienia sie
- * tylko tresc (data po wyjatku, godziny, sala, status...). Czysta funkcja, bez bazy.
+ * wierszem — zachowuje id (np. data utworzenia zostaje). Zmienia sie
+ * tylko tresc (data po przeniesieniu, godziny, sala...). Czysta funkcja, bez bazy.
  */
 
 /** Tresc wiersza terminu z wzorca (to, co generowanie zapisuje). */
@@ -21,7 +21,6 @@ export interface DerivedRow {
   instructorId: string | null;
   groupId: string;
   kind: 'DERIVED';
-  status: 'SCHEDULED' | 'CANCELLED' | 'MAKEUP';
   jointKey: string | null;
   note: string | null;
 }
@@ -38,7 +37,7 @@ export interface OccurrenceDiff {
   toUpdate: { id: string; data: DerivedRow }[];
   /** Terminy, ktorych juz nie ma we wzorcu (i odlaczone od usunietych umieszczen). */
   toDelete: string[];
-  /** Raport dla planisty: zmiana tego, co widac w planie (data, godziny, sala, prowadzacy, status). */
+  /** Raport dla planisty: zmiana tego, co widac w planie (data, godziny, sala, prowadzacy). */
   added: number;
   changed: number;
   unchanged: number;
@@ -47,9 +46,8 @@ export interface OccurrenceDiff {
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 const keyOf = (placementId: string, originalDate: Date) => `${placementId}|${iso(originalDate)}`;
 
-type Visible = Pick<DerivedRow, 'date' | 'startOrder' | 'endOrder' | 'startMinute' | 'endMinute' | 'roomId' | 'instructorId' | 'status'>;
-const visibleSig = (o: Visible) =>
-  `${iso(o.date)}|${o.startOrder}|${o.endOrder}|${o.startMinute}|${o.endMinute}|${o.roomId}|${o.instructorId}|${o.status}`;
+type Visible = Pick<DerivedRow, 'date' | 'startOrder' | 'endOrder' | 'startMinute' | 'endMinute' | 'roomId' | 'instructorId'>;
+const visibleSig = (o: Visible) => `${iso(o.date)}|${o.startOrder}|${o.endOrder}|${o.startMinute}|${o.endMinute}|${o.roomId}|${o.instructorId}`;
 /** Pelna tresc — czy wiersz trzeba zapisac (takze zmiany niewidoczne w raporcie: klucz zajec laczonych, uwaga...). */
 const fullSig = (o: Visible & Pick<DerivedRow, 'facultyId' | 'groupId' | 'jointKey' | 'note'>) =>
   `${visibleSig(o)}|${o.facultyId}|${o.groupId}|${o.jointKey}|${o.note}`;

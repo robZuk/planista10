@@ -2,9 +2,9 @@ import type { DayBlockReason } from './teachingCalendar';
 
 /**
  * Ocena nowego miejsca terminu zmienianego wprost przez planiste (przeniesienie, termin
- * reczny, odrobienie). Data poza semestrem blokuje — takiego
+ * reczny). Data poza semestrem blokuje — takiego
  * terminu nie pokaze zaden widok semestru. Swieto, przerwa, dzien poza zjazdami albo
- * godziny poza oknem dnia sa dozwolone (np. odrobienie w sobote), ale dopiero po
+ * godziny poza oknem dnia sa dozwolone (np. zajecia przeniesione na sobote), ale dopiero po
  * swiadomym potwierdzeniu ostrzezen.
  */
 export interface SlotAssessment {

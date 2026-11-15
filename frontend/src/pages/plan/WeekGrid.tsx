@@ -21,8 +21,6 @@ export interface GridItem {
   title: string;
   lines: string[];
   muted?: boolean;
-  /** Termin odwolany: przekreslony i wyszarzony. */
-  cancelled?: boolean;
   /** Krotkie oznaczenie przy tytule ("przeniesiony", "reczny"). */
   marker?: string;
   /** Niezgodnosc umieszczenia (lib/planIssues): znacznik "!" i opis w dymku. */
@@ -218,7 +216,6 @@ export function WeekGrid({
                       'flex flex-col justify-start overflow-hidden rounded-md border-l-4 px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm',
                       CLASS_COLORS[item.classType],
                       item.muted && 'opacity-40',
-                      item.cancelled && 'line-through opacity-50 grayscale',
                       passThrough && 'pointer-events-none opacity-45',
                       item.warning && 'ring-2 ring-amber-500 ring-inset',
                     )}

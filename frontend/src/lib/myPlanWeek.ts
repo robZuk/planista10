@@ -36,8 +36,8 @@ export function hourRange(rows: Pick<WeekRow, 'startMinute' | 'endMinute'>[]): {
 }
 
 /**
- * Tory zajec nakladajacych sie w czasie (np. wyklad i cwiczenia innej grupy studenta albo
- * odwolany termin i odrobienie). Przedzialy minut sa polotwarte — zajecia 9:00-10:00
+ * Tory zajec nakladajacych sie w czasie (np. wyklad i cwiczenia innej grupy studenta).
+ * Przedzialy minut sa polotwarte — zajecia 9:00-10:00
  * i 10:00-11:00 nie stoja obok siebie.
  */
 export function weekLanes(rows: WeekRow[]): Map<string, LanePlacement> {

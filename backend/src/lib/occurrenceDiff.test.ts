@@ -19,7 +19,6 @@ const planned = (originalDate: string, extra: Partial<DerivedRow> = {}): Derived
   instructorId: 'i1',
   groupId: 'g1',
   kind: 'DERIVED',
-  status: 'SCHEDULED',
   jointKey: null,
   note: null,
   ...extra,

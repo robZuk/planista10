@@ -141,18 +141,12 @@ export function GenerateTermsDialog({
             )}
             {report.orphanExceptions.length > 0 && (
               <section>
-                <h4 className="font-medium">Poprawki terminow bez daty we wzorcu ({report.orphanExceptions.length})</h4>
-                <p className="text-muted-foreground">Wzorzec sie zmienil i ta data juz z niego nie wynika — poprawka nie zostanie zastosowana.</p>
+                <h4 className="font-medium">Przeniesienia terminow bez daty we wzorcu ({report.orphanExceptions.length})</h4>
+                <p className="text-muted-foreground">Wzorzec sie zmienil i ta data juz z niego nie wynika — przeniesienie nie zostanie zastosowane.</p>
                 <ul className="max-h-32 overflow-y-auto">
                   {report.orphanExceptions.map((e, i) => (
                     <li key={i}>
-                      {e.date} · {e.section} ({e.action === 'CANCEL' ? 'odwolanie' : 'przeniesienie'})
-                      {e.makeup && (
-                        <span className="text-destructive">
-                          {' '}
-                          — ma odrobienie {e.makeup}, ktore zostanie jako dodatkowe zajecia (usun je, jesli nie jest juz potrzebne)
-                        </span>
-                      )}
+                      {e.date} · {e.section}
                     </li>
                   ))}
                 </ul>

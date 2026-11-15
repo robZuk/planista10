@@ -58,7 +58,7 @@ export default function MyPlanPage() {
         title="Moj plan"
         description={
           term
-            ? `Semestr ${term.label}. Widzisz tylko plan opublikowany przez dziekanat.${isInstructor ? ' Zmiany terminow (odwolanie, przeniesienie, odrobienie) wprowadza dziekanat.' : ''}`
+            ? `Semestr ${term.label}. Widzisz tylko plan opublikowany przez dziekanat.${isInstructor ? ' Przeniesienia terminow wprowadza dziekanat.' : ''}`
             : 'Wybierz semestr w naglowku.'
         }
         actions={
@@ -130,7 +130,7 @@ export default function MyPlanPage() {
                   {dayRows.map((r) => (
                     <li
                       key={r.id}
-                      className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 text-sm ${r.status === 'CANCELLED' ? 'text-muted-foreground line-through' : ''}`}
+                      className="flex flex-wrap items-center gap-x-4 gap-y-1 px-3 py-2 text-sm"
                     >
                       <span className="w-28 tabular-nums">
                         {formatMinutes(r.startMinute)}–{formatMinutes(r.endMinute)}
@@ -142,8 +142,6 @@ export default function MyPlanPage() {
                       </span>
                       <span className="text-muted-foreground">{r.room}</span>
                       {showInstructor && <span className="text-muted-foreground">{r.instructor}</span>}
-                      {r.status === 'CANCELLED' && <Badge variant="destructive">odwolane</Badge>}
-                      {r.status === 'MAKEUP' && <Badge>odrobienie</Badge>}
                       {r.note && <span className="text-xs text-muted-foreground">{r.note}</span>}
                     </li>
                   ))}

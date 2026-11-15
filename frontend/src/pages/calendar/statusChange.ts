@@ -5,7 +5,7 @@ import { formatDayKey } from './calendarUtils';
  * Zmiany statusu kalendarza, ktore wymagaja potwierdzenia, bo jednym kliknieciem psuja
  * dzialajacy plan:
  * - opublikowany -> w przygotowaniu: plan znika studentom i prowadzacym;
- * - archiwum przed koncem semestru: plan zamarza (bez przesuwania i odwolywania zajec).
+ * - archiwum przed koncem semestru: plan zamarza (bez przesuwania zajec).
  * Zwykla publikacja i archiwizacja po semestrze ida bez pytania.
  */
 export interface StatusChangeWarning {
@@ -33,7 +33,7 @@ export function statusChangeWarning(
       title: 'Przeniesc do archiwum w trakcie semestru?',
       effect:
         `Semestr trwa do ${formatDayKey(calendar.endDate, true)}. W archiwum plan jest tylko do odczytu — ` +
-        'nie da sie przesunac ani odwolac zajec. Z archiwum przywroci go tylko administrator.',
+        'nie da sie przesunac zajec. Z archiwum przywroci go tylko administrator.',
       confirmLabel: 'Przenies do archiwum',
     };
   }

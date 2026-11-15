@@ -382,10 +382,10 @@ export const openApiDocument = {
     },
     '/api/terms/{key}/occurrences': {
       get: { tags: ['Plan'], summary: 'Terminy rocznika', security: bearer, parameters: [termKey], responses: { 200: dataResp('Terminy'), ...authErrors } },
-      post: { tags: ['Plan'], summary: 'Termin reczny (odrobienie)', security: bearer, parameters: [termKey], responses: { 201: dataResp('Dodany'), 409: errResp('Kolizja'), ...authErrors } },
+      post: { tags: ['Plan'], summary: 'Termin reczny (zajecia dodatkowe)', security: bearer, parameters: [termKey], responses: { 201: dataResp('Dodany'), 409: errResp('Kolizja'), ...authErrors } },
     },
     '/api/occurrences/{id}': {
-      put: { tags: ['Plan'], summary: 'Odwolaj / przenies / przywroc termin', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zmieniony'), 409: errResp('Kolizja'), ...authErrors } },
+      put: { tags: ['Plan'], summary: 'Przenies (MODIFY) albo przywroc wg wzorca (RESTORE) termin', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zmieniony'), 409: errResp('Kolizja'), ...authErrors } },
     },
     '/api/terms/{key}/my-plan': {
       get: { tags: ['Plan'], summary: 'Moj plan (student/prowadzacy, tylko opublikowane)', security: bearer, parameters: [termKey, dateQ('from'), dateQ('to')], responses: { 200: dataResp('Terminy'), ...authErrors } },

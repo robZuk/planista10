@@ -2,7 +2,6 @@ import { api } from '@/lib/api';
 import type {
   CarryPlanReport,
   GenerateReport,
-  MakeupRow,
   MyPlanRow,
   OccurrenceRow,
   PlacementPayload,
@@ -62,7 +61,7 @@ export async function fetchOccurrences(termKey: string, cohortId: string): Promi
 export async function changeOccurrence(
   id: string,
   input: {
-    action: 'CANCEL' | 'MODIFY' | 'RESTORE';
+    action: 'MODIFY' | 'RESTORE';
     date?: string;
     startOrder?: number;
     endOrder?: number;
@@ -79,12 +78,6 @@ export async function changeOccurrence(
   return res.data;
 }
 
-/** Odwolane zajecia semestru i ich odrobienie — tylko planista; admin: wybrany wydzial albo wszystkie. */
-export async function fetchMakeups(termKey: string, facultyId?: string | null): Promise<MakeupRow[]> {
-  const res = await api.get(`/terms/${termKey}/makeups`, { params: facultyId && facultyId !== 'all' ? { facultyId } : {} });
-  return res.data.data;
-}
-
 export async function createManualOccurrence(
   termKey: string,
   input: {
@@ -96,9 +89,6 @@ export async function createManualOccurrence(
     online?: boolean;
     instructorId?: string | null;
     note?: string;
-    /** Odrobienie odwolanego terminu (jego klucz) — zamyka go na liscie "Do odrobienia". */
-    /** Odrabiany (odwolany) termin. */
-    makeupOfId?: string | null;
     confirmWarnings?: boolean;
   },
 ): Promise<{ message: string }> {

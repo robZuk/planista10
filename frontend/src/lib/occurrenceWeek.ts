@@ -22,7 +22,7 @@ export function occurrencesIn(period: CalendarPeriod, occurrences: OccurrenceRow
 
 /**
  * Kolumny siatki: dni trybu studiow z kalendarza (pn-pt albo dni zjazdu) i kazdy inny dzien,
- * na ktory przypada termin (np. odrobienie w sobote). Kolejnosc jak w okresie.
+ * na ktory przypada termin (np. przeniesiony albo reczny w sobote). Kolejnosc jak w okresie.
  */
 export function periodColumns(period: CalendarPeriod, modeDays: DayOfWeek[], occurrences: OccurrenceRow[]): PeriodDay[] {
   const used = new Set(occurrencesIn(period, occurrences).map((o) => o.date));
@@ -47,10 +47,9 @@ export function dayNote(day: PeriodDay): string | null {
   return day.label;
 }
 
-/** Oznaczenie terminu na karcie: odwolany, przeniesiony (skad), reczny. */
+/** Oznaczenie terminu na karcie: reczny, przeniesiony (skad), zmieniony. */
 export function occurrenceMarker(o: OccurrenceRow): string | undefined {
-  if (o.status === 'CANCELLED') return o.madeUpBy ? `odwolany, odrobiony ${formatDayMonth(o.madeUpBy.date)}` : 'odwolany';
-  if (o.kind === 'MANUAL') return o.makeupOf ? `odrobienie za ${formatDayMonth(o.makeupOf)}` : 'reczny';
+  if (o.kind === 'MANUAL') return 'reczny';
   if (o.originalDate && o.originalDate !== o.date) return `przeniesiony z ${formatDayMonth(o.originalDate)}`;
   if (o.changed) return 'zmieniony';
   return undefined;

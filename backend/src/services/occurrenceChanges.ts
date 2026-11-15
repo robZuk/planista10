@@ -4,9 +4,8 @@ import { AppError } from '../lib/AppError';
 import { fromIsoDate, isIsoDate, toIsoDate, weekdayOf } from '../lib/isoDate';
 import { findConflict, type BusySlot } from '../lib/materializer';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
-import { dayWindowProblem, slotLabel, type GridTime } from '../lib/timeGrid';
+import { dayWindowProblem, type GridTime } from '../lib/timeGrid';
 import { singleConflictMessage } from '../lib/conflictMessage';
-import { occurrenceKey } from '../lib/occurrenceKey';
 import { TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
 import { assessSlot, SLOT_WARNINGS_CODE, type SlotAssessment } from '../lib/occurrenceSlot';
 import { gridFor, type FacultyGrids } from './timeGrids';
@@ -16,13 +15,15 @@ import { activeCohorts } from './sections';
 import { assertVersionApproved, calendarFor, termOccupancy, type OccupancyOptions } from './plan';
 
 /**
- * Zmiany pojedynczych terminow — odwolanie, przeniesienie, przywrocenie i termin reczny
- * (odrobienie) wprowadza tylko planista (Ukladanie planu → Terminy). Terminy z wzorca
- * zmieniamy wyjatkiem (PlacementException), ktory przezyje ponowne generowanie; terminy
+ * Zmiany pojedynczych terminow — przeniesienie, przywrocenie wg wzorca i termin reczny
+ * (zajecia dodatkowe) wprowadza tylko planista (Ukladanie planu → Terminy). Terminy z wzorca
+ * przenosimy wyjatkiem (PlacementException), ktory przezyje ponowne generowanie; terminy
  * reczne — wprost. Kazda zmiana daty/godzin/sali sprawdza kolizje w calej uczelni.
  *
+ * Odwolan i odrobien nie ma: zajecia, ktore maja sie odbyc w innym dniu, planista przenosi.
+ *
  * Dotyczy tylko studiow niestacjonarnych. Na stacjonarnych obowiazuje ten sam plan w kazdym
- * tygodniu (+ kalendarz Rektora): odwolan i odrobien sie nie rejestruje, a zmiana planu od
+ * tygodniu (+ kalendarz Rektora): pojedynczych terminow sie nie przenosi, a zmiana planu od
  * tygodnia to zmiana wzorca (umieszczenia od-do tygodnia) — terminy sa tylko do wgladu.
  */
 
@@ -101,34 +102,9 @@ function assertWarningsConfirmed(assessment: SlotAssessment, confirmed: boolean 
 
 const isDerived = (occ: OccurrenceFull) => occ.kind === 'DERIVED' && !!occ.placement && !!occ.originalDate;
 
-/** Aktywne odrobienie odwolanego terminu (termin reczny wskazujacy go kluczem obcym) albo null. */
-export function activeMakeup(occurrenceId: string) {
-  return prisma.occurrence.findFirst({ where: { makeupOfId: occurrenceId, status: { not: 'CANCELLED' } }, orderBy: { date: 'asc' } });
-}
-
-/** Trwaly klucz tekstowy terminu — zapisywany jeszcze obok klucza obcego (do usuniecia w etapie 4). */
-const textKeyOf = (o: { id: string; kind: 'DERIVED' | 'MANUAL'; placementId: string | null; originalDate: Date | null }) =>
-  occurrenceKey({ id: o.id, kind: o.kind, placementId: o.placementId, originalDate: o.originalDate ? toIsoDate(o.originalDate) : null });
-
-/**
- * Odwolany termin, ktory ma juz odrobienie, nie wraca do planu (przywrocenie, przeniesienie) —
- * zajecia odbylyby sie dwa razy i liczyly podwojnie do godzin.
- */
-async function assertNotMadeUp(occ: OccurrenceFull, what: string): Promise<void> {
-  if (occ.status !== 'CANCELLED') return;
-  const makeup = await activeMakeup(occ.id);
-  if (makeup) {
-    throw new AppError(
-      409,
-      `Te zajecia sa juz odrobione (${slotLabel(toIsoDate(makeup.date), makeup.startMinute, makeup.endMinute)}) — usun albo odwolaj odrobienie, zanim ${what}`,
-    );
-  }
-}
-
-/** Przywrocenie terminu z wzorca (usuwa wyjatek). Wraca na miejsce z wzorca — z kontrola kolizji. */
+/** Przywrocenie przeniesionego terminu z wzorca (usuwa wyjatek). Wraca na miejsce z wzorca — z kontrola kolizji. */
 export async function restoreOccurrence(occ: OccurrenceFull, grids: FacultyGrids): Promise<void> {
   if (!isDerived(occ)) throw new AppError(400, 'Przywracac mozna tylko terminy z wzorca');
-  await assertNotMadeUp(occ, 'przywrocisz termin');
   const p = occ.placement!;
   const length = occ.endOrder - occ.startOrder + 1;
   const endOrder = Math.min(p.endOrder, p.startOrder + length - 1);
@@ -154,27 +130,10 @@ export async function restoreOccurrence(occ: OccurrenceFull, grids: FacultyGrids
         roomId: p.roomId,
         instructorId: p.instructorId,
         jointKey: p.jointKey,
-        status: 'SCHEDULED',
-        // Powod odwolania/przeniesienia nie dotyczy terminu wg wzorca (generowanie tez go nie niesie).
+        // Powod przeniesienia nie dotyczy terminu wg wzorca (generowanie tez go nie niesie).
         note: null,
       },
     }),
-  ]);
-}
-
-/** Odwolanie terminu (z wzorca — wyjatkiem CANCEL). */
-export async function cancelOccurrence(occ: OccurrenceFull, note: string | null): Promise<void> {
-  await prisma.$transaction([
-    ...(isDerived(occ)
-      ? [
-          prisma.placementException.upsert({
-            where: { placementId_originalDate: { placementId: occ.placementId!, originalDate: occ.originalDate! } },
-            create: { placementId: occ.placementId!, originalDate: occ.originalDate!, action: 'CANCEL', note },
-            update: { action: 'CANCEL', note },
-          }),
-        ]
-      : []),
-    prisma.occurrence.update({ where: { id: occ.id }, data: { status: 'CANCELLED', note: note ?? occ.note } }),
   ]);
 }
 
@@ -207,7 +166,6 @@ export async function moveOccurrence(occ: OccurrenceFull, grids: FacultyGrids, i
   };
   if (next.endOrder < next.startOrder) throw new AppError(400, 'Nieprawidlowy zakres godzin');
   if (input.online === false && !next.roomId) throw new AppError(400, 'Wybierz sale (albo zostaw zajecia online)');
-  await assertNotMadeUp(occ, 'przeniesiesz termin');
   const time = minutesOf(gridOfDate(grids, next.date), next.startOrder, next.endOrder);
   const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: occ.termId } });
   // Dzien i godziny oceniamy tylko przy zmianie miejsca w czasie (sama zmiana sali/prowadzacego ich nie rusza).
@@ -224,7 +182,6 @@ export async function moveOccurrence(occ: OccurrenceFull, grids: FacultyGrids, i
   if (assessment) assertWarningsConfirmed(assessment, input.confirmWarnings);
   const note = input.note ?? null;
   const exception = {
-    action: 'MODIFY' as const,
     newDate: fromIsoDate(next.date),
     newStartOrder: next.startOrder,
     newEndOrder: next.endOrder,
@@ -245,7 +202,7 @@ export async function moveOccurrence(occ: OccurrenceFull, grids: FacultyGrids, i
       : []),
     prisma.occurrence.update({
       where: { id: occ.id },
-      data: { ...next, ...time, date: fromIsoDate(next.date), status: 'SCHEDULED', note: note ?? occ.note },
+      data: { ...next, ...time, date: fromIsoDate(next.date), note: note ?? occ.note },
     }),
   ]);
 }
@@ -258,36 +215,25 @@ export interface ManualInput {
   online?: boolean;
   instructorId?: string | null;
   note?: string | null;
-  /** Odrobienie konkretnego odwolanego terminu (jego id) — nie zuzywa godzin drugi raz. */
-  makeupOfId?: string | null;
   /** Planista potwierdzil ostrzezenia o dniu/godzinach (patrz lib/occurrenceSlot). */
   confirmWarnings?: boolean;
 }
 
-/** Termin reczny (odrobienie, zajecia jednorazowe) z kontrola kolizji; bloki wg siatki dnia tygodnia daty. */
+/**
+ * Termin reczny (zajecia dodatkowe, jednorazowe) z kontrola kolizji; bloki wg siatki dnia tygodnia
+ * daty. Liczy sie do godzin zajec jak kazdy termin — przy generowaniu wzorzec da o tyle mniej.
+ */
 export async function createManualOccurrence(term: AcademicTerm, section: ClassSection, grids: FacultyGrids, input: ManualInput) {
   const roomId = input.online ? null : (input.roomId ?? null);
   if (!isIsoDate(input.date) || !Number.isInteger(input.startOrder) || !Number.isInteger(input.endOrder) || input.endOrder < input.startOrder) {
     throw new AppError(400, 'Podaj date i godziny');
   }
   if (!input.online && !roomId) throw new AppError(400, 'Wybierz sale (albo zaznacz zajecia online)');
-  // Odrobienie wskazanych zajec: musza to byc odwolane zajecia tej samej sekcji.
-  let original: Occurrence | null = null;
-  if (input.makeupOfId) {
-    const found = await prisma.occurrence.findUnique({ where: { id: input.makeupOfId } });
-    if (!found || found.sectionId !== section.id || found.status !== 'CANCELLED') {
-      throw new AppError(400, 'Odrabiany termin nie jest odwolanym terminem tych zajec');
-    }
-    if (await activeMakeup(found.id)) throw new AppError(409, 'Te zajecia maja juz termin odrobienia');
-    original = found;
-  }
-  // Prowadzacy: wskazany (null = NN); bez wskazania — z odrabianych zajec albo pierwszy z obsady.
+  // Prowadzacy: wskazany (null = NN); bez wskazania — pierwszy z obsady.
   const instructorId =
     input.instructorId !== undefined
       ? input.instructorId
-      : (original?.instructorId ??
-        (await prisma.sectionInstructor.findFirst({ where: { sectionId: section.id, instructorId: { not: null } } }))?.instructorId ??
-        null);
+      : ((await prisma.sectionInstructor.findFirst({ where: { sectionId: section.id, instructorId: { not: null } } }))?.instructorId ?? null);
   const time = minutesOf(gridOfDate(grids, input.date), input.startOrder, input.endOrder);
   const assessment = await slotAssessment(term, section.cohortId, input.date, time);
   const conflict = await occurrenceConflicts(
@@ -310,10 +256,7 @@ export async function createManualOccurrence(term: AcademicTerm, section: ClassS
       instructorId,
       groupId: section.groupId,
       kind: 'MANUAL',
-      status: 'MAKEUP',
       note: input.note ?? null,
-      makeupOfId: original?.id ?? null,
-      makeupOfKey: original ? textKeyOf(original) : null,
     },
   });
 }

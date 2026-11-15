@@ -35,7 +35,6 @@ export function WeekLoadChart({
   const data = useMemo(() => {
     const byDay = new Map<number, number>();
     for (const entry of entries) {
-      if (entry.status === 'CANCELLED') continue;
       // toDateKey + rozbior na czesci: unikamy przesuniecia dnia przez strefe czasowa.
       const [year, month, day] = toDateKey(entry.date).split('-').map(Number);
       const weekday = new Date(year!, month! - 1, day!).getDay();

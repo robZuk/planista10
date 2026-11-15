@@ -94,10 +94,10 @@ export const setupStatus = asyncHandler(async (req, res) => {
     // Przedmioty programu wg semestru — rocznik bez zajec, ktorego program nie ma nic w tym
     // semestrze (np. praktyka), nie jest zaleglosci: synchronizacja i tak niczego nie doda.
     prisma.programEntry.groupBy({ by: ['versionId', 'semester'], where: { versionId: { in: versionIds } }, _count: { _all: true } }),
-    // Godziny w terminach (bez odwolanych; 1 blok = 1 godzina programu) — zajecia, ktore po
-    // generowaniu nie wyczerpia godzin (np. swieta w nowym roku wypadaja w inne dni).
+    // Godziny w terminach (1 blok = 1 godzina programu) — zajecia, ktore po generowaniu nie
+    // wyczerpia godzin (np. swieta w nowym roku wypadaja w inne dni).
     prisma.occurrence.findMany({
-      where: { termId: term.id, status: { not: 'CANCELLED' }, section: { cohortId: { in: cohortIds } } },
+      where: { termId: term.id, section: { cohortId: { in: cohortIds } } },
       select: { sectionId: true, startOrder: true, endOrder: true },
     }),
   ]);
@@ -259,7 +259,6 @@ export const myPlan = asyncHandler(async (req, res) => {
       group: nameOf.get(o.section.cohortId)?.(o.groupId) ?? '',
       room: o.room ? `${o.room.number} (${o.room.building.name})` : 'ON-LINE',
       instructor: o.instructor ? `${o.instructor.title ?? ''} ${o.instructor.firstName} ${o.instructor.lastName}`.trim() : 'NN',
-      status: o.status,
       note: o.note,
     }));
   const calendars = await personCalendars(term, personCohortIds);

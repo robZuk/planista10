@@ -10,10 +10,8 @@ import { mapRangeByTime } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from '../services/timeGrids';
 import { activeCohorts } from '../services/sections';
 import { conflictMessage } from '../lib/conflictMessage';
-import { listMakeups } from '../services/makeups';
 import {
   assertPlanEditable,
-  cancelOccurrence,
   createManualOccurrence as createManual,
   moveOccurrence,
   restoreOccurrence,
@@ -199,7 +197,6 @@ export const deletePlacement = asyncHandler(async (req, res) => {
   // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania. Odlaczamy je
   // jawnie (a nie przez ON DELETE SET NULL), zeby updatedAt zapisal chwile usuniecia — po niej
   // plan pokazuje "terminy nieaktualne", dopoki terminow nie wygeneruje sie od nowa.
-  // Odrobienia wskazuja terminy kluczem obcym (id), wiec odlaczenie ich nie rusza.
   await prisma.$transaction([
     prisma.occurrence.updateMany({ where: { placementId: current.id }, data: { placementId: null } }),
     prisma.placement.delete({ where: { id: current.id } }),
@@ -237,8 +234,6 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       section: { select: { classType: true, programEntry: { select: { subject: { select: { name: true } } } } } },
       room: { select: { number: true, building: { select: { name: true } } } },
       instructor: { select: { title: true, firstName: true, lastName: true } },
-      // Odrobienie: data odrabianych zajec (z wzorca, gdy byly przeniesione).
-      makeupOf: { select: { date: true, originalDate: true } },
     },
     orderBy: [{ date: 'asc' }, { startMinute: 'asc' }],
   });
@@ -250,20 +245,6 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       })
     ).map((e) => `${e.placementId}|${toIsoDate(e.originalDate)}`),
   );
-  // Powiazanie odwolanie <-> odrobienie: odwolany termin pokazuje swoje odrobienie, odrobienie —
-  // date odrabianych zajec (zeby nie trzeba bylo zgadywac, czemu "Przywroc" jest zablokowane).
-  const cancelledIds = rows.filter((o) => o.status === 'CANCELLED').map((o) => o.id);
-  const makeups = cancelledIds.length
-    ? await prisma.occurrence.findMany({
-        where: { makeupOfId: { in: cancelledIds }, status: { not: 'CANCELLED' } },
-        select: { makeupOfId: true, date: true, startMinute: true, endMinute: true },
-        orderBy: { date: 'asc' },
-      })
-    : [];
-  const madeUpBy = new Map<string, { date: string; startMinute: number; endMinute: number }>();
-  for (const m of makeups) {
-    if (!madeUpBy.has(m.makeupOfId!)) madeUpBy.set(m.makeupOfId!, { date: toIsoDate(m.date), startMinute: m.startMinute, endMinute: m.endMinute });
-  }
   res.json({
     data: rows.map((o) => ({
       id: o.id,
@@ -283,50 +264,38 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       instructor: o.instructor ? `${o.instructor.title ?? ''} ${o.instructor.firstName} ${o.instructor.lastName}`.trim() : 'NN',
       instructorId: o.instructorId,
       kind: o.kind,
-      status: o.status,
       changed: !!o.placementId && !!o.originalDate && exceptionKeys.has(`${o.placementId}|${toIsoDate(o.originalDate)}`),
       note: o.note,
-      madeUpBy: o.status === 'CANCELLED' ? (madeUpBy.get(o.id) ?? null) : null,
-      makeupOf: o.makeupOf ? toIsoDate(o.makeupOf.originalDate ?? o.makeupOf.date) : null,
     })),
   });
 });
 
 /**
- * Zmiana pojedynczego terminu: odwolanie, przeniesienie (data/godziny/sala/prowadzacy)
- * albo przywrocenie wg wzorca. Dla terminow z wzorca zapisujemy wyjatek, ktory przezyje
- * ponowne generowanie; terminy reczne zmieniamy wprost. Tylko planista (admin, dziekanat
- * wydzialu terminu) — prowadzacy nie odwoluje ani nie przenosi zajec. Tylko studia
+ * Zmiana pojedynczego terminu: przeniesienie (data/godziny/sala/prowadzacy) albo przywrocenie
+ * wg wzorca. Dla terminow z wzorca zapisujemy wyjatek, ktory przezyje ponowne generowanie;
+ * terminy reczne zmieniamy wprost. Odwolan nie ma (zajecia sie przenosi). Tylko planista
+ * (admin, dziekanat wydzialu terminu) — prowadzacy nie przenosi zajec. Tylko studia
  * niestacjonarne: stacjonarne maja terminy do wgladu (assertPlanEditable -> 409).
  */
 export const changeOccurrence = asyncHandler(async (req, res) => {
+  const body = req.body as { action?: string } & MoveInput;
+  if (body.action === 'CANCEL') throw new AppError(400, 'Odwolan nie ma — zajecia, ktore maja sie odbyc w innym dniu, przenies');
+  if (body.action !== 'MODIFY' && body.action !== 'RESTORE') throw new AppError(400, 'Nieznana zmiana terminu (MODIFY albo RESTORE)');
   const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) }, include: { placement: true, section: true } });
   if (!occ) throw new AppError(404, 'Termin nie znaleziony');
   await assertFacultyScope(req, occ.facultyId);
   const grid = await assertPlanEditable(occ.termId, occ.section.cohortId);
-  const body = req.body as { action: 'CANCEL' | 'MODIFY' | 'RESTORE' } & MoveInput;
 
   if (body.action === 'RESTORE') {
     await restoreOccurrence(occ, grid);
     res.json({ message: 'Termin przywrocony wg wzorca' });
     return;
   }
-  if (body.action === 'CANCEL') {
-    await cancelOccurrence(occ, body.note ?? null);
-    res.json({ message: 'Termin odwolany' });
-    return;
-  }
   await moveOccurrence(occ, grid, body);
   res.json({ message: 'Termin zmieniony' });
 });
 
-/** Odwolane zajecia semestru i ich odrobienia (lista "Do odrobienia"); admin: ?facultyId albo wszystko. */
-export const listCancelledToMakeUp = asyncHandler(async (req, res) => {
-  const term = await findTerm(String(req.params.key));
-  res.json({ data: await listMakeups(term, { facultyId: await facultyOf(req) }) });
-});
-
-/** Termin reczny (odrobienie, zajecia jednorazowe) — liczy sie do godzin i nie znika przy generowaniu. */
+/** Termin reczny (zajecia dodatkowe, jednorazowe) — liczy sie do godzin i nie znika przy generowaniu. */
 export const createManualOccurrence = asyncHandler(async (req, res) => {
   const term = await findTerm(String(req.params.key));
   const body = req.body as { sectionId: string } & ManualInput;
@@ -342,7 +311,7 @@ export const deleteManualOccurrence = asyncHandler(async (req, res) => {
   const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) }, include: { section: { select: { cohortId: true } } } });
   if (!occ) throw new AppError(404, 'Termin nie znaleziony');
   await assertFacultyScope(req, occ.facultyId);
-  if (occ.kind !== 'MANUAL') throw new AppError(409, 'Termin z wzorca mozna odwolac, ale nie usunac');
+  if (occ.kind !== 'MANUAL') throw new AppError(409, 'Termin z wzorca mozna przeniesc, ale nie usunac');
   await assertPlanEditable(occ.termId, occ.section.cohortId);
   await prisma.occurrence.delete({ where: { id: occ.id } });
   res.json({ message: 'Termin reczny usuniety' });

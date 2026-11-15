@@ -12,7 +12,7 @@ const HEADER = 36;
 
 /**
  * "Moj plan" jako kalendarz tygodnia. Os w minutach (plan laczy wydzialy o roznych siatkach),
- * zajecia rownolegle obok siebie, odwolane przekreslone, odrobienia oznaczone.
+ * zajecia rownolegle obok siebie.
  * `showInstructor` — student widzi prowadzacego, prowadzacy nie widzi samego siebie.
  */
 export function MyPlanWeek({
@@ -90,7 +90,6 @@ export function MyPlanWeek({
                 const time = `${formatMinutes(r.startMinute)}–${formatMinutes(r.endMinute)}`;
                 const who = `${r.program} · ${r.group}`;
                 const lines = [r.room, ...(showInstructor ? [r.instructor] : [])];
-                const status = r.status === 'CANCELLED' ? 'odwolane' : r.status === 'MAKEUP' ? 'odrobienie' : null;
                 return (
                   <div
                     key={r.id}
@@ -98,7 +97,6 @@ export function MyPlanWeek({
                       `${time} ${CLASS_LABELS[r.classType]} · ${r.subject}`,
                       who,
                       ...lines,
-                      ...(status ? [status] : []),
                       ...(r.note ? [r.note] : []),
                     ].join('\n')}
                     style={{
@@ -111,12 +109,10 @@ export function MyPlanWeek({
                     className={cn(
                       'overflow-hidden rounded-md border-l-4 px-1.5 py-1 text-[11px] leading-tight shadow-sm',
                       CLASS_COLORS[r.classType],
-                      r.status === 'CANCELLED' && 'line-through opacity-50 grayscale',
                     )}
                   >
                     <div className="tabular-nums opacity-80">
                       {time}
-                      {status && <span className="ml-1 rounded bg-background/70 px-1 no-underline">{status}</span>}
                     </div>
                     {/* Zajecia do godziny: przedmiot w jednej linii (pelny w dymku), zeby zmiescily sie grupa i sala. */}
                     <div className={cn('font-semibold', r.endMinute - r.startMinute <= 60 ? 'truncate' : 'line-clamp-2')}>

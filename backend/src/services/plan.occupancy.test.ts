@@ -147,18 +147,12 @@ describe('termOccupancy — wspolna zajetosc wzorca i terminow', () => {
   });
 
   it('przeniesiony termin zajmuje nowa date i sale, a nie stara', async () => {
-    setup([{ placementId: 'p1', originalDate: d('2026-10-05'), action: 'MODIFY', newDate: d('2026-10-06'), newStartOrder: null, newEndOrder: null, newRoomId: 'r2', newInstructorId: null }]);
+    setup([{ placementId: 'p1', originalDate: d('2026-10-05'), newDate: d('2026-10-06'), newStartOrder: null, newEndOrder: null, newRoomId: 'r2', newInstructorId: null }]);
     const busy = await termOccupancy(term);
     expect(busy.map((b) => [b.date, b.roomId])).toEqual([
       ['2026-10-06', 'r2'],
       ['2026-10-12', 'r1'],
     ]);
-  });
-
-  it('odwolany termin nie blokuje (i zuzywa godziny jak przy generowaniu)', async () => {
-    setup([{ placementId: 'p1', originalDate: d('2026-10-12'), action: 'CANCEL', newDate: null, newStartOrder: null, newEndOrder: null, newRoomId: null, newInstructorId: null }]);
-    const busy = await termOccupancy(term);
-    expect(busy.map((b) => b.date)).toEqual(['2026-10-05']);
   });
 
   it('pomija edytowane umieszczenie albo jeden termin wzorca', async () => {
