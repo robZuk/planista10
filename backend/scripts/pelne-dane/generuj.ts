@@ -582,7 +582,8 @@ async function main() {
   const unplacedSamples: string[] = [];
   const unplacedBy = new Map<string, number>();
 
-  const tryPlace = (s: (typeof sections)[number], hours: number, instructorId: string, rotate: number, sl: Slotting): boolean => {
+  /** `single` — zajecia maja jedno umieszczenie (nie sa dzielone na kawalki). */
+  const tryPlace = (s: (typeof sections)[number], hours: number, instructorId: string, rotate: number, sl: Slotting, single: boolean): boolean => {
     const roomList = roomsFor(s);
     const rel = related.get(s.groupId)!;
     const mode = sl.cycle === 'WEEK' ? 0 : 1;
@@ -611,7 +612,12 @@ async function main() {
             take(`g:${s.groupId}|${day.day}`, startMin, endMin, from, to, mode);
             take(`i:${instructorId}|${day.day}`, startMin, endMin, from, to, mode);
             take(`r:${room.id}|${day.day}`, startMin, endMin, from, to, mode);
-            const full = w === 0 && w + need === idx.length;
+            // Bez zakresu ("co tydzien"), gdy okno obejmuje caly semestr albo — w rytmie tygodniowym
+            // (stacjonarne: ten sam plan w kazdym tygodniu) — zaczyna sie od pierwszego dnia zajec:
+            // limit godzin konczy zajecia po `need` spotkaniach. Jawny zakres (np. "2..16") urywal
+            // spotkanie po zmianie kalendarza (zamiany dni z kalendarza Rektora). Zakres zostaje dla
+            // okna przesunietego, zjazdow i zajec w kilku umieszczeniach (limit liczy sie na zajecia).
+            const full = w === 0 && (w + need === idx.length || (sl.cycle === 'WEEK' && single));
             placements.push({
               sectionId: s.id,
               termId: term.id,
@@ -645,7 +651,7 @@ async function main() {
     let ok = true;
     for (let p = 0; p < pieces && ok; p++) {
       const h = p < pieces - 1 ? Math.ceil(s.hours / pieces) : s.hours - Math.ceil(s.hours / pieces) * (pieces - 1);
-      if (tryPlace(s, h, instructorId, rotate + p, sl)) continue;
+      if (tryPlace(s, h, instructorId, rotate + p, sl, pieces === 1)) continue;
       // Inny prowadzacy z tej samej puli (zmiana obsady), gdy przypisany nie ma wolnego terminu.
       const pool = pools.get(poolKey(s))!;
       const tried = new Set([instructorId]);
@@ -653,7 +659,7 @@ async function main() {
       for (let a = 0; a < 6 && !placed; a++) {
         const alt = choose(pool, s.programEntry.subjectId, s.hours, tried);
         tried.add(alt);
-        if (tryPlace(s, h, alt, rotate + p, sl)) {
+        if (tryPlace(s, h, alt, rotate + p, sl, pieces === 1)) {
           load.set(instructorId, load.get(instructorId)! - s.hours);
           assign(alt, s.programEntry.subjectId, s.hours);
           instructorId = alt;
