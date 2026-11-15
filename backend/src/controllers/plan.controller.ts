@@ -159,11 +159,12 @@ export const updatePlacement = asyncHandler(async (req, res) => {
         include: { section: { select: { cohort: { select: { program: { select: { studyMode: true } } } } } } },
       })
     : [];
-  const ownGrid = (await gridFor(current.facultyId, current.section.cohort.program.studyMode)).time;
+  // Bloki dnia, w ktory zajecia trafiaja (siatki dnia moga miec inne godziny niz podstawowa).
+  const ownGrid = (await gridFor(current.facultyId, current.section.cohort.program.studyMode)).forDay(input.dayOfWeek).time;
   const grids = joined.length ? await loadGrids() : new Map();
   const moves = joined.map((j) => {
     const other = pickGrid(grids, j.facultyId, j.section.cohort.program.studyMode);
-    const orders = other ? mapRangeByTime(ownGrid, other.time, input.startOrder, input.endOrder) : null;
+    const orders = other ? mapRangeByTime(ownGrid, other.forDay(input.dayOfWeek).time, input.startOrder, input.endOrder) : null;
     if (!orders) throw new AppError(400, 'Zajecia laczone: godzin nie ma w siatce wydzialu polaczonych zajec');
     return { id: j.id, ...orders };
   });

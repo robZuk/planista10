@@ -48,7 +48,7 @@ export function PlacementDialog({
   termKey,
   plan,
   days,
-  blocks,
+  blocksOf,
   target,
   onClose,
   onSaved,
@@ -57,7 +57,8 @@ export function PlacementDialog({
   termKey: string;
   plan: PlanView;
   days: DayOfWeek[];
-  blocks: TimeBlock[];
+  /** Bloki dnia: siatka dnia (np. piatek od 16:00) albo podstawowa. */
+  blocksOf: (day: DayOfWeek) => TimeBlock[];
   target: PlacementTarget;
   onClose: () => void;
   onSaved: () => void;
@@ -70,6 +71,15 @@ export function PlacementDialog({
   const zjazdCalendar = plan.calendar?.kind === 'ZJAZD';
   const [day, setDay] = useState<DayOfWeek>(placement?.dayOfWeek ?? target.day);
   const [start, setStart] = useState(placement?.startOrder ?? target.startOrder);
+  const blocks = blocksOf(day);
+  // Zmiana dnia: dzien moze miec wlasna siatke (inne bloki) — zostaje ta sama godzina startu,
+  // jesli jest w siatce nowego dnia, inaczej pierwszy blok tego dnia.
+  const changeDay = (next: DayOfWeek) => {
+    const startTime = blocks.find((b) => b.order === start)?.startTime;
+    const nextBlocks = blocksOf(next);
+    setDay(next);
+    setStart(nextBlocks.find((b) => b.startTime === startTime)?.order ?? nextBlocks[0]?.order ?? start);
+  };
   const [length, setLength] = useState(placement ? placement.endOrder - placement.startOrder + 1 : (target.length ?? Math.min(2, section.hours)));
   const [roomId, setRoomId] = useState(placement?.room?.id ?? '');
   // Zajecia online: bez sali — kolizje sal pomijane, grupy i prowadzacy dalej sprawdzani.
@@ -167,7 +177,7 @@ export function PlacementDialog({
         <div className="grid gap-3 sm:grid-cols-3">
           <Field>
             <FieldLabel htmlFor="pl-day">Dzien</FieldLabel>
-            <NativeSelect id="pl-day" value={day} onChange={(e) => setDay(e.target.value as DayOfWeek)}>
+            <NativeSelect id="pl-day" value={day} onChange={(e) => changeDay(e.target.value as DayOfWeek)}>
               {days.map((d) => (
                 <NativeSelectOption key={d} value={d}>
                   {WEEKDAY_LABELS[d]}

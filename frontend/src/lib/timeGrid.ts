@@ -102,25 +102,37 @@ export interface GridLayout {
   breaks: { top: number; height: number; minutes: number; start: string; end: string }[];
   /** Pozycja zakresu blokow startOrder..endOrder (null, gdy blokow nie ma w siatce). */
   span(startOrder: number, endOrder: number): { top: number; height: number } | null;
+  /** Pozycja przedzialu minut (terminy niosa rzeczywisty czas). */
+  spanMinutes(startMinute: number, endMinute: number): { top: number; height: number };
 }
 
 /**
  * Uklad siatki planu na osi minut: wysokosc bloku proporcjonalna do dlugosci, a skala tak
  * dobrana, zeby najkrotszy blok mial co najmniej `minBlockPx` (karta z opisem musi sie zmiescic).
+ * `scaleBlocks` — bloki wszystkich dni widoku (siatki dnia maja wlasne bloki): wspolna skala,
+ * poczatek i wysokosc, zeby kolumny dni byly wyrownane w czasie.
  */
-export function gridLayout(blocks: LayoutBlock[], opts: { minBlockPx: number; minPxPerMinute: number }): GridLayout {
+export function gridLayout(
+  blocks: LayoutBlock[],
+  opts: { minBlockPx: number; minPxPerMinute: number; scaleBlocks?: BlockTimes[] },
+): GridLayout {
   const sorted = [...blocks].sort((a, b) => a.order - b.order);
-  if (sorted.length === 0) return { pxPerMinute: opts.minPxPerMinute, totalHeight: 0, rows: [], breaks: [], span: () => null };
-  const shortest = Math.min(...sorted.map((b) => toMinutes(b.endTime) - toMinutes(b.startTime)));
+  const scale: BlockTimes[] = opts.scaleBlocks?.length ? opts.scaleBlocks : sorted;
+  if (scale.length === 0) {
+    return { pxPerMinute: opts.minPxPerMinute, totalHeight: 0, rows: [], breaks: [], span: () => null, spanMinutes: () => ({ top: 0, height: 0 }) };
+  }
+  const shortest = Math.min(...scale.map((b) => toMinutes(b.endTime) - toMinutes(b.startTime)));
   const pxPerMinute = Math.max(opts.minPxPerMinute, opts.minBlockPx / Math.max(shortest, 1));
-  const origin = toMinutes(sorted[0]!.startTime);
-  const y = (time: string) => Math.round((toMinutes(time) - origin) * pxPerMinute);
+  const origin = Math.min(...scale.map((b) => toMinutes(b.startTime)));
+  const end = Math.max(...scale.map((b) => toMinutes(b.endTime)));
+  const at = (minute: number) => Math.round((minute - origin) * pxPerMinute);
+  const y = (time: string) => at(toMinutes(time));
   const rows = sorted.map((b) => ({ order: b.order, startTime: b.startTime, top: y(b.startTime), height: y(b.endTime) - y(b.startTime) }));
   const breaks = breaksBetween(sorted).map((br) => ({ top: y(br.start), height: y(br.end) - y(br.start), minutes: br.minutes, start: br.start, end: br.end }));
   const byOrder = new Map(sorted.map((b) => [b.order, b]));
   return {
     pxPerMinute,
-    totalHeight: y(sorted[sorted.length - 1]!.endTime),
+    totalHeight: at(end),
     rows,
     breaks,
     span(startOrder, endOrder) {
@@ -129,7 +141,28 @@ export function gridLayout(blocks: LayoutBlock[], opts: { minBlockPx: number; mi
       if (!s || !e || endOrder < startOrder) return null;
       return { top: y(s.startTime), height: y(e.endTime) - y(s.startTime) };
     },
+    spanMinutes(startMinute, endMinute) {
+      return { top: at(startMinute), height: at(endMinute) - at(startMinute) };
+    },
   };
+}
+
+const WEEKDAY_OF_INDEX = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'] as const;
+
+/** Dzien tygodnia daty "RRRR-MM-DD" (np. do wyboru blokow siatki dnia); null — niepelna data. */
+export function dayOfDate(date: string): (typeof WEEKDAY_OF_INDEX)[number] | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  const index = new Date(`${date}T12:00:00Z`).getUTCDay();
+  return Number.isNaN(index) ? null : WEEKDAY_OF_INDEX[index]!;
+}
+
+/**
+ * Bloki obowiazujace w dniu tygodnia: siatka dnia, ktora ma ten dzien, albo podstawowa (takze
+ * dla dni spoza siatek) — ta sama regula co backend (`gridSet.forDay`).
+ */
+export function blocksForDay<B>(timeGrid: { grids: { base: boolean; days: string[]; blocks: B[] }[] }, day: string): B[] {
+  const grid = timeGrid.grids.find((g) => !g.base && g.days.includes(day)) ?? timeGrid.grids.find((g) => g.base) ?? timeGrid.grids[0];
+  return grid?.blocks ?? [];
 }
 
 const SHORT_DAY: Record<string, string> = {

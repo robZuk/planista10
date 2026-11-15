@@ -32,11 +32,16 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 - `CalendarBreak` (przerwy), `CalendarDay` (dzień wolny, „zajęcia wg planu dnia X",
   godziny rektorskie od bloku), `Zjazd` (numer + daty).
 - `TimeGrid(wydział, tryb)` — **siatka godzin**: każdy wydział ma stacjonarną
-  i niestacjonarną. `TimeBlock` o dowolnym starcie i długości (np. 08:00–08:45),
-  numerowane `order` wg godziny; 1 blok = 1 godzina programu, przerwy = odstępy.
+  i niestacjonarną (siatki podstawowe, `base`). `TimeBlock` o dowolnym starcie i długości
+  (np. 08:00–08:45), numerowane `order` wg godziny; 1 blok = 1 godzina programu, przerwy = odstępy.
   `days` — dni zajęć z oknem godzin (np. niestacjonarne: czw i pt od 16:00, sob, nd);
-  zastępują sztywną regułę trybu studiów przy walidacji umieszczeń. Bloki zablokowane,
-  gdy wydział ma umieszczenia w tym trybie w semestrze spoza archiwum.
+  zastępują sztywną regułę trybu studiów przy walidacji umieszczeń.
+- **Siatki dnia** — dodatkowe `TimeGrid` wydziału i trybu z własnymi blokami dla wybranych dni
+  (np. piątek niestacjonarnych 16:00, 16:50, 17:40, 18:30 przy sobocie 8:00 … 15:25, 16:15, …).
+  Dni siatek jednego wydziału i trybu są rozłączne (siatka dnia zabiera je podstawowej, usunięta
+  oddaje); dzień spoza siatek liczy się wg podstawowej (`gridSet.forDay`). Jedną podstawową na
+  wydział i tryb pilnuje częściowy unikalny indeks. Bloki siatki zablokowane, gdy w jej dniach są
+  umieszczenia w semestrze spoza archiwum (dla podstawowej: we wszystkich dniach poza siatkami dnia).
 - **Święta ustawowe są liczone**, nie przechowywane (`lib/holidays.ts`, 24.12 od 2025).
 - **Numer tygodnia zajęć** liczony od poniedziałku tygodnia startu, z pominięciem
   tygodni w całości w przerwie — wspólna parzystość dla wszystkich dni (`lib/teachingCalendar.ts`).
@@ -83,7 +88,7 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 
 ## 6. Plan i terminy
 
-- `Placement` — dzień, bloki `startOrder..endOrder` (siatki wydziału i trybu rocznika), sala albo **online**
+- `Placement` — dzień, bloki `startOrder..endOrder` (siatki wydziału i trybu rocznika obowiązującej w tym dniu), sala albo **online**
   (`roomId = null`: bez sali, bez kolizji sal — grupy i prowadzący dalej sprawdzani), prowadzący z obsady (null = NN),
   rytm: `WEEK` (ALL / EVEN / ODD / LIST tygodni, od–do) albo `ZJAZD` (ALL / LIST zjazdów).
   Zajęcia łączone między kierunkami: wspólny `jointKey` (ten sam czas i sala, bez kolizji).

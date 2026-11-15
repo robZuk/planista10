@@ -195,6 +195,59 @@ export function mapRangeByTime(from: GridTime, to: GridTime, startOrder: number,
   return start && end && end.order >= start.order ? { startOrder: start.order, endOrder: end.order } : null;
 }
 
+// ─── Zestaw siatek wydzialu i trybu (podstawowa + siatki dnia) ──
+
+/** Siatka wydzialu i trybu: podstawowa albo siatka dnia (wlasne bloki dla wybranych dni). */
+export interface DayGrid {
+  base: boolean;
+  days: GridDay[];
+  time: GridTime;
+}
+
+/**
+ * Zestaw siatek jednego wydzialu i trybu. Dni siatek sa rozlaczne; `days` to suma dni zajec
+ * (w kolejnosci tygodnia), `forDay` — siatka obowiazujaca w danym dniu tygodnia. Dzien spoza
+ * wszystkich siatek (np. termin reczny w srode) liczy sie wg siatki podstawowej — jak dotad,
+ * gdy wydzial mial jedna siatke.
+ */
+export interface GridSet<G extends DayGrid = DayGrid> {
+  grids: G[];
+  base: G;
+  days: GridDay[];
+  forDay(day: WeekdayName): G;
+}
+
+export function gridSet<G extends DayGrid>(grids: G[]): GridSet<G> {
+  const base = grids.find((g) => g.base) ?? grids[0];
+  if (!base) throw new Error('Zestaw siatek bez zadnej siatki');
+  const byDay = new Map<WeekdayName, G>();
+  for (const g of grids) for (const d of g.days) if (!byDay.has(d.day)) byDay.set(d.day, g);
+  const days = WEEK_ORDER.flatMap((day) => {
+    const entry = byDay.get(day)?.days.find((d) => d.day === day);
+    return entry ? [entry] : [];
+  });
+  return { grids, base, days, forDay: (day) => byDay.get(day) ?? base };
+}
+
+/**
+ * Dni, w ktorych obowiazuja bloki siatki: dni siatki dnia, a dla podstawowej — wszystkie dni
+ * poza dniami siatek dnia (dzien spoza siatek tez liczy sie wg podstawowej). Ulozone zajecia
+ * w tych dniach blokuja zmiane blokow.
+ */
+export function blockDays(grid: { base: boolean; days: GridDay[] }, others: { days: GridDay[] }[]): WeekdayName[] {
+  if (!grid.base) return grid.days.map((d) => d.day);
+  const taken = new Set(others.flatMap((g) => g.days.map((d) => d.day)));
+  return WEEK_ORDER.filter((day) => !taken.has(day));
+}
+
+/** Dni nalezace do wiecej niz jednej siatki (siatki wydzialu i trybu musza miec rozlaczne dni). */
+export function sharedDays(grids: { days: GridDay[] }[]): WeekdayName[] {
+  const seen = new Set<WeekdayName>();
+  const shared = new Set<WeekdayName>();
+  for (const g of grids) for (const d of g.days) (seen.has(d.day) ? shared : seen).add(d.day);
+  return WEEK_ORDER.filter((day) => shared.has(day));
+}
+
 /** Umieszczenie we wzorcu (dzien + bloki) — do sprawdzenia wzgledem dni i okien siatki. */
 export interface PatternSlot {
   dayOfWeek: WeekdayName;
@@ -206,16 +259,17 @@ export interface PatternSlot {
 /**
  * Umieszczenia, ktore po zmianie dni/okien siatki wypadlyby poza nia — pogrupowane wg
  * problemu (np. "Siatka nie przewiduje zajec w dniu: piatek ..."), z liczba umieszczen
- * i rocznikow. Pusta lista = zmiana nie rusza istniejacego planu.
+ * i rocznikow. Pusta lista = zmiana nie rusza istniejacego planu. `timeOf` — bloki siatki
+ * obowiazujacej w dniu umieszczenia (siatki dnia maja wlasne bloki).
  */
 export function slotsOutsideDays(
   slots: PatternSlot[],
   days: GridDay[],
-  time: GridTime,
+  timeOf: (day: WeekdayName) => GridTime,
 ): { problem: string; placements: number; cohorts: number }[] {
   const groups = new Map<string, { placements: number; cohorts: Set<string> }>();
   for (const slot of slots) {
-    const range = time.range(slot.startOrder, slot.endOrder);
+    const range = timeOf(slot.dayOfWeek).range(slot.startOrder, slot.endOrder);
     if (!range) continue;
     const problem = dayWindowProblem(days, slot.dayOfWeek, range.startMinute, range.endMinute);
     if (!problem) continue;

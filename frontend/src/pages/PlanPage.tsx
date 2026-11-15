@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarCheck, ChevronRight, Copy, FilterX, History, TriangleAlert, X } from 'lucide-react';
@@ -21,7 +21,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGroupFilter';
 import { earlyEndWeeks, formatDayMonth, MAX_SUGGESTED_LENGTH, suggestedLength } from '@/lib/planHours';
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
-import { describeDays } from '@/lib/timeGrid';
+import { blocksForDay, describeDays } from '@/lib/timeGrid';
 import { staleMessage } from '@/lib/planStaleness';
 import { issueRows, placementWarning, planDays } from '@/lib/planIssues';
 import { copyCandidates, inZjazd, zjazdyDiffer } from '@/lib/zjazdView';
@@ -157,8 +157,10 @@ export default function PlanPage() {
     [plan],
   );
   const zjazd = zjazdyVary ? zjazdChoice : null;
-  // Bloki i dni zajec z siatki godzin wydzialu i trybu rocznika (np. niestacjonarne: czw-nd).
-  const blocks = plan?.timeGrid.blocks;
+  // Bloki i dni zajec z siatek godzin wydzialu i trybu rocznika (np. niestacjonarne: czw-nd). `blocks` —
+  // siatka podstawowa (os czasu), `blocksOf` — bloki dnia (siatka dnia, np. piatek od 16:00, albo podstawowa).
+  const blocks = plan ? (plan.timeGrid.grids.find((g) => g.base) ?? plan.timeGrid.grids[0])?.blocks : undefined;
+  const blocksOf = useCallback((day: DayOfWeek) => (plan ? blocksForDay(plan.timeGrid, day) : []), [plan]);
   // Plus dni, na ktore juz cos umieszczono — zajecia spoza siatki zostaja widoczne (z ostrzezeniem).
   const days: DayOfWeek[] = useMemo(() => (plan ? planDays(plan.timeGrid.days.map((d) => d.day), plan.sections) : []), [plan]);
   const outsideGridDays = useMemo(() => {
@@ -542,6 +544,7 @@ export default function PlanPage() {
                 days={days}
                 closedDays={outsideGridDays}
                 blocks={blocks}
+                blocksOf={blocksOf}
                 items={items}
                 availability={selected ? availability?.cells : null}
                 passThrough={!!selected && !readOnly}
@@ -686,6 +689,7 @@ export default function PlanPage() {
               cohortId={cohortId}
               sections={sections}
               blocks={blocks}
+              blocksOf={blocksOf}
               readOnly={readOnly || stationary}
               periods={plan?.calendar?.periods ?? []}
               modeDays={days}
@@ -709,8 +713,8 @@ export default function PlanPage() {
               <dt className="text-muted-foreground">Termin</dt>
               <dd>
                 {WEEKDAY_LABELS[viewing.placement.dayOfWeek]}{' '}
-                {blocks?.find((b) => b.order === viewing.placement.startOrder)?.startTime}–
-                {blocks?.find((b) => b.order === viewing.placement.endOrder)?.endTime}
+                {blocksOf(viewing.placement.dayOfWeek).find((b) => b.order === viewing.placement.startOrder)?.startTime}–
+                {blocksOf(viewing.placement.dayOfWeek).find((b) => b.order === viewing.placement.endOrder)?.endTime}
               </dd>
               <dt className="text-muted-foreground">Rytm</dt>
               <dd>{patternLabel(viewing.placement)}</dd>
@@ -732,7 +736,7 @@ export default function PlanPage() {
           termKey={term.key}
           plan={plan}
           days={days}
-          blocks={blocks}
+          blocksOf={blocksOf}
           target={target}
           onClose={() => setTarget(null)}
           onSaved={async () => {

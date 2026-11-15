@@ -31,10 +31,17 @@ const section = (id: string, hours: number, groupId = 'g1', consumedHours = 0, b
   hours,
   groupId,
   calendar: cal,
-  grid: gridTime(blocks),
+  gridOf: () => gridTime(blocks),
   consumedHours,
   label: id,
 });
+
+// Siatka dnia piatku (np. niestacjonarne od 16:00): wlasne bloki, inne niz w pozostale dni.
+const gFri: GridBlock[] = [
+  { order: 1, startTime: '16:00', endTime: '16:45' },
+  { order: 2, startTime: '16:50', endTime: '17:35' },
+];
+const withFriday = (s: MatSection): MatSection => ({ ...s, gridOf: (day) => gridTime(day === 'FRIDAY' ? gFri : g60) });
 
 const placement = (id: string, sectionId: string, extra: Partial<MatPlacement> = {}): MatPlacement => ({
   id,
@@ -131,6 +138,31 @@ describe('materialize', () => {
     });
     // 08:45-10:30 — przez przerwe 09:30-09:45
     expect(r.occurrences[0]).toMatchObject({ startMinute: 525, endMinute: 630 });
+  });
+
+  it('siatka dnia: bloki piatku licza sie wg siatki piatku, pozostalych dni wg podstawowej', () => {
+    const r = materialize({
+      sections: [withFriday(section('s', 4))],
+      placements: [placement('sr', 's', { dayOfWeek: 'WEDNESDAY', startOrder: 2, endOrder: 3 }), placement('pt', 's', { dayOfWeek: 'FRIDAY', startOrder: 1, endOrder: 2 })],
+      exceptions: [],
+      busy: [],
+      groupsOverlap: noOverlap,
+    });
+    expect(r.occurrences.map((o) => [o.date, o.startMinute, o.endMinute])).toEqual([
+      ['2024-10-02', 480, 600], // sroda 08:00-10:00 (siatka podstawowa)
+      ['2024-10-04', 960, 1055], // piatek 16:00-17:35 (siatka piatku)
+    ]);
+  });
+
+  it('przeniesienie na inny dzien liczy bloki wg siatki dnia docelowego', () => {
+    const r = materialize({
+      sections: [withFriday(section('s', 2))],
+      placements: [placement('p', 's', { dayOfWeek: 'WEDNESDAY', startOrder: 2, endOrder: 3 })],
+      exceptions: [{ placementId: 'p', originalDate: '2024-10-02', action: 'MODIFY', newDate: '2024-10-04', newStartOrder: 1, newEndOrder: 2 }],
+      busy: [],
+      groupsOverlap: noOverlap,
+    });
+    expect(r.occurrences[0]).toMatchObject({ originalDate: '2024-10-02', date: '2024-10-04', startMinute: 960, endMinute: 1055 });
   });
 
   it('kolizja sali miedzy roznymi siatkami liczy sie w minutach', () => {

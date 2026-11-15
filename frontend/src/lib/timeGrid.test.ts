@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blocksWord, breaksBetween, describeDays, describeGrid, gridLayout, formatMinutes, generateBlocks, toMinutes, blockProblems } from './timeGrid';
+import { blocksForDay, blocksWord, breaksBetween, describeDays, describeGrid, gridLayout, formatMinutes, generateBlocks, toMinutes, blockProblems } from './timeGrid';
 
 describe('generateBlocks', () => {
   it('45 min z przerwa 15 min co 2 bloki', () => {
@@ -66,6 +66,39 @@ describe('gridLayout', () => {
     const l = gridLayout(g45, { minBlockPx: 66, minPxPerMinute: 68 / 60 });
     expect(l.span(2, 3)).toEqual({ top: l.rows[1]!.top, height: l.rows[2]!.top + l.rows[2]!.height - l.rows[1]!.top });
     expect(l.span(4, 5)).toBeNull();
+  });
+
+  it('siatka dnia na wspolnej skali: kolumny wyrownane w czasie, ta sama wysokosc', () => {
+    // Sobota 08:00-10:00 (60 min) i piatek od 08:30 (45 min) — piatkowy blok zaczyna sie w polowie sobotniego.
+    const friday = [{ order: 1, startTime: '08:30', endTime: '09:15' }];
+    const opts = { minBlockPx: 66, minPxPerMinute: 68 / 60, scaleBlocks: [...g60, ...friday] };
+    const axis = gridLayout(g60, opts);
+    const day = gridLayout(friday, opts);
+    expect(day.pxPerMinute).toBe(axis.pxPerMinute);
+    expect(day.totalHeight).toBe(axis.totalHeight);
+    expect(day.rows[0]!.top).toBe(axis.spanMinutes(510, 555).top); // 08:30
+    expect(day.rows[0]!.top).toBeGreaterThan(axis.rows[1]!.top); // pozniej niz 08:00
+    expect(day.rows[0]!.top).toBeLessThan(axis.rows[2]!.top); // wczesniej niz 09:00
+  });
+
+  it('pozycja przedzialu minut (terminy z rzeczywistym czasem)', () => {
+    const l = gridLayout(g60, { minBlockPx: 66, minPxPerMinute: 68 / 60 });
+    expect(l.spanMinutes(8 * 60, 9 * 60)).toEqual({ top: l.rows[1]!.top, height: l.rows[1]!.height });
+  });
+});
+
+describe('blocksForDay', () => {
+  const timeGrid = {
+    grids: [
+      { base: true, days: ['SATURDAY', 'SUNDAY'], blocks: ['sob-nd'] },
+      { base: false, days: ['FRIDAY'], blocks: ['piatek'] },
+    ],
+  };
+
+  it('dzien siatki dnia — jej bloki; pozostale dni i dni spoza siatek — podstawowej', () => {
+    expect(blocksForDay(timeGrid, 'FRIDAY')).toEqual(['piatek']);
+    expect(blocksForDay(timeGrid, 'SATURDAY')).toEqual(['sob-nd']);
+    expect(blocksForDay(timeGrid, 'WEDNESDAY')).toEqual(['sob-nd']);
   });
 });
 

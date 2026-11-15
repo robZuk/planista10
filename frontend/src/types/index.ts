@@ -84,16 +84,28 @@ export interface GridDay {
   to: string | null;
 }
 
-/** Siatka godzin wydzialu dla trybu studiow (kazdy wydzial: stacjonarna i niestacjonarna). */
+/**
+ * Siatka godzin wydzialu dla trybu studiow (kazdy wydzial: stacjonarna i niestacjonarna). `base` —
+ * siatka podstawowa; pozostale to siatki dnia z wlasnymi blokami dla wybranych dni (np. piatek).
+ */
 export interface TimeGrid {
   id: string;
   faculty: { id: string; name: string; shortName: string };
   studyMode: StudyMode;
+  base: boolean;
   days: GridDay[];
   blocks: TimeBlock[];
   breaks: { afterOrder: number; startMinute: number; endMinute: number; minutes: number }[];
-  /** Wydzial ma plan w tym trybie w biezacym semestrze — bloki zablokowane (dni mozna zmieniac). */
+  /** W dniach tej siatki jest plan biezacego semestru — bloki zablokowane (dni mozna zmieniac). */
   locked: boolean;
+}
+
+/** Siatki wydzialu i trybu rocznika w widoku planu: suma dni (z oknem godzin) i siatki z blokami. */
+export interface PlanTimeGrid {
+  studyMode: StudyMode;
+  days: GridDay[];
+  /** Podstawowa i siatki dnia; dzien spoza siatek liczy sie wg podstawowej. */
+  grids: { id: string; base: boolean; days: DayOfWeek[]; blocks: TimeBlock[] }[];
 }
 
 export interface FieldOfStudy {
@@ -611,8 +623,8 @@ export interface PlanView {
     /** Tygodnie (pn-nd) albo zjazdy z dniami wolnymi — widok tygodnia w "Terminach". */
     periods: CalendarPeriod[];
   } | null;
-  /** Siatka godzin wydzialu i trybu rocznika: bloki planu, przerwy (odstepy) i dni zajec. */
-  timeGrid: { id: string; studyMode: StudyMode; days: GridDay[]; blocks: TimeBlock[] };
+  /** Siatki godzin wydzialu i trybu rocznika: dni zajec i bloki (podstawowa + siatki dnia). */
+  timeGrid: PlanTimeGrid;
   stale: boolean;
   staleReasons: StaleReason[];
   /** Wszystkie terminy rocznika w semestrze (z wzorca i reczne). */

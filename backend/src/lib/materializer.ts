@@ -1,7 +1,7 @@
 import type { DayOfWeek } from '@prisma/client';
-import { expandDates, type TeachingCalendar } from './teachingCalendar';
+import { expandDates, WEEKDAY_ENUM, type TeachingCalendar } from './teachingCalendar';
 import { minutesOverlap, type GridTime } from './timeGrid';
-import type { IsoDate } from './isoDate';
+import { weekdayOf, type IsoDate } from './isoDate';
 
 /**
  * Wyliczanie terminow z umieszczen — czysta funkcja, wolana WYLACZNIE przez
@@ -40,8 +40,11 @@ export interface MatSection {
   hours: number;
   groupId: string;
   calendar: TeachingCalendar;
-  /** Siatka godzin kalendarza rocznika (bloki -> minuty). */
-  grid: GridTime;
+  /**
+   * Bloki -> minuty wg siatki obowiazujacej w dniu tygodnia (siatka dnia albo podstawowa
+   * wydzialu i trybu rocznika). Wydzial moze miec np. inne bloki w piatek niz w sobote.
+   */
+  gridOf: (day: DayOfWeek) => GridTime;
   /** Godziny juz zrealizowane poza generowaniem: terminy MANUAL i zachowane sprzed "od kiedy". */
   consumedHours: number;
   label: string;
@@ -203,7 +206,10 @@ export function materialize(input: {
         occ.roomId = exception.newOnline ? null : (exception.newRoomId ?? occ.roomId);
         occ.instructorId = exception.newInstructorId === undefined ? occ.instructorId : exception.newInstructorId;
       }
-      const time = section.grid.range(occ.startOrder, occ.endOrder);
+      // Bloki wzorca liczymy wg siatki dnia umieszczenia (takze w dniu "zajecia wg planu innego dnia");
+      // przeniesienie na inna date wskazuje bloki siatki dnia docelowego — jak okno przeniesienia.
+      const blockDay = exception?.action === 'MODIFY' && exception.newDate ? WEEKDAY_ENUM[weekdayOf(exception.newDate)]! : placement.dayOfWeek;
+      const time = section.gridOf(blockDay).range(occ.startOrder, occ.endOrder);
       if (!time) {
         result.conflicts.push({ date: occ.date, section: section.label, reason: 'GRID', with: 'godziny poza siatka kalendarza' });
         continue;
