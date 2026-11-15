@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarCheck, ChevronRight, Copy, FilterX, History, TriangleAlert, X } from 'lucide-react';
@@ -21,7 +21,8 @@ import { getErrorMessage } from '@/lib/errors';
 import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGroupFilter';
 import { earlyEndWeeks, formatDayMonth, MAX_SUGGESTED_LENGTH, suggestedLength } from '@/lib/planHours';
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
-import { describeDays } from '@/lib/timeGrid';
+import { blocksForDay, describeDays } from '@/lib/timeGrid';
+import { formatRange } from './calendar/calendarUtils';
 import { staleMessage } from '@/lib/planStaleness';
 import { issueRows, placementWarning, planDays } from '@/lib/planIssues';
 import { copyCandidates, inZjazd, zjazdyDiffer } from '@/lib/zjazdView';
@@ -157,8 +158,10 @@ export default function PlanPage() {
     [plan],
   );
   const zjazd = zjazdyVary ? zjazdChoice : null;
-  // Bloki i dni zajec z siatki godzin wydzialu i trybu rocznika (np. niestacjonarne: czw-nd).
-  const blocks = plan?.timeGrid.blocks;
+  // Bloki i dni zajec z siatek godzin wydzialu i trybu rocznika (np. niestacjonarne: czw-nd). `blocks` —
+  // siatka podstawowa (os czasu), `blocksOf` — bloki dnia (siatka dnia, np. piatek od 16:00, albo podstawowa).
+  const blocks = plan ? (plan.timeGrid.grids.find((g) => g.base) ?? plan.timeGrid.grids[0])?.blocks : undefined;
+  const blocksOf = useCallback((day: DayOfWeek) => (plan ? blocksForDay(plan.timeGrid, day) : []), [plan]);
   // Plus dni, na ktore juz cos umieszczono — zajecia spoza siatki zostaja widoczne (z ostrzezeniem).
   const days: DayOfWeek[] = useMemo(() => (plan ? planDays(plan.timeGrid.days.map((d) => d.day), plan.sections) : []), [plan]);
   const outsideGridDays = useMemo(() => {
@@ -248,6 +251,8 @@ export default function PlanPage() {
 
   // Kopiowanie zjazdu k -> m: swiadoma akcja planisty, dopisuje numer m do umieszczen ze zjazdu k.
   const toCopy = zjazd && copyTo ? copyCandidates(sections.flatMap((s) => s.placements), zjazd, Number(copyTo)) : [];
+  // Zjazd pokazujemy jak w arkuszu planu: „tydz. N” (numer tygodnia semestru); w danych zostaje numer kolejny.
+  const weekOf = (zjazdNumber: number | string) => plan?.calendar?.zjazdy.find((z) => z.number === Number(zjazdNumber))?.week ?? zjazdNumber;
   const copyZjazd = useMutation({
     mutationFn: async () => {
       const to = Number(copyTo);
@@ -264,7 +269,7 @@ export default function PlanPage() {
     },
     onSuccess: async ({ done, errors }) => {
       if (errors.length) toast.error(`Skopiowano ${done}, bledy: ${errors.length} — ${errors[0]}`, { duration: 10000 });
-      else toast.success(`Skopiowano ${plural(done, 'zajecia', 'zajecia', 'zajec')} na zjazd ${copyTo}`);
+      else toast.success(`Skopiowano ${plural(done, 'zajecia', 'zajecia', 'zajec')} na tydz. ${weekOf(copyTo)}`);
       await refresh();
     },
   });
@@ -482,18 +487,25 @@ export default function PlanPage() {
                     Wszystkie zjazdy
                   </Button>
                   {plan.calendar!.zjazdy.map((z) => (
-                    <Button key={z.number} size="sm" variant={zjazd === z.number ? 'default' : 'outline'} className="w-10" title={`${z.startDate} – ${z.endDate}`} onClick={() => setZjazd(z.number)}>
-                      {z.number}
+                    <Button
+                      key={z.number}
+                      size="sm"
+                      variant={zjazd === z.number ? 'default' : 'outline'}
+                      className="tabular-nums"
+                      title={`Zjazd ${formatRange(z.startDate, z.endDate)}`}
+                      onClick={() => setZjazd(z.number)}
+                    >
+                      tydz. {z.week}
                     </Button>
                   ))}
                   {zjazd !== null && !readOnly && (
                     <span className="ml-2 flex items-center gap-1 text-sm">
-                      <Copy className="size-4" /> kopiuj zjazd {zjazd} na
-                      <NativeSelect value={copyTo} onChange={(e) => setCopyTo(e.target.value)} className="w-20" aria-label="Zjazd docelowy">
+                      <Copy className="size-4" /> kopiuj tydz. {weekOf(zjazd)} na
+                      <NativeSelect value={copyTo} onChange={(e) => setCopyTo(e.target.value)} className="w-28" aria-label="Zjazd docelowy">
                         <NativeSelectOption value="">—</NativeSelectOption>
                         {plan.calendar!.zjazdy.filter((z) => z.number !== zjazd).map((z) => (
                           <NativeSelectOption key={z.number} value={z.number}>
-                            {z.number}
+                            tydz. {z.week}
                           </NativeSelectOption>
                         ))}
                       </NativeSelect>
@@ -503,7 +515,7 @@ export default function PlanPage() {
                         disabled={toCopy.length === 0 || copyZjazd.isPending}
                         title={
                           copyTo && toCopy.length === 0
-                            ? `Nic do skopiowania: kopiuja sie zajecia "na wybranych zjazdach" ze zjazdu ${zjazd}, ktorych jeszcze nie ma w zjezdzie ${copyTo}`
+                            ? `Nic do skopiowania: kopiuja sie zajecia "na wybranych zjazdach" z tygodnia ${weekOf(zjazd)}, ktorych jeszcze nie ma w tygodniu ${weekOf(copyTo)}`
                             : undefined
                         }
                         onClick={() => copyZjazd.mutate()}
@@ -542,6 +554,7 @@ export default function PlanPage() {
                 days={days}
                 closedDays={outsideGridDays}
                 blocks={blocks}
+                blocksOf={blocksOf}
                 items={items}
                 availability={selected ? availability?.cells : null}
                 passThrough={!!selected && !readOnly}
@@ -686,6 +699,7 @@ export default function PlanPage() {
               cohortId={cohortId}
               sections={sections}
               blocks={blocks}
+              blocksOf={blocksOf}
               readOnly={readOnly || stationary}
               periods={plan?.calendar?.periods ?? []}
               modeDays={days}
@@ -709,8 +723,8 @@ export default function PlanPage() {
               <dt className="text-muted-foreground">Termin</dt>
               <dd>
                 {WEEKDAY_LABELS[viewing.placement.dayOfWeek]}{' '}
-                {blocks?.find((b) => b.order === viewing.placement.startOrder)?.startTime}–
-                {blocks?.find((b) => b.order === viewing.placement.endOrder)?.endTime}
+                {blocksOf(viewing.placement.dayOfWeek).find((b) => b.order === viewing.placement.startOrder)?.startTime}–
+                {blocksOf(viewing.placement.dayOfWeek).find((b) => b.order === viewing.placement.endOrder)?.endTime}
               </dd>
               <dt className="text-muted-foreground">Rytm</dt>
               <dd>{patternLabel(viewing.placement)}</dd>
@@ -732,7 +746,7 @@ export default function PlanPage() {
           termKey={term.key}
           plan={plan}
           days={days}
-          blocks={blocks}
+          blocksOf={blocksOf}
           target={target}
           onClose={() => setTarget(null)}
           onSaved={async () => {

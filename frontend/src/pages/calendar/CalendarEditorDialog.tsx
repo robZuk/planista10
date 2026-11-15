@@ -43,7 +43,7 @@ import type {
   TermCalendar,
 } from '@/types';
 import { CalendarPreviewPanel } from './CalendarPreviewPanel';
-import { addDaysKey, proposalNote, useDebouncedValue } from './calendarUtils';
+import { addDaysKey, proposalNote, semesterWeekOf, useDebouncedValue } from './calendarUtils';
 
 const dateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Wybierz date');
 
@@ -96,7 +96,10 @@ function toFormValues(body: CalendarBody): FormValues {
   };
 }
 
-/** Formularz -> tresc kalendarza. Zjazdy numerujemy po dacie: zjazd nr 3 = trzeci zjazd. */
+/**
+ * Formularz -> tresc kalendarza. Zjazdy numerujemy po dacie: zjazd nr 3 = trzeci zjazd (ten numer
+ * wskazuja umieszczenia); w UI zjazd opisuje „tydz. N” — numer tygodnia semestru.
+ */
 function toBody(values: FormValues): CalendarBody {
   return {
     name: values.name.trim(),
@@ -448,8 +451,13 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
                     </Button>
                   </div>
                   {zjazdy.fields.map((field, index) => (
-                    <div key={field.id} className="grid grid-cols-[3rem_9.5rem_9.5rem_auto] items-center gap-2">
-                      <span className="text-sm text-muted-foreground tabular-nums">nr {index + 1}</span>
+                    <div key={field.id} className="grid grid-cols-[3.5rem_9.5rem_9.5rem_auto] items-center gap-2">
+                      <span className="text-sm text-muted-foreground tabular-nums">
+                        {(() => {
+                          const week = semesterWeekOf(watched.zjazdy?.[index]?.startDate ?? '', watched.startDate);
+                          return week ? `tydz. ${week}` : '—';
+                        })()}
+                      </span>
                       <Input aria-label="Od" type="date" {...form.register(`zjazdy.${index}.startDate`)} />
                       <Input aria-label="Do" type="date" {...form.register(`zjazdy.${index}.endDate`)} />
                       <Button type="button" variant="ghost" size="icon" aria-label="Usun zjazd" onClick={() => zjazdy.remove(index)}>
@@ -458,7 +466,8 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
                     </div>
                   ))}
                   <p className="text-xs text-muted-foreground">
-                    Zjazdy numerujemy wg dat przy zapisie — zjazd nr 3 to trzeci zjazd w semestrze.
+                    Zjazd oznaczamy jak w arkuszu planu: „tydz. N” — numer tygodnia semestru liczony od tygodnia pierwszego dnia
+                    zajec, z lukami na przerwy.
                   </p>
                 </section>
               </>

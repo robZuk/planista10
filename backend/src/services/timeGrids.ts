@@ -1,44 +1,72 @@
 import type { Prisma, StudyMode } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
-import { blockLabel, defaultGridDays, gridTime, parseGridDays, slotsOutsideDays, type GridDay, type GridTime } from '../lib/timeGrid';
+import {
+  blockLabel,
+  defaultGridDays,
+  gridSet,
+  gridTime,
+  parseGridDays,
+  slotsOutsideDays,
+  type DayGrid,
+  type GridDay,
+  type GridSet,
+  type GridTime,
+  type WeekdayName,
+} from '../lib/timeGrid';
 
 /**
- * Siatki godzin wydzialow: kazdy wydzial ma siatke stacjonarna i niestacjonarna. Siatka
- * rocznika = siatka wydzialu jego kierunku dla trybu studiow programu.
+ * Siatki godzin wydzialow: kazdy wydzial ma siatke stacjonarna i niestacjonarna (podstawowe)
+ * i opcjonalnie siatki dnia — wlasne bloki dla wybranych dni (np. piatek niestacjonarnych).
+ * Siatki rocznika = zestaw siatek wydzialu jego kierunku dla trybu studiow programu; bloki
+ * obowiazujace w danym dniu daje `forDay`.
  */
 
-export interface FacultyGrid {
+export interface FacultyGrid extends DayGrid {
   id: string;
   facultyId: string;
   studyMode: StudyMode;
-  days: GridDay[];
-  time: GridTime;
   blocks: { id: string; order: number; startTime: string; endTime: string; label: string }[];
 }
 
+/** Siatki jednego wydzialu i trybu: podstawowa + siatki dnia (rozlaczne dni). */
+export type FacultyGrids = GridSet<FacultyGrid> & { facultyId: string; studyMode: StudyMode };
+
 const key = (facultyId: string, studyMode: StudyMode) => `${facultyId}|${studyMode}`;
 
-function toFacultyGrid(g: Prisma.TimeGridGetPayload<{ include: { blocks: true } }>): FacultyGrid {
+type GridRow = Prisma.TimeGridGetPayload<{ include: { blocks: true } }>;
+
+function toFacultyGrid(g: GridRow): FacultyGrid {
   const blocks = [...g.blocks].sort((a, b) => a.order - b.order);
-  return { id: g.id, facultyId: g.facultyId, studyMode: g.studyMode, days: parseGridDays(g.days), time: gridTime(blocks), blocks };
+  return { id: g.id, facultyId: g.facultyId, studyMode: g.studyMode, base: g.base, days: parseGridDays(g.days), time: gridTime(blocks), blocks };
 }
 
-/** Wszystkie siatki (kilka wydzialow x 2) — jeden odczyt na zadanie. */
-export async function loadGrids(): Promise<Map<string, FacultyGrid>> {
-  const grids = await prisma.timeGrid.findMany({ include: { blocks: true } });
-  return new Map(grids.map((g) => [key(g.facultyId, g.studyMode), toFacultyGrid(g)]));
+/** Wiersze siatek jednego wydzialu i trybu -> zestaw (podstawowa pierwsza, siatki dnia wg dat zalozenia). */
+export function toFacultyGrids(rows: GridRow[]): FacultyGrids {
+  const sorted = [...rows].sort((a, b) => Number(b.base) - Number(a.base) || a.createdAt.getTime() - b.createdAt.getTime());
+  return { ...gridSet(sorted.map(toFacultyGrid)), facultyId: sorted[0]!.facultyId, studyMode: sorted[0]!.studyMode };
 }
 
-/** Siatka wydzialu i trybu; brak siatki to blad konfiguracji (zaklada ja migracja / nowy wydzial). */
-export async function gridFor(facultyId: string, studyMode: StudyMode): Promise<FacultyGrid> {
-  const grid = await prisma.timeGrid.findUnique({ where: { facultyId_studyMode: { facultyId, studyMode } }, include: { blocks: true } });
-  if (!grid) throw new AppError(409, 'Wydzial nie ma siatki godzin dla tego trybu studiow — ustaw ja w "Siatki godzin"');
-  return toFacultyGrid(grid);
+/** Wszystkie siatki (wydzialy x 2 tryby, plus siatki dnia) — jeden odczyt na zadanie. */
+export async function loadGrids(): Promise<Map<string, FacultyGrids>> {
+  const rows = await prisma.timeGrid.findMany({ include: { blocks: true } });
+  const byKey = new Map<string, GridRow[]>();
+  for (const row of rows) {
+    const k = key(row.facultyId, row.studyMode);
+    byKey.set(k, [...(byKey.get(k) ?? []), row]);
+  }
+  return new Map([...byKey].map(([k, list]) => [k, toFacultyGrids(list)]));
 }
 
-/** Siatka z mapy wczytanej przez loadGrids (dla rocznika: wydzial kierunku + tryb programu). */
-export function pickGrid(grids: Map<string, FacultyGrid>, facultyId: string, studyMode: StudyMode): FacultyGrid | undefined {
+/** Siatki wydzialu i trybu; brak siatki to blad konfiguracji (zaklada ja migracja / nowy wydzial). */
+export async function gridFor(facultyId: string, studyMode: StudyMode): Promise<FacultyGrids> {
+  const rows = await prisma.timeGrid.findMany({ where: { facultyId, studyMode }, include: { blocks: true } });
+  if (rows.length === 0) throw new AppError(409, 'Wydzial nie ma siatki godzin dla tego trybu studiow — ustaw ja w "Siatki godzin"');
+  return toFacultyGrids(rows);
+}
+
+/** Siatki z mapy wczytanej przez loadGrids (dla rocznika: wydzial kierunku + tryb programu). */
+export function pickGrid(grids: Map<string, FacultyGrids>, facultyId: string, studyMode: StudyMode): FacultyGrids | undefined {
   return grids.get(key(facultyId, studyMode));
 }
 
@@ -52,41 +80,44 @@ function defaultBlocks() {
   });
 }
 
-/** Dane do utworzenia obu siatek nowego wydzialu (zagniezdzony create). */
+/** Dane do utworzenia obu siatek podstawowych nowego wydzialu (zagniezdzony create). */
 export function defaultGridsCreate() {
   return (['FULL_TIME', 'PART_TIME'] as const).map((studyMode) => ({
     studyMode,
+    base: true,
     days: defaultGridDays(studyMode) as unknown as Prisma.InputJsonValue,
     blocks: { create: defaultBlocks() },
   }));
 }
 
-/**
- * Czy bloki siatki sa zablokowane: wydzial ma juz umieszczenia w tym trybie w semestrze,
- * ktorego kalendarz nie jest w archiwum. Umieszczenia wskazuja bloki numerem — zmiana godzin
- * przesunelaby zajecia. Terminy niosa wlasne minuty, wiec archiwum zostaje poprawne.
- */
-/** Umieszczenia wydzialu w danym trybie w semestrach, ktore nie sa w archiwum (plan "zywy"). */
-const livePlacements = (facultyId: string, studyMode: StudyMode) => ({
+/** Umieszczenia wydzialu w danym trybie w semestrach, ktore nie sa w archiwum (plan "zywy"); opcjonalnie w wybranych dniach. */
+const livePlacements = (facultyId: string, studyMode: StudyMode, days?: WeekdayName[]) => ({
   facultyId,
+  ...(days ? { dayOfWeek: { in: days } } : {}),
   section: { cohort: { program: { studyMode } } },
   term: { calendars: { some: { facultyId, studyMode, status: { not: 'ARCHIVED' as const } } } },
 });
 
-export async function gridLocked(facultyId: string, studyMode: StudyMode): Promise<boolean> {
-  const placements = await prisma.placement.count({ where: livePlacements(facultyId, studyMode) });
-  return placements > 0;
+/**
+ * Liczba "zywych" umieszczen wydzialu i trybu w wybranych dniach. Umieszczenia wskazuja bloki
+ * numerem — zmiana blokow obowiazujacych w tych dniach przesunelaby zajecia, wiec takie zmiany
+ * sa zablokowane. Terminy niosa wlasne minuty, wiec archiwum zostaje poprawne.
+ */
+export async function placementsOnDays(facultyId: string, studyMode: StudyMode, days: WeekdayName[]): Promise<number> {
+  if (days.length === 0) return 0;
+  return prisma.placement.count({ where: livePlacements(facultyId, studyMode, days) });
 }
 
 /**
- * Nowe dni/okna siatki nie moga wyrzucic poza siatke juz ulozonych zajec — inaczej
- * znikalyby z widoku planu (kolumny dni biora sie z siatki). Zwraca problemy do komunikatu.
+ * Nowe dni/okna siatek nie moga wyrzucic poza siatke juz ulozonych zajec — inaczej
+ * znikalyby z widoku planu (kolumny dni biora sie z siatek). Zwraca problemy do komunikatu.
+ * `days` — suma dni zestawu po zmianie, `timeOf` — bloki obowiazujace w dniu umieszczenia.
  */
 export async function placementsOutsideDays(
   facultyId: string,
   studyMode: StudyMode,
   days: GridDay[],
-  time: GridTime,
+  timeOf: (day: WeekdayName) => GridTime,
 ): Promise<ReturnType<typeof slotsOutsideDays>> {
   const placements = await prisma.placement.findMany({
     where: livePlacements(facultyId, studyMode),
@@ -95,6 +126,6 @@ export async function placementsOutsideDays(
   return slotsOutsideDays(
     placements.map((p) => ({ dayOfWeek: p.dayOfWeek, startOrder: p.startOrder, endOrder: p.endOrder, cohortId: p.section.cohortId })),
     days,
-    time,
+    timeOf,
   );
 }

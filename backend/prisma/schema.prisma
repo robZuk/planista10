@@ -202,17 +202,22 @@ model Instructor {
 // Siatka godzin wydzialu dla trybu studiow (kazdy wydzial: stacjonarna i niestacjonarna).
 // Bloki o dowolnym starcie i dlugosci; przerwy to odstepy miedzy blokami. `days` — dni zajec
 // z opcjonalnym oknem godzin, np. [{"day":"THURSDAY","from":"16:00","to":null}, ...].
+// Wydzial x tryb ma jedna siatke podstawowa (`base`) i opcjonalnie siatki dnia — wlasne bloki
+// dla wybranych dni (np. piatek niestacjonarnych od 16:00). Dni siatek jednego wydzialu i trybu
+// sa rozlaczne; dzien spoza wszystkich siatek liczy sie wg podstawowej. Jedna podstawowa na
+// wydzial i tryb pilnuje czesciowy unikalny indeks (surowy SQL w migracji — Prisma go nie wyraza).
 model TimeGrid {
   id        String      @id @default(uuid())
   faculty   Faculty     @relation(fields: [facultyId], references: [id], onDelete: Cascade)
   facultyId String
   studyMode StudyMode
+  base      Boolean     @default(true)
   days      Json
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   blocks    TimeBlock[]
 
-  @@unique([facultyId, studyMode])
+  @@index([facultyId, studyMode])
 }
 
 model TimeBlock {

@@ -14,7 +14,7 @@ import {
 import { calendarBodySchema, calendarCreateSchema, calendarPreviewSchema, calendarStatusSchema, termCreateSchema } from './schemas/termCalendar';
 import { programCreateSchema, programEntrySchema, versionCreateSchema, versionUpdateSchema } from './schemas/program';
 import { userCreateSchema, userUpdateSchema } from './schemas/user';
-import { timeGridUpdateSchema } from './schemas/timeGrid';
+import { timeGridCreateSchema, timeGridUpdateSchema } from './schemas/timeGrid';
 
 /**
  * Specyfikacja OpenAPI 3.1 serwowana przez Swagger UI (/api/docs).
@@ -51,6 +51,7 @@ const schemas = {
   FieldOfStudyCreate: toJson(fieldOfStudyCreateSchema),
   SpecializationCreate: toJson(specializationCreateSchema),
   TimeGridUpdate: toJson(timeGridUpdateSchema),
+  TimeGridCreate: toJson(timeGridCreateSchema),
   InstructorCreate: toJson(instructorCreateSchema),
   InstructorUpdate: toJson(instructorUpdateSchema),
   BuildingCreate: toJson(buildingCreateSchema),
@@ -254,10 +255,12 @@ export const openApiDocument = {
 
     // ─── Zasoby: Siatki godzin ───────────────────────────────
     '/api/time-grids': {
-      get: { tags: ['Zasoby'], summary: 'Siatki godzin wydzialow (stacjonarna i niestacjonarna): bloki, przerwy, dni z oknem godzin', security: bearer, responses: { 200: dataResp('Siatki'), ...authErrors } },
+      get: { tags: ['Zasoby'], summary: 'Siatki godzin wydzialow (stacjonarna i niestacjonarna, podstawowe i siatki dnia): bloki, przerwy, dni z oknem godzin', security: bearer, responses: { 200: dataResp('Siatki'), ...authErrors } },
+      post: { tags: ['Zasoby'], summary: 'Zaloz siatke dnia (ADMIN): wlasne bloki dla wybranych dni wydzialu i trybu; dni przechodza z siatki podstawowej', security: bearer, requestBody: jsonBody('TimeGridCreate'), responses: { 201: dataResp('Zalozona'), 400: errResp('Zle bloki albo dni'), 409: errResp('Plan w tych dniach'), ...authErrors } },
     },
     '/api/time-grids/{id}': {
-      put: { tags: ['Zasoby'], summary: 'Zmien bloki i/lub dni siatki (ADMIN); bloki zablokowane, gdy wydzial ma plan w biezacym semestrze', security: bearer, parameters: [pathId()], requestBody: jsonBody('TimeGridUpdate'), responses: { 200: dataResp('Zapisana'), 400: errResp('Zle bloki'), 409: errResp('Plan istnieje'), ...authErrors } },
+      put: { tags: ['Zasoby'], summary: 'Zmien bloki i/lub dni siatki (ADMIN); bloki zablokowane, gdy w dniach siatki jest plan biezacego semestru', security: bearer, parameters: [pathId()], requestBody: jsonBody('TimeGridUpdate'), responses: { 200: dataResp('Zapisana'), 400: errResp('Zle bloki'), 409: errResp('Plan istnieje'), ...authErrors } },
+      delete: { tags: ['Zasoby'], summary: 'Usun siatke dnia (ADMIN); jej dni wracaja do siatki podstawowej', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usunieta'), 400: errResp('Siatka podstawowa'), 409: errResp('Plan w tych dniach'), ...authErrors } },
     },
 
     // ─── Program: Kierunki / specjalnosci / przedmioty ───────

@@ -98,7 +98,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `groupTree.ts` — drzewo grup: reguła nakładania i nazwy liczone
   - `demand.ts` — zajęcia wynikające z programu i grup
   - `materializer.ts` — terminy z umieszczeń (limit godzin, wyjątki, kolizje)
-  - `timeGrid.ts` — siatki godzin: walidacja bloków, bloki → minuty, przerwy, dni z oknem godzin, kolizje w minutach
+  - `timeGrid.ts` — siatki godzin: walidacja bloków, bloki → minuty, przerwy, dni z oknem godzin, kolizje w minutach, zestaw siatek wydziału i trybu (podstawowa + siatki dnia, `gridSet.forDay`)
   - `scheduleTime.ts` — typy sal dla form zajęć
   - `facultyScope.ts` — zakres wydziału wywołującego (`assertFacultyScope`)
   - `occurrenceKey.ts` — tekstowy klucz terminu (już tylko zapisywany obok kluczy obcych; do usunięcia)
@@ -160,14 +160,18 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
     historia zostaje liniowa, bez pustych `Merge branch 'x'`.
   - **kilka commitów tworzących jeden feature** → `--no-ff` (merge-commit grupuje
     całość, umożliwia `revert -m`), albo `--squash` gdy ma zostać jeden wpis w `main`.
-- **Czas w planie:** każdy wydział ma **dwie siatki godzin** (`TimeGrid`: stacjonarna
-  i niestacjonarna) — bloki o dowolnym starcie i długości (1 blok = 1 godzina programu,
-  przerwy to odstępy) oraz dni zajęć z oknem godzin (np. czwartek od 16:00). Umieszczenia
-  wskazują bloki (`startOrder..endOrder`) siatki wydziału i trybu rocznika. **Kolizje
-  liczymy w minutach** (`lib/timeGrid.ts → minutesOverlap`, przedziały półotwarte), bo
-  wydziały mają różne siatki; terminy niosą rzeczywisty czas (`Occurrence.startMinute/endMinute`).
-  Bloków siatki nie zmienia się, gdy wydział ma plan w tym trybie w bieżącym semestrze, a dni
-  i okien godzin — gdy wyrzuciłyby poza siatkę ułożone już zajęcia (`slotsOutsideDays`).
+- **Czas w planie:** każdy wydział ma **siatkę godzin podstawową** stacjonarną i niestacjonarną
+  (`TimeGrid.base`) — bloki o dowolnym starcie i długości (1 blok = 1 godzina programu,
+  przerwy to odstępy) oraz dni zajęć z oknem godzin (np. czwartek od 16:00) — i opcjonalnie
+  **siatki dnia**: własne bloki dla wybranych dni (np. piątek niestacjonarnych 16:00, 16:50…
+  przy innych blokach w sobotę). Dni siatek jednego wydziału i trybu są rozłączne; dzień spoza
+  siatek liczy się wg podstawowej (`lib/timeGrid.ts → gridSet.forDay`). Umieszczenia wskazują
+  bloki (`startOrder..endOrder`) siatki obowiązującej w ich dniu. **Kolizje liczymy w minutach**
+  (`lib/timeGrid.ts → minutesOverlap`, przedziały półotwarte), bo wydziały i dni mają różne
+  siatki; terminy niosą rzeczywisty czas (`Occurrence.startMinute/endMinute`). Bloków siatki nie
+  zmienia się, gdy w jej dniach jest plan bieżącego semestru (siatkę dnia zakłada się przed
+  ułożeniem planu w tych dniach), a dni i okien godzin — gdy wyrzuciłyby poza siatkę ułożone już
+  zajęcia (`slotsOutsideDays`).
 - **Daty:** dni jako tekst `YYYY-MM-DD` (`lib/isoDate.ts`), kolumny `@db.Date`; nigdy
   arytmetyka na `Date` w strefie lokalnej.
 - **TypeScript:** `strict` po obu stronach; backend CommonJS, frontend ESM.

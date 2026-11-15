@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calendarDatesKey, calendarPeriods, expandDates, personalDaysOff, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
+import { calendarDatesKey, calendarPeriods, expandDates, personalDaysOff, semesterWeekOf, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
 import { eachDay } from './isoDate';
 
 /** Zima 2024/25 jak w danych: start we wtorek 1.10, bez przerw. */
@@ -278,15 +278,32 @@ describe('calendarPeriods — okresy widoku tygodnia terminow', () => {
       ],
     });
     const periods = calendarPeriods(cal);
-    expect(periods.map((p) => [p.label, p.from, p.to])).toEqual([
-      ['Zjazd 1', '2024-10-04', '2024-10-06'],
-      ['Zjazd 2', '2024-10-18', '2024-10-20'],
+    // Zjazd opisany numerem tygodnia semestru (tydz. 1 = tydzien startu 1.10), jak w arkuszu planu.
+    expect(periods.map((p) => [p.index, p.label, p.from, p.to])).toEqual([
+      [1, 'tydz. 1', '2024-10-04', '2024-10-06'],
+      [2, 'tydz. 3', '2024-10-18', '2024-10-20'],
     ]);
     expect(periods[0]!.days.map((d) => [d.dayOfWeek, d.teaching])).toEqual([
       ['FRIDAY', true],
       ['SATURDAY', true],
       ['SUNDAY', true],
     ]);
+  });
+});
+
+describe('semesterWeekOf — „tydz.” zjazdu jak w arkuszu planu niestacjonarnych', () => {
+  // Zima 2026/27: start w czwartek 1.10 (tydzien 1 = 28.09-4.10); przerwy licza sie do numeracji.
+  it.each([
+    ['2026-10-02', 1], // pt pierwszego zjazdu
+    ['2026-10-04', 1], // nd tego samego tygodnia
+    ['2026-10-09', 2],
+    ['2026-10-30', 5], // przerwa (Wszystkich Swietych) — luka w zjazdach
+    ['2026-11-06', 6],
+    ['2027-01-08', 15], // po dwoch tygodniach przerwy swiatecznej
+    ['2027-01-30', 18],
+    ['2027-02-05', 19],
+  ])('%s -> tydz. %i', (date, week) => {
+    expect(semesterWeekOf(date, '2026-10-01')).toBe(week);
   });
 });
 

@@ -1,7 +1,7 @@
 import type { AcademicTerm, ClassSection, Occurrence, Placement } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
-import { fromIsoDate, isIsoDate, toIsoDate } from '../lib/isoDate';
+import { fromIsoDate, isIsoDate, toIsoDate, weekdayOf } from '../lib/isoDate';
 import { findConflict, type BusySlot } from '../lib/materializer';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
 import { dayWindowProblem, slotLabel, type GridTime } from '../lib/timeGrid';
@@ -9,7 +9,7 @@ import { singleConflictMessage } from '../lib/conflictMessage';
 import { occurrenceKey } from '../lib/occurrenceKey';
 import { TeachingCalendar, WEEKDAY_ENUM } from '../lib/teachingCalendar';
 import { assessSlot, SLOT_WARNINGS_CODE, type SlotAssessment } from '../lib/occurrenceSlot';
-import { gridFor } from './timeGrids';
+import { gridFor, type FacultyGrids } from './timeGrids';
 import { toCalendarInput } from './termCalendars';
 import { toTreeGroup } from './cohorts';
 import { activeCohorts } from './sections';
@@ -43,9 +43,10 @@ export async function occurrenceConflicts(term: AcademicTerm, slot: Omit<BusySlo
 /**
  * Terminy rocznika wolno zmieniac: kalendarz nie w archiwum, rocznik niestacjonarny (stacjonarne
  * maja terminy tylko do wgladu — patrz naglowek modulu) i wersja programu zatwierdzona.
- * Zwraca siatke godzin wydzialu i trybu rocznika — bloki terminu zamieniamy na rzeczywisty czas.
+ * Zwraca siatki godzin wydzialu i trybu rocznika — bloki terminu zamieniamy na rzeczywisty czas
+ * wg siatki dnia tygodnia, w ktory termin wypada (siatka dnia albo podstawowa).
  */
-export async function assertPlanEditable(termId: string, cohortId: string): Promise<GridTime> {
+export async function assertPlanEditable(termId: string, cohortId: string): Promise<FacultyGrids> {
   const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: termId } });
   const [ctx] = await activeCohorts(term, null, [cohortId]);
   const calendar = ctx ? await calendarFor(term, ctx) : null;
@@ -58,8 +59,11 @@ export async function assertPlanEditable(termId: string, cohortId: string): Prom
     );
   }
   assertVersionApproved(ctx.cohort);
-  return (await gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode)).time;
+  return gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode);
 }
+
+/** Bloki obowiazujace w dniu tygodnia daty (np. piatek niestacjonarnych ma wlasne bloki). */
+const gridOfDate = (grids: FacultyGrids, date: string): GridTime => grids.forDay(WEEKDAY_ENUM[weekdayOf(date)]!).time;
 
 /** Zakres blokow -> minuty; blok spoza siatki kalendarza to blad wejscia. */
 export function minutesOf(grid: GridTime, startOrder: number, endOrder: number) {
@@ -122,13 +126,14 @@ async function assertNotMadeUp(occ: OccurrenceFull, what: string): Promise<void>
 }
 
 /** Przywrocenie terminu z wzorca (usuwa wyjatek). Wraca na miejsce z wzorca — z kontrola kolizji. */
-export async function restoreOccurrence(occ: OccurrenceFull, grid: GridTime): Promise<void> {
+export async function restoreOccurrence(occ: OccurrenceFull, grids: FacultyGrids): Promise<void> {
   if (!isDerived(occ)) throw new AppError(400, 'Przywracac mozna tylko terminy z wzorca');
   await assertNotMadeUp(occ, 'przywrocisz termin');
   const p = occ.placement!;
   const length = occ.endOrder - occ.startOrder + 1;
   const endOrder = Math.min(p.endOrder, p.startOrder + length - 1);
-  const time = minutesOf(grid, p.startOrder, endOrder);
+  // Miejsce z wzorca: bloki siatki dnia umieszczenia (jak przy generowaniu).
+  const time = minutesOf(grids.forDay(p.dayOfWeek).time, p.startOrder, endOrder);
   const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: occ.termId } });
   const date = toIsoDate(occ.originalDate!);
   const conflict = await occurrenceConflicts(
@@ -186,8 +191,11 @@ export interface MoveInput {
   confirmWarnings?: boolean;
 }
 
-/** Przeniesienie terminu (data, godziny, sala, prowadzacy) — z kontrola kolizji. */
-export async function moveOccurrence(occ: OccurrenceFull, grid: GridTime, input: MoveInput): Promise<void> {
+/**
+ * Przeniesienie terminu (data, godziny, sala, prowadzacy) — z kontrola kolizji. Bloki liczymy
+ * wg siatki dnia tygodnia nowej daty (np. przeniesienie z soboty na piatek bierze bloki piatku).
+ */
+export async function moveOccurrence(occ: OccurrenceFull, grids: FacultyGrids, input: MoveInput): Promise<void> {
   const date = input.date ?? toIsoDate(occ.date);
   if (!isIsoDate(date)) throw new AppError(400, 'Nieprawidlowa data');
   const next = {
@@ -200,7 +208,7 @@ export async function moveOccurrence(occ: OccurrenceFull, grid: GridTime, input:
   if (next.endOrder < next.startOrder) throw new AppError(400, 'Nieprawidlowy zakres godzin');
   if (input.online === false && !next.roomId) throw new AppError(400, 'Wybierz sale (albo zostaw zajecia online)');
   await assertNotMadeUp(occ, 'przeniesiesz termin');
-  const time = minutesOf(grid, next.startOrder, next.endOrder);
+  const time = minutesOf(gridOfDate(grids, next.date), next.startOrder, next.endOrder);
   const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: occ.termId } });
   // Dzien i godziny oceniamy tylko przy zmianie miejsca w czasie (sama zmiana sali/prowadzacego ich nie rusza).
   const slotChanged = next.date !== toIsoDate(occ.date) || next.startOrder !== occ.startOrder || next.endOrder !== occ.endOrder;
@@ -256,8 +264,8 @@ export interface ManualInput {
   confirmWarnings?: boolean;
 }
 
-/** Termin reczny (odrobienie, zajecia jednorazowe) z kontrola kolizji. */
-export async function createManualOccurrence(term: AcademicTerm, section: ClassSection, grid: GridTime, input: ManualInput) {
+/** Termin reczny (odrobienie, zajecia jednorazowe) z kontrola kolizji; bloki wg siatki dnia tygodnia daty. */
+export async function createManualOccurrence(term: AcademicTerm, section: ClassSection, grids: FacultyGrids, input: ManualInput) {
   const roomId = input.online ? null : (input.roomId ?? null);
   if (!isIsoDate(input.date) || !Number.isInteger(input.startOrder) || !Number.isInteger(input.endOrder) || input.endOrder < input.startOrder) {
     throw new AppError(400, 'Podaj date i godziny');
@@ -280,7 +288,7 @@ export async function createManualOccurrence(term: AcademicTerm, section: ClassS
       : (original?.instructorId ??
         (await prisma.sectionInstructor.findFirst({ where: { sectionId: section.id, instructorId: { not: null } } }))?.instructorId ??
         null);
-  const time = minutesOf(grid, input.startOrder, input.endOrder);
+  const time = minutesOf(gridOfDate(grids, input.date), input.startOrder, input.endOrder);
   const assessment = await slotAssessment(term, section.cohortId, input.date, time);
   const conflict = await occurrenceConflicts(
     term,

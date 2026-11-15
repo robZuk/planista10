@@ -46,7 +46,7 @@ export function CalendarPreviewPanel({ preview, kind, loading }: Props) {
         <ul className="max-h-[26rem] space-y-1 overflow-y-auto text-sm">
           {preview.zjazdy?.map((z) => (
             <li key={z.number} className="flex flex-wrap items-center gap-2 rounded-md px-2 py-1 odd:bg-muted/50">
-              <span className="w-10 font-medium tabular-nums">nr {z.number}</span>
+              <span className="w-14 font-medium tabular-nums">tydz. {z.week}</span>
               <span className="tabular-nums">{formatRange(z.startDate, z.endDate)}</span>
               <Badge variant={z.teachingDays === 0 ? 'destructive' : 'secondary'} className="ml-auto">
                 {z.teachingDays} dni zajec

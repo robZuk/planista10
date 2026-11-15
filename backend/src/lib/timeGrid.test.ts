@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  blockDays,
+  gridSet,
+  sharedDays,
   slotsOutsideDays,
   formatMinutes,
   gridBreaks,
@@ -170,15 +173,53 @@ describe('slotsOutsideDays', () => {
   const slot = (dayOfWeek: 'THURSDAY' | 'FRIDAY', order: number, cohortId: string) => ({ dayOfWeek, startOrder: order, endOrder: order, cohortId });
 
   it('wszystko w siatce — pusto', () => {
-    expect(slotsOutsideDays([slot('FRIDAY', 1, 'c1')], [{ day: 'FRIDAY', from: null, to: null }], time)).toEqual([]);
+    expect(slotsOutsideDays([slot('FRIDAY', 1, 'c1')], [{ day: 'FRIDAY', from: null, to: null }], () => time)).toEqual([]);
   });
 
   it('usuniety dzien i zawezone okno — grupy z liczba umieszczen i rocznikow', () => {
     const days = [{ day: 'THURSDAY' as const, from: '16:00', to: null }];
-    const result = slotsOutsideDays([slot('FRIDAY', 1, 'c1'), slot('FRIDAY', 2, 'c1'), slot('THURSDAY', 1, 'c2'), slot('THURSDAY', 2, 'c2')], days, time);
+    const result = slotsOutsideDays([slot('FRIDAY', 1, 'c1'), slot('FRIDAY', 2, 'c1'), slot('THURSDAY', 1, 'c2'), slot('THURSDAY', 2, 'c2')], days, () => time);
     expect(result).toEqual([
       { problem: 'Siatka nie przewiduje zajec w dniu: piatek (dni: czwartek)', placements: 2, cohorts: 1 },
       { problem: 'czwartek: zajecia od 16:00', placements: 1, cohorts: 1 },
     ]);
+  });
+
+  it('czas umieszczenia wg siatki jego dnia (blok 1 piatku to 16:00, nie 08:00)', () => {
+    const friday = gridTime([{ order: 1, startTime: '16:00', endTime: '16:45' }]);
+    const days = [{ day: 'FRIDAY' as const, from: '16:00', to: null }];
+    expect(slotsOutsideDays([slot('FRIDAY', 1, 'c1')], days, (day) => (day === 'FRIDAY' ? friday : time))).toEqual([]);
+    expect(slotsOutsideDays([slot('FRIDAY', 1, 'c1')], days, () => time)).toEqual([{ problem: 'piatek: zajecia od 16:00', placements: 1, cohorts: 1 }]);
+  });
+});
+
+describe('gridSet — siatka podstawowa i siatki dnia', () => {
+  const base = { base: true, days: [{ day: 'SATURDAY' as const, from: null, to: null }, { day: 'SUNDAY' as const, from: null, to: null }], time: gridTime([{ order: 1, startTime: '08:00', endTime: '08:45' }]) };
+  const friday = { base: false, days: [{ day: 'FRIDAY' as const, from: '16:00', to: null }], time: gridTime([{ order: 1, startTime: '16:00', endTime: '16:45' }]) };
+  const set = gridSet([friday, base]);
+
+  it('dzien siatki dnia bierze jej bloki, pozostale dni i dni spoza siatek — podstawowej', () => {
+    expect(set.base).toBe(base);
+    expect(set.forDay('FRIDAY')).toBe(friday);
+    expect(set.forDay('SATURDAY')).toBe(base);
+    expect(set.forDay('WEDNESDAY')).toBe(base);
+  });
+
+  it('suma dni w kolejnosci tygodnia, z oknem godzin swojej siatki', () => {
+    expect(set.days).toEqual([
+      { day: 'FRIDAY', from: '16:00', to: null },
+      { day: 'SATURDAY', from: null, to: null },
+      { day: 'SUNDAY', from: null, to: null },
+    ]);
+  });
+
+  it('dni wspolne kilku siatek (powinny byc rozlaczne)', () => {
+    expect(sharedDays([base, friday])).toEqual([]);
+    expect(sharedDays([base, { days: [{ day: 'SUNDAY', from: null, to: null }, { day: 'FRIDAY', from: null, to: null }] }])).toEqual(['SUNDAY']);
+  });
+
+  it('dni blokow: siatka dnia — jej dni, podstawowa — wszystkie poza dniami siatek dnia', () => {
+    expect(blockDays(friday, [base])).toEqual(['FRIDAY']);
+    expect(blockDays(base, [friday])).toEqual(['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'SATURDAY', 'SUNDAY']);
   });
 });

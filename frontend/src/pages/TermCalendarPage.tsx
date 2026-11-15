@@ -409,7 +409,7 @@ function CalendarCard({ calendar, editable, canChangeStatus, statusPending, onEd
         )}
         {calendar.kind === 'ZJAZD' && calendar.zjazdy.length > 0 && (
           <div className="text-muted-foreground">
-            Zjazdy: {calendar.zjazdy.map((z) => formatDayKey(z.startDate)).join(', ')}
+            Zjazdy: {calendar.zjazdy.map((z) => `tydz. ${z.week} (${formatDayKey(z.startDate)})`).join(', ')}
           </div>
         )}
         {canChangeStatus && (

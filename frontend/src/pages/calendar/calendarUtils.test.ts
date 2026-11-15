@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import type { CalendarProposal } from '@/types';
-import { addDaysKey, formatDayKey, formatRange, proposalNote } from './calendarUtils';
+import { addDaysKey, formatDayKey, formatRange, proposalNote, semesterWeekOf } from './calendarUtils';
+
+describe('semesterWeekOf — „tydz.” zjazdu', () => {
+  it('tydzien semestru z lukami na przerwy (start w czwartek 1.10.2026)', () => {
+    expect(semesterWeekOf('2026-10-02', '2026-10-01')).toBe(1);
+    expect(semesterWeekOf('2026-11-06', '2026-10-01')).toBe(6);
+    expect(semesterWeekOf('2027-01-08', '2026-10-01')).toBe(15);
+    expect(semesterWeekOf('2027-03-28', '2027-02-22')).toBe(5); // przez zmiane czasu (28.03)
+    expect(semesterWeekOf('', '2026-10-01')).toBeNull();
+  });
+});
 
 describe('calendarUtils', () => {
   it('dodawanie dni przez koniec miesiaca i roku', () => {

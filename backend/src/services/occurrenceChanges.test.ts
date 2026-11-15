@@ -16,11 +16,14 @@ vi.mock('./plan', async (importOriginal) => ({ ...(await importOriginal<typeof i
 
 import { createManualOccurrence, restoreOccurrence, type OccurrenceFull } from './occurrenceChanges';
 import type { GridTime } from '../lib/timeGrid';
+import type { FacultyGrids } from './timeGrids';
 import { termOccupancy } from './plan';
 
 const term = { id: 't1' } as AcademicTerm;
 const section = { id: 's1', cohortId: 'c1', facultyId: 'wm', groupId: 'g1' } as ClassSection;
-const grid = { range: () => ({ startMinute: 615, endMinute: 720 }) } as unknown as GridTime;
+// Siatki wydzialu i trybu: kazdy dzien ten sam blok 10:15-12:00 (siatka dnia bez znaczenia w tych testach).
+const time = { range: () => ({ startMinute: 615, endMinute: 720 }) } as unknown as GridTime;
+const grid = { forDay: () => ({ time }), days: [] } as unknown as FacultyGrids;
 const input = (makeupOfId: string) => ({ date: '2027-03-11', startOrder: 1, endOrder: 2, online: true, makeupOfId });
 
 beforeEach(() => {

@@ -13,7 +13,7 @@ const prismaMock = vi.hoisted(() => ({
   },
   cohort: { findMany: vi.fn().mockResolvedValue([]) },
   termCalendar: { findMany: vi.fn().mockResolvedValue([]) },
-  timeGrid: { findUnique: vi.fn() },
+  timeGrid: { findMany: vi.fn() },
   classSection: { findUnique: vi.fn() },
   occurrence: {
     findUnique: vi.fn(),
@@ -294,13 +294,17 @@ describe('API — plan', () => {
     });
     prismaMock.cohort.findMany.mockResolvedValueOnce([partTime]);
     prismaMock.termCalendar.findMany.mockResolvedValueOnce([{ ...calendarRow('PUBLISHED'), studyMode: 'PART_TIME' }]);
-    prismaMock.timeGrid.findUnique.mockResolvedValueOnce({
-      id: 'g1',
-      facultyId: 'wm',
-      studyMode: 'PART_TIME',
-      days: [{ day: 'SATURDAY', from: null, to: null }],
-      blocks: [{ id: 'b1', order: 1, startTime: '08:00', endTime: '09:00', label: '08:00-09:00' }],
-    });
+    prismaMock.timeGrid.findMany.mockResolvedValueOnce([
+      {
+        id: 'g1',
+        facultyId: 'wm',
+        studyMode: 'PART_TIME',
+        base: true,
+        createdAt: new Date('2026-01-01'),
+        days: [{ day: 'SATURDAY', from: null, to: null }],
+        blocks: [{ id: 'b1', order: 1, startTime: '08:00', endTime: '09:00', label: '08:00-09:00' }],
+      },
+    ]);
     const res = await request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${dean}`).send({ action: 'CANCEL', note: 'choroba' });
     expect(res.status).toBe(200);
     expect(prismaMock.$transaction).toHaveBeenLastCalledWith([

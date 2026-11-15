@@ -28,7 +28,7 @@ import { matchesAllWords } from '@/lib/searchMatch';
 import { SlotWarnings } from '@/components/SlotWarnings';
 import { CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { roomOptionsFor, roomTooSmallMessage, type RoomOption } from '@/lib/roomOptions';
-import { formatMinutes } from '@/lib/timeGrid';
+import { dayOfDate, formatMinutes } from '@/lib/timeGrid';
 import { formatDayMonth } from '@/lib/planHours';
 import { occurrenceMarker } from '@/lib/occurrenceWeek';
 import type { CalendarPeriod, DayOfWeek, OccurrenceRow, PlanSection, TimeBlock } from '@/types';
@@ -45,6 +45,7 @@ export function OccurrencesTab({
   cohortId,
   sections,
   blocks,
+  blocksOf,
   readOnly,
   periods,
   modeDays,
@@ -52,7 +53,10 @@ export function OccurrencesTab({
   termKey: string;
   cohortId: string;
   sections: PlanSection[];
+  /** Bloki siatki podstawowej (os czasu, data jeszcze niewybrana). */
   blocks: TimeBlock[];
+  /** Bloki dnia: siatka dnia (np. piatek od 16:00) albo podstawowa. */
+  blocksOf: (day: DayOfWeek) => TimeBlock[];
   readOnly: boolean;
   /** Tygodnie albo zjazdy kalendarza rocznika — nawigacja widoku tygodnia. */
   periods: CalendarPeriod[];
@@ -141,7 +145,7 @@ export function OccurrencesTab({
         )}
       </div>
       {view === 'week' && (
-        <OccurrencesWeek periods={periods} modeDays={modeDays} blocks={blocks} occurrences={rows} onSelect={setDetails} />
+        <OccurrencesWeek periods={periods} modeDays={modeDays} blocks={blocks} blocksOf={blocksOf} occurrences={rows} onSelect={setDetails} />
       )}
       {view === 'list' && (
         <div className="max-h-[70vh] overflow-auto rounded-lg border">
@@ -331,15 +335,38 @@ export function OccurrencesTab({
           occurrence={editing}
           section={sections.find((s) => s.id === editing.sectionId)}
           blocks={blocks}
+          blocksOf={blocksOf}
           onClose={() => setEditing(null)}
           onDone={refresh}
         />
       )}
       {adding && (
-        <ManualDialog termKey={termKey} sections={sections} blocks={blocks} onClose={() => setAdding(false)} onDone={refresh} />
+        <ManualDialog termKey={termKey} sections={sections} blocks={blocks} blocksOf={blocksOf} onClose={() => setAdding(false)} onDone={refresh} />
       )}
     </div>
   );
+}
+
+/**
+ * Data terminu i blok startu: bloki wg siatki dnia tygodnia wybranej daty (np. piatek od 16:00).
+ * Zmiana daty na dzien z inna siatka zostawia te sama godzine startu, jesli jest w nowej siatce,
+ * inaczej pierwszy blok dnia. Bez pelnej daty — bloki siatki podstawowej.
+ */
+function useDateBlocks(initialDate: string, initialStart: number | null, blocks: TimeBlock[], blocksOf: (day: DayOfWeek) => TimeBlock[]) {
+  const blocksAt = (value: string) => {
+    const day = dayOfDate(value);
+    return day ? blocksOf(day) : blocks;
+  };
+  const [date, setDateValue] = useState(initialDate);
+  const dayBlocks = blocksAt(date);
+  const [start, setStart] = useState(initialStart ?? dayBlocks[0]?.order ?? 1);
+  const setDate = (next: string) => {
+    const time = dayBlocks.find((b) => b.order === start)?.startTime;
+    const nextBlocks = blocksAt(next);
+    setDateValue(next);
+    setStart(nextBlocks.find((b) => b.startTime === time)?.order ?? nextBlocks[0]?.order ?? start);
+  };
+  return { date, setDate, start, setStart, dayBlocks };
 }
 
 /** Sale pasujace do formy zajec, za male dla grupy z dopiskiem (lib/roomOptions). */
@@ -357,19 +384,20 @@ function MoveDialog({
   occurrence,
   section,
   blocks,
+  blocksOf,
   onClose,
   onDone,
 }: {
   occurrence: OccurrenceRow;
   section: PlanSection | undefined;
   blocks: TimeBlock[];
+  blocksOf: (day: DayOfWeek) => TimeBlock[];
   onClose: () => void;
   onDone: () => void;
 }) {
   const rooms = useRoomOptions(section);
   const length = occurrence.endOrder - occurrence.startOrder + 1;
-  const [date, setDate] = useState(occurrence.date);
-  const [start, setStart] = useState(occurrence.startOrder);
+  const { date, setDate, start, setStart, dayBlocks } = useDateBlocks(occurrence.date, occurrence.startOrder, blocks, blocksOf);
   const [roomId, setRoomId] = useState(occurrence.room.id ?? '');
   const [online, setOnline] = useState(occurrence.room.id === null);
   const [note, setNote] = useState(occurrence.note ?? '');
@@ -418,7 +446,7 @@ function MoveDialog({
           <Field>
             <FieldLabel htmlFor="mv-start">Od</FieldLabel>
             <NativeSelect id="mv-start" value={start} onChange={(e) => setStart(Number(e.target.value))}>
-              {blocks.map((b) => (
+              {dayBlocks.map((b) => (
                 <NativeSelectOption key={b.id} value={b.order}>
                   {b.startTime}
                 </NativeSelectOption>
@@ -458,18 +486,19 @@ function ManualDialog({
   termKey,
   sections,
   blocks,
+  blocksOf,
   onClose,
   onDone,
 }: {
   termKey: string;
   sections: PlanSection[];
   blocks: TimeBlock[];
+  blocksOf: (day: DayOfWeek) => TimeBlock[];
   onClose: () => void;
   onDone: () => void;
 }) {
   const [sectionId, setSectionId] = useState('');
-  const [date, setDate] = useState('');
-  const [start, setStart] = useState(blocks[0]?.order ?? 1);
+  const { date, setDate, start, setStart, dayBlocks } = useDateBlocks('', null, blocks, blocksOf);
   const [length, setLength] = useState(2);
   const [roomId, setRoomId] = useState('');
   const [online, setOnline] = useState(false);
@@ -559,7 +588,7 @@ function ManualDialog({
             <FieldLabel htmlFor="mn-start">Od / dlugosc</FieldLabel>
             <div className="flex gap-2">
               <NativeSelect id="mn-start" value={start} onChange={(e) => setStart(Number(e.target.value))}>
-                {blocks.map((b) => (
+                {dayBlocks.map((b) => (
                   <NativeSelectOption key={b.id} value={b.order}>
                     {b.startTime}
                   </NativeSelectOption>

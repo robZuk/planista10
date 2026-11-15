@@ -2,11 +2,14 @@ import type { AcademicTerm, DayOfWeek, Prisma, TermCalendar } from '@prisma/clie
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { fromIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
-import { calendarPeriods, expandDates, TeachingCalendar } from '../lib/teachingCalendar';
+import { calendarPeriods, expandDates, semesterWeekOf, TeachingCalendar } from '../lib/teachingCalendar';
 import { groupsOverlap, indexGroups, pathFromRoot } from '../lib/groupTree';
 import { roomTypeMap } from '../lib/scheduleTime';
 import { dayWindowProblem, formatMinutes, mapRangeByTime, slotLabel, minutesOverlap, weekdayLabel, type GridTime, type MinuteRange, type WeekdayName } from '../lib/timeGrid';
-import { gridFor, loadGrids, pickGrid } from './timeGrids';
+import { gridFor, loadGrids, pickGrid, type FacultyGrids } from './timeGrids';
+
+/** Bloki obowiazujace w danym dniu tygodnia (siatka dnia albo podstawowa) — dla materializera. */
+const gridOfDay = (grids: FacultyGrids) => (day: WeekdayName) => grids.forDay(day).time;
 import {
   findConflict,
   materialize,
@@ -160,12 +163,12 @@ export async function jointProblems(term: AcademicTerm, input: PlacementInput, g
       continue;
     }
     if (excludeId) {
-      if (!mapRangeByTime(grid, other.time, input.startOrder, input.endOrder)) {
+      if (!mapRangeByTime(grid, other.forDay(input.dayOfWeek).time, input.startOrder, input.endOrder)) {
         problems.push(`Zajecia laczone: godzin ${formatMinutes(time.startMinute)}-${formatMinutes(time.endMinute)} nie ma w siatce wydzialu dla ${label}`);
       }
       continue;
     }
-    const jt = other.time.range(j.startOrder, j.endOrder);
+    const jt = other.forDay(j.dayOfWeek).time.range(j.startOrder, j.endOrder);
     if (j.dayOfWeek !== input.dayOfWeek || !jt || jt.startMinute !== time.startMinute || jt.endMinute !== time.endMinute) {
       problems.push(
         `Zajecia laczone "${input.jointKey}" (${label}) sa w ${weekdayLabel(j.dayOfWeek)} ${jt ? `${formatMinutes(jt.startMinute)}-${formatMinutes(jt.endMinute)}` : '?'} — umiesc w tym samym czasie`,
@@ -213,14 +216,14 @@ interface Scope {
   contexts: CohortContext[];
   calendars: Map<string, CalendarRow>; // cohortId -> kalendarz
   teaching: Map<string, TeachingCalendar>; // cohortId -> kalendarz zajec
-  grids: Map<string, GridTime>; // cohortId -> siatka godzin wydzialu i trybu rocznika
+  grids: Map<string, FacultyGrids>; // cohortId -> siatki godzin wydzialu i trybu rocznika (bloki per dzien)
 }
 
 async function loadScope(term: AcademicTerm, facultyId: string | null, cohortIds?: string[]): Promise<Scope> {
   const contexts = await activeCohorts(term, facultyId, cohortIds);
   const calendars = new Map<string, CalendarRow>();
   const teaching = new Map<string, TeachingCalendar>();
-  const grids = new Map<string, GridTime>();
+  const grids = new Map<string, FacultyGrids>();
   const [facultyGrids, cohortCalendars] = await Promise.all([loadGrids(), calendarsFor(term, contexts)]);
   for (const ctx of contexts) {
     const calendar = cohortCalendars.get(ctx.cohort.id);
@@ -229,7 +232,7 @@ async function loadScope(term: AcademicTerm, facultyId: string | null, cohortIds
     if (!grid) continue;
     calendars.set(ctx.cohort.id, calendar);
     teaching.set(ctx.cohort.id, new TeachingCalendar(toCalendarInput(calendar)));
-    grids.set(ctx.cohort.id, grid.time);
+    grids.set(ctx.cohort.id, grid);
   }
   return { contexts, calendars, teaching, grids };
 }
@@ -336,7 +339,7 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
       hours: s.hours,
       groupId: s.groupId,
       calendar: scope.teaching.get(s.cohortId)!,
-      grid: scope.grids.get(s.cohortId)!,
+      gridOf: gridOfDay(scope.grids.get(s.cohortId)!),
       consumedHours: manualHours.get(s.id) ?? 0,
       label: s.id,
     })),
@@ -443,13 +446,13 @@ export async function checkPlacement(term: AcademicTerm, input: PlacementInput, 
   if (!calendar) throw new AppError(409, 'Rocznik nie ma kalendarza w tym semestrze — ustaw go w Kalendarzu semestru');
   if (calendar.status === 'ARCHIVED') throw new AppError(409, 'Kalendarz jest w archiwum — plan tylko do odczytu');
 
-  // Bloki, dni i okno godzin z siatki wydzialu i trybu rocznika.
-  const facultyGrid = await gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode);
-  const grid = facultyGrid.time;
+  // Bloki dnia (siatka dnia albo podstawowa), dni i okno godzin z siatek wydzialu i trybu rocznika.
+  const facultyGrids = await gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode);
+  const grid = facultyGrids.forDay(input.dayOfWeek).time;
   const time = grid.range(input.startOrder, input.endOrder);
   if (!time) errors.push('Nieprawidlowy zakres godzin (poza siatka godzin wydzialu)');
   else {
-    const window = dayWindowProblem(facultyGrid.days, input.dayOfWeek, time.startMinute, time.endMinute);
+    const window = dayWindowProblem(facultyGrids.days, input.dayOfWeek, time.startMinute, time.endMinute);
     if (window) errors.push(window);
   }
   if (input.cycle === 'ZJAZD' && calendar.kind !== 'ZJAZD') errors.push('Rocznik ma kalendarz tygodniowy — wybierz rytm tygodniowy');
@@ -508,19 +511,19 @@ export async function availability(
   const calendar = ctx ? await calendarFor(term, ctx) : null;
   if (!calendar) throw new AppError(409, 'Rocznik nie ma kalendarza w tym semestrze');
   const cal = new TeachingCalendar(toCalendarInput(calendar));
-  const facultyGrid = await gridFor(ctx!.cohort.program.fieldOfStudy.facultyId, ctx!.cohort.program.studyMode);
-  const grid = facultyGrid.time;
-  const blocks = grid.blocks;
+  const facultyGrids = await gridFor(ctx!.cohort.program.fieldOfStudy.facultyId, ctx!.cohort.program.studyMode);
   const instructorId =
     opts.instructorId !== undefined ? opts.instructorId : (section.instructors.find((i) => i.instructorId)?.instructorId ?? null);
   const busy = await placementBusy(term, { cohortId: section.cohortId, roomId: opts.roomId ?? null, instructorId });
   const overlap = await groupOverlapFn();
 
-  // Dni zajec z siatki wydzialu (np. niestacjonarne WN: czw-nd).
-  const days = facultyGrid.days.map((d) => d.day);
+  // Dni zajec z siatek wydzialu (np. niestacjonarne WN: czw-nd); bloki — siatki obowiazujacej w dniu.
+  const days = facultyGrids.days.map((d) => d.day);
   const cells: Record<string, Record<number, string | null>> = {};
   for (const dayOfWeek of days) {
     cells[dayOfWeek] = {};
+    const grid = facultyGrids.forDay(dayOfWeek).time;
+    const blocks = grid.blocks;
     const dates = expandDates(cal, { dayOfWeek, cycle: opts.cycle, pattern: opts.pattern, numbers: opts.numbers }).map((d) => d.date);
     const relevant = busy.filter((b) => dates.includes(b.date));
     for (const block of blocks) {
@@ -530,7 +533,7 @@ export async function availability(
         cells[dayOfWeek]![block.order] = 'Poza siatka godzin';
         continue;
       }
-      let reason: string | null = dayWindowProblem(facultyGrid.days, dayOfWeek, time.startMinute, time.endMinute);
+      let reason: string | null = dayWindowProblem(facultyGrids.days, dayOfWeek, time.startMinute, time.endMinute);
       for (const b of reason ? [] : relevant) {
         if (!minutesOverlap(time.startMinute, time.endMinute, b.startMinute, b.endMinute)) continue;
         if (opts.roomId && b.roomId === opts.roomId) reason = `Sala zajeta: ${b.label}`;
@@ -552,7 +555,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
   if (!ctx) throw new AppError(404, 'Rocznik nie ma zajec w tym semestrze');
   const calendar = scope.calendars.get(cohortId) ?? null;
   const cal = scope.teaching.get(cohortId) ?? null;
-  const facultyGrid = await gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode);
+  const facultyGrids = await gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode);
 
   const sections = await prisma.classSection.findMany({
     where: { termId: term.id, cohortId },
@@ -583,7 +586,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
   for (const m of manual) if (m._max.date) later(m.sectionId, toIsoDate(m._max.date));
   if (cal) {
     const mat = materialize({
-      sections: sections.map((s) => ({ id: s.id, hours: s.hours, groupId: s.groupId, calendar: cal, grid: facultyGrid.time, consumedHours: manualHours.get(s.id) ?? 0, label: s.id })),
+      sections: sections.map((s) => ({ id: s.id, hours: s.hours, groupId: s.groupId, calendar: cal, gridOf: gridOfDay(facultyGrids), consumedHours: manualHours.get(s.id) ?? 0, label: s.id })),
       placements: sections.flatMap((s) => s.placements.map(toMatPlacement)),
       exceptions: [],
       busy: [],
@@ -605,8 +608,8 @@ export async function planView(term: AcademicTerm, cohortId: string) {
   // Niezgodnosci powstale po umieszczeniu (obsada, sala, grupa, godziny) — lib/planIssues.
   const groupById = new Map(ctx.cohort.groups.map((g) => [g.id, g]));
   const gridProblemOf = (p: { dayOfWeek: WeekdayName; startOrder: number; endOrder: number }) => {
-    const range = facultyGrid.time.range(p.startOrder, p.endOrder);
-    return range ? dayWindowProblem(facultyGrid.days, p.dayOfWeek, range.startMinute, range.endMinute) : 'bloki spoza siatki';
+    const range = facultyGrids.forDay(p.dayOfWeek).time.range(p.startOrder, p.endOrder);
+    return range ? dayWindowProblem(facultyGrids.days, p.dayOfWeek, range.startMinute, range.endMinute) : 'bloki spoza siatki';
   };
   // Numery zjazdow/tygodni z kalendarza rocznika — "wybrane zjazdy" spoza nich nic nie dadza.
   const zjazdNumbers = new Set(calendar?.zjazdy.map((z) => z.number) ?? []);
@@ -665,14 +668,25 @@ export async function planView(term: AcademicTerm, cohortId: string) {
           lastGeneratedAt: calendar.lastGeneratedAt,
           endDate: toIsoDate(calendar.endDate),
           teachingWeeks: cal!.teachingWeeks().filter((w) => w.index !== null).length,
-          zjazdy: calendar.zjazdy.map((z) => ({ number: z.number, startDate: toIsoDate(z.startDate), endDate: toIsoDate(z.endDate) })),
+          // `week` — etykieta „tydz. N” (numer tygodnia semestru); umieszczenia wskazuja zjazd numerem.
+          zjazdy: calendar.zjazdy.map((z) => ({
+            number: z.number,
+            week: semesterWeekOf(toIsoDate(z.startDate), toIsoDate(calendar.startDate)),
+            startDate: toIsoDate(z.startDate),
+            endDate: toIsoDate(z.endDate),
+          })),
           // Tygodnie albo zjazdy z dniami wolnymi — nawigacja widoku tygodnia w "Terminach".
           periods: calendarPeriods(cal!),
         }
       : null,
     // Terminy nieaktualne: umieszczenia zmienione po ostatnim generowaniu.
-    // Siatka godzin wydzialu i trybu rocznika: bloki planu, przerwy (odstepy) i dni zajec.
-    timeGrid: { id: facultyGrid.id, studyMode: facultyGrid.studyMode, days: facultyGrid.days, blocks: facultyGrid.blocks },
+    // Siatki godzin wydzialu i trybu rocznika: suma dni zajec (z oknem godzin) i siatki — podstawowa
+    // oraz siatki dnia z wlasnymi blokami; dzien spoza siatek liczy sie wg podstawowej.
+    timeGrid: {
+      studyMode: facultyGrids.studyMode,
+      days: facultyGrids.days,
+      grids: facultyGrids.grids.map((g) => ({ id: g.id, base: g.base, days: g.days.map((d) => d.day), blocks: g.blocks })),
+    },
     stale: reasons.length > 0,
     // Powody (do komunikatu): zmiana wzorca i/lub zmiana godzin zajec po generowaniu.
     staleReasons: reasons,
@@ -818,7 +832,7 @@ export async function generate(
       hours: s.hours,
       groupId: s.groupId,
       calendar: scope.teaching.get(s.cohortId)!,
-      grid: scope.grids.get(s.cohortId)!,
+      gridOf: gridOfDay(scope.grids.get(s.cohortId)!),
       consumedHours: consumed.get(s.id) ?? 0,
       label,
     };

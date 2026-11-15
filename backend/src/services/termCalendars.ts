@@ -18,7 +18,7 @@ import {
   type IsoDate,
 } from '../lib/isoDate';
 import { holidaysInRange } from '../lib/holidays';
-import { TeachingCalendar, type CalendarInput } from '../lib/teachingCalendar';
+import { semesterWeekOf, TeachingCalendar, type CalendarInput } from '../lib/teachingCalendar';
 import {
   defaultTermDates,
   shiftDateByYears,
@@ -94,6 +94,7 @@ export function preview(input: CalendarInput) {
       const days = [...eachDay(zjazd.startDate, zjazd.endDate)].map((date) => cal.dayInfo(date));
       return {
         ...zjazd,
+        week: semesterWeekOf(zjazd.startDate, input.startDate),
         teachingDays: days.filter((day) => day.teaching).length,
         notes: days.filter((day) => !day.teaching && day.label).map((day) => `${day.date}: ${day.label}`),
       };
@@ -122,7 +123,8 @@ export function serializeCalendar(calendar: CalendarWithChildren) {
     endDate: input.endDate,
     breaks: calendar.breaks.map((b, i) => ({ id: b.id, ...input.breaks[i]! })),
     days: calendar.days.map((d, i) => ({ id: d.id, ...input.days[i]! })),
-    zjazdy: calendar.zjazdy.map((z, i) => ({ id: z.id, ...input.zjazdy[i]! })),
+    // `week` — etykieta „tydz. N” (numer tygodnia semestru, jak w arkuszu planu); `number` zostaje kolejny.
+    zjazdy: calendar.zjazdy.map((z, i) => ({ id: z.id, ...input.zjazdy[i]!, week: semesterWeekOf(input.zjazdy[i]!.startDate, input.startDate) })),
     summary: summarize(input),
     updatedAt: calendar.updatedAt,
   };

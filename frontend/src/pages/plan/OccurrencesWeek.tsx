@@ -28,12 +28,15 @@ export function OccurrencesWeek({
   periods,
   modeDays,
   blocks,
+  blocksOf,
   occurrences,
   onSelect,
 }: {
   periods: CalendarPeriod[];
   modeDays: DayOfWeek[];
   blocks: TimeBlock[];
+  /** Bloki dnia: siatka dnia (np. piatek od 16:00) albo podstawowa. */
+  blocksOf: (day: DayOfWeek) => TimeBlock[];
   occurrences: OccurrenceRow[];
   onSelect: (occurrence: OccurrenceRow) => void;
 }) {
@@ -61,6 +64,9 @@ export function OccurrencesWeek({
     dayOfWeek: columns.find((d) => d.date === o.date)!.dayOfWeek,
     startOrder: o.startOrder,
     endOrder: o.endOrder,
+    // Termin rysujemy wg rzeczywistego czasu — przeniesiony na inny dzien moze miec bloki innej siatki.
+    startMinute: o.startMinute,
+    endMinute: o.endMinute,
     classType: o.classType,
     title: o.subject,
     lines: [o.group, o.room.label, o.instructor, ...(o.note ? [o.note] : [])],
@@ -103,6 +109,7 @@ export function OccurrencesWeek({
       <WeekGrid
         days={columns.map((d) => d.dayOfWeek)}
         blocks={blocks}
+        blocksOf={blocksOf}
         items={items}
         closedDays={closedDays}
         dayHeader={(day) => {

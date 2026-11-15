@@ -27,6 +27,9 @@ export interface GridItem {
   marker?: string;
   /** Niezgodnosc umieszczenia (lib/planIssues): znacznik "!" i opis w dymku. */
   warning?: string | null;
+  /** Rzeczywisty czas (terminy z datami) — kafelek wg minut zamiast blokow. */
+  startMinute?: number;
+  endMinute?: number;
 }
 
 const DAY_SHORT: Record<string, string> = {
@@ -44,11 +47,13 @@ const DAY_SHORT: Record<string, string> = {
  * jest nizszy niz 60 min, a przerwy miedzy blokami maja wlasny pas. Zajecia rownolegle
  * (rozne grupy w tym samym czasie) stoja obok siebie — tory wg `lib/gridLanes`.
  * `availability` cieniuje komorki, gdy planista wybral zajecia do umieszczenia
- * (zielone — wolne, czerwone — kolizja).
+ * (zielone — wolne, czerwone — kolizja). `blocksOf` — dzien z wlasna siatka (np. piatek
+ * niestacjonarnych od 16:00) ma swoje wiersze na wspolnej osi minut; os czasu pokazuje `blocks`.
  */
 export function WeekGrid({
   days,
   blocks,
+  blocksOf,
   items,
   availability,
   onCellClick,
@@ -58,7 +63,10 @@ export function WeekGrid({
   passThrough,
 }: {
   days: DayOfWeek[];
+  /** Bloki osi czasu (siatka podstawowa). */
   blocks: TimeBlock[];
+  /** Bloki dnia (siatka dnia albo podstawowa); bez tego kazdy dzien ma `blocks`. */
+  blocksOf?: (day: DayOfWeek) => TimeBlock[];
   items: GridItem[];
   availability?: Record<string, Record<number, string | null>> | null;
   onCellClick?: (day: DayOfWeek, order: number) => void;
@@ -73,15 +81,19 @@ export function WeekGrid({
    */
   passThrough?: boolean;
 }) {
-  // Najkrotszy blok miesci tytul i trzy linie opisu; 60 min nie mniej niz ROW.
-  const layout = gridLayout(blocks, { minBlockPx: 4 * LINE + PAD + 2, minPxPerMinute: ROW / 60 });
-  const breakBands = layout.breaks.map((br) => (
-    <div
-      key={br.start}
-      style={{ position: 'absolute', top: br.top, height: br.height, left: 0, right: 0 }}
-      className="bg-[repeating-linear-gradient(135deg,transparent_0_6px,var(--color-muted)_6px_8px)] opacity-70"
-    />
-  ));
+  // Najkrotszy blok miesci tytul i trzy linie opisu; 60 min nie mniej niz ROW. Wspolna skala dla
+  // wszystkich dni (siatki dnia moga miec inne bloki), zeby kolumny byly wyrownane w czasie.
+  const dayBlocks = (day: DayOfWeek) => blocksOf?.(day) ?? blocks;
+  const opts = { minBlockPx: 4 * LINE + PAD + 2, minPxPerMinute: ROW / 60, scaleBlocks: blocksOf ? [...blocks, ...days.flatMap(dayBlocks)] : undefined };
+  const layout = gridLayout(blocks, opts);
+  const breakBands = (l: ReturnType<typeof gridLayout>) =>
+    l.breaks.map((br) => (
+      <div
+        key={br.start}
+        style={{ position: 'absolute', top: br.top, height: br.height, left: 0, right: 0 }}
+        className="bg-[repeating-linear-gradient(135deg,transparent_0_6px,var(--color-muted)_6px_8px)] opacity-70"
+      />
+    ));
   return (
     <div className="flex overflow-x-auto rounded-lg border">
       <div className="w-14 shrink-0 border-r">
@@ -109,6 +121,10 @@ export function WeekGrid({
         </div>
       </div>
       {days.map((day) => {
+        const own = dayBlocks(day);
+        // Dzien z wlasna siatka: wlasne wiersze (i godziny startu w nich, bo os czasu ich nie pokazuje).
+        const ownGrid = own !== blocks;
+        const dayLayout = ownGrid ? gridLayout(own, opts) : layout;
         const dayItems = items.filter((i) => i.dayOfWeek === day);
         const lanes = assignLanes(dayItems);
         return (
@@ -117,16 +133,16 @@ export function WeekGrid({
               {dayHeader ? dayHeader(day) : DAY_SHORT[day]}
             </div>
             <div className="relative" style={{ height: layout.totalHeight }}>
-              {breakBands}
+              {breakBands(dayLayout)}
               {closedDays?.[day] !== undefined && (
                 <div className="absolute inset-0 flex items-start justify-center bg-[repeating-linear-gradient(135deg,var(--muted)_0_8px,transparent_8px_16px)] pt-4 text-center text-xs font-medium text-muted-foreground">
                   <span className="rounded bg-background/90 px-2 py-1">{closedDays[day] || 'Bez zajec'}</span>
                 </div>
               )}
-              {layout.rows.map((r) => {
+              {dayLayout.rows.map((r) => {
                 const reason = availability?.[day]?.[r.order];
                 const state = availability ? (reason === null ? 'free' : reason === undefined ? undefined : 'busy') : undefined;
-                const block = blocks.find((b) => b.order === r.order);
+                const block = own.find((b) => b.order === r.order);
                 // Komorki do umieszczania dostepne tez z klawiatury (Tab + Enter/Spacja).
                 const interactive = !!onCellClick;
                 return (
@@ -158,13 +174,23 @@ export function WeekGrid({
                       state === 'free' && 'bg-green-500/10',
                       state === 'busy' && 'bg-red-500/10',
                     )}
-                  />
+                  >
+                    {ownGrid && (
+                      <span className="pointer-events-none absolute top-0.5 right-1 text-[10px] leading-none text-muted-foreground tabular-nums">
+                        {block?.startTime}
+                      </span>
+                    )}
+                  </div>
                 );
               })}
               {dayItems.map((item) => {
                 const lane = lanes.get(item.id) ?? { lane: 0, span: 1, lanes: 1 };
                 const width = 100 / lane.lanes;
-                const span = layout.span(item.startOrder, item.endOrder);
+                // Termin z data — wg rzeczywistych minut; umieszczenie — wg blokow siatki swojego dnia.
+                const span =
+                  item.startMinute !== undefined && item.endMinute !== undefined
+                    ? layout.spanMinutes(item.startMinute, item.endMinute)
+                    : dayLayout.span(item.startOrder, item.endOrder);
                 if (!span) return null;
                 const height = span.height - 2;
                 // Blok 1 h: tytul w jednej linii; dluzszy: tytul do 2 linii. Reszta miejsca na opis.
