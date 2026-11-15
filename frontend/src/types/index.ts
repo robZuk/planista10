@@ -262,7 +262,10 @@ export interface CalendarDay {
 
 export interface Zjazd {
   id?: string;
+  /** Numer kolejny (umieszczenia wskazuja zjazdy tym numerem). */
   number: number;
+  /** Etykieta „tydz. N”: numer tygodnia semestru, z lukami na przerwy (z API; formularz liczy sam). */
+  week?: number;
   startDate: string;
   endDate: string;
 }
@@ -619,7 +622,8 @@ export interface PlanView {
     /** Ostatni dzien semestru wg kalendarza rocznika. */
     endDate: string;
     teachingWeeks: number;
-    zjazdy: { number: number; startDate: string; endDate: string }[];
+    /** `week` — etykieta „tydz. N” (numer tygodnia semestru); `number` — numer w umieszczeniach. */
+    zjazdy: { number: number; week: number; startDate: string; endDate: string }[];
     /** Tygodnie (pn-nd) albo zjazdy z dniami wolnymi — widok tygodnia w "Terminach". */
     periods: CalendarPeriod[];
   } | null;

@@ -2,7 +2,7 @@ import type { AcademicTerm, DayOfWeek, Prisma, TermCalendar } from '@prisma/clie
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { fromIsoDate, toIsoDate, type IsoDate } from '../lib/isoDate';
-import { calendarPeriods, expandDates, TeachingCalendar } from '../lib/teachingCalendar';
+import { calendarPeriods, expandDates, semesterWeekOf, TeachingCalendar } from '../lib/teachingCalendar';
 import { groupsOverlap, indexGroups, pathFromRoot } from '../lib/groupTree';
 import { roomTypeMap } from '../lib/scheduleTime';
 import { dayWindowProblem, formatMinutes, mapRangeByTime, slotLabel, minutesOverlap, weekdayLabel, type GridTime, type MinuteRange, type WeekdayName } from '../lib/timeGrid';
@@ -668,7 +668,13 @@ export async function planView(term: AcademicTerm, cohortId: string) {
           lastGeneratedAt: calendar.lastGeneratedAt,
           endDate: toIsoDate(calendar.endDate),
           teachingWeeks: cal!.teachingWeeks().filter((w) => w.index !== null).length,
-          zjazdy: calendar.zjazdy.map((z) => ({ number: z.number, startDate: toIsoDate(z.startDate), endDate: toIsoDate(z.endDate) })),
+          // `week` — etykieta „tydz. N” (numer tygodnia semestru); umieszczenia wskazuja zjazd numerem.
+          zjazdy: calendar.zjazdy.map((z) => ({
+            number: z.number,
+            week: semesterWeekOf(toIsoDate(z.startDate), toIsoDate(calendar.startDate)),
+            startDate: toIsoDate(z.startDate),
+            endDate: toIsoDate(z.endDate),
+          })),
           // Tygodnie albo zjazdy z dniami wolnymi — nawigacja widoku tygodnia w "Terminach".
           periods: calendarPeriods(cal!),
         }

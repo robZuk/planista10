@@ -27,6 +27,7 @@ import { WEEKDAY_LABELS } from '@/lib/labels';
 import { formatDayMonth } from '@/lib/planHours';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
 import { roomOptionsFor, roomTooSmallMessage } from '@/lib/roomOptions';
+import { formatDayKey } from '../calendar/calendarUtils';
 import type { DayOfWeek, PlacementPattern, PlanPlacement, PlanSection, PlanView, TimeBlock } from '@/types';
 
 export interface PlacementTarget {
@@ -156,9 +157,14 @@ export function PlacementDialog({
     onError: (e) => (isNotFound(e) ? gone() : toast.error(getErrorMessage(e))),
   });
 
-  const listOptions = zjazdCalendar
-    ? (plan.calendar?.zjazdy ?? []).map((z) => z.number)
-    : Array.from({ length: plan.calendar?.teachingWeeks ?? 15 }, (_, i) => i + 1);
+  const zjazdy = plan.calendar?.zjazdy ?? [];
+  const listOptions = zjazdCalendar ? zjazdy.map((z) => z.number) : Array.from({ length: plan.calendar?.teachingWeeks ?? 15 }, (_, i) => i + 1);
+  // Zjazd opisany jak w arkuszu planu: „tydz. N” (numer tygodnia semestru); zapisujemy numer kolejny zjazdu.
+  const zjazdOf = (n: number) => zjazdy.find((z) => z.number === n);
+  const zjazdLabel = (n: number) => {
+    const z = zjazdOf(n);
+    return z ? `tydz. ${z.week}` : `nr ${n}`;
+  };
   // Numery z umieszczenia, ktorych nie ma w kalendarzu (np. po "Przenies plan" z roku z wieksza liczba
   // zjazdow) — widoczne i do odznaczenia, zamiast cicho zostawac w zapisie.
   const missingNumbers = pattern === 'LIST' ? numbers.filter((n) => !listOptions.includes(n)) : [];
@@ -277,10 +283,11 @@ export function PlacementDialog({
                     type="button"
                     size="sm"
                     variant={on ? 'default' : 'outline'}
-                    className="w-10"
+                    className={zjazdCalendar ? 'tabular-nums' : 'w-10'}
+                    title={zjazdCalendar && zjazdOf(n) ? `Zjazd ${formatDayKey(zjazdOf(n)!.startDate)}–${formatDayKey(zjazdOf(n)!.endDate)}` : undefined}
                     onClick={() => setNumbers(on ? numbers.filter((x) => x !== n) : [...numbers, n].sort((a, b) => a - b))}
                   >
-                    {n}
+                    {zjazdCalendar ? zjazdLabel(n) : n}
                   </Button>
                 );
               })}
@@ -306,18 +313,47 @@ export function PlacementDialog({
               )}
             </div>
           )}
-          {pattern !== 'LIST' && (
-            <>
-              <Field>
-                <FieldLabel htmlFor="pl-from">{zjazdCalendar ? 'Od zjazdu' : 'Od tygodnia'}</FieldLabel>
-                <Input id="pl-from" type="number" min={1} value={fromIndex} onChange={(e) => setFromIndex(e.target.value)} placeholder="1" />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="pl-to">{zjazdCalendar ? 'Do zjazdu' : 'Do tygodnia'}</FieldLabel>
-                <Input id="pl-to" type="number" min={1} value={toIndex} onChange={(e) => setToIndex(e.target.value)} placeholder="do konca" />
-              </Field>
-            </>
-          )}
+          {pattern !== 'LIST' &&
+            (zjazdCalendar ? (
+              <>
+                {/* Zakres zjazdow wybierany po „tydz.” z datami; w danych zostaje numer kolejny zjazdu. */}
+                <Field>
+                  <FieldLabel htmlFor="pl-from">Od zjazdu</FieldLabel>
+                  <NativeSelect id="pl-from" value={fromIndex} onChange={(e) => setFromIndex(e.target.value)}>
+                    <NativeSelectOption value="">od pierwszego</NativeSelectOption>
+                    {zjazdy.map((z) => (
+                      <NativeSelectOption key={z.number} value={String(z.number)}>
+                        tydz. {z.week} · {formatDayKey(z.startDate)}
+                      </NativeSelectOption>
+                    ))}
+                    {fromIndex && !zjazdOf(Number(fromIndex)) && <NativeSelectOption value={fromIndex}>nr {fromIndex} (brak w kalendarzu)</NativeSelectOption>}
+                  </NativeSelect>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="pl-to">Do zjazdu</FieldLabel>
+                  <NativeSelect id="pl-to" value={toIndex} onChange={(e) => setToIndex(e.target.value)}>
+                    <NativeSelectOption value="">do ostatniego</NativeSelectOption>
+                    {zjazdy.map((z) => (
+                      <NativeSelectOption key={z.number} value={String(z.number)}>
+                        tydz. {z.week} · {formatDayKey(z.startDate)}
+                      </NativeSelectOption>
+                    ))}
+                    {toIndex && !zjazdOf(Number(toIndex)) && <NativeSelectOption value={toIndex}>nr {toIndex} (brak w kalendarzu)</NativeSelectOption>}
+                  </NativeSelect>
+                </Field>
+              </>
+            ) : (
+              <>
+                <Field>
+                  <FieldLabel htmlFor="pl-from">Od tygodnia</FieldLabel>
+                  <Input id="pl-from" type="number" min={1} value={fromIndex} onChange={(e) => setFromIndex(e.target.value)} placeholder="1" />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="pl-to">Do tygodnia</FieldLabel>
+                  <Input id="pl-to" type="number" min={1} value={toIndex} onChange={(e) => setToIndex(e.target.value)} placeholder="do konca" />
+                </Field>
+              </>
+            ))}
           <Field>
             <FieldLabel htmlFor="pl-joint">Zajecia laczone (klucz)</FieldLabel>
             <Input id="pl-joint" value={jointKey} onChange={(e) => setJointKey(e.target.value)} placeholder="np. FIZ-W-1" />

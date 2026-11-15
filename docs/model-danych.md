@@ -30,7 +30,8 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 - `TermCalendar(term, wydział, tryb, nazwa wariantu)` — rytm `WEEKLY` albo `ZJAZD`,
   status `PLANNING → PUBLISHED → ARCHIVED`. Archiwum = tylko odczyt.
 - `CalendarBreak` (przerwy), `CalendarDay` (dzień wolny, „zajęcia wg planu dnia X",
-  godziny rektorskie od bloku), `Zjazd` (numer + daty).
+  godziny rektorskie od bloku), `Zjazd` (numer kolejny + daty; w UI opisany „tydz. N” jak w arkuszu
+  planu — numer tygodnia semestru z lukami na przerwy, `teachingCalendar.semesterWeekOf`).
 - `TimeGrid(wydział, tryb)` — **siatka godzin**: każdy wydział ma stacjonarną
   i niestacjonarną (siatki podstawowe, `base`). `TimeBlock` o dowolnym starcie i długości
   (np. 08:00–08:45), numerowane `order` wg godziny; 1 blok = 1 godzina programu, przerwy = odstępy.

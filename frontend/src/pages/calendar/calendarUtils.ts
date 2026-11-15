@@ -14,6 +14,22 @@ export function formatDayKey(key: string, withYear = false): string {
   return `${Number(d)}.${m}${withYear ? `.${y}` : ''}`;
 }
 
+/**
+ * Numer tygodnia semestru („tydz.” zjazdu jak w arkuszu planu niestacjonarnych): tydzien 1 to
+ * tydzien (pn-nd) pierwszego dnia zajec, kolejne co 7 dni — razem z tygodniami przerw. Ta sama
+ * regula co backend (`lib/teachingCalendar.semesterWeekOf`); null — niepelne daty w formularzu.
+ */
+export function semesterWeekOf(date: string, semesterStart: string): number | null {
+  const monday = (key: string) => {
+    const [y, m, d] = key.split('-').map(Number);
+    const t = Date.UTC(y!, m! - 1, d!);
+    const weekday = new Date(t).getUTCDay();
+    return t - ((weekday + 6) % 7) * 86_400_000;
+  };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{4}-\d{2}-\d{2}$/.test(semesterStart)) return null;
+  return Math.round((monday(date) - monday(semesterStart)) / (7 * 86_400_000)) + 1;
+}
+
 export function formatRange(from: string, to: string): string {
   return from.slice(0, 4) === to.slice(0, 4)
     ? `${formatDayKey(from)} – ${formatDayKey(to, true)}`

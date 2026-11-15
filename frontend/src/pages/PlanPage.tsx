@@ -22,6 +22,7 @@ import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGr
 import { earlyEndWeeks, formatDayMonth, MAX_SUGGESTED_LENGTH, suggestedLength } from '@/lib/planHours';
 import { CLASS_FULL_LABELS, CLASS_LABELS } from '@/lib/scheduleDisplay';
 import { blocksForDay, describeDays } from '@/lib/timeGrid';
+import { formatRange } from './calendar/calendarUtils';
 import { staleMessage } from '@/lib/planStaleness';
 import { issueRows, placementWarning, planDays } from '@/lib/planIssues';
 import { copyCandidates, inZjazd, zjazdyDiffer } from '@/lib/zjazdView';
@@ -250,6 +251,8 @@ export default function PlanPage() {
 
   // Kopiowanie zjazdu k -> m: swiadoma akcja planisty, dopisuje numer m do umieszczen ze zjazdu k.
   const toCopy = zjazd && copyTo ? copyCandidates(sections.flatMap((s) => s.placements), zjazd, Number(copyTo)) : [];
+  // Zjazd pokazujemy jak w arkuszu planu: „tydz. N” (numer tygodnia semestru); w danych zostaje numer kolejny.
+  const weekOf = (zjazdNumber: number | string) => plan?.calendar?.zjazdy.find((z) => z.number === Number(zjazdNumber))?.week ?? zjazdNumber;
   const copyZjazd = useMutation({
     mutationFn: async () => {
       const to = Number(copyTo);
@@ -266,7 +269,7 @@ export default function PlanPage() {
     },
     onSuccess: async ({ done, errors }) => {
       if (errors.length) toast.error(`Skopiowano ${done}, bledy: ${errors.length} — ${errors[0]}`, { duration: 10000 });
-      else toast.success(`Skopiowano ${plural(done, 'zajecia', 'zajecia', 'zajec')} na zjazd ${copyTo}`);
+      else toast.success(`Skopiowano ${plural(done, 'zajecia', 'zajecia', 'zajec')} na tydz. ${weekOf(copyTo)}`);
       await refresh();
     },
   });
@@ -484,18 +487,25 @@ export default function PlanPage() {
                     Wszystkie zjazdy
                   </Button>
                   {plan.calendar!.zjazdy.map((z) => (
-                    <Button key={z.number} size="sm" variant={zjazd === z.number ? 'default' : 'outline'} className="w-10" title={`${z.startDate} – ${z.endDate}`} onClick={() => setZjazd(z.number)}>
-                      {z.number}
+                    <Button
+                      key={z.number}
+                      size="sm"
+                      variant={zjazd === z.number ? 'default' : 'outline'}
+                      className="tabular-nums"
+                      title={`Zjazd ${formatRange(z.startDate, z.endDate)}`}
+                      onClick={() => setZjazd(z.number)}
+                    >
+                      tydz. {z.week}
                     </Button>
                   ))}
                   {zjazd !== null && !readOnly && (
                     <span className="ml-2 flex items-center gap-1 text-sm">
-                      <Copy className="size-4" /> kopiuj zjazd {zjazd} na
-                      <NativeSelect value={copyTo} onChange={(e) => setCopyTo(e.target.value)} className="w-20" aria-label="Zjazd docelowy">
+                      <Copy className="size-4" /> kopiuj tydz. {weekOf(zjazd)} na
+                      <NativeSelect value={copyTo} onChange={(e) => setCopyTo(e.target.value)} className="w-28" aria-label="Zjazd docelowy">
                         <NativeSelectOption value="">—</NativeSelectOption>
                         {plan.calendar!.zjazdy.filter((z) => z.number !== zjazd).map((z) => (
                           <NativeSelectOption key={z.number} value={z.number}>
-                            {z.number}
+                            tydz. {z.week}
                           </NativeSelectOption>
                         ))}
                       </NativeSelect>
@@ -505,7 +515,7 @@ export default function PlanPage() {
                         disabled={toCopy.length === 0 || copyZjazd.isPending}
                         title={
                           copyTo && toCopy.length === 0
-                            ? `Nic do skopiowania: kopiuja sie zajecia "na wybranych zjazdach" ze zjazdu ${zjazd}, ktorych jeszcze nie ma w zjezdzie ${copyTo}`
+                            ? `Nic do skopiowania: kopiuja sie zajecia "na wybranych zjazdach" z tygodnia ${weekOf(zjazd)}, ktorych jeszcze nie ma w tygodniu ${weekOf(copyTo)}`
                             : undefined
                         }
                         onClick={() => copyZjazd.mutate()}

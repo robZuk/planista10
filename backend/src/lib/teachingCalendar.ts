@@ -49,6 +49,15 @@ export interface CalendarInput {
   zjazdy: ZjazdInput[];
 }
 
+/**
+ * Numer tygodnia semestru („tydz.” w planach niestacjonarnych): tydzien 1 to tydzien (pn-nd)
+ * pierwszego dnia zajec, kolejne co 7 dni — razem z tygodniami przerw (luki w numeracji zjazdow).
+ * Etykieta zjazdu; numer zjazdu w danych (`Zjazd.number`) zostaje kolejny.
+ */
+export function semesterWeekOf(date: IsoDate, semesterStart: IsoDate): number {
+  return Math.floor(daysBetween(mondayOf(semesterStart), mondayOf(date)) / 7) + 1;
+}
+
 /** Nazwa dnia do opisow w podgladzie kalendarza. */
 const WEEKDAY_LABEL_PL: Record<DayOfWeek, string> = {
   MONDAY: 'poniedzialek',
@@ -363,7 +372,8 @@ export function calendarPeriods(calendar: TeachingCalendar): CalendarPeriod[] {
       .sort((a, b) => a.startDate.localeCompare(b.startDate))
       .map((z) => ({
         index: z.number,
-        label: `Zjazd ${z.number}`,
+        // Zjazd opisany jak w arkuszu planu: numer tygodnia semestru (z lukami na przerwy).
+        label: `tydz. ${semesterWeekOf(z.startDate, input.startDate)}`,
         from: z.startDate,
         to: z.endDate,
         days: [...eachDay(z.startDate, z.endDate)].map(dayOf),
