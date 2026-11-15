@@ -20,13 +20,14 @@ import { Spinner } from '@/components/ui/spinner';
 import { Combobox } from '@/components/Combobox';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { AssignmentDialog } from '@/pages/obsada/ObsadaDialogs';
-import { createPlacement, deletePlacement, updatePlacement } from '@/api/plan';
+import { createPlacement, deletePlacement, splitPlacement, updatePlacement } from '@/api/plan';
 import { fetchBuildings } from '@/api/buildings';
 import { getErrorMessage, isNotFound } from '@/lib/errors';
 import { WEEKDAY_LABELS } from '@/lib/labels';
 import { formatDayMonth } from '@/lib/planHours';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
 import { roomOptionsFor, roomTooSmallMessage } from '@/lib/roomOptions';
+import { zjazdyOf } from '@/lib/zjazdView';
 import { formatDayKey } from '../calendar/calendarUtils';
 import type { DayOfWeek, PlacementPattern, PlanPlacement, PlanSection, PlanView, TimeBlock } from '@/types';
 
@@ -62,7 +63,8 @@ export function PlacementDialog({
   blocksOf: (day: DayOfWeek) => TimeBlock[];
   target: PlacementTarget;
   onClose: () => void;
-  onSaved: () => void;
+  /** `movedTo` — zajecia przeniesione do innego zjazdu (widok przechodzi na ten zjazd). */
+  onSaved: (movedTo?: number) => void;
   /** Po zmianie obsady z tego okna — odswiezenie planu (lista prowadzacych z obsady). */
   onObsadaSaved: () => Promise<void> | void;
 }) {
@@ -70,6 +72,20 @@ export function PlacementDialog({
   // Swieze dane zajec z planu: po zmianie obsady z tego okna lista prowadzacych sie odswieza.
   const section = plan.sections.find((s) => s.id === target.section.id) ?? target.section;
   const zjazdCalendar = plan.calendar?.kind === 'ZJAZD';
+  const zjazdy = plan.calendar?.zjazdy ?? [];
+  const weekOfZjazd = (n: number) => zjazdy.find((z) => z.number === n)?.week ?? n;
+  // "Plan zjazdu": zajecia ogladanego zjazdu zmienia sie albo przenosi do innego zjazdu tylko tam.
+  // Zajecia z kilku zjazdow serwer rozdziela; zajecia laczone z kilku zjazdow zmienia sie w calosci.
+  const coverage = placement && zjazdCalendar ? zjazdyOf(placement, zjazdy.map((z) => z.number)) : [];
+  const singleZjazd = coverage.length === 1;
+  const canEditZjazd =
+    !!placement && target.zjazd !== null && coverage.includes(target.zjazd) && (singleZjazd || !placement.jointKey);
+  const [scope, setScope] = useState<'zjazd' | 'all'>(canEditZjazd ? 'zjazd' : 'all');
+  const onlyThisZjazd = canEditZjazd && scope === 'zjazd';
+  // Zjazd docelowy: ten sam albo inny (przeniesienie zajec z ogladanego zjazdu).
+  const [toZjazd, setToZjazd] = useState(target.zjazd ?? 0);
+  const movesAway = onlyThisZjazd && toZjazd !== target.zjazd;
+  const otherZjazdy = coverage.filter((n) => n !== target.zjazd);
   const [day, setDay] = useState<DayOfWeek>(placement?.dayOfWeek ?? target.day);
   const [start, setStart] = useState(placement?.startOrder ?? target.startOrder);
   const blocks = blocksOf(day);
@@ -141,15 +157,36 @@ export function PlacementDialog({
     onSaved();
   };
   const save = useMutation({
-    mutationFn: () => (placement ? updatePlacement(placement.id, payload) : createPlacement(termKey, payload)),
+    mutationFn: () => {
+      // Zajecia tylko w tym zjezdzie: zwykla zmiana umieszczenia (inny zjazd = przeniesienie).
+      if (onlyThisZjazd && singleZjazd) {
+        return updatePlacement(placement!.id, { ...payload, pattern: 'LIST', numbers: [toZjazd], fromIndex: null, toIndex: null });
+      }
+      if (onlyThisZjazd) {
+        return splitPlacement(placement!.id, {
+          zjazd: target.zjazd!,
+          toZjazd,
+          dayOfWeek: day,
+          startOrder: start,
+          endOrder: start + length - 1,
+          roomId: online ? null : roomId,
+          instructorId: instructorId || null,
+        });
+      }
+      return placement ? updatePlacement(placement.id, payload) : createPlacement(termKey, payload);
+    },
     onSuccess: (r) => {
       toast.success(r.message);
-      onSaved();
+      onSaved(movesAway ? toZjazd : undefined);
     },
     onError: (e) => (isNotFound(e) ? gone() : toast.error(getErrorMessage(e), { duration: 10000 })),
   });
   const remove = useMutation({
-    mutationFn: () => deletePlacement(placement!.id),
+    // Tylko ten zjazd: zajecia zostaja w pozostalych zjazdach ("na wybranych zjazdach").
+    mutationFn: () =>
+      onlyThisZjazd && !singleZjazd
+        ? updatePlacement(placement!.id, { pattern: 'LIST', numbers: otherZjazdy, fromIndex: null, toIndex: null })
+        : deletePlacement(placement!.id),
     onSuccess: (r) => {
       toast.success(r.message);
       onSaved();
@@ -157,7 +194,6 @@ export function PlacementDialog({
     onError: (e) => (isNotFound(e) ? gone() : toast.error(getErrorMessage(e))),
   });
 
-  const zjazdy = plan.calendar?.zjazdy ?? [];
   const listOptions = zjazdCalendar ? zjazdy.map((z) => z.number) : Array.from({ length: plan.calendar?.teachingWeeks ?? 15 }, (_, i) => i + 1);
   // Zjazd opisany jak w arkuszu planu: „tydz. N” (numer tygodnia semestru); zapisujemy numer kolejny zjazdu.
   const zjazdOf = (n: number) => zjazdy.find((z) => z.number === n);
@@ -180,7 +216,32 @@ export function PlacementDialog({
             {section.endsOn && ` · konczy sie ${formatDayMonth(section.endsOn)}`}
           </DialogDescription>
         </DialogHeader>
+        {canEditZjazd && (
+          <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 p-2 text-sm" role="group" aria-label="Zakres zmiany">
+            <span className="font-medium">Zmiana dotyczy:</span>
+            <Button type="button" size="sm" variant={scope === 'zjazd' ? 'default' : 'outline'} aria-pressed={scope === 'zjazd'} onClick={() => setScope('zjazd')}>
+              tylko tydz. {weekOfZjazd(target.zjazd!)}
+            </Button>
+            <Button type="button" size="sm" variant={scope === 'all' ? 'default' : 'outline'} aria-pressed={scope === 'all'} onClick={() => setScope('all')}>
+              {singleZjazd ? 'rytmu (kilka zjazdow)' : `wszystkich zjazdow tych zajec (${coverage.length})`}
+            </Button>
+          </div>
+        )}
         <div className="grid gap-3 sm:grid-cols-3">
+          {onlyThisZjazd && (
+            <Field className="sm:col-span-3">
+              <FieldLabel htmlFor="pl-zjazd">Zjazd</FieldLabel>
+              <NativeSelect id="pl-zjazd" value={toZjazd} onChange={(e) => setToZjazd(Number(e.target.value))}>
+                {zjazdy.map((z) => (
+                  <NativeSelectOption key={z.number} value={z.number}>
+                    tydz. {z.week} · {formatDayKey(z.startDate)}–{formatDayKey(z.endDate)}
+                    {z.number === target.zjazd ? ' (ten zjazd)' : ''}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+              <p className="text-xs text-muted-foreground">Wybierz inny tydzien, zeby przeniesc tam te zajecia (dzien i godziny ponizej).</p>
+            </Field>
+          )}
           <Field>
             <FieldLabel htmlFor="pl-day">Dzien</FieldLabel>
             <NativeSelect id="pl-day" value={day} onChange={(e) => changeDay(e.target.value as DayOfWeek)}>
@@ -255,6 +316,20 @@ export function PlacementDialog({
               .
             </p>
           )}
+          {onlyThisZjazd && !singleZjazd && (
+            <p className="text-xs text-muted-foreground sm:col-span-3">
+              Zajecia z tygodnia {weekOfZjazd(target.zjazd!)} dostana wlasne miejsce{movesAway ? ` w tygodniu ${weekOfZjazd(toZjazd)}` : ''}; w pozostalych zjazdach (
+              {otherZjazdy.length > 6 ? otherZjazdy.length : `tydz. ${otherZjazdy.map(weekOfZjazd).join(', ')}`}) zostaja bez zmian.
+            </p>
+          )}
+          {placement && zjazdCalendar && placement.exceptionCount > 0 && (
+            <p className="text-xs text-amber-700 sm:col-span-3 dark:text-amber-400">
+              Pojedyncze terminy tych zajec byly przenoszone ({placement.exceptionCount}) — przeniesienia zostaja przy „Generuj terminy”
+              {canEditZjazd && !singleZjazd ? '; zmiana tylko w tym zjezdzie usuwa przeniesienie z tego zjazdu' : ''}.
+            </p>
+          )}
+          {!onlyThisZjazd && (
+          <>
           <Field className="sm:col-span-3">
             <FieldLabel htmlFor="pl-pattern">Rytm</FieldLabel>
             <NativeSelect id="pl-pattern" value={pattern} onChange={(e) => setPattern(e.target.value as PlacementPattern)}>
@@ -358,15 +433,17 @@ export function PlacementDialog({
             <FieldLabel htmlFor="pl-joint">Zajecia laczone (klucz)</FieldLabel>
             <Input id="pl-joint" value={jointKey} onChange={(e) => setJointKey(e.target.value)} placeholder="np. FIZ-W-1" />
           </Field>
+          </>
+          )}
         </div>
         <p className="text-xs text-muted-foreground">
           Zajecia laczone: wpisz ten sam klucz w umieszczeniach innych kierunkow/trybow — beda w tym samym czasie i sali,
-          bez kolizji miedzy soba. Terminy (zakladka „Terminy”) zmienia sie dopiero po „Generuj terminy”.
+          bez kolizji miedzy soba. Terminy (Moj plan, publikacja) zmienia sie dopiero po „Generuj terminy”.
         </p>
         <DialogFooter className="sm:justify-between">
           {placement ? (
             <Button variant="ghost" className="text-destructive" onClick={() => setConfirmRemove(true)} disabled={remove.isPending}>
-              <Trash2 /> Usun z planu
+              <Trash2 /> {onlyThisZjazd ? 'Usun z tego zjazdu' : 'Usun z planu'}
             </Button>
           ) : (
             <span />
@@ -385,9 +462,11 @@ export function PlacementDialog({
       <ConfirmDialog
         open={confirmRemove}
         onOpenChange={setConfirmRemove}
-        title="Usunac zajecia z planu?"
-        description={`${section.subject.name} (${CLASS_FULL_LABELS[section.classType].toLowerCase()}) · ${section.group.name}${placement ? ` · ${WEEKDAY_LABELS[placement.dayOfWeek].toLowerCase()}` : ''}. Wygenerowane terminy tego umieszczenia znikna przy kolejnym „Generuj terminy”${placement && placement.exceptionCount > 0 ? ` — razem z przeniesieniami pojedynczych terminow (${placement.exceptionCount})` : ''}.`}
-        confirmLabel="Usun z planu"
+        title={onlyThisZjazd ? `Usunac zajecia z tygodnia ${weekOfZjazd(target.zjazd!)}?` : 'Usunac zajecia z planu?'}
+        description={onlyThisZjazd
+          ? `${section.subject.name} (${CLASS_FULL_LABELS[section.classType].toLowerCase()}) · ${section.group.name}. W pozostalych zjazdach tych zajec (${otherZjazdy.length}) zostaja; terminy zmienia sie po „Generuj terminy”.`
+          : `${section.subject.name} (${CLASS_FULL_LABELS[section.classType].toLowerCase()}) · ${section.group.name}${placement ? ` · ${WEEKDAY_LABELS[placement.dayOfWeek].toLowerCase()}` : ''}. Wygenerowane terminy tego umieszczenia znikna przy kolejnym „Generuj terminy”${placement && placement.exceptionCount > 0 ? ` — razem z przeniesieniami pojedynczych terminow (${placement.exceptionCount})` : ''}.`}
+        confirmLabel={onlyThisZjazd ? 'Usun z tego zjazdu' : 'Usun z planu'}
         isPending={remove.isPending}
         onConfirm={() => remove.mutate()}
       />

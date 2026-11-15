@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calendarDatesKey, calendarPeriods, expandDates, personalDaysOff, semesterWeekOf, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
+import { calendarDatesKey, calendarPeriods, expandDates, inPeriod, personalDaysOff, semesterWeekOf, TeachingCalendar, validateCalendar, type CalendarInput, type ExpandedDate, type SlotPattern } from './teachingCalendar';
 import { eachDay } from './isoDate';
 
 /** Zima 2024/25 jak w danych: start we wtorek 1.10, bez przerw. */
@@ -375,5 +375,22 @@ describe('personalDaysOff', () => {
     const cal = weekly({ days: [{ date: '2026-11-10', kind: 'DAY_OFF', name: 'Dzien sportu' }] });
     expect(personalDaysOff(week, [cal])['2026-11-10']).toBe('Dzien sportu');
     expect(personalDaysOff(week, [])).toEqual({ '2026-11-11': 'Narodowe Swieto Niepodleglosci' });
+  });
+});
+
+describe('inPeriod — czy tydzien/zjazd nalezy do rytmu umieszczenia', () => {
+  const rule = (extra: Partial<Pick<SlotPattern, 'pattern' | 'numbers' | 'fromIndex' | 'toIndex'>> = {}) => ({ pattern: 'ALL' as const, ...extra });
+  const of = (r: Parameters<typeof inPeriod>[0]) => [1, 2, 3, 4, 5, 6].filter((n) => inPeriod(r, n));
+
+  it('kazdy, parzyste, nieparzyste, wybrane', () => {
+    expect(of(rule())).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(of(rule({ pattern: 'EVEN' }))).toEqual([2, 4, 6]);
+    expect(of(rule({ pattern: 'ODD' }))).toEqual([1, 3, 5]);
+    expect(of(rule({ pattern: 'LIST', numbers: [2, 5] }))).toEqual([2, 5]);
+  });
+
+  it('zakres od-do laczy sie z wzorem', () => {
+    expect(of(rule({ fromIndex: 2, toIndex: 4 }))).toEqual([2, 3, 4]);
+    expect(of(rule({ pattern: 'LIST', numbers: [1, 3, 5], toIndex: 3 }))).toEqual([1, 3]);
   });
 });

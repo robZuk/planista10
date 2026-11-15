@@ -3,7 +3,7 @@ import type { StaleReason } from '@/types';
 const REASON_TEXT: Record<StaleReason, string> = {
   PLACEMENTS: 'wzorzec zmienil sie',
   SECTIONS: 'godziny zajec zmienily sie (synchronizacja z programem)',
-  DELETED: 'usunieto zajecia z wzorca, a ich terminy wciaz sa w „Terminach”',
+  DELETED: 'usunieto zajecia z planu, a ich terminy jeszcze zostaly',
   CALENDAR: 'zmienil sie kalendarz rocznika (daty, przerwy, dni wolne, zjazdy albo wybor kalendarza)',
 };
 

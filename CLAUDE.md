@@ -134,9 +134,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - **Nazwy grup nie są zapisywane** — licz je `displayName` dla semestru.
 - **Dziekanat** zmienia tylko dane swojego wydziału (`assertFacultyScope`); semestry w
   archiwum są tylko do odczytu.
-- **Terminy zmienia tylko planista** (ADMIN, DEAN_OFFICE): przeniesienie, przywrócenie wg wzorca
-  i termin ręczny robi się wprost w „Układaniu planu” → Terminy. Prowadzący i student plan tylko
-  oglądają („Mój plan”). W planista10 **nie ma zgłoszeń zmian ani powiadomień w aplikacji**
+- **Plan zmienia tylko planista** (ADMIN, DEAN_OFFICE) w „Układaniu planu”. Prowadzący i student plan
+  tylko oglądają („Mój plan”). W planista10 **nie ma zgłoszeń zmian ani powiadomień w aplikacji**
   (usunięte migracją `20261115120000_drop_change_requests_notifications`) — nie dokładaj ich
   z powrotem bez decyzji użytkownika.
 - **Nie ma odwołań ani odrobień** — ani na studiach stacjonarnych, ani na niestacjonarnych
@@ -150,6 +149,15 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   w `occurrenceChanges.assertPlanEditable`). Zmiana planu od tygodnia X = we wzorcu dotychczasowe
   umieszczenie „do tygodnia X−1”, nowe „od tygodnia X”, potem „Generuj terminy”. Do publikacji
   idzie plan tygodnia + kalendarz Rektora (druki — później).
+- **Studia niestacjonarne: „Plan zjazdu”** — kalendarz zjazdów ma jeden widok na konkretny zjazd
+  („tydz. N” z datami w nagłówkach, domyślnie trwający albo najbliższy), bez zakładki „Terminy”:
+  plan różni się z weekendu na weekend (przedmioty blokami na wybranych zjazdach — `week.pdf`,
+  zasady WM). Zajęcia dodane w zjeździe są tylko w nim (`LIST [N]`); zajęcia z kilku zjazdów
+  zmienia się albo usuwa „tylko w tym zjeździe” (`POST /api/placements/:id/split` rozdziela
+  umieszczenie) albo w całości. Pole „Zjazd” w oknie zajęć przenosi je do innego zjazdu (z jednego
+  zjazdu — zmiana rytmu, z kilku — rozdzielenie z `toZjazd`; kolizje liczą się też z ich
+  spotkaniem, które zostaje w zjeździe docelowym). Terminy powstają z „Generuj terminy”; pojedynczych terminów UI
+  zjazdów już nie zmienia (przeniesienia i terminy ręczne zostały dla kalendarzy tygodniowych).
 
 ## Konwencje
 

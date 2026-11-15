@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { copyCandidates, inZjazd, zjazdyDiffer } from './zjazdView';
+import { copyCandidates, defaultZjazd, inZjazd, zjazdyOf } from './zjazdView';
 
 const rule = (extra: Partial<Parameters<typeof inZjazd>[0]> = {}) => ({
   cycle: 'ZJAZD' as const,
@@ -26,14 +26,25 @@ describe('inZjazd', () => {
   it('rytm tygodniowy nie zalezy od zjazdu', () => expect(inZjazd(rule({ cycle: 'WEEK', pattern: 'LIST', numbers: [1] }), 5)).toBe(true));
 });
 
-describe('zjazdyDiffer', () => {
-  it('same "kazdy zjazd": zjazdy jednakowe', () => expect(zjazdyDiffer([rule(), rule()], zjazdy)).toBe(false));
-  it('zakres obejmujacy wszystkie zjazdy: jednakowe', () => expect(zjazdyDiffer([rule({ fromIndex: 1, toIndex: 10 })], zjazdy)).toBe(false));
-  it('zakres 1-6 albo lista: roznia sie', () => {
-    expect(zjazdyDiffer([rule(), rule({ toIndex: 6 })], zjazdy)).toBe(true);
-    expect(zjazdyDiffer([rule({ pattern: 'LIST', numbers: [2] })], zjazdy)).toBe(true);
+describe('zjazdyOf', () => {
+  it('kazdy zjazd z zakresem, lista, rytm bez ograniczen', () => {
+    expect(zjazdyOf(rule({ fromIndex: 3, toIndex: 5 }), zjazdy)).toEqual([3, 4, 5]);
+    expect(zjazdyOf(rule({ pattern: 'LIST', numbers: [2, 9, 12] }), zjazdy)).toEqual([2, 9]);
+    expect(zjazdyOf(rule(), [1, 2])).toEqual([1, 2]);
   });
-  it('bez umieszczen: jednakowe', () => expect(zjazdyDiffer([], zjazdy)).toBe(false));
+});
+
+describe('defaultZjazd', () => {
+  const cal = [
+    { number: 1, startDate: '2026-10-02', endDate: '2026-10-04' },
+    { number: 2, startDate: '2026-10-09', endDate: '2026-10-11' },
+    { number: 3, startDate: '2026-10-16', endDate: '2026-10-18' },
+  ];
+  it('trwajacy zjazd', () => expect(defaultZjazd(cal, '2026-10-10')).toBe(2));
+  it('miedzy zjazdami: najblizszy', () => expect(defaultZjazd(cal, '2026-10-12')).toBe(3));
+  it('przed semestrem: pierwszy', () => expect(defaultZjazd(cal, '2026-09-01')).toBe(1));
+  it('po semestrze: pierwszy', () => expect(defaultZjazd(cal, '2027-02-01')).toBe(1));
+  it('bez zjazdow: brak', () => expect(defaultZjazd([], '2026-10-10')).toBeNull());
 });
 
 describe('copyCandidates', () => {

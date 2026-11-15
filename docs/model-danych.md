@@ -134,11 +134,21 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   Rocznik przypięty do wariantu „w planowaniu" nie pokazuje planu, choć wydział ma inne
   opublikowane kalendarze.
 
-## 6a. Przeniesienia terminów
+## 6a. Przeniesienia terminów i „Plan zjazdu”
 
-- Terminy przenosi, przywraca wg wzorca i dodaje ręcznie **tylko planista** (ADMIN, DEAN_OFFICE
-  swojego wydziału) — wprost w „Układaniu planu” → Terminy (`services/occurrenceChanges`). Prowadzący
-  i student plan tylko oglądają; powód przeniesienia (`Occurrence.note`) widać w ich „Moim planie”.
+- Plan zmienia **tylko planista** (ADMIN, DEAN_OFFICE swojego wydziału). Prowadzący i student plan
+  tylko oglądają; powód przeniesienia (`Occurrence.note`) widać w ich „Moim planie”.
+- **Kalendarz zjazdów (niestacjonarne): „Plan zjazdu”** — jeden widok na konkretny zjazd z datami,
+  bez zakładki „Terminy”. Zajęcia dodane w zjeździe dostają rytm `LIST [N]`; zmiana albo usunięcie
+  zajęć z kilku zjazdów „tylko w tym zjeździe” rozdziela umieszczenie: stare traci zjazd N (zostaje
+  `LIST` pozostałych), a zajęcia w N dostają własne umieszczenie (`POST /api/placements/:id/split`,
+  jedna transakcja, kolizje jak przy umieszczeniu; przeniesienia starego umieszczenia z dat zjazdu N
+  są usuwane). Przeniesienie do innego zjazdu: pole „Zjazd” w oknie zajęć — zajęcia z jednego zjazdu
+  zmieniają rytm (`LIST [M]`), z kilku są rozdzielane z `toZjazd` (nowe umieszczenie `LIST [M]`;
+  gdy stare też jest w zjeździe M, jego spotkanie liczy się do kolizji). Pojedynczych terminów
+  zjazdów UI już nie przenosi.
+- **Kalendarz tygodniowy:** terminy przenosi, przywraca wg wzorca i dodaje ręcznie planista w zakładce
+  „Terminy” (`services/occurrenceChanges`) — tylko poza studiami stacjonarnymi (te są do wglądu).
 - **Odwołań ani odrobień nie ma** (ani na stacjonarnych, ani na niestacjonarnych) — usunięte
   migracjami `20261115200000_drop_makeups` (strona „Odrobienia”, `makeupOfId`, status `MAKEUP`)
   i `20261115210000_drop_cancellations` (`Occurrence.status`, `PlacementException.action`; dawne

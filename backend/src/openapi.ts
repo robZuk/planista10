@@ -374,6 +374,15 @@ export const openApiDocument = {
       put: { tags: ['Plan'], summary: 'Zmien umieszczenie', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zapisane'), 409: errResp('Kolizje'), ...authErrors } },
       delete: { tags: ['Plan'], summary: 'Usun umieszczenie', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniete'), ...authErrors } },
     },
+    '/api/placements/{id}/split': {
+      post: {
+        tags: ['Plan'],
+        summary: 'Zmien zajecia tylko w jednym zjezdzie albo przenies je do innego (body: zjazd, toZjazd + dzien, godziny, sala, prowadzacy)',
+        security: bearer,
+        parameters: [pathId()],
+        responses: { 201: dataResp('Rozdzielone'), 400: errResp('Bledne dane'), 409: errResp('Kolizje'), ...authErrors },
+      },
+    },
     '/api/terms/{key}/generate': {
       post: { tags: ['Plan'], summary: 'Generuj terminy (dryRun = podglad); poprawki terminow zostaja', security: bearer, parameters: [termKey], responses: { 200: dataResp('Raport'), ...authErrors } },
     },

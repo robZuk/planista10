@@ -29,6 +29,8 @@ termPlanRouter.get('/setup', authenticate, planners, setup.setupStatus);
 termPlanRouter.get('/my-plan', authenticate, authorize('INSTRUCTOR', 'STUDENT'), setup.myPlan);
 
 placementsRouter.put('/:id', authenticate, planners, planLocked(termOfPlacement), plan.updatePlacement);
+// "Plan zjazdu": zmiana zajec tylko w jednym zjezdzie (rozdzielenie umieszczenia).
+placementsRouter.post('/:id/split', authenticate, planners, planLocked(termOfPlacement), plan.splitPlacementZjazd);
 placementsRouter.delete('/:id', authenticate, planners, plan.deletePlacement);
 
 occurrencesRouter.put('/:id', authenticate, planners, planLocked(termOfOccurrence), plan.changeOccurrence);

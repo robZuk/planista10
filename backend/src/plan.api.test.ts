@@ -299,6 +299,71 @@ describe('API — plan', () => {
     expect(res.body.error).toBe('Przywracac mozna tylko terminy z wzorca');
   });
 
+  it('zmiana zajec tylko w jednym zjezdzie: tylko planista; rytm tygodniowy i zajecia laczone -> 400', async () => {
+    const instructor = signAccessToken({ sub: 'u-i', role: 'INSTRUCTOR' });
+    const denied = await request(app).post('/api/placements/p1/split').set('Authorization', `Bearer ${instructor}`).send({ zjazd: 2 });
+    expect(denied.status).toBe(403);
+
+    const placement = (extra: Record<string, unknown>) => ({
+      id: 'p1',
+      facultyId: 'wm',
+      termId: 't1',
+      sectionId: 's1',
+      cycle: 'ZJAZD',
+      pattern: 'ALL',
+      numbers: [],
+      fromIndex: null,
+      toIndex: null,
+      jointKey: null,
+      term: { id: 't1' },
+      section: { cohort: { id: 'c1' } },
+      ...extra,
+    });
+    const before = prismaMock.$transaction.mock.calls.length;
+    for (const [extra, body, error] of [
+      [{ cycle: 'WEEK' }, { zjazd: 2 }, /rytmie zjazdowym/],
+      [{}, {}, /Wskaz zjazd/],
+      [{ jointKey: 'FIZ-W' }, { zjazd: 2 }, /laczone/],
+    ] as const) {
+      prismaMock.placement.findUnique.mockResolvedValueOnce(placement(extra));
+      const res = await request(app).post('/api/placements/p1/split').set('Authorization', `Bearer ${dean}`).send(body);
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(error);
+    }
+    expect(prismaMock.$transaction.mock.calls.length).toBe(before);
+  });
+
+  it('przeniesienie zajec do zjazdu spoza kalendarza rocznika -> 400, bez zapisu', async () => {
+    const partTime = { ...cohortRow, program: { ...cohortRow.program, code: 'EDST-N1', studyMode: 'PART_TIME' } };
+    prismaMock.placement.findUnique.mockResolvedValueOnce({
+      id: 'p1',
+      facultyId: 'wm',
+      termId: 't1',
+      sectionId: 's1',
+      cycle: 'ZJAZD',
+      pattern: 'ALL',
+      numbers: [],
+      fromIndex: null,
+      toIndex: null,
+      jointKey: null,
+      term: { id: 't1' },
+      section: { cohort: { id: 'c1' } },
+    });
+    prismaMock.cohort.findMany.mockResolvedValueOnce([partTime]);
+    const zjazd = (number: number, start: string, end: string) => ({ number, startDate: new Date(`${start}T00:00:00Z`), endDate: new Date(`${end}T00:00:00Z`) });
+    prismaMock.termCalendar.findMany.mockResolvedValueOnce([
+      { ...calendarRow('PUBLISHED'), studyMode: 'PART_TIME', kind: 'ZJAZD', zjazdy: [zjazd(1, '2027-03-05', '2027-03-07'), zjazd(2, '2027-03-12', '2027-03-14')] },
+    ]);
+    const before = prismaMock.$transaction.mock.calls.length;
+    const res = await request(app)
+      .post('/api/placements/p1/split')
+      .set('Authorization', `Bearer ${dean}`)
+      .send({ zjazd: 1, toZjazd: 9, dayOfWeek: 'SATURDAY', startOrder: 1, endOrder: 2, roomId: null });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/zjazdu docelowego/);
+    expect(prismaMock.$transaction.mock.calls.length).toBe(before);
+  });
+
   it('zla data "od kiedy" przy generowaniu -> 400', async () => {
     const res = await request(app)
       .post('/api/terms/2026-L/generate')

@@ -3,13 +3,13 @@ import { staleMessage } from './planStaleness';
 
 describe('staleMessage', () => {
   it('jeden powod', () => {
-    expect(staleMessage(['DELETED'])).toBe('Po ostatnim generowaniu usunieto zajecia z wzorca, a ich terminy wciaz sa w „Terminach”.');
+    expect(staleMessage(['DELETED'])).toBe('Po ostatnim generowaniu usunieto zajecia z planu, a ich terminy jeszcze zostaly.');
     expect(staleMessage(['PLACEMENTS'])).toBe('Po ostatnim generowaniu wzorzec zmienil sie.');
   });
 
   it('kilka powodow w jednym zdaniu', () => {
     expect(staleMessage(['PLACEMENTS', 'SECTIONS', 'DELETED'])).toBe(
-      'Po ostatnim generowaniu wzorzec zmienil sie, godziny zajec zmienily sie (synchronizacja z programem) i usunieto zajecia z wzorca, a ich terminy wciaz sa w „Terminach”.',
+      'Po ostatnim generowaniu wzorzec zmienil sie, godziny zajec zmienily sie (synchronizacja z programem) i usunieto zajecia z planu, a ich terminy jeszcze zostaly.',
     );
   });
 

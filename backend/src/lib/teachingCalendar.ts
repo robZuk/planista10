@@ -294,6 +294,19 @@ export interface SlotPattern {
   endOrder?: number;
 }
 
+/**
+ * Czy tydzien/zjazd o numerze `index` nalezy do rytmu umieszczenia: wzor (co tydzien, parzyste,
+ * nieparzyste, wybrane numery) i zakres od-do lacznie. Ta sama regula co `inZjazd` na froncie.
+ */
+export function inPeriod(slot: Pick<SlotPattern, 'pattern' | 'numbers' | 'fromIndex' | 'toIndex'>, index: number): boolean {
+  if (slot.pattern === 'EVEN' && index % 2 !== 0) return false;
+  if (slot.pattern === 'ODD' && index % 2 !== 1) return false;
+  if (slot.pattern === 'LIST' && !(slot.numbers ?? []).includes(index)) return false;
+  if (slot.fromIndex != null && index < slot.fromIndex) return false;
+  if (slot.toIndex != null && index > slot.toIndex) return false;
+  return true;
+}
+
 export interface ExpandedDate {
   date: IsoDate;
   /** Numer tygodnia (cycle WEEK) albo zjazdu (cycle ZJAZD). */
@@ -312,12 +325,7 @@ export function expandDates(calendar: TeachingCalendar, slot: SlotPattern): Expa
       continue;
     }
     const index = slot.cycle === 'WEEK' ? day.week : day.zjazd;
-    if (index === null) continue;
-    if (slot.pattern === 'EVEN' && index % 2 !== 0) continue;
-    if (slot.pattern === 'ODD' && index % 2 !== 1) continue;
-    if (slot.pattern === 'LIST' && !(slot.numbers ?? []).includes(index)) continue;
-    if (slot.fromIndex != null && index < slot.fromIndex) continue;
-    if (slot.toIndex != null && index > slot.toIndex) continue;
+    if (index === null || !inPeriod(slot, index)) continue;
     result.push({ date, index });
   }
   return result;

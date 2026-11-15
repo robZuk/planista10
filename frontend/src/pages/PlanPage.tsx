@@ -25,7 +25,8 @@ import { blocksForDay, describeDays } from '@/lib/timeGrid';
 import { formatRange } from './calendar/calendarUtils';
 import { staleMessage } from '@/lib/planStaleness';
 import { issueRows, placementWarning, planDays } from '@/lib/planIssues';
-import { copyCandidates, inZjazd, zjazdyDiffer } from '@/lib/zjazdView';
+import { copyCandidates, defaultZjazd, inZjazd } from '@/lib/zjazdView';
+import { toDateKey } from '@/lib/scheduleDates';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 import { WEEKDAY_LABELS } from '@/lib/labels';
@@ -40,9 +41,13 @@ import { CarryPlanDialog } from './plan/CarryPlanDialog';
 import { plural } from '@/lib/setupSteps';
 
 
-function patternLabel(p: PlanPlacement): string {
+/** Rytm umieszczenia; zjazdy jak w arkuszu planu — „tydz. N” (`weekOf`: numer zjazdu -> tydzien semestru). */
+function patternLabel(p: PlanPlacement, weekOf: (zjazd: number) => number | string = (n) => n): string {
   const range = p.fromIndex || p.toIndex ? ` ${p.fromIndex ?? 1}–${p.toIndex ?? '…'}` : '';
-  if (p.cycle === 'ZJAZD') return p.pattern === 'LIST' ? `zjazdy ${p.numbers.join(',')}` : `kazdy zjazd${range}`;
+  if (p.cycle === 'ZJAZD') {
+    if (p.pattern === 'LIST') return `tydz. ${p.numbers.map(weekOf).join(',')}`;
+    return p.fromIndex || p.toIndex ? `kazdy zjazd tydz. ${weekOf(p.fromIndex ?? 1)}–${p.toIndex ? weekOf(p.toIndex) : '…'}` : 'kazdy zjazd';
+  }
   if (p.pattern === 'EVEN') return `tyg. parzyste${range}`;
   if (p.pattern === 'ODD') return `tyg. nieparzyste${range}`;
   if (p.pattern === 'LIST') return `tyg. ${p.numbers.join(',')}`;
@@ -146,18 +151,18 @@ export default function PlanPage() {
   });
 
   const zjazdCalendar = plan?.calendar?.kind === 'ZJAZD';
-  // Filtr zjazdow i "kopiuj zjazd" tylko, gdy zjazdy sie roznia (lista zjazdow albo zakres od-do);
-  // gdy wszystko jest "kazdy zjazd", kazdy zjazd wyglada tak samo i wybor zjazdu nic nie daje.
-  const zjazdyVary = useMemo(
-    () =>
-      plan?.calendar?.kind === 'ZJAZD' &&
-      zjazdyDiffer(
-        plan.sections.flatMap((s) => s.placements),
-        plan.calendar.zjazdy.map((z) => z.number),
-      ),
-    [plan],
-  );
-  const zjazd = zjazdyVary ? zjazdChoice : null;
+  // "Plan zjazdu" (niestacjonarne): zawsze konkretny zjazd — wybrany albo trwajacy/najblizszy. Plan
+  // niestacjonarnych rozni sie z weekendu na weekend (bloki przedmiotow na wybranych zjazdach),
+  // wiec nie nakladamy wszystkich zjazdow naraz; nowe zajecia trafiaja tylko do ogladanego zjazdu.
+  const zjazdy = useMemo(() => (plan?.calendar?.kind === 'ZJAZD' ? plan.calendar.zjazdy : []), [plan]);
+  const zjazd = zjazdCalendar
+    ? zjazdChoice !== null && zjazdy.some((z) => z.number === zjazdChoice)
+      ? zjazdChoice
+      : defaultZjazd(zjazdy, toDateKey(new Date()))
+    : null;
+  // Dni ogladanego zjazdu z kalendarza rocznika: daty w naglowkach, dni poza zjazdem i wolne wyszarzone.
+  const zjazdPeriod = zjazd !== null ? plan?.calendar?.periods.find((p) => p.index === zjazd) : undefined;
+  const zjazdDays = useMemo(() => new Map((zjazdPeriod?.days ?? []).map((d) => [d.dayOfWeek, d])), [zjazdPeriod]);
   // Bloki i dni zajec z siatek godzin wydzialu i trybu rocznika (np. niestacjonarne: czw-nd). `blocks` —
   // siatka podstawowa (os czasu), `blocksOf` — bloki dnia (siatka dnia, np. piatek od 16:00, albo podstawowa).
   const blocks = plan ? (plan.timeGrid.grids.find((g) => g.base) ?? plan.timeGrid.grids[0])?.blocks : undefined;
@@ -170,6 +175,21 @@ export default function PlanPage() {
       Record<DayOfWeek, string>
     >;
   }, [plan, days]);
+  const closedDays = useMemo(() => {
+    if (!zjazdPeriod) return outsideGridDays;
+    const closed = days.flatMap((d) => {
+      const info = zjazdDays.get(d);
+      if (!info) return [[d, 'Poza zjazdem'] as const];
+      return info.teaching ? [] : [[d, info.label ?? 'Dzien wolny'] as const];
+    });
+    return { ...outsideGridDays, ...Object.fromEntries(closed) } as Partial<Record<DayOfWeek, string>>;
+  }, [outsideGridDays, zjazdPeriod, zjazdDays, days]);
+  const zjazdDayHeader = zjazdPeriod
+    ? (day: DayOfWeek) => {
+        const info = zjazdDays.get(day);
+        return info ? `${WEEKDAY_LABELS[day]} ${formatDayMonth(info.date)}` : WEEKDAY_LABELS[day];
+      }
+    : undefined;
   // Zablokowany na stale (archiwum / brak uprawnien) — akcji nie pokazujemy wcale.
   const archived = plan?.calendar?.status === 'ARCHIVED';
   const locked = archived || !(isAdmin || me?.role === 'DEAN_OFFICE');
@@ -225,11 +245,14 @@ export default function PlanPage() {
   const inView = (s: PlanSection) => !visibleGroups || visibleGroups.has(s.group.id);
   const backlog = sections.filter((s) => s.status === 'ACTIVE' && s.plannedHours < s.hours && inView(s));
   // Pelne godziny, ale rytm konczy zajecia wyraznie przed koncem semestru — latwo to przeoczyc.
-  const earlyEnds = sections
+  // Niestacjonarne ukladaja przedmioty blokami na wybranych zjazdach: wczesny koniec to norma.
+  const earlyEnds = (zjazdCalendar ? [] : sections)
     .filter((s) => s.status === 'ACTIVE' && inView(s))
     .map((s) => ({ section: s, weeks: earlyEndWeeks(s, plan?.calendar?.endDate) }))
     .filter((e): e is { section: PlanSection; weeks: number } => e.weeks !== null);
 
+  // Zjazd pokazujemy jak w arkuszu planu: „tydz. N” (numer tygodnia semestru); w danych zostaje numer kolejny.
+  const weekOf = (zjazdNumber: number | string) => plan?.calendar?.zjazdy.find((z) => z.number === Number(zjazdNumber))?.week ?? zjazdNumber;
   const visiblePlacement = (p: PlanPlacement) => !zjazd || inZjazd(p, zjazd);
   // Niezgodnosci zajec widocznych w filtrze grupy (lib/planIssues).
   const issues = issueRows(sections.filter(inView));
@@ -242,7 +265,7 @@ export default function PlanPage() {
       endOrder: p.endOrder,
       classType: s.classType,
       title: s.subject.name,
-      lines: [s.group.name, p.room?.label ?? 'ON-LINE', `${p.instructor?.name ?? 'NN'} · ${patternLabel(p)}`],
+      lines: [s.group.name, p.room?.label ?? 'ON-LINE', `${p.instructor?.name ?? 'NN'} · ${patternLabel(p, weekOf)}`],
       muted: !inView(s),
       warning: placementWarning(s, p.id),
     })),
@@ -251,8 +274,6 @@ export default function PlanPage() {
 
   // Kopiowanie zjazdu k -> m: swiadoma akcja planisty, dopisuje numer m do umieszczen ze zjazdu k.
   const toCopy = zjazd && copyTo ? copyCandidates(sections.flatMap((s) => s.placements), zjazd, Number(copyTo)) : [];
-  // Zjazd pokazujemy jak w arkuszu planu: „tydz. N” (numer tygodnia semestru); w danych zostaje numer kolejny.
-  const weekOf = (zjazdNumber: number | string) => plan?.calendar?.zjazdy.find((z) => z.number === Number(zjazdNumber))?.week ?? zjazdNumber;
   const copyZjazd = useMutation({
     mutationFn: async () => {
       const to = Number(copyTo);
@@ -436,17 +457,22 @@ export default function PlanPage() {
           <AlertTitle>Terminy nieaktualne</AlertTitle>
           <AlertDescription>
             {staleMessage(plan.staleReasons)}{' '}
-            Zakladka „Terminy” pokazuje jeszcze stan sprzed tych zmian — uzyj „Generuj terminy”, gdy skonczysz zmiany.
+            {zjazdCalendar
+              ? 'Plan zjazdu pokazuje juz zmiany, a terminy (Moj plan, publikacja) — stan sprzed nich; uzyj „Generuj terminy”, gdy skonczysz zmiany.'
+              : 'Zakladka „Terminy” pokazuje jeszcze stan sprzed tych zmian — uzyj „Generuj terminy”, gdy skonczysz zmiany.'}
           </AlertDescription>
         </Alert>
       )}
 
       {plan && blocks && term && (
-        <Tabs defaultValue="pattern">
-          <TabsList>
-            <TabsTrigger value="pattern">Wzorzec {zjazdCalendar ? 'zjazdu' : 'tygodnia'}</TabsTrigger>
-            <TabsTrigger value="occurrences">Terminy ({plan.occurrenceCount})</TabsTrigger>
-          </TabsList>
+        <Tabs key={zjazdCalendar ? 'zjazd' : 'tydzien'} defaultValue="pattern">
+          {/* Niestacjonarne (kalendarz zjazdow): jeden "Plan zjazdu" bez zakladek; tygodniowe: wzorzec + terminy. */}
+          {!zjazdCalendar && (
+            <TabsList>
+              <TabsTrigger value="pattern">Wzorzec tygodnia</TabsTrigger>
+              <TabsTrigger value="occurrences">Terminy ({plan.occurrenceCount})</TabsTrigger>
+            </TabsList>
+          )}
 
           <TabsContent value="pattern" className="mt-3 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -473,20 +499,13 @@ export default function PlanPage() {
                   Pokaz inne grupy
                 </label>
               )}
-              {zjazdCalendar && !zjazdyVary && (
-                <span
-                  className="text-sm text-muted-foreground"
-                  title="Filtr zjazdow i kopiowanie zjazdu pojawia sie, gdy jakies zajecia odbywaja sie tylko w czesci zjazdow (na wybranych zjazdach albo z zakresem od-do)"
-                >
-                  wszystkie zjazdy jednakowe
-                </span>
+              {zjazdCalendar && zjazdy.length === 0 && (
+                <span className="text-sm text-muted-foreground">Kalendarz rocznika nie ma jeszcze zjazdow — dodaj je w „Kalendarzu semestru”.</span>
               )}
-              {zjazdyVary && (
+              {zjazdCalendar && zjazdy.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1">
-                  <Button size="sm" variant={zjazd === null ? 'default' : 'outline'} onClick={() => setZjazd(null)}>
-                    Wszystkie zjazdy
-                  </Button>
-                  {plan.calendar!.zjazdy.map((z) => (
+                  <span className="mr-1 text-sm font-medium">Plan zjazdu:</span>
+                  {zjazdy.map((z) => (
                     <Button
                       key={z.number}
                       size="sm"
@@ -552,7 +571,8 @@ export default function PlanPage() {
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
               <WeekGrid
                 days={days}
-                closedDays={outsideGridDays}
+                closedDays={closedDays}
+                dayHeader={zjazdDayHeader}
                 blocks={blocks}
                 blocksOf={blocksOf}
                 items={items}
@@ -686,6 +706,7 @@ export default function PlanPage() {
             </div>
           </TabsContent>
 
+          {!zjazdCalendar && (
           <TabsContent value="occurrences" className="mt-3 space-y-3">
             {stationary && (
               <p className="text-sm text-muted-foreground">
@@ -705,6 +726,7 @@ export default function PlanPage() {
               modeDays={days}
             />
           </TabsContent>
+          )}
         </Tabs>
       )}
 
@@ -727,7 +749,7 @@ export default function PlanPage() {
                 {blocksOf(viewing.placement.dayOfWeek).find((b) => b.order === viewing.placement.endOrder)?.endTime}
               </dd>
               <dt className="text-muted-foreground">Rytm</dt>
-              <dd>{patternLabel(viewing.placement)}</dd>
+              <dd>{patternLabel(viewing.placement, weekOf)}</dd>
               <dt className="text-muted-foreground">Sala</dt>
               <dd>{viewing.placement.room?.label ?? 'ON-LINE'}</dd>
               <dt className="text-muted-foreground">Prowadzacy</dt>
@@ -749,8 +771,10 @@ export default function PlanPage() {
           blocksOf={blocksOf}
           target={target}
           onClose={() => setTarget(null)}
-          onSaved={async () => {
+          onSaved={async (movedTo) => {
             setSelected(null);
+            // Zajecia przeniesione do innego zjazdu: pokazujemy zjazd, do ktorego trafily.
+            if (movedTo !== undefined) setZjazd(movedTo);
             await refresh();
           }}
           onObsadaSaved={async () => {

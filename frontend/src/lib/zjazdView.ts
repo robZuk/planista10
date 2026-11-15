@@ -1,9 +1,9 @@
 import type { PlanPlacement } from '@/types';
 
 /**
- * Wzorzec zjazdu z podzialem na zjazdy: filtr "zjazd N" i "kopiuj zjazd" maja sens tylko,
- * gdy zjazdy roznia sie zajeciami (lista zjazdow albo zakres od-do). Ta sama regula co
- * `expandDates` w backendzie: wzor (LIST/EVEN/ODD) i zakres od-do lacznie.
+ * "Plan zjazdu" studiow niestacjonarnych: zawsze jeden konkretny zjazd (tydz. N). Ta sama regula
+ * przynaleznosci do zjazdu co `inPeriod`/`expandDates` w backendzie: wzor (LIST/EVEN/ODD)
+ * i zakres od-do lacznie.
  */
 type ZjazdRule = Pick<PlanPlacement, 'cycle' | 'pattern' | 'numbers' | 'fromIndex' | 'toIndex'>;
 
@@ -18,9 +18,18 @@ export function inZjazd(p: ZjazdRule, zjazd: number): boolean {
   return true;
 }
 
-/** Czy ktores umieszczenie nie odbywa sie we wszystkich zjazdach (czyli zjazdy sie roznia). */
-export function zjazdyDiffer(placements: ZjazdRule[], zjazdy: number[]): boolean {
-  return placements.some((p) => zjazdy.some((z) => !inZjazd(p, z)));
+/** Zjazdy (numery z kalendarza), w ktorych odbywa sie umieszczenie. */
+export function zjazdyOf(p: ZjazdRule, zjazdy: number[]): number[] {
+  return zjazdy.filter((z) => inZjazd(p, z));
+}
+
+/**
+ * Zjazd otwierany w "Planie zjazdu": trwajacy albo najblizszy; po semestrze (i bez dat) pierwszy.
+ * Daty jako "YYYY-MM-DD" — porownanie tekstowe wystarcza.
+ */
+export function defaultZjazd(zjazdy: { number: number; startDate: string; endDate: string }[], today: string): number | null {
+  if (zjazdy.length === 0) return null;
+  return (zjazdy.find((z) => z.endDate >= today) ?? zjazdy[0]!).number;
 }
 
 /**

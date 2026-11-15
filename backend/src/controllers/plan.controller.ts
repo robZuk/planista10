@@ -7,6 +7,7 @@ import { assertFacultyScope, getCallerScope, assertCohortsInScope } from '../lib
 import { fromIsoDate, isIsoDate, toIsoDate } from '../lib/isoDate';
 import { parseTermKey } from '../lib/terms';
 import { mapRangeByTime } from '../lib/timeGrid';
+import { inPeriod } from '../lib/teachingCalendar';
 import { gridFor, loadGrids, pickGrid } from '../services/timeGrids';
 import { activeCohorts } from '../services/sections';
 import { conflictMessage } from '../lib/conflictMessage';
@@ -22,6 +23,7 @@ import {
   assertCohortTermWritable,
   assertVersionApproved,
   availability,
+  calendarFor,
   checkPlacement,
   generate,
   planView,
@@ -187,6 +189,60 @@ export const updatePlacement = asyncHandler(async (req, res) => {
     return updated;
   });
   res.json({ data, message: 'Umieszczenie zapisane — terminy zmienia sie po "Generuj terminy"' });
+});
+
+/**
+ * "Plan zjazdu" (studia niestacjonarne): zmiana zajec tylko w jednym zjezdzie albo ich
+ * przeniesienie z tego zjazdu do innego (`toZjazd`). Umieszczenie obejmujace kilka zjazdow traci
+ * zjazd `zjazd` (zostaje "na wybranych zjazdach": pozostale), a zajecia z niego dostaja wlasne
+ * umieszczenie w zjezdzie docelowym z nowym dniem, godzinami, sala i prowadzacym. Kolizje nowego
+ * miejsca jak przy umieszczeniu; obie zmiany w jednej transakcji.
+ */
+export const splitPlacementZjazd = asyncHandler(async (req, res) => {
+  const current = await loadPlacement(String(req.params.id));
+  await assertFacultyScope(req, current.facultyId);
+  const zjazd = Number.isInteger(req.body?.zjazd) ? (req.body.zjazd as number) : null;
+  if (current.cycle !== 'ZJAZD' || zjazd === null) throw new AppError(400, 'Wskaz zjazd (tylko zajecia w rytmie zjazdowym)');
+  if (current.jointKey) throw new AppError(400, 'Zajecia laczone zmienia sie we wszystkich zjazdach naraz');
+  const [ctx] = await activeCohorts(current.term, null, [current.section.cohort.id]);
+  const calendar = ctx ? await calendarFor(current.term, ctx) : null;
+  const target = calendar?.zjazdy.find((z) => z.number === zjazd);
+  if (!calendar || !target) throw new AppError(400, 'Nie ma takiego zjazdu w kalendarzu rocznika');
+  const covered = calendar.zjazdy.map((z) => z.number).filter((n) => inPeriod(current, n));
+  if (!covered.includes(zjazd)) throw new AppError(400, 'Tych zajec nie ma w tym zjezdzie');
+  const rest = covered.filter((n) => n !== zjazd);
+  if (rest.length === 0) throw new AppError(400, 'Zajecia sa tylko w tym zjezdzie — zapisz zmiane calego umieszczenia');
+  // Zjazd docelowy: ten sam (inny dzien, godziny, sala w tym zjezdzie) albo inny (przeniesienie).
+  const toZjazd = req.body?.toZjazd == null ? zjazd : Number.isInteger(req.body.toZjazd) ? (req.body.toZjazd as number) : null;
+  if (toZjazd === null || !calendar.zjazdy.some((z) => z.number === toZjazd)) {
+    throw new AppError(400, 'Nie ma takiego zjazdu docelowego w kalendarzu rocznika');
+  }
+  // Nowe miejsce: tylko zjazd docelowy, bez zakresu od-do i bez laczenia z innymi zajeciami.
+  const input = parsePlacement({
+    ...req.body,
+    sectionId: current.sectionId,
+    cycle: 'ZJAZD',
+    pattern: 'LIST',
+    numbers: [toZjazd],
+    fromIndex: null,
+    toIndex: null,
+    jointKey: null,
+  });
+  // Kolizje: stare umieszczenie pomijamy, gdy w zjezdzie docelowym go nie bedzie (znika z niego albo
+  // nigdy tam nie bylo — pozostale zjazdy to inne daty). Gdy zostaje tam tez stare (np. "kazdy
+  // zjazd"), jego termin sie liczy — inaczej dwa spotkania tych zajec moglyby wypasc naraz.
+  const check = await checkPlacement(current.term, input, rest.includes(toZjazd) ? undefined : current.id);
+  rejectIfInvalid(check);
+  const data = await prisma.$transaction(async (tx) => {
+    // Przeniesienia pojedynczych terminow z tego zjazdu dotyczyly starego miejsca.
+    await tx.placementException.deleteMany({
+      where: { placementId: current.id, originalDate: { gte: target.startDate, lte: target.endDate } },
+    });
+    await tx.placement.update({ where: { id: current.id }, data: { pattern: 'LIST', numbers: rest, fromIndex: null, toIndex: null } });
+    return tx.placement.create({ data: { ...input, termId: current.termId, facultyId: current.facultyId } });
+  });
+  const what = toZjazd === zjazd ? 'Zajecia zmienione tylko w tym zjezdzie' : 'Zajecia przeniesione do innego zjazdu';
+  res.status(201).json({ data, message: `${what} — terminy zmienia sie po "Generuj terminy"` });
 });
 
 export const deletePlacement = asyncHandler(async (req, res) => {

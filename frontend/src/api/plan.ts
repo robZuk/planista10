@@ -40,6 +40,18 @@ export async function updatePlacement(id: string, input: Partial<PlacementPayloa
   return res.data;
 }
 
+/**
+ * "Plan zjazdu": zmiana zajec tylko w zjezdzie `zjazd` albo przeniesienie ich do zjazdu `toZjazd`
+ * (backend rozdziela umieszczenie obejmujace kilka zjazdow).
+ */
+export async function splitPlacement(
+  id: string,
+  input: Pick<PlacementPayload, 'dayOfWeek' | 'startOrder' | 'endOrder' | 'roomId' | 'instructorId'> & { zjazd: number; toZjazd?: number },
+): Promise<{ message: string }> {
+  const res = await api.post(`/placements/${id}/split`, input);
+  return res.data;
+}
+
 export async function deletePlacement(id: string): Promise<{ message: string }> {
   const res = await api.delete(`/placements/${id}`);
   return res.data;
