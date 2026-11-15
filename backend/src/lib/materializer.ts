@@ -10,9 +10,9 @@ import { weekdayOf, type IsoDate } from './isoDate';
  * Dla kazdych zajec bierzemy daty wszystkich ich umieszczen (rytm + kalendarz rocznika),
  * sortujemy po dacie i wyczerpujemy godziny z programu: ostatni termin moze byc skrocony,
  * a kolejne pominiete ("nadmiar"). Terminy reczne (MANUAL) i zachowane terminy sprzed
- * daty "od kiedy" licza sie do godzin. Reczne poprawki pojedynczych terminow (wyjatki
+ * daty "od kiedy" licza sie do godzin. Przeniesienia pojedynczych terminow (wyjatki
  * przypiete do pary umieszczenie+data) sa nakladane na wynik — przezywaja ponowne
- * generowanie. Wyjatek, ktorego data przestala istniec, trafia do raportu.
+ * generowanie. Wyjatek, ktorego data przestala istniec, trafia do raportu. Odwolan nie ma.
  * Termin kolidujacy (sala, prowadzacy, nakladajace sie grupy) jest pomijany i zgloszony.
  * Kolizje licza sie w MINUTACH: kazde zajecia maja siatke godzin swojego kalendarza, a sale
  * i prowadzacy sa wspolni dla wydzialow z roznymi siatkami.
@@ -50,10 +50,10 @@ export interface MatSection {
   label: string;
 }
 
+/** Przeniesienie terminu z wzorca (data, godziny, sala, prowadzacy); pole puste = bez zmiany. */
 export interface MatException {
   placementId: string;
   originalDate: IsoDate;
-  action: 'CANCEL' | 'MODIFY';
   newDate?: IsoDate | null;
   newStartOrder?: number | null;
   newEndOrder?: number | null;
@@ -89,7 +89,6 @@ export interface PlannedOccurrence {
   roomId: string | null;
   instructorId: string | null;
   groupId: string;
-  status: 'SCHEDULED' | 'CANCELLED';
   jointKey: string | null;
 }
 
@@ -195,11 +194,9 @@ export function materialize(input: {
         roomId: placement.roomId,
         instructorId: placement.instructorId,
         groupId: section.groupId,
-        status: 'SCHEDULED',
         jointKey: placement.jointKey,
       };
-      if (exception?.action === 'CANCEL') occ.status = 'CANCELLED';
-      if (exception?.action === 'MODIFY') {
+      if (exception) {
         occ.date = exception.newDate ?? occ.date;
         occ.startOrder = exception.newStartOrder ?? occ.startOrder;
         occ.endOrder = exception.newEndOrder ?? occ.endOrder;
@@ -208,7 +205,7 @@ export function materialize(input: {
       }
       // Bloki wzorca liczymy wg siatki dnia umieszczenia (takze w dniu "zajecia wg planu innego dnia");
       // przeniesienie na inna date wskazuje bloki siatki dnia docelowego — jak okno przeniesienia.
-      const blockDay = exception?.action === 'MODIFY' && exception.newDate ? WEEKDAY_ENUM[weekdayOf(exception.newDate)]! : placement.dayOfWeek;
+      const blockDay = exception?.newDate ? WEEKDAY_ENUM[weekdayOf(exception.newDate)]! : placement.dayOfWeek;
       const time = section.gridOf(blockDay).range(occ.startOrder, occ.endOrder);
       if (!time) {
         result.conflicts.push({ date: occ.date, section: section.label, reason: 'GRID', with: 'godziny poza siatka kalendarza' });
@@ -217,7 +214,7 @@ export function materialize(input: {
       occ.startMinute = time.startMinute;
       occ.endMinute = time.endMinute;
 
-      if (occ.status === 'SCHEDULED' && !input.skipConflicts) {
+      if (!input.skipConflicts) {
         const conflict = findConflict(occ, busyByDate.get(occ.date) ?? [], input.groupsOverlap);
         if (conflict) {
           // Termin kolidujacy pomijamy (nie zuzywa godzin) i zglaszamy planiscie.

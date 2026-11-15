@@ -141,7 +141,6 @@ export type AssessmentType = 'EXAM' | 'CREDIT';
 export type SemesterType = 'WINTER' | 'SUMMER';
 
 export type ClassType = 'LECTURE' | 'EXERCISE' | 'LAB' | 'PROJECT' | 'SEMINAR';
-export type EntryStatus = 'SCHEDULED' | 'CANCELLED';
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
 
 export interface RoomRef {
@@ -172,7 +171,6 @@ export interface UpcomingDayOff {
 export interface DashboardEntry {
   id: string;
   classType: ClassType;
-  status: EntryStatus;
   date: string;
   room: { number: string; building: { name: string } };
   instructor: { firstName: string; lastName: string; title: string | null } | null;
@@ -190,7 +188,7 @@ export interface DashboardStats {
   rooms: { total: number };
   buildings: { total: number };
   templates: { total: number };
-  entries: { scheduled: number; cancelled: number; total: number; todayCount: number };
+  entries: { total: number; todayCount: number };
   faculties: { total: number };
   subjects: { total: number };
   calendars: { total: number };
@@ -661,7 +659,7 @@ export interface GenerateReport {
   conflicts: { date: string; section: string; reason: string; with: string }[];
   beyondHours: number;
   shortfalls: { section: string; missing: number }[];
-  orphanExceptions: { section: string; date: string; action: string }[];
+  orphanExceptions: { section: string; date: string }[];
   calendarsMissing: string[];
   /** Roczniki pominiete, bo ich wersja programu jest w projekcie. */
   draftVersions: string[];
@@ -707,7 +705,6 @@ export interface OccurrenceRow {
   instructor: string;
   instructorId: string | null;
   kind: 'DERIVED' | 'MANUAL';
-  status: EntryStatus;
   changed: boolean;
   note: string | null;
 }
@@ -794,6 +791,5 @@ export interface MyPlanRow {
   group: string;
   room: string;
   instructor: string;
-  status: EntryStatus;
   note: string | null;
 }

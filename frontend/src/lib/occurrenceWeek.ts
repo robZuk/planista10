@@ -47,9 +47,8 @@ export function dayNote(day: PeriodDay): string | null {
   return day.label;
 }
 
-/** Oznaczenie terminu na karcie: odwolany, przeniesiony (skad), reczny. */
+/** Oznaczenie terminu na karcie: reczny, przeniesiony (skad), zmieniony. */
 export function occurrenceMarker(o: OccurrenceRow): string | undefined {
-  if (o.status === 'CANCELLED') return 'odwolany';
   if (o.kind === 'MANUAL') return 'reczny';
   if (o.originalDate && o.originalDate !== o.date) return `przeniesiony z ${formatDayMonth(o.originalDate)}`;
   if (o.changed) return 'zmieniony';

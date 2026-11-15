@@ -15,16 +15,15 @@ import { activeCohorts } from './sections';
 import { assertVersionApproved, calendarFor, termOccupancy, type OccupancyOptions } from './plan';
 
 /**
- * Zmiany pojedynczych terminow — odwolanie, przeniesienie, przywrocenie i termin reczny
+ * Zmiany pojedynczych terminow — przeniesienie, przywrocenie wg wzorca i termin reczny
  * (zajecia dodatkowe) wprowadza tylko planista (Ukladanie planu → Terminy). Terminy z wzorca
- * zmieniamy wyjatkiem (PlacementException), ktory przezyje ponowne generowanie; terminy
+ * przenosimy wyjatkiem (PlacementException), ktory przezyje ponowne generowanie; terminy
  * reczne — wprost. Kazda zmiana daty/godzin/sali sprawdza kolizje w calej uczelni.
  *
- * Odrobien nie ma: odwolany termin zuzywa swoje godziny (przepadaja), a zajecia, ktore maja sie
- * odbyc w innym dniu, planista przenosi.
+ * Odwolan i odrobien nie ma: zajecia, ktore maja sie odbyc w innym dniu, planista przenosi.
  *
  * Dotyczy tylko studiow niestacjonarnych. Na stacjonarnych obowiazuje ten sam plan w kazdym
- * tygodniu (+ kalendarz Rektora): odwolan i przeniesien sie nie rejestruje, a zmiana planu od
+ * tygodniu (+ kalendarz Rektora): pojedynczych terminow sie nie przenosi, a zmiana planu od
  * tygodnia to zmiana wzorca (umieszczenia od-do tygodnia) — terminy sa tylko do wgladu.
  */
 
@@ -103,7 +102,7 @@ function assertWarningsConfirmed(assessment: SlotAssessment, confirmed: boolean 
 
 const isDerived = (occ: OccurrenceFull) => occ.kind === 'DERIVED' && !!occ.placement && !!occ.originalDate;
 
-/** Przywrocenie terminu z wzorca (usuwa wyjatek). Wraca na miejsce z wzorca — z kontrola kolizji. */
+/** Przywrocenie przeniesionego terminu z wzorca (usuwa wyjatek). Wraca na miejsce z wzorca — z kontrola kolizji. */
 export async function restoreOccurrence(occ: OccurrenceFull, grids: FacultyGrids): Promise<void> {
   if (!isDerived(occ)) throw new AppError(400, 'Przywracac mozna tylko terminy z wzorca');
   const p = occ.placement!;
@@ -131,27 +130,10 @@ export async function restoreOccurrence(occ: OccurrenceFull, grids: FacultyGrids
         roomId: p.roomId,
         instructorId: p.instructorId,
         jointKey: p.jointKey,
-        status: 'SCHEDULED',
-        // Powod odwolania/przeniesienia nie dotyczy terminu wg wzorca (generowanie tez go nie niesie).
+        // Powod przeniesienia nie dotyczy terminu wg wzorca (generowanie tez go nie niesie).
         note: null,
       },
     }),
-  ]);
-}
-
-/** Odwolanie terminu (z wzorca — wyjatkiem CANCEL). */
-export async function cancelOccurrence(occ: OccurrenceFull, note: string | null): Promise<void> {
-  await prisma.$transaction([
-    ...(isDerived(occ)
-      ? [
-          prisma.placementException.upsert({
-            where: { placementId_originalDate: { placementId: occ.placementId!, originalDate: occ.originalDate! } },
-            create: { placementId: occ.placementId!, originalDate: occ.originalDate!, action: 'CANCEL', note },
-            update: { action: 'CANCEL', note },
-          }),
-        ]
-      : []),
-    prisma.occurrence.update({ where: { id: occ.id }, data: { status: 'CANCELLED', note: note ?? occ.note } }),
   ]);
 }
 
@@ -200,7 +182,6 @@ export async function moveOccurrence(occ: OccurrenceFull, grids: FacultyGrids, i
   if (assessment) assertWarningsConfirmed(assessment, input.confirmWarnings);
   const note = input.note ?? null;
   const exception = {
-    action: 'MODIFY' as const,
     newDate: fromIsoDate(next.date),
     newStartOrder: next.startOrder,
     newEndOrder: next.endOrder,
@@ -221,7 +202,7 @@ export async function moveOccurrence(occ: OccurrenceFull, grids: FacultyGrids, i
       : []),
     prisma.occurrence.update({
       where: { id: occ.id },
-      data: { ...next, ...time, date: fromIsoDate(next.date), status: 'SCHEDULED', note: note ?? occ.note },
+      data: { ...next, ...time, date: fromIsoDate(next.date), note: note ?? occ.note },
     }),
   ]);
 }
@@ -275,7 +256,6 @@ export async function createManualOccurrence(term: AcademicTerm, section: ClassS
       instructorId,
       groupId: section.groupId,
       kind: 'MANUAL',
-      status: 'SCHEDULED',
       note: input.note ?? null,
     },
   });

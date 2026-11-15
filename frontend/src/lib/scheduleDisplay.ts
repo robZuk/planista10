@@ -1,4 +1,4 @@
-import type { ClassType, EntryStatus, RoomType } from '@/types';
+import type { ClassType, RoomType } from '@/types';
 
 export const CLASS_TYPES: ClassType[] = ['LECTURE', 'EXERCISE', 'LAB', 'PROJECT', 'SEMINAR'];
 
@@ -36,11 +36,6 @@ export const CLASS_COLORS: Record<ClassType, string> = {
     'bg-purple-100 border-purple-400 text-purple-900 dark:bg-purple-950 dark:border-purple-600 dark:text-purple-100',
   SEMINAR:
     'bg-pink-100 border-pink-400 text-pink-900 dark:bg-pink-950 dark:border-pink-600 dark:text-pink-100',
-};
-
-export const STATUS_LABELS: Record<EntryStatus, string> = {
-  SCHEDULED: 'Zaplanowane',
-  CANCELLED: 'Odwolane',
 };
 
 /**

@@ -87,21 +87,20 @@ describe('materialize', () => {
     expect(r.occurrences.map((o) => o.date)).toEqual(['2024-10-02', '2024-10-07']);
   });
 
-  it('wyjatki: odwolanie i przeniesienie przezywaja przeliczenie; osierocony wyjatek w raporcie', () => {
+  it('wyjatki: przeniesienie przezywa przeliczenie; osierocony wyjatek w raporcie', () => {
     const r = materialize({
       sections: [section('s', 6)],
       placements: [placement('p', 's')],
       exceptions: [
-        { placementId: 'p', originalDate: '2024-10-02', action: 'CANCEL' },
-        { placementId: 'p', originalDate: '2024-10-09', action: 'MODIFY', newDate: '2024-10-10', newRoomId: 'r9' },
-        { placementId: 'p', originalDate: '2024-10-03', action: 'CANCEL' }, // czwartek — nie ma takiej daty
+        { placementId: 'p', originalDate: '2024-10-09', newDate: '2024-10-10', newRoomId: 'r9' },
+        { placementId: 'p', originalDate: '2024-10-03', newDate: '2024-10-04' }, // czwartek — nie ma takiej daty
       ],
       busy: [],
       groupsOverlap: noOverlap,
     });
-    expect(r.occurrences[0]).toMatchObject({ date: '2024-10-02', status: 'CANCELLED' });
+    expect(r.occurrences.map((o) => o.date)).toEqual(['2024-10-02', '2024-10-10', '2024-10-16']);
     expect(r.occurrences[1]).toMatchObject({ originalDate: '2024-10-09', date: '2024-10-10', roomId: 'r9' });
-    expect(r.orphanExceptions).toHaveLength(1);
+    expect(r.orphanExceptions).toEqual([expect.objectContaining({ originalDate: '2024-10-03' })]);
   });
 
   it('terminy reczne licza sie do godzin', () => {

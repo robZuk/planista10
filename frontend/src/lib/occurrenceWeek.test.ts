@@ -48,7 +48,6 @@ const occ = (date: string, extra: Partial<OccurrenceRow> = {}): OccurrenceRow =>
   instructor: 'dr Nowak',
   instructorId: 'i1',
   kind: 'DERIVED',
-  status: 'SCHEDULED',
   changed: false,
   note: null,
   ...extra,
@@ -90,7 +89,6 @@ describe('occurrencesIn / dayNote / occurrenceMarker / periodLabel', () => {
   });
 
   it('oznaczenie terminu', () => {
-    expect(occurrenceMarker(occ('2026-11-02', { status: 'CANCELLED' }))).toBe('odwolany');
     expect(occurrenceMarker(occ('2026-11-02', { kind: 'MANUAL', originalDate: null }))).toBe('reczny');
     expect(occurrenceMarker(occ('2026-11-03', { originalDate: '2026-11-11', changed: true }))).toBe('przeniesiony z 11.11');
     expect(occurrenceMarker(occ('2026-11-02', { changed: true }))).toBe('zmieniony');

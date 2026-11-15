@@ -100,7 +100,7 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   **w minutach** — wydziały mają różne siatki godzin; odrzucenie zawiera listę dat.
   Typ i pojemność sali, dni i okno godzin z siatki.
 - **Jedna zajętość dla wzorca i terminów** (`services/plan.ts → termOccupancy`): wzorce całej
-  uczelni rozpisane na daty z naniesionymi przeniesieniami i odwołaniami oraz limitem godzin
+  uczelni rozpisane na daty z naniesionymi przeniesieniami oraz limitem godzin
   (to, co dałoby generowanie), terminy ręczne i terminy po usuniętych umieszczeniach; przy
   zmianie pojedynczego terminu dochodzą wygenerowane terminy. Używana przy zapisie umieszczenia,
   podświetleniu, przeniesieniu terminu, terminie ręcznym i generowaniu.
@@ -110,17 +110,15 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   (`services/plan.ts → generate`, najpierw podgląd): godziny wyczerpywane w kolejności dat
   przez wszystkie umieszczenia zajęć, ostatni termin skracany, kolidujące pomijane i zgłaszane.
   W opublikowanym semestrze generowanie od wybranej daty.
-- `PlacementException(placement, originalDate)` — odwołanie albo przeniesienie pojedynczego
+- `PlacementException(placement, originalDate)` — przeniesienie pojedynczego
   terminu; **przeżywa ponowne generowanie**. Wyjątek bez daty we wzorcu trafia do raportu.
 - `Occurrence.kind = MANUAL` — terminy ręczne (zajęcia dodatkowe, jednorazowe); liczą się do godzin
-  (przy generowaniu wzorzec da o tyle mniej), nie znikają. Status terminu to tylko `SCHEDULED`
-  albo `CANCELLED` — ręczny wyróżnia `kind`.
+  (przy generowaniu wzorzec da o tyle mniej), nie znikają. Termin nie ma statusu (odwołań
+  nie ma) — ręczny wyróżnia `kind`.
 - Nowe miejsce terminu (przeniesienie, termin ręczny) jest oceniane
   względem kalendarza rocznika i okna godzin siatki (`lib/occurrenceSlot`): data poza semestrem
   blokuje, a święto, przerwa, dzień poza zjazdami czy godziny poza oknem wymagają potwierdzenia
   (`409 { code: 'SLOT_WARNINGS', warnings }` → ponowienie z `confirmWarnings: true`).
-- **Odwołany termin zużywa swoje godziny** (materializer liczy go do limitu) — ponowne generowanie
-  nie dokłada za niego daty na końcu semestru. Odrobień nie ma (patrz 6a).
 - **Stałe id terminów:** „Generuj terminy" robi diff (`lib/occurrenceDiff`) — termin o tym samym
   kluczu (umieszczenie + data z wzorca, unikalny indeks `Occurrence(placementId, originalDate)`)
   jest aktualizowany w miejscu i zachowuje id; nowe daty wzorca → nowe terminy, daty, których już
@@ -136,19 +134,19 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   Rocznik przypięty do wariantu „w planowaniu" nie pokazuje planu, choć wydział ma inne
   opublikowane kalendarze.
 
-## 6a. Odwołania i przeniesienia
+## 6a. Przeniesienia terminów
 
-- Terminy odwołuje, przenosi, przywraca i dodaje ręcznie **tylko planista** (ADMIN, DEAN_OFFICE
+- Terminy przenosi, przywraca wg wzorca i dodaje ręcznie **tylko planista** (ADMIN, DEAN_OFFICE
   swojego wydziału) — wprost w „Układaniu planu” → Terminy (`services/occurrenceChanges`). Prowadzący
-  i student plan tylko oglądają; powód odwołania (`Occurrence.note`) widać w ich „Moim planie”.
-- **Odrobień nie ma** (ani na stacjonarnych, ani na niestacjonarnych) — strona „Odrobienia”,
-  powiązanie `Occurrence.makeupOfId` / `makeupOfKey` i status `MAKEUP` usunięte migracją
-  `20261115200000_drop_makeups`. Zajęcia, które mają się odbyć w innym dniu, się **przenosi**;
-  godziny odwołanych zajęć przepadają.
+  i student plan tylko oglądają; powód przeniesienia (`Occurrence.note`) widać w ich „Moim planie”.
+- **Odwołań ani odrobień nie ma** (ani na stacjonarnych, ani na niestacjonarnych) — usunięte
+  migracjami `20261115200000_drop_makeups` (strona „Odrobienia”, `makeupOfId`, status `MAKEUP`)
+  i `20261115210000_drop_cancellations` (`Occurrence.status`, `PlacementException.action`; dawne
+  odwołania wróciły do planu). Zajęcia, które mają się odbyć w innym dniu, się **przenosi**.
 - planista10 nie ma zgłoszeń zmian prowadzących ani powiadomień w aplikacji (tabele
   `ChangeRequest` i `Notification` usunięte migracją `20261115120000_drop_change_requests_notifications`).
 - **Studia stacjonarne** — ten sam plan w każdym tygodniu, dni zajęć z kalendarza Rektora (dni wolne,
-  zajęcia z innego dnia, przerwy). Odwołań ani przeniesień się nie rejestruje: terminy rocznika
+  zajęcia z innego dnia, przerwy). Pojedynczych terminów się nie przenosi: terminy rocznika
   stacjonarnego są tylko do wglądu (co było i co będzie, dni wolne, zamiany dni), API odrzuca ich
   zmiany (409, `assertPlanEditable`). Zmiana planu od tygodnia X to zmiana wzorca: umieszczenie
   „do tygodnia X−1” + nowe „od tygodnia X”, potem „Generuj terminy” — przeszłe tygodnie zostają,

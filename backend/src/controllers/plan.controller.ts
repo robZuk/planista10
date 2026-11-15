@@ -12,7 +12,6 @@ import { activeCohorts } from '../services/sections';
 import { conflictMessage } from '../lib/conflictMessage';
 import {
   assertPlanEditable,
-  cancelOccurrence,
   createManualOccurrence as createManual,
   moveOccurrence,
   restoreOccurrence,
@@ -265,7 +264,6 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       instructor: o.instructor ? `${o.instructor.title ?? ''} ${o.instructor.firstName} ${o.instructor.lastName}`.trim() : 'NN',
       instructorId: o.instructorId,
       kind: o.kind,
-      status: o.status,
       changed: !!o.placementId && !!o.originalDate && exceptionKeys.has(`${o.placementId}|${toIsoDate(o.originalDate)}`),
       note: o.note,
     })),
@@ -273,27 +271,24 @@ export const listOccurrences = asyncHandler(async (req, res) => {
 });
 
 /**
- * Zmiana pojedynczego terminu: odwolanie, przeniesienie (data/godziny/sala/prowadzacy)
- * albo przywrocenie wg wzorca. Dla terminow z wzorca zapisujemy wyjatek, ktory przezyje
- * ponowne generowanie; terminy reczne zmieniamy wprost. Tylko planista (admin, dziekanat
- * wydzialu terminu) — prowadzacy nie odwoluje ani nie przenosi zajec. Tylko studia
+ * Zmiana pojedynczego terminu: przeniesienie (data/godziny/sala/prowadzacy) albo przywrocenie
+ * wg wzorca. Dla terminow z wzorca zapisujemy wyjatek, ktory przezyje ponowne generowanie;
+ * terminy reczne zmieniamy wprost. Odwolan nie ma (zajecia sie przenosi). Tylko planista
+ * (admin, dziekanat wydzialu terminu) — prowadzacy nie przenosi zajec. Tylko studia
  * niestacjonarne: stacjonarne maja terminy do wgladu (assertPlanEditable -> 409).
  */
 export const changeOccurrence = asyncHandler(async (req, res) => {
+  const body = req.body as { action?: string } & MoveInput;
+  if (body.action === 'CANCEL') throw new AppError(400, 'Odwolan nie ma — zajecia, ktore maja sie odbyc w innym dniu, przenies');
+  if (body.action !== 'MODIFY' && body.action !== 'RESTORE') throw new AppError(400, 'Nieznana zmiana terminu (MODIFY albo RESTORE)');
   const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) }, include: { placement: true, section: true } });
   if (!occ) throw new AppError(404, 'Termin nie znaleziony');
   await assertFacultyScope(req, occ.facultyId);
   const grid = await assertPlanEditable(occ.termId, occ.section.cohortId);
-  const body = req.body as { action: 'CANCEL' | 'MODIFY' | 'RESTORE' } & MoveInput;
 
   if (body.action === 'RESTORE') {
     await restoreOccurrence(occ, grid);
     res.json({ message: 'Termin przywrocony wg wzorca' });
-    return;
-  }
-  if (body.action === 'CANCEL') {
-    await cancelOccurrence(occ, body.note ?? null);
-    res.json({ message: 'Termin odwolany' });
     return;
   }
   await moveOccurrence(occ, grid, body);
@@ -316,7 +311,7 @@ export const deleteManualOccurrence = asyncHandler(async (req, res) => {
   const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) }, include: { section: { select: { cohortId: true } } } });
   if (!occ) throw new AppError(404, 'Termin nie znaleziony');
   await assertFacultyScope(req, occ.facultyId);
-  if (occ.kind !== 'MANUAL') throw new AppError(409, 'Termin z wzorca mozna odwolac, ale nie usunac');
+  if (occ.kind !== 'MANUAL') throw new AppError(409, 'Termin z wzorca mozna przeniesc, ale nie usunac');
   await assertPlanEditable(occ.termId, occ.section.cohortId);
   await prisma.occurrence.delete({ where: { id: occ.id } });
   res.json({ message: 'Termin reczny usuniety' });

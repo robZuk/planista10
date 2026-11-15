@@ -449,9 +449,9 @@ model SectionInstructor {
 //  i rytm (co tydzien / parzyste / nieparzyste / wybrane tygodnie, albo kazdy zjazd /
 //  wybrane zjazdy). Uklada je wylacznie planista — system niczego nie wstawia sam.
 //  Occurrence = konkretny termin. Terminy DERIVED powstaja TYLKO po "Generuj terminy";
-//  reczne poprawki pojedynczych terminow to PlacementException (przezywaja ponowne
-//  generowanie), a zajecia dodatkowe (terminy jednorazowe) to Occurrence MANUAL. Odrobien
-//  nie ma: zajecia, ktore maja sie odbyc w innym dniu, planista przenosi.
+//  przeniesienia pojedynczych terminow to PlacementException (przezywaja ponowne
+//  generowanie), a zajecia dodatkowe (terminy jednorazowe) to Occurrence MANUAL. Odwolan
+//  i odrobien nie ma: zajecia, ktore maja sie odbyc w innym dniu, planista przenosi.
 // ═══════════════════════════════════════════════════════════════
 
 model Placement {
@@ -486,12 +486,13 @@ model Placement {
   @@index([sectionId])
 }
 
+// Przeniesienie pojedynczego terminu z wzorca: nowa data, godziny, sala albo prowadzacy
+// (pola new* = null -> bez zmiany). Przezywa ponowne "Generuj terminy".
 model PlacementException {
   id              String          @id @default(uuid())
   placement       Placement       @relation(fields: [placementId], references: [id], onDelete: Cascade)
   placementId     String
   originalDate    DateTime        @db.Date
-  action          ExceptionAction
   newDate         DateTime?       @db.Date
   newStartOrder   Int?
   newEndOrder     Int?
@@ -529,7 +530,6 @@ model Occurrence {
   group        StudentGroup   @relation(fields: [groupId], references: [id])
   groupId      String
   kind         OccurrenceKind @default(DERIVED)
-  status       EntryStatus    @default(SCHEDULED)
   jointKey     String?
   note         String?
   createdAt    DateTime       @default(now())
@@ -663,11 +663,6 @@ enum ClassType {
   SEMINAR // S
 }
 
-enum EntryStatus {
-  SCHEDULED // zaplanowane
-  CANCELLED // odwolane
-}
-
 enum SemesterType {
   WINTER
   SUMMER
@@ -683,11 +678,6 @@ enum PlacementPattern {
   EVEN
   ODD
   LIST // wybrane numery tygodni/zjazdow
-}
-
-enum ExceptionAction {
-  CANCEL // termin odwolany
-  MODIFY // termin przeniesiony / inna sala / inny prowadzacy
 }
 
 enum OccurrenceKind {

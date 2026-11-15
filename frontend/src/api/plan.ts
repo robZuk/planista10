@@ -61,7 +61,7 @@ export async function fetchOccurrences(termKey: string, cohortId: string): Promi
 export async function changeOccurrence(
   id: string,
   input: {
-    action: 'CANCEL' | 'MODIFY' | 'RESTORE';
+    action: 'MODIFY' | 'RESTORE';
     date?: string;
     startOrder?: number;
     endOrder?: number;

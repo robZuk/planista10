@@ -386,7 +386,7 @@ export function PlacementDialog({
         open={confirmRemove}
         onOpenChange={setConfirmRemove}
         title="Usunac zajecia z planu?"
-        description={`${section.subject.name} (${CLASS_FULL_LABELS[section.classType].toLowerCase()}) · ${section.group.name}${placement ? ` · ${WEEKDAY_LABELS[placement.dayOfWeek].toLowerCase()}` : ''}. Wygenerowane terminy tego umieszczenia znikna przy kolejnym „Generuj terminy”${placement && placement.exceptionCount > 0 ? ` — razem z poprawkami pojedynczych terminow (odwolania, przeniesienia: ${placement.exceptionCount})` : ''}.`}
+        description={`${section.subject.name} (${CLASS_FULL_LABELS[section.classType].toLowerCase()}) · ${section.group.name}${placement ? ` · ${WEEKDAY_LABELS[placement.dayOfWeek].toLowerCase()}` : ''}. Wygenerowane terminy tego umieszczenia znikna przy kolejnym „Generuj terminy”${placement && placement.exceptionCount > 0 ? ` — razem z przeniesieniami pojedynczych terminow (${placement.exceptionCount})` : ''}.`}
         confirmLabel="Usun z planu"
         isPending={remove.isPending}
         onConfirm={() => remove.mutate()}

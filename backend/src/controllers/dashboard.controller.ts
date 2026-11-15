@@ -48,7 +48,7 @@ export const getStats = asyncHandler(async (req, res) => {
     roomCount,
     buildingCount,
     placementCount,
-    occurrencesByStatus,
+    occurrenceCount,
     recentUsers,
     facultyCount,
     subjectCount,
@@ -64,7 +64,7 @@ export const getStats = asyncHandler(async (req, res) => {
     prisma.room.count({ where: fid ? { building: { facultyId: fid } } : {} }),
     prisma.building.count({ where: fid ? { facultyId: fid } : {} }),
     prisma.placement.count({ where: fid ? { facultyId: fid } : {} }),
-    prisma.occurrence.groupBy({ by: ['status'], where: fid ? { facultyId: fid } : {}, _count: { _all: true } }),
+    prisma.occurrence.count({ where: fid ? { facultyId: fid } : {} }),
     prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       take: 5,
@@ -89,7 +89,6 @@ export const getStats = asyncHandler(async (req, res) => {
     .map((o) => ({
       id: o.id,
       classType: o.section.classType,
-      status: o.status,
       date: o.date.toISOString(),
       room: o.room,
       instructor: o.instructor,
@@ -131,7 +130,6 @@ export const getStats = asyncHandler(async (req, res) => {
   const daysOff = planner ? upcomingDaysOff(today, horizon, holidaysInRange(today, horizon), calendarDaysOff, calendars.map(calendarLabel)) : [];
 
   const byRole = Object.fromEntries(usersByRole.map((r) => [r.role, r._count._all])) as Record<string, number>;
-  const byStatus = Object.fromEntries(occurrencesByStatus.map((r) => [r.status, r._count._all])) as Record<string, number>;
   const todayEntries = week.filter((o) => o.date.slice(0, 10) === today);
 
   res.json({
@@ -152,9 +150,7 @@ export const getStats = asyncHandler(async (req, res) => {
       buildings: { total: buildingCount },
       templates: { total: placementCount },
       entries: {
-        scheduled: byStatus.SCHEDULED ?? 0,
-        cancelled: byStatus.CANCELLED ?? 0,
-        total: Object.values(byStatus).reduce((s, v) => s + v, 0),
+        total: occurrenceCount,
         todayCount: todayEntries.length,
       },
       faculties: { total: facultyCount },

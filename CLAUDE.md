@@ -84,7 +84,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - `src/controllers/*` — obsługa żądań (walidacja wejścia, wywołanie logiki, odpowiedź)
 - `src/services/*` — logika domenowa z bazą: `termCalendars`, `cohorts`, `sections`
   (synchronizacja zajęć, przenoszenie obsady), `plan` (walidacja umieszczeń, dostępność,
-  generowanie terminów), `occurrenceChanges` (odwołanie / przeniesienie / termin ręczny z kontrolą
+  generowanie terminów), `occurrenceChanges` (przeniesienie / przywrócenie / termin ręczny z kontrolą
   kolizji — tylko planista), `carryPlan`, `staleness` (terminy nieaktualne per rocznik), `visibility`
   `planLock` (zapisy planu po kolei w obrebie semestru — kontrola kolizji i zapis bez wyscigu;
   na trasach zapisu middleware `planLocked`)
@@ -134,19 +134,19 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - **Nazwy grup nie są zapisywane** — licz je `displayName` dla semestru.
 - **Dziekanat** zmienia tylko dane swojego wydziału (`assertFacultyScope`); semestry w
   archiwum są tylko do odczytu.
-- **Terminy zmienia tylko planista** (ADMIN, DEAN_OFFICE): odwołanie, przeniesienie, przywrócenie
+- **Terminy zmienia tylko planista** (ADMIN, DEAN_OFFICE): przeniesienie, przywrócenie wg wzorca
   i termin ręczny robi się wprost w „Układaniu planu” → Terminy. Prowadzący i student plan tylko
   oglądają („Mój plan”). W planista10 **nie ma zgłoszeń zmian ani powiadomień w aplikacji**
   (usunięte migracją `20261115120000_drop_change_requests_notifications`) — nie dokładaj ich
   z powrotem bez decyzji użytkownika.
-- **Nie ma odrobień** — ani na studiach stacjonarnych, ani na niestacjonarnych (strona „Odrobienia”,
-  powiązanie `makeupOfId` i status `MAKEUP` usunięte migracją `20261115200000_drop_makeups`).
-  Zajęcia, które mają się odbyć w innym dniu, planista **przenosi**; odwołany termin zużywa swoje
-  godziny (przepadają, „Przygotowanie semestru” pokaże brak godzin). Nie dokładaj odrobień
-  z powrotem bez decyzji użytkownika.
+- **Nie ma odwołań ani odrobień** — ani na studiach stacjonarnych, ani na niestacjonarnych
+  (migracje `20261115200000_drop_makeups` i `20261115210000_drop_cancellations`: bez strony
+  „Odrobienia”, `makeupOfId`, `Occurrence.status` i `PlacementException.action`). Zajęcia, które
+  mają się odbyć w innym dniu, planista **przenosi**; poprawka terminu to zawsze przeniesienie.
+  Nie dokładaj odwołań ani odrobień z powrotem bez decyzji użytkownika.
 - **Studia stacjonarne: ten sam plan w każdym tygodniu** + „Kalendarz roku akademickiego” Rektora
-  (dni wolne, „zajęcia z innego dnia” = `CalendarDay`, przerwy). Odwołań ani przeniesień się nie
-  rejestruje — terminy stacjonarnych są **tylko do wglądu** (zakładka „Terminy” bez akcji, API → 409
+  (dni wolne, „zajęcia z innego dnia” = `CalendarDay`, przerwy). Pojedynczych terminów się nie
+  przenosi — terminy stacjonarnych są **tylko do wglądu** (zakładka „Terminy” bez akcji, API → 409
   w `occurrenceChanges.assertPlanEditable`). Zmiana planu od tygodnia X = we wzorcu dotychczasowe
   umieszczenie „do tygodnia X−1”, nowe „od tygodnia X”, potem „Generuj terminy”. Do publikacji
   idzie plan tygodnia + kalendarz Rektora (druki — później).

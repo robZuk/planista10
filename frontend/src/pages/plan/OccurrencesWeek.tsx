@@ -21,8 +21,8 @@ const DAY_SHORT: Record<DayOfWeek, string> = {
 
 /**
  * Terminy jednego tygodnia (albo zjazdu) na siatce jak wzorzec: daty w naglowkach, swieta
- * i przerwy wyszarzone, terminy odwolane przekreslone, przeniesione i reczne oznaczone.
- * Klikniecie terminu otwiera jego akcje (przenies, odwolaj, przywroc).
+ * i przerwy wyszarzone, terminy przeniesione i reczne oznaczone.
+ * Klikniecie terminu otwiera jego akcje (przenies, przywroc).
  */
 export function OccurrencesWeek({
   periods,
@@ -70,14 +70,11 @@ export function OccurrencesWeek({
     classType: o.classType,
     title: o.subject,
     lines: [o.group, o.room.label, o.instructor, ...(o.note ? [o.note] : [])],
-    cancelled: o.status === 'CANCELLED',
     marker: occurrenceMarker(o),
   }));
   const closedDays = Object.fromEntries(columns.filter((d) => !d.teaching).map((d) => [d.dayOfWeek, d.label ?? ''])) as Partial<
     Record<DayOfWeek, string>
   >;
-  const active = inPeriod.filter((o) => o.status !== 'CANCELLED').length;
-  const cancelled = inPeriod.length - active;
   const today = toDateKey(new Date());
 
   return (
@@ -103,7 +100,7 @@ export function OccurrencesWeek({
           <ChevronRight />
         </Button>
         <span className="text-sm text-muted-foreground">
-          {active} terminow{cancelled > 0 && `, odwolanych ${cancelled}`}
+          {inPeriod.length} terminow
         </span>
       </div>
       <WeekGrid

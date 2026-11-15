@@ -109,7 +109,7 @@ describe('API — podglad (impersonacja) jest tylko do odczytu', () => {
 
     prismaMock.user.update.mockClear();
     for (const call of [
-      request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${token}`).send({ action: 'CANCEL' }),
+      request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${token}`).send({ action: 'MODIFY', date: '2026-03-10' }),
       request(app).put('/api/users/u1').set('Authorization', `Bearer ${token}`).send({ name: 'X' }),
       request(app).delete('/api/users/u1').set('Authorization', `Bearer ${token}`),
     ]) {

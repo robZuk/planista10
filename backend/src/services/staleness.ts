@@ -39,7 +39,7 @@ export async function staleReasonsByCohort(term: AcademicTerm, contexts: CohortC
     // Zajecia z terminami recznymi tez sa "w planie" (ich zmiana unieaktualnia terminy).
     prisma.occurrence.groupBy({
       by: ['sectionId'],
-      where: { ...ofCohorts, kind: 'MANUAL', status: { not: 'CANCELLED' } },
+      where: { ...ofCohorts, kind: 'MANUAL' },
       _count: { _all: true },
     }),
     // Terminy odlaczone od usunietych umieszczen: updatedAt = chwila usuniecia.

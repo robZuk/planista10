@@ -40,7 +40,7 @@ studia) i **semestr** (jedyny kontekst planowania). Szczegóły: `docs/model-dan
   konkretnych datach (sala / prowadzący / grupy), rytmy tygodniowe i zjazdowe, zajęcia łączone,
   opcjonalne „Przenieś plan z zeszłego roku" (z podglądem).
 - **Generuj terminy (z podglądem):** terminy z wzorca do wyczerpania godzin; ręczne poprawki
-  terminów i terminy ręczne (zajęcia dodatkowe) przeżywają ponowne generowanie; odrobień nie ma.
+  terminów i terminy ręczne (zajęcia dodatkowe) przeżywają ponowne generowanie; odwołań i odrobień nie ma.
 - **Przygotowanie semestru i publikacja:** lista kontrolna wydziału; studenci i prowadzący
   widzą „Mój plan" dopiero po publikacji.
 - **Użytkownicy i role:** ADMIN / dziekanat (swój wydział) / prowadzący / student, impersonacja.

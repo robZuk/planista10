@@ -272,7 +272,7 @@ export interface OccupancyOptions {
 /**
  * Zajetosc semestru w calej uczelni — jeden zbior dla wzorca i terminow:
  *  - wzorce wszystkich wydzialow rozpisane na daty kalendarzy rocznikow, z naniesionymi
- *    wyjatkami (przeniesienia, odwolania) i limitem godzin — dokladnie to, co dalo by
+ *    przeniesieniami pojedynczych terminow i limitem godzin — dokladnie to, co dalo by
  *    "Generuj terminy" (materializer bez sprawdzania kolizji),
  *  - terminy reczne,
  *  - terminy wygenerowane z usunietych umieszczen (zyja do ponownego generowania),
@@ -308,14 +308,13 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
       include: { ...sectionLabelInclude, placements: { include: { exceptions: true } } },
     }),
     prisma.occurrence.findMany({
-      where: { termId: term.id, kind: 'MANUAL', status: { not: 'CANCELLED' } },
+      where: { termId: term.id, kind: 'MANUAL' },
       include: { section: { include: sectionLabelInclude } },
     }),
     prisma.occurrence.findMany({
       where: {
         termId: term.id,
         kind: 'DERIVED',
-        status: { not: 'CANCELLED' },
         section: { cohortId: { notIn: [...skip] } },
         ...(opts.includeGenerated ? {} : { placementId: null }),
         ...occurrenceRelevant,
@@ -349,7 +348,6 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
         p.exceptions.map((e) => ({
           placementId: e.placementId,
           originalDate: toIsoDate(e.originalDate),
-          action: e.action,
           newDate: e.newDate ? toIsoDate(e.newDate) : null,
           newStartOrder: e.newStartOrder,
           newEndOrder: e.newEndOrder,
@@ -366,7 +364,7 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
 
   const sectionById = new Map(sections.map((s) => [s.id, s]));
   const busy: BusySlot[] = mat.occurrences
-    .filter((o) => o.status === 'SCHEDULED' && `${o.placementId}|${o.originalDate}` !== opts.excludePatternKey)
+    .filter((o) => `${o.placementId}|${o.originalDate}` !== opts.excludePatternKey)
     .map((o) => ({
       date: o.date,
       startMinute: o.startMinute,
@@ -567,7 +565,7 @@ export async function planView(term: AcademicTerm, cohortId: string) {
   });
   const manual = await prisma.occurrence.groupBy({
     by: ['sectionId'],
-    where: { termId: term.id, kind: 'MANUAL', status: { not: 'CANCELLED' }, section: { cohortId } },
+    where: { termId: term.id, kind: 'MANUAL', section: { cohortId } },
     _sum: { endOrder: true, startOrder: true },
     _count: { _all: true },
     _max: { date: true },
@@ -744,8 +742,8 @@ export interface GenerateReport {
   conflicts: { date: IsoDate; section: string; reason: string; with: string }[];
   beyondHours: number;
   shortfalls: { section: string; missing: number }[];
-  /** Poprawki terminow, ktorych daty juz nie ma we wzorcu (nie zostana zastosowane). */
-  orphanExceptions: { section: string; date: IsoDate; action: string }[];
+  /** Przeniesienia terminow, ktorych daty juz nie ma we wzorcu (nie zostana zastosowane). */
+  orphanExceptions: { section: string; date: IsoDate }[];
   calendarsMissing: string[];
   /** Roczniki pominiete, bo ich wersja programu jest w projekcie. */
   draftVersions: string[];
@@ -804,11 +802,10 @@ export async function generate(
     : {};
 
   // Godziny zuzyte poza generowaniem: terminy MANUAL (zajecia dodatkowe) i zachowane terminy
-  // sprzed "od kiedy". Odwolane terminy z wzorca zuzywaja godziny w materializerze (przepadaja).
+  // sprzed "od kiedy".
   const kept = await prisma.occurrence.findMany({
     where: {
       sectionId: { in: sectionIds },
-      status: { not: 'CANCELLED' },
       OR: [{ kind: 'MANUAL' }, ...(from ? [{ kind: 'DERIVED' as const, ...beforeRange }] : [])],
     },
     select: { sectionId: true, startOrder: true, endOrder: true },
@@ -838,7 +835,6 @@ export async function generate(
       p.exceptions.map((e) => ({
         placementId: e.placementId,
         originalDate: toIsoDate(e.originalDate),
-        action: e.action,
         newDate: e.newDate ? toIsoDate(e.newDate) : null,
         newStartOrder: e.newStartOrder,
         newEndOrder: e.newEndOrder,
@@ -850,12 +846,12 @@ export async function generate(
   );
 
   // Zajete poza zakresem: wzorce pozostalych rocznikow calej uczelni (takze jeszcze
-  // niewygenerowane, z przeniesieniami i odwolaniami) + terminy reczne + osierocone terminy,
+  // niewygenerowane, z przeniesieniami) + terminy reczne + osierocone terminy,
   // a w zakresie — zachowana przeszlosc (generowanie od daty).
   const busy: BusySlot[] = await termOccupancy(term, { excludeCohortIds: cohortIds });
   if (from) {
     const past = await prisma.occurrence.findMany({
-      where: { sectionId: { in: sectionIds }, kind: 'DERIVED', status: { not: 'CANCELLED' }, ...beforeRange },
+      where: { sectionId: { in: sectionIds }, kind: 'DERIVED', ...beforeRange },
     });
     for (const o of past) {
       busy.push({
@@ -886,7 +882,7 @@ export async function generate(
     where: { sectionId: { in: sectionIds }, kind: 'DERIVED', ...inRange },
   });
   const sectionById = new Map(sections.map((s) => [s.id, s]));
-  // Uwaga z wyjatku (powod odwolania/przeniesienia) — termin wg wzorca uwagi nie ma.
+  // Uwaga z wyjatku (powod przeniesienia) — termin wg wzorca uwagi nie ma.
   const noteOf = new Map(
     sections.flatMap((s) => s.placements.flatMap((p) => p.exceptions.map((e) => [`${p.id}|${toIsoDate(e.originalDate)}`, e.note] as const))),
   );
@@ -905,7 +901,6 @@ export async function generate(
     instructorId: o.instructorId,
     groupId: o.groupId,
     kind: 'DERIVED',
-    status: o.status,
     jointKey: o.jointKey,
     note: noteOf.get(`${o.placementId}|${o.originalDate}`) ?? null,
   }));
@@ -921,7 +916,6 @@ export async function generate(
   report.orphanExceptions = mat.orphanExceptions.map((e) => ({
     section: labelOf.get(placementSection.get(e.placementId) ?? '') ?? '?',
     date: e.originalDate,
-    action: e.action,
   }));
 
   if (!opts.dryRun) {

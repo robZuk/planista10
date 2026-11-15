@@ -103,7 +103,7 @@ export const NAV_GROUPS: NavGroup[] = [
         label: 'Ukladanie planu',
         icon: LayoutGrid,
         roles: ['ADMIN', 'DEAN_OFFICE'],
-        keywords: ['wzorzec', 'umieszczenie', 'terminy', 'generuj', 'zjazdy', 'odwolanie', 'przeniesienie', 'termin reczny'],
+        keywords: ['wzorzec', 'umieszczenie', 'terminy', 'generuj', 'zjazdy', 'przeniesienie', 'termin reczny'],
         termScoped: true,
       },
     ],

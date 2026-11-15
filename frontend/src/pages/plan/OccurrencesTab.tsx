@@ -39,7 +39,7 @@ const WEEKDAY = ['nd', 'pn', 'wt', 'sr', 'cz', 'pt', 'sb'];
 /**
  * Terminy rocznika (konkretne daty). Zmiany pojedynczych terminow sa zapisywane jako
  * poprawki i przezywaja ponowne "Generuj terminy". Terminy reczne (zajecia dodatkowe) nie znikaja.
- * Odrobien nie ma: odwolany termin zuzywa godziny, a zajecia w innym dniu sie przenosi.
+ * Odwolan i odrobien nie ma: zajecia, ktore maja sie odbyc w innym dniu, sie przenosi.
  */
 export function OccurrencesTab({
   termKey,
@@ -76,12 +76,9 @@ export function OccurrencesTab({
   const [view, setView] = useState<'week' | 'list'>('week');
   const [details, setDetails] = useState<OccurrenceRow | null>(null);
   const [removing, setRemoving] = useState<OccurrenceRow | null>(null);
-  // Odwolanie najpierw potwierdzamy — z powodem, ktory prowadzacy i studenci zobacza w swoim planie.
-  const [cancelling, setCancelling] = useState<OccurrenceRow | null>(null);
 
   const refresh = async () => {
     setRemoving(null);
-    setCancelling(null);
     setEditing(null);
     setAdding(false);
     setDetails(null);
@@ -93,8 +90,9 @@ export function OccurrencesTab({
     toast.info('Termin zniknal w miedzyczasie (np. terminy wygenerowano od nowa) — lista odswiezona');
     void refresh();
   };
-  const act = useMutation({
-    mutationFn: ({ id, action, note }: { id: string; action: 'CANCEL' | 'RESTORE'; note?: string }) => changeOccurrence(id, { action, note }),
+  // Przywrocenie przeniesionego terminu na miejsce z wzorca.
+  const restore = useMutation({
+    mutationFn: (id: string) => changeOccurrence(id, { action: 'RESTORE' }),
     onSuccess: async (r) => {
       toast.success(r.message);
       await refresh();
@@ -162,7 +160,7 @@ export function OccurrencesTab({
             </TableHeader>
             <TableBody>
               {rows.map((o) => (
-                <TableRow key={o.id} className={o.status === 'CANCELLED' ? 'text-muted-foreground line-through' : undefined}>
+                <TableRow key={o.id}>
                   <TableCell className="whitespace-nowrap tabular-nums">
                     {WEEKDAY[new Date(`${o.date}T12:00:00Z`).getUTCDay()]} {o.date}
                     {o.originalDate && o.originalDate !== o.date && (
@@ -175,7 +173,7 @@ export function OccurrencesTab({
                   <TableCell>
                     {CLASS_LABELS[o.classType]} · {o.subject}
                     {o.kind === 'MANUAL' && <Badge className="ml-2">reczny</Badge>}
-                    {o.changed && o.status !== 'CANCELLED' && (
+                    {o.changed && (
                       <Badge variant="outline" className="ml-2">
                         zmieniony
                       </Badge>
@@ -187,18 +185,11 @@ export function OccurrencesTab({
                   <TableCell>
                     {!readOnly && (
                       <div className="flex justify-end gap-1 no-underline">
-                        {o.status !== 'CANCELLED' && (
-                          <>
-                            <Button variant="ghost" size="sm" onClick={() => setEditing(o)}>
-                              Przenies
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => setCancelling(o)}>
-                              Odwolaj
-                            </Button>
-                          </>
-                        )}
-                        {o.kind === 'DERIVED' && o.placementId && (o.changed || o.status === 'CANCELLED') && (
-                          <Button variant="ghost" size="sm" onClick={() => act.mutate({ id: o.id, action: 'RESTORE' })}>
+                        <Button variant="ghost" size="sm" onClick={() => setEditing(o)}>
+                          Przenies
+                        </Button>
+                        {o.kind === 'DERIVED' && o.placementId && o.changed && (
+                          <Button variant="ghost" size="sm" disabled={restore.isPending} onClick={() => restore.mutate(o.id)}>
                             Przywroc
                           </Button>
                         )}
@@ -244,29 +235,16 @@ export function OccurrencesTab({
             </dl>
             {!readOnly && (
               <DialogFooter className="sm:justify-start">
-                {details.status !== 'CANCELLED' && (
-                  <>
-                    <Button
-                      onClick={() => {
-                        setEditing(details);
-                        setDetails(null);
-                      }}
-                    >
-                      Przenies
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setCancelling(details);
-                        setDetails(null);
-                      }}
-                    >
-                      Odwolaj
-                    </Button>
-                  </>
-                )}
-                {details.kind === 'DERIVED' && details.placementId && (details.changed || details.status === 'CANCELLED') && (
-                  <Button variant="outline" disabled={act.isPending} onClick={() => act.mutate({ id: details.id, action: 'RESTORE' })}>
+                <Button
+                  onClick={() => {
+                    setEditing(details);
+                    setDetails(null);
+                  }}
+                >
+                  Przenies
+                </Button>
+                {details.kind === 'DERIVED' && details.placementId && details.changed && (
+                  <Button variant="outline" disabled={restore.isPending} onClick={() => restore.mutate(details.id)}>
                     Przywroc wg wzorca
                   </Button>
                 )}
@@ -296,14 +274,6 @@ export function OccurrencesTab({
         isPending={remove.isPending}
         onConfirm={() => remove.mutate(removing!.id)}
       />
-      {cancelling && (
-        <CancelDialog
-          occurrence={cancelling}
-          isPending={act.isPending}
-          onClose={() => setCancelling(null)}
-          onConfirm={(note) => act.mutate({ id: cancelling.id, action: 'CANCEL', note })}
-        />
-      )}
       {editing && (
         <MoveDialog
           occurrence={editing}
@@ -512,8 +482,8 @@ function ManualDialog({
         <DialogHeader>
           <DialogTitle>Termin reczny</DialogTitle>
           <DialogDescription>
-            Zajecia dodatkowe (jednorazowe) — licza sie do godzin zajec i nie znikaja przy generowaniu. Zajecia, ktore maja sie odbyc
-            w innym dniu, przenies („Przenies”) zamiast odwolywac.
+            Zajecia dodatkowe (jednorazowe) — licza sie do godzin zajec i nie znikaja przy generowaniu. Zajecia z planu, ktore
+            maja sie odbyc w innym dniu, przenies („Przenies”).
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3">
@@ -572,49 +542,6 @@ function ManualDialog({
           <Button onClick={() => save.mutate()} disabled={!sectionId || !date || (!online && !roomId) || save.isPending}>
             {save.isPending && <Spinner />}
             {warnings ? 'Dodaj mimo to' : 'Dodaj'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-/** Potwierdzenie odwolania terminu z powodem — powod widac w planie prowadzacego i studentow. */
-function CancelDialog({
-  occurrence,
-  isPending,
-  onClose,
-  onConfirm,
-}: {
-  occurrence: OccurrenceRow;
-  isPending: boolean;
-  onClose: () => void;
-  onConfirm: (note: string | undefined) => void;
-}) {
-  const [note, setNote] = useState('');
-  return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Odwolac zajecia?</DialogTitle>
-          <DialogDescription>
-            {CLASS_LABELS[occurrence.classType]} · {occurrence.subject} · {occurrence.group}, {formatDayMonth(occurrence.date)}{' '}
-            {formatMinutes(occurrence.startMinute)}–{formatMinutes(occurrence.endMinute)}. Odrobien nie ma — godziny odwolanych zajec
-            przepadaja; jesli zajecia maja sie odbyc w innym dniu, uzyj „Przenies”. Powod — gdy plan jest opublikowany — zobacza
-            prowadzacy i studenci w swoim planie.
-          </DialogDescription>
-        </DialogHeader>
-        <Field>
-          <FieldLabel htmlFor="cn-note">Powod (opcjonalnie)</FieldLabel>
-          <Input id="cn-note" value={note} placeholder="np. choroba prowadzacego" onChange={(e) => setNote(e.target.value)} autoFocus />
-        </Field>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isPending}>
-            Anuluj
-          </Button>
-          <Button variant="destructive" disabled={isPending} onClick={() => onConfirm(note.trim() || undefined)}>
-            {isPending && <Spinner />}
-            Odwolaj zajecia
           </Button>
         </DialogFooter>
       </DialogContent>

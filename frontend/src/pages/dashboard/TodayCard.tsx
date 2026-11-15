@@ -3,9 +3,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '@/components/ui/item';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CLASS_FULL_LABELS, STATUS_LABELS } from '@/lib/scheduleDisplay';
+import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
 import { sortByTime, todayShortlist } from '@/lib/todayEntries';
-import type { ClassType, EntryStatus } from '@/types';
+import type { ClassType } from '@/types';
 
 /**
  * Minimum, ktore karta potrzebuje. Dzieki temu przyjmuje zarowno DashboardEntry
@@ -14,7 +14,6 @@ import type { ClassType, EntryStatus } from '@/types';
 export interface TodayEntry {
   id: string;
   classType: ClassType;
-  status: EntryStatus;
   /** null = zajecia online. */
   room: { number: string; building: { name: string } } | null;
   instructor: { firstName: string; lastName: string; title: string | null } | null;
@@ -80,9 +79,6 @@ export function TodayCard({
                     </span>
                     {entry.curriculumEntry.subject.name}
                     <Badge variant="outline">{CLASS_FULL_LABELS[entry.classType]}</Badge>
-                    {entry.status !== 'SCHEDULED' && (
-                      <Badge variant="secondary">{STATUS_LABELS[entry.status]}</Badge>
-                    )}
                   </ItemTitle>
                   <ItemDescription>
                     {entry.room ? `${entry.room.building.name} · sala ${entry.room.number}` : 'ON-LINE'} ·{' '}

@@ -68,12 +68,12 @@ describe('API — plan', () => {
     }
   });
 
-  it('odwolac, przeniesc albo dodac termin moze tylko planista — prowadzacy i student -> 403', async () => {
+  it('przeniesc, przywrocic albo dodac termin moze tylko planista — prowadzacy i student -> 403', async () => {
     const instructor = signAccessToken({ sub: 'u-i', role: 'INSTRUCTOR' });
     prismaMock.occurrence.findUnique.mockClear();
     for (const token of [instructor, student]) {
       for (const call of [
-        request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${token}`).send({ action: 'CANCEL', note: 'choroba' }),
+        request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${token}`).send({ action: 'RESTORE' }),
         request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${token}`).send({ action: 'MODIFY', date: '2026-03-10' }),
         request(app).post('/api/terms/2026-L/occurrences').set('Authorization', `Bearer ${token}`).send({ sectionId: 's1' }),
         request(app).delete('/api/occurrences/o1').set('Authorization', `Bearer ${token}`),
@@ -142,7 +142,7 @@ describe('API — plan', () => {
     expect(res.status).toBe(403);
   });
 
-  it('terminu z wzorca nie usuwa sie (tylko odwolanie) -> 409', async () => {
+  it('terminu z wzorca nie usuwa sie (tylko przeniesienie) -> 409', async () => {
     prismaMock.occurrence.findUnique.mockResolvedValueOnce({ id: 'o1', facultyId: 'wm', kind: 'DERIVED' });
     const res = await request(app).delete('/api/occurrences/o1').set('Authorization', `Bearer ${dean}`);
     expect(res.status).toBe(409);
@@ -206,16 +206,16 @@ describe('API — plan', () => {
     expect(prismaMock.$transaction.mock.calls.length).toBe(before);
   });
 
-  // Studia stacjonarne: ten sam plan w kazdym tygodniu — terminy tylko do wgladu (bez odwolan
-  // i przeniesien; zmiana planu od tygodnia idzie przez wzorzec). `cohortRow` jest
+  // Studia stacjonarne: ten sam plan w kazdym tygodniu — terminy tylko do wgladu (bez przeniesien;
+  // zmiana planu od tygodnia idzie przez wzorzec). `cohortRow` jest
   // stacjonarny, jego kalendarz opublikowany.
   const stationaryCohort = () => {
     prismaMock.cohort.findMany.mockResolvedValueOnce([cohortRow]);
     prismaMock.termCalendar.findMany.mockResolvedValueOnce([calendarRow('PUBLISHED')]);
   };
 
-  it('odwolanie albo przeniesienie terminu rocznika stacjonarnego -> 409, bez zapisu', async () => {
-    for (const body of [{ action: 'CANCEL', note: 'choroba' }, { action: 'MODIFY', date: '2027-03-10' }]) {
+  it('przeniesienie albo przywrocenie terminu rocznika stacjonarnego -> 409, bez zapisu', async () => {
+    for (const body of [{ action: 'RESTORE' }, { action: 'MODIFY', date: '2027-03-10' }]) {
       prismaMock.occurrence.findUnique.mockResolvedValueOnce({
         id: 'o1',
         facultyId: 'wm',
@@ -254,7 +254,24 @@ describe('API — plan', () => {
     expect(prismaMock.occurrence.delete.mock.calls.length).toBe(before);
   });
 
-  it('rocznik niestacjonarny dalej odwoluje termin -> 200', async () => {
+  it('odwolan nie ma: odwolanie terminu -> 400 (takze dla niestacjonarnych), bez zapisu', async () => {
+    prismaMock.occurrence.findUnique.mockClear();
+    const before = prismaMock.$transaction.mock.calls.length;
+    const res = await request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${dean}`).send({ action: 'CANCEL', note: 'choroba' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Odwolan nie ma/);
+    expect(prismaMock.occurrence.findUnique).not.toHaveBeenCalled();
+    expect(prismaMock.$transaction.mock.calls.length).toBe(before);
+  });
+
+  it('nieznana zmiana terminu -> 400', async () => {
+    for (const body of [{}, { action: 'DELETE' }]) {
+      const res = await request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${dean}`).send(body);
+      expect(res.status).toBe(400);
+    }
+  });
+
+  it('rocznik niestacjonarny przechodzi kontrole edycji: przywrocenie terminu recznego -> 400, a nie 409', async () => {
     const partTime = { ...cohortRow, program: { ...cohortRow.program, code: 'EDST-N1', studyMode: 'PART_TIME' } };
     prismaMock.occurrence.findUnique.mockResolvedValueOnce({
       id: 'o1',
@@ -262,8 +279,6 @@ describe('API — plan', () => {
       termId: 't1',
       kind: 'MANUAL',
       placement: null,
-      originalDate: null,
-      note: null,
       section: { cohortId: 'c1' },
     });
     prismaMock.cohort.findMany.mockResolvedValueOnce([partTime]);
@@ -279,11 +294,9 @@ describe('API — plan', () => {
         blocks: [{ id: 'b1', order: 1, startTime: '08:00', endTime: '09:00', label: '08:00-09:00' }],
       },
     ]);
-    const res = await request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${dean}`).send({ action: 'CANCEL', note: 'choroba' });
-    expect(res.status).toBe(200);
-    expect(prismaMock.$transaction).toHaveBeenLastCalledWith([
-      { op: 'occurrence.update', args: { where: { id: 'o1' }, data: { status: 'CANCELLED', note: 'choroba' } } },
-    ]);
+    const res = await request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${dean}`).send({ action: 'RESTORE' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Przywracac mozna tylko terminy z wzorca');
   });
 
   it('zla data "od kiedy" przy generowaniu -> 400', async () => {
