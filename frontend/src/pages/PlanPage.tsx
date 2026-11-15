@@ -180,6 +180,10 @@ export default function PlanPage() {
       ? 'Najpierw zaloz kalendarz dla tego rocznika'
       : null;
   const readOnly = locked || !plan?.calendar || draftVersion;
+  // Studia stacjonarne: ten sam plan w kazdym tygodniu + kalendarz Rektora. Terminy sa tylko do
+  // wgladu (bez odwolan, przeniesien i odrobien) — zmiana planu od tygodnia idzie przez wzorzec.
+  // Ta sama regula w API (services/occurrenceChanges.assertPlanEditable).
+  const stationary = plan?.cohort.studyMode === 'FULL_TIME';
 
   // Dlugosc zajec dla podpowiedzi: domyslnie godziny rozlozone na tygodnie/zjazdy semestru
   // (15 h -> 1 h tygodniowo), planista moze ja zmienic przy "Umieszczasz".
@@ -669,13 +673,20 @@ export default function PlanPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="occurrences" className="mt-3">
+          <TabsContent value="occurrences" className="mt-3 space-y-3">
+            {stationary && (
+              <p className="text-sm text-muted-foreground">
+                Studia stacjonarne — terminy tylko do wgladu: co bylo i co bedzie, dni wolne i zajecia z innego dnia wg
+                kalendarza. Odwolan i odrobien sie nie rejestruje. Zmiana planu od tygodnia: we wzorcu dotychczasowe
+                umieszczenie „Do tygodnia”, nowe „Od tygodnia”, potem „Generuj terminy”.
+              </p>
+            )}
             <OccurrencesTab
               termKey={term.key}
               cohortId={cohortId}
               sections={sections}
               blocks={blocks}
-              readOnly={readOnly}
+              readOnly={readOnly || stationary}
               periods={plan?.calendar?.periods ?? []}
               modeDays={days}
             />

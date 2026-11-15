@@ -20,6 +20,10 @@ import { assertVersionApproved, calendarFor, termOccupancy, type OccupancyOption
  * (odrobienie) wprowadza tylko planista (Ukladanie planu → Terminy). Terminy z wzorca
  * zmieniamy wyjatkiem (PlacementException), ktory przezyje ponowne generowanie; terminy
  * reczne — wprost. Kazda zmiana daty/godzin/sali sprawdza kolizje w calej uczelni.
+ *
+ * Dotyczy tylko studiow niestacjonarnych. Na stacjonarnych obowiazuje ten sam plan w kazdym
+ * tygodniu (+ kalendarz Rektora): odwolan i odrobien sie nie rejestruje, a zmiana planu od
+ * tygodnia to zmiana wzorca (umieszczenia od-do tygodnia) — terminy sa tylko do wgladu.
  */
 
 export type OccurrenceFull = Occurrence & { placement: Placement | null; section: ClassSection };
@@ -37,7 +41,8 @@ export async function occurrenceConflicts(term: AcademicTerm, slot: Omit<BusySlo
 }
 
 /**
- * Terminy rocznika wolno zmieniac: kalendarz nie w archiwum i wersja programu zatwierdzona.
+ * Terminy rocznika wolno zmieniac: kalendarz nie w archiwum, rocznik niestacjonarny (stacjonarne
+ * maja terminy tylko do wgladu — patrz naglowek modulu) i wersja programu zatwierdzona.
  * Zwraca siatke godzin wydzialu i trybu rocznika — bloki terminu zamieniamy na rzeczywisty czas.
  */
 export async function assertPlanEditable(termId: string, cohortId: string): Promise<GridTime> {
@@ -46,6 +51,12 @@ export async function assertPlanEditable(termId: string, cohortId: string): Prom
   const calendar = ctx ? await calendarFor(term, ctx) : null;
   if (!ctx || !calendar) throw new AppError(409, 'Rocznik nie ma kalendarza w tym semestrze');
   if (calendar.status === 'ARCHIVED') throw new AppError(409, 'Kalendarz w archiwum — terminy tylko do odczytu');
+  if (ctx.cohort.program.studyMode === 'FULL_TIME') {
+    throw new AppError(
+      409,
+      'Studia stacjonarne: terminy sa tylko do wgladu — plan zmieniasz we wzorcu tygodnia (od-do tygodnia), potem „Generuj terminy”',
+    );
+  }
   assertVersionApproved(ctx.cohort);
   return (await gridFor(ctx.cohort.program.fieldOfStudy.facultyId, ctx.cohort.program.studyMode)).time;
 }

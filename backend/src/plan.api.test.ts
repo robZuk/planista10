@@ -7,14 +7,19 @@ process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn().mockResolvedValue({ facultyId: 'wm' }) },
-  academicTerm: { findUnique: vi.fn().mockResolvedValue({ id: 't1', startYear: 2026, type: 'SUMMER' }) },
+  academicTerm: {
+    findUnique: vi.fn().mockResolvedValue({ id: 't1', startYear: 2026, type: 'SUMMER' }),
+    findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 't1', startYear: 2026, type: 'SUMMER' }),
+  },
   cohort: { findMany: vi.fn().mockResolvedValue([]) },
   termCalendar: { findMany: vi.fn().mockResolvedValue([]) },
+  timeGrid: { findUnique: vi.fn() },
   classSection: { findUnique: vi.fn() },
   occurrence: {
     findUnique: vi.fn(),
     findMany: vi.fn().mockResolvedValue([]),
     delete: vi.fn(),
+    update: vi.fn((args: unknown) => ({ op: 'occurrence.update', args })),
     updateMany: vi.fn((args: unknown) => ({ op: 'occurrence.updateMany', args })),
   },
   placement: { findUnique: vi.fn(), delete: vi.fn((args: unknown) => ({ op: 'placement.delete', args })) },
@@ -225,6 +230,82 @@ describe('API — plan', () => {
     expect(res.status).toBe(409);
     expect(res.body.error).toMatch(/w archiwum — plan tylko do odczytu/);
     expect(prismaMock.$transaction.mock.calls.length).toBe(before);
+  });
+
+  // Studia stacjonarne: ten sam plan w kazdym tygodniu — terminy tylko do wgladu (bez odwolan,
+  // przeniesien i odrobien; zmiana planu od tygodnia idzie przez wzorzec). `cohortRow` jest
+  // stacjonarny, jego kalendarz opublikowany.
+  const stationaryCohort = () => {
+    prismaMock.cohort.findMany.mockResolvedValueOnce([cohortRow]);
+    prismaMock.termCalendar.findMany.mockResolvedValueOnce([calendarRow('PUBLISHED')]);
+  };
+
+  it('odwolanie albo przeniesienie terminu rocznika stacjonarnego -> 409, bez zapisu', async () => {
+    for (const body of [{ action: 'CANCEL', note: 'choroba' }, { action: 'MODIFY', date: '2027-03-10' }]) {
+      prismaMock.occurrence.findUnique.mockResolvedValueOnce({
+        id: 'o1',
+        facultyId: 'wm',
+        termId: 't1',
+        kind: 'DERIVED',
+        placement: null,
+        section: { cohortId: 'c1' },
+      });
+      stationaryCohort();
+      const before = prismaMock.$transaction.mock.calls.length;
+      const res = await request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${dean}`).send(body);
+      expect(res.status).toBe(409);
+      expect(res.body.error).toMatch(/Studia stacjonarne: terminy sa tylko do wgladu/);
+      expect(prismaMock.$transaction.mock.calls.length).toBe(before);
+    }
+  });
+
+  it('termin reczny (odrobienie) dla rocznika stacjonarnego -> 409', async () => {
+    prismaMock.classSection.findUnique.mockResolvedValueOnce({ id: 's1', termId: 't1', facultyId: 'wm', cohortId: 'c1' });
+    stationaryCohort();
+    const res = await request(app)
+      .post('/api/terms/2026-L/occurrences')
+      .set('Authorization', `Bearer ${dean}`)
+      .send({ sectionId: 's1', date: '2027-03-10', startOrder: 1, endOrder: 2, online: true });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/Studia stacjonarne/);
+  });
+
+  it('usuniecie terminu recznego rocznika stacjonarnego -> 409, bez usuniecia', async () => {
+    prismaMock.occurrence.findUnique.mockResolvedValueOnce({ id: 'o1', facultyId: 'wm', termId: 't1', kind: 'MANUAL', section: { cohortId: 'c1' } });
+    stationaryCohort();
+    const before = prismaMock.occurrence.delete.mock.calls.length;
+    const res = await request(app).delete('/api/occurrences/o1').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/Studia stacjonarne/);
+    expect(prismaMock.occurrence.delete.mock.calls.length).toBe(before);
+  });
+
+  it('rocznik niestacjonarny dalej odwoluje termin -> 200', async () => {
+    const partTime = { ...cohortRow, program: { ...cohortRow.program, code: 'EDST-N1', studyMode: 'PART_TIME' } };
+    prismaMock.occurrence.findUnique.mockResolvedValueOnce({
+      id: 'o1',
+      facultyId: 'wm',
+      termId: 't1',
+      kind: 'MANUAL',
+      placement: null,
+      originalDate: null,
+      note: null,
+      section: { cohortId: 'c1' },
+    });
+    prismaMock.cohort.findMany.mockResolvedValueOnce([partTime]);
+    prismaMock.termCalendar.findMany.mockResolvedValueOnce([{ ...calendarRow('PUBLISHED'), studyMode: 'PART_TIME' }]);
+    prismaMock.timeGrid.findUnique.mockResolvedValueOnce({
+      id: 'g1',
+      facultyId: 'wm',
+      studyMode: 'PART_TIME',
+      days: [{ day: 'SATURDAY', from: null, to: null }],
+      blocks: [{ id: 'b1', order: 1, startTime: '08:00', endTime: '09:00', label: '08:00-09:00' }],
+    });
+    const res = await request(app).put('/api/occurrences/o1').set('Authorization', `Bearer ${dean}`).send({ action: 'CANCEL', note: 'choroba' });
+    expect(res.status).toBe(200);
+    expect(prismaMock.$transaction).toHaveBeenLastCalledWith([
+      { op: 'occurrence.update', args: { where: { id: 'o1' }, data: { status: 'CANCELLED', note: 'choroba' } } },
+    ]);
   });
 
   it('zla data "od kiedy" przy generowaniu -> 400', async () => {

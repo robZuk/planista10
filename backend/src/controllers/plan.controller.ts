@@ -295,7 +295,8 @@ export const listOccurrences = asyncHandler(async (req, res) => {
  * Zmiana pojedynczego terminu: odwolanie, przeniesienie (data/godziny/sala/prowadzacy)
  * albo przywrocenie wg wzorca. Dla terminow z wzorca zapisujemy wyjatek, ktory przezyje
  * ponowne generowanie; terminy reczne zmieniamy wprost. Tylko planista (admin, dziekanat
- * wydzialu terminu) — prowadzacy nie odwoluje ani nie przenosi zajec.
+ * wydzialu terminu) — prowadzacy nie odwoluje ani nie przenosi zajec. Tylko studia
+ * niestacjonarne: stacjonarne maja terminy do wgladu (assertPlanEditable -> 409).
  */
 export const changeOccurrence = asyncHandler(async (req, res) => {
   const occ = await prisma.occurrence.findUnique({ where: { id: String(req.params.id) }, include: { placement: true, section: true } });

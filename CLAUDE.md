@@ -141,6 +141,12 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   oglądają („Mój plan”). W planista10 **nie ma zgłoszeń zmian ani powiadomień w aplikacji**
   (usunięte migracją `20261115120000_drop_change_requests_notifications`) — nie dokładaj ich
   z powrotem bez decyzji użytkownika.
+- **Studia stacjonarne: ten sam plan w każdym tygodniu** + „Kalendarz roku akademickiego” Rektora
+  (dni wolne, „zajęcia z innego dnia” = `CalendarDay`, przerwy). Odwołań i odrobień się nie
+  rejestruje — terminy stacjonarnych są **tylko do wglądu** (zakładka „Terminy” bez akcji, API → 409
+  w `occurrenceChanges.assertPlanEditable`). Zmiana planu od tygodnia X = we wzorcu dotychczasowe
+  umieszczenie „do tygodnia X−1”, nowe „od tygodnia X”, potem „Generuj terminy”. Do publikacji
+  idzie plan tygodnia + kalendarz Rektora (druki — później).
 
 ## Konwencje
 

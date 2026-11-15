@@ -14,6 +14,7 @@ import { useFacultyFilterStore } from '@/store/facultyStore';
 /**
  * Odrobienia: odwolane zajecia semestru i to, czy maja juz termin odrobienia. Odwoluje i odrabia
  * tylko planista (administrator, dziekanat) w Ukladaniu planu → Terminy; tu jest przeglad calosci.
+ * Tylko studia niestacjonarne — stacjonarne maja terminy do wgladu (odwolan sie nie rejestruje).
  */
 export default function MakeupsPage() {
   const { term } = useCurrentTerm();
@@ -32,7 +33,7 @@ export default function MakeupsPage() {
     <>
       <PageHeader
         title="Odrobienia"
-        description="Odwolane zajecia semestru i ich odrobienia. Zajecia odwolujesz, a termin odrobienia dodajesz w „Ukladaniu planu” → Terminy (termin reczny wskazujacy odwolane zajecia)."
+        description="Odwolane zajecia semestru i ich odrobienia (studia niestacjonarne — na stacjonarnych odwolan sie nie rejestruje). Zajecia odwolujesz, a termin odrobienia dodajesz w „Ukladaniu planu” → Terminy (termin reczny wskazujacy odwolane zajecia)."
         actions={isAdmin ? <FacultySelector /> : undefined}
       />
       {isPending && term && <Skeleton className="h-48 w-full" />}

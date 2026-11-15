@@ -7,7 +7,8 @@ import { planLocked, termFromKey, termOfOccurrence, termOfPlacement } from '../m
 /**
  * Plan semestru (nowy model): /api/terms/:key/plan..., /api/placements/:id,
  * /api/occurrences/:id. Zapis dla admina i planisty wydzialu — tylko oni odwoluja, przenosza
- * i odrabiaja terminy (prowadzacy i student plan tylko ogladaja).
+ * i odrabiaja terminy (prowadzacy i student plan tylko ogladaja). Terminy studiow stacjonarnych
+ * sa tylko do wgladu — zmiany ida przez wzorzec (services/occurrenceChanges.assertPlanEditable).
  */
 export const termPlanRouter = Router({ mergeParams: true });
 export const placementsRouter = Router();

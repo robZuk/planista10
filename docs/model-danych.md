@@ -143,6 +143,12 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   `services/makeups`.
 - planista10 nie ma zgłoszeń zmian prowadzących ani powiadomień w aplikacji (tabele
   `ChangeRequest` i `Notification` usunięte migracją `20261115120000_drop_change_requests_notifications`).
+- **Studia stacjonarne** — ten sam plan w każdym tygodniu, dni zajęć z kalendarza Rektora (dni wolne,
+  zajęcia z innego dnia, przerwy). Odwołań i odrobień się nie rejestruje: terminy rocznika
+  stacjonarnego są tylko do wglądu (co było i co będzie, dni wolne, zamiany dni), API odrzuca ich
+  zmiany (409, `assertPlanEditable`). Zmiana planu od tygodnia X to zmiana wzorca: umieszczenie
+  „do tygodnia X−1” + nowe „od tygodnia X”, potem „Generuj terminy” — przeszłe tygodnie zostają,
+  a kolizje nowego miejsca liczą się od tygodnia X.
 
 ## 7. Widoczność i uprawnienia
 
