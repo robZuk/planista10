@@ -2,13 +2,13 @@
 #   make dev   albo   docker compose up
 # Hot-reload: kod montowany z dysku, backend tsx watch, frontend Vite HMR.
 # (Wariant produkcyjny jest w osobnym, tez kompletnym pliku: docker-compose.prod.yml)
-name: planista9
+name: planista10
 
 services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: planista9
+      POSTGRES_DB: planista10
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     volumes:
@@ -17,25 +17,25 @@ services:
     networks:
       - internal
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d planista9']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d planista10']
       interval: 5s
       timeout: 3s
       retries: 10
 
   backend:
-    image: planista9-backend-dev
+    image: planista10-backend-dev
     build:
       context: ./backend
       target: dev
     command: npm run dev
     environment:
-      PORT: 4003
-      # PLANISTA_DB=planista9_pelne docker compose up -d backend -> pelna baza testowa (scripts/pelne-dane)
-      DATABASE_URL: postgresql://postgres:password@db:5432/${PLANISTA_DB:-planista9}?schema=public
+      PORT: 4004
+      # PLANISTA_DB=planista10_pelne docker compose up -d backend -> pelna baza testowa (scripts/pelne-dane)
+      DATABASE_URL: postgresql://postgres:password@db:5432/${PLANISTA_DB:-planista10}?schema=public
       # Sekrety deweloperskie — jawne, bo to tylko lokalne srodowisko.
       JWT_ACCESS_SECRET: dev-access-secret-change-me
       JWT_REFRESH_SECRET: dev-refresh-secret-change-me
-      CORS_ORIGIN: http://localhost:5176
+      CORS_ORIGIN: http://localhost:5177
     volumes:
       # Kod z dysku -> hot-reload; anonimowy wolumen chroni node_modules z obrazu.
       - ./backend:/app
@@ -45,27 +45,27 @@ services:
       - edge
     ports:
       # Bind na localhost — nie wystawiamy dev na LAN.
-      - '127.0.0.1:4003:4003'
+      - '127.0.0.1:4004:4004'
     depends_on:
       db:
         condition: service_healthy
 
   frontend:
-    image: planista9-frontend-dev
+    image: planista10-frontend-dev
     build:
       context: ./frontend
       target: dev
     command: npm run dev -- --host
     environment:
       # Vite proxuje /api na kontener backendu (nazwa uslugi w sieci compose).
-      VITE_PROXY_TARGET: http://backend:4003
+      VITE_PROXY_TARGET: http://backend:4004
     volumes:
       - ./frontend:/app
       - /app/node_modules
     networks:
       - edge
     ports:
-      - '127.0.0.1:5176:5176'
+      - '127.0.0.1:5177:5177'
     depends_on:
       - backend
 

@@ -1,6 +1,6 @@
-# Zrzut bazy `planista9`
+# Zrzut bazy `planista10`
 
-`planista9-dump.sql` to pełny zrzut bazy (schemat + dane) w **nowym modelu planowania**:
+`planista10-dump.sql` to pełny zrzut bazy (schemat + dane) w **nowym modelu planowania**:
 semestry i kalendarze, programy studiów, roczniki z grupami, zajęcia z obsadą, plan
 (umieszczenia) i terminy. Dane pochodzą z importu zimy 2024/2025 (Wydział Mechaniczny),
 przeniesionego ze starego modelu migracjami etapów 1–7. Plik jest **oczyszczony**, więc
@@ -30,7 +30,7 @@ kalendarzy — od nich zaczyna się praca w nowym modelu.
 Gdyby zrzut był starszy niż katalog `backend/prisma/migrations/`, domigruj:
 
 ```bash
-docker exec planista9-backend-1 npx prisma migrate deploy
+docker exec planista10-backend-1 npx prisma migrate deploy
 ```
 
 ## Czym różni się od stanu bazy roboczej
@@ -52,13 +52,13 @@ bez wcześniejszej zmiany haseł.
 
 ```bash
 docker compose up -d
-docker exec -i planista9-db-1 psql -U postgres -d planista9 -v ON_ERROR_STOP=1 < db/planista9-dump.sql
+docker exec -i planista10-db-1 psql -U postgres -d planista10 -v ON_ERROR_STOP=1 < db/planista10-dump.sql
 ```
 
 ## Odświeżenie zrzutu
 
 `make-dump.sh` kopiuje bazę roboczą, czyści kopię (tokeny, hasła), zrzuca ją i kasuje
-kopię. Baza `planista9` pozostaje nietknięta. Kopia przez `TEMPLATE` wymaga, żeby nikt
+kopię. Baza `planista10` pozostaje nietknięta. Kopia przez `TEMPLATE` wymaga, żeby nikt
 nie był podłączony do bazy — zatrzymaj na chwilę backend:
 
 ```bash

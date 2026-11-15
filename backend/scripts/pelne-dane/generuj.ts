@@ -1,11 +1,11 @@
 /**
- * Pelna baza testowa planista9 w skali uczelni (testy obciazenia i wydajnosci).
+ * Pelna baza testowa planista10 w skali uczelni (testy obciazenia i wydajnosci).
  *
- * WYCZYSZCZA I WYPELNIA baze — dziala TYLKO na bazie `planista9_pelne` (sprawdzane w
+ * WYCZYSZCZA I WYPELNIA baze — dziala TYLKO na bazie `planista10_pelne` (sprawdzane w
  * DATABASE_URL), zeby przypadkiem nie nadpisac danych deweloperskich.
  *
- *   docker exec -e DATABASE_URL=postgresql://postgres:password@db:5432/planista9_pelne?schema=public \
- *     planista9-backend-1 npx tsx scripts/pelne-dane/generuj.ts
+ *   docker exec -e DATABASE_URL=postgresql://postgres:password@db:5432/planista10_pelne?schema=public \
+ *     planista10-backend-1 npx tsx scripts/pelne-dane/generuj.ts
  *
  * Zrodla: struktura.ts (wydzialy, kierunki, specjalnosci, liczby studentow, siatki) i
  * programy.json (prawdziwe plany studiow WN i WM). Reszta jest generowana deterministycznie:
@@ -56,8 +56,8 @@ interface Entry {
 
 // ─── Bezpiecznik ─────────────────────────────────────────────
 const url = process.env.DATABASE_URL ?? '';
-if (!/\/planista9_pelne(\?|$)/.test(url)) {
-  console.error('Skrypt czysci baze — uruchamiaj tylko z DATABASE_URL wskazujacym planista9_pelne.');
+if (!/\/planista10_pelne(\?|$)/.test(url)) {
+  console.error('Skrypt czysci baze — uruchamiaj tylko z DATABASE_URL wskazujacym planista10_pelne.');
   process.exit(1);
 }
 
@@ -128,7 +128,7 @@ function genEntries(def: ProgramDef): Entry[] {
 
 // ─── Glowna procedura ────────────────────────────────────────
 async function main() {
-  log('Czyszczenie bazy planista9_pelne...');
+  log('Czyszczenie bazy planista10_pelne...');
   const tables = await prisma.$queryRaw<{ tablename: string }[]>`
     SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename <> '_prisma_migrations'`;
   await prisma.$executeRawUnsafe(`TRUNCATE ${tables.map((t) => `"${t.tablename}"`).join(', ')} CASCADE`);

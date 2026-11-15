@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useAuthStore } from '@/store/authStore';
 
 /**
- * Klient HTTP do backendu. baseURL '/api' -> proxy Vite przekazuje na :4003.
+ * Klient HTTP do backendu. baseURL '/api' -> proxy Vite przekazuje na :4004.
  *
  * Dwa interceptory:
  *  - request: dokleja Authorization: Bearer <accessToken>.

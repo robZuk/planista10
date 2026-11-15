@@ -16,6 +16,6 @@ export const usePlanCohortStore = create<PlanCohortState>()(
       lastCohortId: null,
       setLastCohortId: (lastCohortId) => set({ lastCohortId }),
     }),
-    { name: 'planista9-plan-cohort' },
+    { name: 'planista10-plan-cohort' },
   ),
 );

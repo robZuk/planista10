@@ -1,9 +1,10 @@
-# Planista 9
+# Planista 10
 
-> **Wariant planista8 z siatkami godzin wydziałów** (stacjonarna i niestacjonarna na wydział,
-> dni z oknem godzin, kolizje w minutach) i zajęciami online bez sali. Lokalnie: front
-> http://localhost:5176, backend :4003. Odznaki, demo i wdrożenie poniżej dotyczą jeszcze
-> repozytorium planista8 — do przepięcia po założeniu repozytorium planista9.
+> **Nowa wersja rozwijana od kopii planista9** (siatki godzin wydziałów: stacjonarna
+> i niestacjonarna na wydział, dni z oknem godzin, kolizje w minutach; zajęcia online bez
+> sali). Lokalnie: front http://localhost:5177, backend :4004. Odznaki, demo i wdrożenie
+> poniżej dotyczą jeszcze repozytorium planista8 — do przepięcia po założeniu repozytorium
+> planista10.
 
 > System układania planu zajęć dla uczelni — od programu studiów i roczników, przez obsadę,
 > po plan i terminy semestru, z wykrywaniem konfliktów na konkretnych datach.
@@ -177,7 +178,7 @@ flowchart LR
 Wymagany Docker. Cały system startuje jednym poleceniem:
 
 ```bash
-docker compose up          # DEV — hot-reload, http://localhost:5176
+docker compose up          # DEV — hot-reload, http://localhost:5177
 # lub: make dev
 ```
 
@@ -200,7 +201,7 @@ Skróty w `Makefile`: `make dev`, `make prod`, `make down`, `make logs` (`make` 
 | Prowadzący | prowadzacy@umg.edu.pl | `Prowadzacy1234!` |
 | Student | student@umg.edu.pl | `Student1234!` |
 
-Pełna baza testowa (`planista9_pelne`, generator `backend/scripts/pelne-dane/generuj.ts`) nie ma
+Pełna baza testowa (`planista10_pelne`, generator `backend/scripts/pelne-dane/generuj.ts`) nie ma
 konta `dziekanat@umg.edu.pl` — dziekanat ma konto na każdy wydział:
 `dziekanat.wm@umg.edu.pl`, `dziekanat.we@umg.edu.pl`, `dziekanat.wn@umg.edu.pl`,
 `dziekanat.wznj@umg.edu.pl` (hasło `Dziekanat1234!`). Pozostałe konta z tabeli są takie same.

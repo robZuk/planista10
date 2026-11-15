@@ -77,7 +77,7 @@ export const useAuthStore = create<AuthState>()(
       clearAuth: () => set({ user: null, accessToken: null, refreshToken: null, originalAuth: null }),
     }),
     {
-      name: 'planista9-auth',
+      name: 'planista10-auth',
       // Utrwalamy zawsze sesje oryginalna (admina), nigdy podgladowej.
       partialize: (state) => ({
         user: state.originalAuth ? state.originalAuth.user : state.user,

@@ -16,6 +16,6 @@ export const useFacultyFilterStore = create<FacultyFilterState>()(
       facultyId: 'all',
       setFacultyId: (facultyId) => set({ facultyId }),
     }),
-    { name: 'planista9-faculty-filter' },
+    { name: 'planista10-faculty-filter' },
   ),
 );

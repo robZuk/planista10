@@ -28,6 +28,6 @@ export const useCohortFilterStore = create<CohortFilterState>()(
       setCohortFilters: (values) => set(values),
       clearCohortFilters: () => set(EMPTY),
     }),
-    { name: 'planista9-cohort-filters' },
+    { name: 'planista10-cohort-filters' },
   ),
 );

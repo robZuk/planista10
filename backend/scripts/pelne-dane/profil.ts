@@ -1,6 +1,6 @@
 /**
  * Profil czasow kluczowych operacji planu na pelnej bazie (bez HTTP):
- *   docker exec -e DATABASE_URL=...planista9_pelne... planista9-backend-1 npx tsx scripts/pelne-dane/profil.ts
+ *   docker exec -e DATABASE_URL=...planista10_pelne... planista10-backend-1 npx tsx scripts/pelne-dane/profil.ts
  */
 import { prisma } from '../../src/lib/prisma';
 import { activeCohorts } from '../../src/services/sections';
