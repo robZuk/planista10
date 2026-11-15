@@ -12,7 +12,7 @@ const HEADER = 36;
 
 /**
  * "Moj plan" jako kalendarz tygodnia. Os w minutach (plan laczy wydzialy o roznych siatkach),
- * zajecia rownolegle obok siebie, odwolane przekreslone, odrobienia oznaczone.
+ * zajecia rownolegle obok siebie, odwolane przekreslone i oznaczone.
  * `showInstructor` — student widzi prowadzacego, prowadzacy nie widzi samego siebie.
  */
 export function MyPlanWeek({
@@ -90,7 +90,7 @@ export function MyPlanWeek({
                 const time = `${formatMinutes(r.startMinute)}–${formatMinutes(r.endMinute)}`;
                 const who = `${r.program} · ${r.group}`;
                 const lines = [r.room, ...(showInstructor ? [r.instructor] : [])];
-                const status = r.status === 'CANCELLED' ? 'odwolane' : r.status === 'MAKEUP' ? 'odrobienie' : null;
+                const status = r.status === 'CANCELLED' ? 'odwolane' : null;
                 return (
                   <div
                     key={r.id}

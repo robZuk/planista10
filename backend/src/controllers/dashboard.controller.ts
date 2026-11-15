@@ -154,7 +154,6 @@ export const getStats = asyncHandler(async (req, res) => {
       entries: {
         scheduled: byStatus.SCHEDULED ?? 0,
         cancelled: byStatus.CANCELLED ?? 0,
-        makeup: byStatus.MAKEUP ?? 0,
         total: Object.values(byStatus).reduce((s, v) => s + v, 0),
         todayCount: todayEntries.length,
       },

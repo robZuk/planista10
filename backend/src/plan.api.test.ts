@@ -98,36 +98,10 @@ describe('API — plan', () => {
     }
   });
 
-  it('liste "Do odrobienia" widzi tylko planista; dziekanat — swojego wydzialu, ze stanem odrobienia', async () => {
-    const instructor = signAccessToken({ sub: 'u-i', role: 'INSTRUCTOR' });
-    const denied = await request(app).get('/api/terms/2026-L/makeups').set('Authorization', `Bearer ${instructor}`);
-    expect(denied.status).toBe(403);
-
-    const cancelled = (id: string) => ({
-      id,
-      date: new Date('2026-03-10T00:00:00Z'),
-      startMinute: 480,
-      endMinute: 570,
-      startOrder: 1,
-      endOrder: 2,
-      groupId: 'g1',
-      note: 'choroba',
-      instructor: { title: 'dr', firstName: 'Jan', lastName: 'Nowak' },
-      section: { id: 's1', classType: 'LAB', cohortId: 'c1', programEntry: { subject: { name: 'Fizyka' } }, cohort: { program: { code: 'EDST-S1' } } },
-    });
-    prismaMock.occurrence.findMany
-      .mockResolvedValueOnce([cancelled('o1'), cancelled('o2')])
-      .mockResolvedValueOnce([{ makeupOfId: 'o2', date: new Date('2026-03-17T00:00:00Z'), startMinute: 480, endMinute: 570 }]);
+  it('nie ma odrobien — dawna lista "Do odrobienia" -> 404', async () => {
     const res = await request(app).get('/api/terms/2026-L/makeups').set('Authorization', `Bearer ${dean}`);
-    expect(res.status).toBe(200);
-    expect(prismaMock.occurrence.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ termId: 't1', status: 'CANCELLED', facultyId: 'wm' }) }),
-    );
-    expect(res.body.data.map((m: { occurrenceId: string; state: string }) => [m.occurrenceId, m.state])).toEqual([
-      ['o1', 'TODO'],
-      ['o2', 'MADE_UP'],
-    ]);
-    expect(res.body.data[1].makeup).toEqual({ date: '2026-03-17', time: '08:00–09:30' });
+    expect(res.status).toBe(404);
+    expect(prismaMock.occurrence.findMany).not.toHaveBeenCalled();
   });
 
   it('dziekanat WM generuje terminy rocznika innego wydzialu -> 403, a nie "0 terminow"', async () => {
@@ -232,8 +206,8 @@ describe('API — plan', () => {
     expect(prismaMock.$transaction.mock.calls.length).toBe(before);
   });
 
-  // Studia stacjonarne: ten sam plan w kazdym tygodniu — terminy tylko do wgladu (bez odwolan,
-  // przeniesien i odrobien; zmiana planu od tygodnia idzie przez wzorzec). `cohortRow` jest
+  // Studia stacjonarne: ten sam plan w kazdym tygodniu — terminy tylko do wgladu (bez odwolan
+  // i przeniesien; zmiana planu od tygodnia idzie przez wzorzec). `cohortRow` jest
   // stacjonarny, jego kalendarz opublikowany.
   const stationaryCohort = () => {
     prismaMock.cohort.findMany.mockResolvedValueOnce([cohortRow]);
@@ -259,7 +233,7 @@ describe('API — plan', () => {
     }
   });
 
-  it('termin reczny (odrobienie) dla rocznika stacjonarnego -> 409', async () => {
+  it('termin reczny dla rocznika stacjonarnego -> 409', async () => {
     prismaMock.classSection.findUnique.mockResolvedValueOnce({ id: 's1', termId: 't1', facultyId: 'wm', cohortId: 'c1' });
     stationaryCohort();
     const res = await request(app)

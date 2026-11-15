@@ -58,7 +58,7 @@ export default function MyPlanPage() {
         title="Moj plan"
         description={
           term
-            ? `Semestr ${term.label}. Widzisz tylko plan opublikowany przez dziekanat.${isInstructor ? ' Zmiany terminow (odwolanie, przeniesienie, odrobienie) wprowadza dziekanat.' : ''}`
+            ? `Semestr ${term.label}. Widzisz tylko plan opublikowany przez dziekanat.${isInstructor ? ' Zmiany terminow (odwolanie, przeniesienie) wprowadza dziekanat.' : ''}`
             : 'Wybierz semestr w naglowku.'
         }
         actions={
@@ -143,7 +143,6 @@ export default function MyPlanPage() {
                       <span className="text-muted-foreground">{r.room}</span>
                       {showInstructor && <span className="text-muted-foreground">{r.instructor}</span>}
                       {r.status === 'CANCELLED' && <Badge variant="destructive">odwolane</Badge>}
-                      {r.status === 'MAKEUP' && <Badge>odrobienie</Badge>}
                       {r.note && <span className="text-xs text-muted-foreground">{r.note}</span>}
                     </li>
                   ))}

@@ -1,4 +1,4 @@
-import { CalendarCheck, CalendarX, RotateCcw } from 'lucide-react';
+import { CalendarCheck, CalendarX } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -13,7 +13,7 @@ interface Segment {
 /**
  * Rozklad terminow wg statusu jako jeden pasek proporcji.
  *
- * Nie jest to wykres kolowy ani slupkowy: trzy wartosci sumujace sie do calosci
+ * Nie jest to wykres kolowy ani slupkowy: dwie wartosci sumujace sie do calosci
  * czyta sie najlepiej jako jeden pasek. Kolory sa STATUSOWE (zarezerwowane),
  * wiec kazdemu segmentowi towarzyszy ikona, nazwa i liczba — sam kolor nigdy
  * nie niesie tu znaczenia.
@@ -21,12 +21,10 @@ interface Segment {
 export function EntryStatusMeter({
   scheduled,
   cancelled,
-  makeup,
   scopeName,
 }: {
   scheduled: number;
   cancelled: number;
-  makeup: number;
   /** Nazwa wydzialu, gdy liczby sa zawezone (dziekanat); brak = cala uczelnia. */
   scopeName?: string;
 }) {
@@ -37,13 +35,6 @@ export function EntryStatusMeter({
       value: scheduled,
       color: 'var(--status-scheduled)',
       icon: CalendarCheck,
-    },
-    {
-      key: 'makeup',
-      label: 'Odrobienia',
-      value: makeup,
-      color: 'var(--status-makeup)',
-      icon: RotateCcw,
     },
     {
       key: 'cancelled',

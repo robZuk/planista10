@@ -10,7 +10,6 @@ import { mapRangeByTime } from '../lib/timeGrid';
 import { gridFor, loadGrids, pickGrid } from '../services/timeGrids';
 import { activeCohorts } from '../services/sections';
 import { conflictMessage } from '../lib/conflictMessage';
-import { listMakeups } from '../services/makeups';
 import {
   assertPlanEditable,
   cancelOccurrence,
@@ -199,7 +198,6 @@ export const deletePlacement = asyncHandler(async (req, res) => {
   // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania. Odlaczamy je
   // jawnie (a nie przez ON DELETE SET NULL), zeby updatedAt zapisal chwile usuniecia — po niej
   // plan pokazuje "terminy nieaktualne", dopoki terminow nie wygeneruje sie od nowa.
-  // Odrobienia wskazuja terminy kluczem obcym (id), wiec odlaczenie ich nie rusza.
   await prisma.$transaction([
     prisma.occurrence.updateMany({ where: { placementId: current.id }, data: { placementId: null } }),
     prisma.placement.delete({ where: { id: current.id } }),
@@ -237,8 +235,6 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       section: { select: { classType: true, programEntry: { select: { subject: { select: { name: true } } } } } },
       room: { select: { number: true, building: { select: { name: true } } } },
       instructor: { select: { title: true, firstName: true, lastName: true } },
-      // Odrobienie: data odrabianych zajec (z wzorca, gdy byly przeniesione).
-      makeupOf: { select: { date: true, originalDate: true } },
     },
     orderBy: [{ date: 'asc' }, { startMinute: 'asc' }],
   });
@@ -250,20 +246,6 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       })
     ).map((e) => `${e.placementId}|${toIsoDate(e.originalDate)}`),
   );
-  // Powiazanie odwolanie <-> odrobienie: odwolany termin pokazuje swoje odrobienie, odrobienie —
-  // date odrabianych zajec (zeby nie trzeba bylo zgadywac, czemu "Przywroc" jest zablokowane).
-  const cancelledIds = rows.filter((o) => o.status === 'CANCELLED').map((o) => o.id);
-  const makeups = cancelledIds.length
-    ? await prisma.occurrence.findMany({
-        where: { makeupOfId: { in: cancelledIds }, status: { not: 'CANCELLED' } },
-        select: { makeupOfId: true, date: true, startMinute: true, endMinute: true },
-        orderBy: { date: 'asc' },
-      })
-    : [];
-  const madeUpBy = new Map<string, { date: string; startMinute: number; endMinute: number }>();
-  for (const m of makeups) {
-    if (!madeUpBy.has(m.makeupOfId!)) madeUpBy.set(m.makeupOfId!, { date: toIsoDate(m.date), startMinute: m.startMinute, endMinute: m.endMinute });
-  }
   res.json({
     data: rows.map((o) => ({
       id: o.id,
@@ -286,8 +268,6 @@ export const listOccurrences = asyncHandler(async (req, res) => {
       status: o.status,
       changed: !!o.placementId && !!o.originalDate && exceptionKeys.has(`${o.placementId}|${toIsoDate(o.originalDate)}`),
       note: o.note,
-      madeUpBy: o.status === 'CANCELLED' ? (madeUpBy.get(o.id) ?? null) : null,
-      makeupOf: o.makeupOf ? toIsoDate(o.makeupOf.originalDate ?? o.makeupOf.date) : null,
     })),
   });
 });
@@ -320,13 +300,7 @@ export const changeOccurrence = asyncHandler(async (req, res) => {
   res.json({ message: 'Termin zmieniony' });
 });
 
-/** Odwolane zajecia semestru i ich odrobienia (lista "Do odrobienia"); admin: ?facultyId albo wszystko. */
-export const listCancelledToMakeUp = asyncHandler(async (req, res) => {
-  const term = await findTerm(String(req.params.key));
-  res.json({ data: await listMakeups(term, { facultyId: await facultyOf(req) }) });
-});
-
-/** Termin reczny (odrobienie, zajecia jednorazowe) — liczy sie do godzin i nie znika przy generowaniu. */
+/** Termin reczny (zajecia dodatkowe, jednorazowe) — liczy sie do godzin i nie znika przy generowaniu. */
 export const createManualOccurrence = asyncHandler(async (req, res) => {
   const term = await findTerm(String(req.params.key));
   const body = req.body as { sectionId: string } & ManualInput;

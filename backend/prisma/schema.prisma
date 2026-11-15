@@ -450,7 +450,8 @@ model SectionInstructor {
 //  wybrane zjazdy). Uklada je wylacznie planista — system niczego nie wstawia sam.
 //  Occurrence = konkretny termin. Terminy DERIVED powstaja TYLKO po "Generuj terminy";
 //  reczne poprawki pojedynczych terminow to PlacementException (przezywaja ponowne
-//  generowanie), a odrobienia/terminy jednorazowe to Occurrence MANUAL.
+//  generowanie), a zajecia dodatkowe (terminy jednorazowe) to Occurrence MANUAL. Odrobien
+//  nie ma: zajecia, ktore maja sie odbyc w innym dniu, planista przenosi.
 // ═══════════════════════════════════════════════════════════════
 
 model Placement {
@@ -531,15 +532,6 @@ model Occurrence {
   status       EntryStatus    @default(SCHEDULED)
   jointKey     String?
   note         String?
-  // Tekstowy klucz odrabianego terminu (lib/occurrenceKey) — juz tylko zapisywany, nikt go nie
-  // czyta; do usuniecia (etap 4). Powiazanie to makeupOfId.
-  makeupOfKey  String?
-  // Odrobienie (MANUAL, MAKEUP) za odwolany termin: nie zuzywa godzin drugi raz (odwolany termin
-  // juz je zuzyl). Termin usuniety przy generowaniu -> null: odrobienie zostaje jako zajecia
-  // dodatkowe i liczy sie do godzin.
-  makeupOf     Occurrence?    @relation("Makeup", fields: [makeupOfId], references: [id], onDelete: SetNull)
-  makeupOfId   String?
-  makeups      Occurrence[]   @relation("Makeup")
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
@@ -550,8 +542,6 @@ model Occurrence {
   @@index([date, roomId])
   @@index([date, instructorId])
   @@index([sectionId])
-  @@index([makeupOfKey])
-  @@index([makeupOfId])
 }
 
 // Rocznik w konkretnym semestrze: numer semestru programu (wyliczany, wyjatkowo do
@@ -676,7 +666,6 @@ enum ClassType {
 enum EntryStatus {
   SCHEDULED // zaplanowane
   CANCELLED // odwolane
-  MAKEUP // odrobienie (dodane recznie, bez szablonu)
 }
 
 enum SemesterType {
@@ -703,7 +692,7 @@ enum ExceptionAction {
 
 enum OccurrenceKind {
   DERIVED // wygenerowany z umieszczenia
-  MANUAL // dodany recznie (odrobienie, termin jednorazowy) — nie znika przy generowaniu
+  MANUAL // dodany recznie (zajecia dodatkowe, termin jednorazowy) — nie znika przy generowaniu
 }
 
 enum SectionStatus {

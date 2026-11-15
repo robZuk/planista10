@@ -21,7 +21,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Combobox } from '@/components/Combobox';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { changeOccurrence, createManualOccurrence, deleteManualOccurrence, fetchMakeups, fetchOccurrences } from '@/api/plan';
+import { changeOccurrence, createManualOccurrence, deleteManualOccurrence, fetchOccurrences } from '@/api/plan';
 import { fetchBuildings } from '@/api/buildings';
 import { getErrorMessage, isNotFound, slotWarningsOf } from '@/lib/errors';
 import { matchesAllWords } from '@/lib/searchMatch';
@@ -38,7 +38,8 @@ const WEEKDAY = ['nd', 'pn', 'wt', 'sr', 'cz', 'pt', 'sb'];
 
 /**
  * Terminy rocznika (konkretne daty). Zmiany pojedynczych terminow sa zapisywane jako
- * poprawki i przezywaja ponowne "Generuj terminy". Terminy reczne (odrobienia) nie znikaja.
+ * poprawki i przezywaja ponowne "Generuj terminy". Terminy reczne (zajecia dodatkowe) nie znikaja.
+ * Odrobien nie ma: odwolany termin zuzywa godziny, a zajecia w innym dniu sie przenosi.
  */
 export function OccurrencesTab({
   termKey,
@@ -86,8 +87,6 @@ export function OccurrencesTab({
     setDetails(null);
     await queryClient.invalidateQueries({ queryKey: ['occurrences'] });
     await queryClient.invalidateQueries({ queryKey: ['plan'] });
-    // Odwolanie/odrobienie zmienia liste "Do odrobienia" (okno terminu recznego, strona Odrobienia).
-    await queryClient.invalidateQueries({ queryKey: ['makeups'] });
   };
   // Termin zniknal w miedzyczasie (ponowne generowanie, usuniecie przez kogos innego).
   const termGone = () => {
@@ -140,7 +139,7 @@ export function OccurrencesTab({
         {view === 'list' && <span className="text-sm text-muted-foreground">{rows.length} terminow</span>}
         {!readOnly && (
           <Button variant="outline" size="sm" className="ml-auto" onClick={() => setAdding(true)}>
-            <Plus /> Termin reczny (odrobienie)
+            <Plus /> Termin reczny
           </Button>
         )}
       </div>
@@ -176,16 +175,6 @@ export function OccurrencesTab({
                   <TableCell>
                     {CLASS_LABELS[o.classType]} · {o.subject}
                     {o.kind === 'MANUAL' && <Badge className="ml-2">reczny</Badge>}
-                    {o.makeupOf && (
-                      <Badge variant="outline" className="ml-2">
-                        odrobienie za {formatDayMonth(o.makeupOf)}
-                      </Badge>
-                    )}
-                    {o.madeUpBy && (
-                      <Badge variant="outline" className="ml-2">
-                        odrobione {formatDayMonth(o.madeUpBy.date)}
-                      </Badge>
-                    )}
                     {o.changed && o.status !== 'CANCELLED' && (
                       <Badge variant="outline" className="ml-2">
                         zmieniony
@@ -208,7 +197,7 @@ export function OccurrencesTab({
                             </Button>
                           </>
                         )}
-                        {o.kind === 'DERIVED' && o.placementId && (o.changed || o.status === 'CANCELLED') && !o.madeUpBy && (
+                        {o.kind === 'DERIVED' && o.placementId && (o.changed || o.status === 'CANCELLED') && (
                           <Button variant="ghost" size="sm" onClick={() => act.mutate({ id: o.id, action: 'RESTORE' })}>
                             Przywroc
                           </Button>
@@ -246,21 +235,6 @@ export function OccurrencesTab({
               <dd>{details.room.label}</dd>
               <dt className="text-muted-foreground">Prowadzacy</dt>
               <dd>{details.instructor}</dd>
-              {details.makeupOf && (
-                <>
-                  <dt className="text-muted-foreground">Odrabia zajecia</dt>
-                  <dd>z {formatDayMonth(details.makeupOf)}</dd>
-                </>
-              )}
-              {details.madeUpBy && (
-                <>
-                  <dt className="text-muted-foreground">Odrobione</dt>
-                  <dd>
-                    {formatDayMonth(details.madeUpBy.date)}, {formatMinutes(details.madeUpBy.startMinute)}–{formatMinutes(details.madeUpBy.endMinute)} — zeby
-                    przywrocic ten termin, najpierw usun albo odwolaj odrobienie
-                  </dd>
-                </>
-              )}
               {details.note && (
                 <>
                   <dt className="text-muted-foreground">Uwaga</dt>
@@ -291,7 +265,7 @@ export function OccurrencesTab({
                     </Button>
                   </>
                 )}
-                {details.kind === 'DERIVED' && details.placementId && (details.changed || details.status === 'CANCELLED') && !details.madeUpBy && (
+                {details.kind === 'DERIVED' && details.placementId && (details.changed || details.status === 'CANCELLED') && (
                   <Button variant="outline" disabled={act.isPending} onClick={() => act.mutate({ id: details.id, action: 'RESTORE' })}>
                     Przywroc wg wzorca
                   </Button>
@@ -502,18 +476,9 @@ function ManualDialog({
   const [length, setLength] = useState(2);
   const [roomId, setRoomId] = useState('');
   const [online, setOnline] = useState(false);
-  // null = nie ruszana: domyslna wynika z wyboru odrabianych zajec ("Odrobienie zajec z ...").
-  const [note, setNote] = useState<string | null>(null);
+  const [note, setNote] = useState('Zajecia dodatkowe');
   const section = sections.find((s) => s.id === sectionId);
   const rooms = useRoomOptions(section);
-  // Odwolane, jeszcze nieodrobione terminy tych zajec — odrobienie wskazuje, ktory odrabia
-  // (inaczej zostaje na liscie "Do odrobienia" na zawsze). Domyslnie pierwszy z nich.
-  const { data: makeups } = useQuery({ queryKey: ['makeups', termKey, 'manual'], queryFn: () => fetchMakeups(termKey) });
-  const toMakeUp = (makeups ?? []).filter((m) => m.sectionId === sectionId && m.state === 'TODO');
-  const [makeupChoice, setMakeupChoice] = useState<{ sectionId: string; occurrenceId: string } | null>(null);
-  const makeupOfId = makeupChoice?.sectionId === sectionId ? makeupChoice.occurrenceId : (toMakeUp[0]?.occurrenceId ?? '');
-  const madeUp = toMakeUp.find((m) => m.occurrenceId === makeupOfId);
-  const noteValue = note ?? (madeUp ? `Odrobienie zajec z ${formatDayMonth(madeUp.date)} ${madeUp.time}` : 'Zajecia dodatkowe');
   const slotKey = `${sectionId}|${date}|${start}|${length}`;
   const [warned, setWarned] = useState<{ key: string; warnings: string[] } | null>(null);
   const warnings = warned?.key === slotKey ? warned.warnings : null;
@@ -526,9 +491,9 @@ function ManualDialog({
         endOrder: start + length - 1,
         roomId: online ? null : roomId,
         online,
-        // Odrobienie: prowadzacy z odwolanych zajec (dobiera serwer); zajecia dodatkowe — pierwszy z obsady.
-        ...(makeupOfId ? { makeupOfId } : { instructorId: section?.instructors.find((i) => i.instructorId)?.instructorId ?? null }),
-        note: noteValue.trim() || undefined,
+        // Prowadzacy: pierwszy z obsady zajec (NN, gdy obsady brak).
+        instructorId: section?.instructors.find((i) => i.instructorId)?.instructorId ?? null,
+        note: note.trim() || undefined,
         confirmWarnings: warnings !== null,
       }),
     onSuccess: (r) => {
@@ -546,7 +511,10 @@ function ManualDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Termin reczny</DialogTitle>
-          <DialogDescription>Odrobienie albo zajecia jednorazowe — licza sie do godzin i nie znikaja przy generowaniu.</DialogDescription>
+          <DialogDescription>
+            Zajecia dodatkowe (jednorazowe) — licza sie do godzin zajec i nie znikaja przy generowaniu. Zajecia, ktore maja sie odbyc
+            w innym dniu, przenies („Przenies”) zamiast odwolywac.
+          </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3">
           <Field className="col-span-2">
@@ -559,27 +527,6 @@ function ManualDialog({
               placeholder="Wybierz zajecia"
             />
           </Field>
-          {toMakeUp.length > 0 && (
-            <Field className="col-span-2">
-              <FieldLabel htmlFor="mn-makeup">Odrabia zajecia z</FieldLabel>
-              <NativeSelect
-                id="mn-makeup"
-                value={makeupOfId}
-                onChange={(e) => {
-                  setMakeupChoice({ sectionId, occurrenceId: e.target.value });
-                  const row = toMakeUp.find((m) => m.occurrenceId === e.target.value);
-                  if (row) setLength(Math.min(4, row.hours));
-                }}
-              >
-                {toMakeUp.map((m) => (
-                  <NativeSelectOption key={m.occurrenceId} value={m.occurrenceId}>
-                    {m.date} {m.time} (odwolane{m.note ? `: ${m.note}` : ''})
-                  </NativeSelectOption>
-                ))}
-                <NativeSelectOption value="">— nic, to zajecia dodatkowe</NativeSelectOption>
-              </NativeSelect>
-            </Field>
-          )}
           <Field>
             <FieldLabel htmlFor="mn-date">Data</FieldLabel>
             <Input id="mn-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -614,7 +561,7 @@ function ManualDialog({
           </Field>
           <Field className="col-span-2">
             <FieldLabel htmlFor="mn-note">Uwaga</FieldLabel>
-            <Input id="mn-note" value={noteValue} onChange={(e) => setNote(e.target.value)} />
+            <Input id="mn-note" value={note} onChange={(e) => setNote(e.target.value)} />
           </Field>
         </div>
         {warnings && <SlotWarnings warnings={warnings} />}
@@ -652,8 +599,9 @@ function CancelDialog({
           <DialogTitle>Odwolac zajecia?</DialogTitle>
           <DialogDescription>
             {CLASS_LABELS[occurrence.classType]} · {occurrence.subject} · {occurrence.group}, {formatDayMonth(occurrence.date)}{' '}
-            {formatMinutes(occurrence.startMinute)}–{formatMinutes(occurrence.endMinute)}. Zajecia trafia na liste do odrobienia, a powod — gdy plan
-            jest opublikowany — zobacza prowadzacy i studenci w swoim planie.
+            {formatMinutes(occurrence.startMinute)}–{formatMinutes(occurrence.endMinute)}. Odrobien nie ma — godziny odwolanych zajec
+            przepadaja; jesli zajecia maja sie odbyc w innym dniu, uzyj „Przenies”. Powod — gdy plan jest opublikowany — zobacza
+            prowadzacy i studenci w swoim planie.
           </DialogDescription>
         </DialogHeader>
         <Field>

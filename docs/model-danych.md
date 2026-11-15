@@ -112,22 +112,19 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   W opublikowanym semestrze generowanie od wybranej daty.
 - `PlacementException(placement, originalDate)` — odwołanie albo przeniesienie pojedynczego
   terminu; **przeżywa ponowne generowanie**. Wyjątek bez daty we wzorcu trafia do raportu.
-- `Occurrence.kind = MANUAL` — odrobienia i terminy jednorazowe; liczą się do godzin, nie znikają.
+- `Occurrence.kind = MANUAL` — terminy ręczne (zajęcia dodatkowe, jednorazowe); liczą się do godzin
+  (przy generowaniu wzorzec da o tyle mniej), nie znikają. Status terminu to tylko `SCHEDULED`
+  albo `CANCELLED` — ręczny wyróżnia `kind`.
 - Nowe miejsce terminu (przeniesienie, termin ręczny) jest oceniane
   względem kalendarza rocznika i okna godzin siatki (`lib/occurrenceSlot`): data poza semestrem
   blokuje, a święto, przerwa, dzień poza zjazdami czy godziny poza oknem wymagają potwierdzenia
   (`409 { code: 'SLOT_WARNINGS', warnings }` → ponowienie z `confirmWarnings: true`).
-  Odrobienie konkretnego odwołanego terminu wskazuje go kluczem obcym `makeupOfId` i **nie zużywa
-  godzin drugi raz** — odwołany termin z wzorca już je zużył. Gdy odwołany termin zniknie przy
-  generowaniu (data wypadła z wzorca, umieszczenie usunięto), `makeupOfId` = null i odrobienie liczy
-  się jak zwykłe zajęcia dodatkowe (podgląd generowania o tym ostrzega).
+- **Odwołany termin zużywa swoje godziny** (materializer liczy go do limitu) — ponowne generowanie
+  nie dokłada za niego daty na końcu semestru. Odrobień nie ma (patrz 6a).
 - **Stałe id terminów:** „Generuj terminy" robi diff (`lib/occurrenceDiff`) — termin o tym samym
   kluczu (umieszczenie + data z wzorca, unikalny indeks `Occurrence(placementId, originalDate)`)
   jest aktualizowany w miejscu i zachowuje id; nowe daty wzorca → nowe terminy, daty, których już
   nie ma (i terminy usuniętych umieszczeń) → usunięte. Zakres „od dnia" liczony jest po dacie z wzorca.
-- **Powiązanie z terminem** jest kluczem obcym: `Occurrence.makeupOfId` (odrobienie → odwołany termin),
-  `ON DELETE SET NULL`. Kolumna tekstowa `makeupOfKey` (`lib/occurrenceKey`) jest jeszcze zapisywana,
-  ale nic jej nie czyta — do usunięcia (etap 4).
 - Zmiana wzorca po generowaniu → „terminy nieaktualne" — liczone per rocznik od jego ostatniego
   generowania (`CohortGeneration`, nie od kalendarza, który dzieli wiele roczników);
   jedno źródło dla planu i „Przygotowania semestru" (`services/staleness.ts`).
@@ -139,18 +136,19 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
   Rocznik przypięty do wariantu „w planowaniu" nie pokazuje planu, choć wydział ma inne
   opublikowane kalendarze.
 
-## 6a. Odwołania i odrobienia
+## 6a. Odwołania i przeniesienia
 
-- Terminy odwołuje, przenosi, przywraca i odrabia **tylko planista** (ADMIN, DEAN_OFFICE swojego
-  wydziału) — wprost w „Układaniu planu” → Terminy (`services/occurrenceChanges`). Prowadzący
+- Terminy odwołuje, przenosi, przywraca i dodaje ręcznie **tylko planista** (ADMIN, DEAN_OFFICE
+  swojego wydziału) — wprost w „Układaniu planu” → Terminy (`services/occurrenceChanges`). Prowadzący
   i student plan tylko oglądają; powód odwołania (`Occurrence.note`) widać w ich „Moim planie”.
-- Lista **do odrobienia** (strona „Odrobienia”, okno terminu ręcznego): odwołane terminy semestru
-  ze stanem — do odrobienia / odrobione (jest termin ręczny z `makeupOfId` wskazującym ten termin);
-  `services/makeups`.
+- **Odrobień nie ma** (ani na stacjonarnych, ani na niestacjonarnych) — strona „Odrobienia”,
+  powiązanie `Occurrence.makeupOfId` / `makeupOfKey` i status `MAKEUP` usunięte migracją
+  `20261115200000_drop_makeups`. Zajęcia, które mają się odbyć w innym dniu, się **przenosi**;
+  godziny odwołanych zajęć przepadają.
 - planista10 nie ma zgłoszeń zmian prowadzących ani powiadomień w aplikacji (tabele
   `ChangeRequest` i `Notification` usunięte migracją `20261115120000_drop_change_requests_notifications`).
 - **Studia stacjonarne** — ten sam plan w każdym tygodniu, dni zajęć z kalendarza Rektora (dni wolne,
-  zajęcia z innego dnia, przerwy). Odwołań i odrobień się nie rejestruje: terminy rocznika
+  zajęcia z innego dnia, przerwy). Odwołań ani przeniesień się nie rejestruje: terminy rocznika
   stacjonarnego są tylko do wglądu (co było i co będzie, dni wolne, zamiany dni), API odrzuca ich
   zmiany (409, `assertPlanEditable`). Zmiana planu od tygodnia X to zmiana wzorca: umieszczenie
   „do tygodnia X−1” + nowe „od tygodnia X”, potem „Generuj terminy” — przeszłe tygodnie zostają,

@@ -17,7 +17,7 @@ export function SlotWarnings({ warnings }: { warnings: string[] }) {
             <li key={w}>{w}</li>
           ))}
         </ul>
-        <p>Jesli to celowe (np. odrobienie w dniu bez zajec), zapisz ponownie, zeby potwierdzic.</p>
+        <p>Jesli to celowe (np. zajecia przeniesione na dzien bez zajec), zapisz ponownie, zeby potwierdzic.</p>
       </AlertDescription>
     </Alert>
   );

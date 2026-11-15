@@ -382,7 +382,7 @@ export const openApiDocument = {
     },
     '/api/terms/{key}/occurrences': {
       get: { tags: ['Plan'], summary: 'Terminy rocznika', security: bearer, parameters: [termKey], responses: { 200: dataResp('Terminy'), ...authErrors } },
-      post: { tags: ['Plan'], summary: 'Termin reczny (odrobienie)', security: bearer, parameters: [termKey], responses: { 201: dataResp('Dodany'), 409: errResp('Kolizja'), ...authErrors } },
+      post: { tags: ['Plan'], summary: 'Termin reczny (zajecia dodatkowe)', security: bearer, parameters: [termKey], responses: { 201: dataResp('Dodany'), 409: errResp('Kolizja'), ...authErrors } },
     },
     '/api/occurrences/{id}': {
       put: { tags: ['Plan'], summary: 'Odwolaj / przenies / przywroc termin', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zmieniony'), 409: errResp('Kolizja'), ...authErrors } },

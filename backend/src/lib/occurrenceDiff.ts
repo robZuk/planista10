@@ -1,7 +1,7 @@
 /**
  * Diff terminow z wzorca przy "Generuj terminy": obecne terminy w zakresie vs. wyliczone przez
  * materializer. Termin o tym samym kluczu (umieszczenie + data z wzorca) zostaje tym samym
- * wierszem — zachowuje id, wiec odrobienia i linki do niego nie gina. Zmienia sie
+ * wierszem — zachowuje id (np. data utworzenia zostaje). Zmienia sie
  * tylko tresc (data po wyjatku, godziny, sala, status...). Czysta funkcja, bez bazy.
  */
 
@@ -21,7 +21,7 @@ export interface DerivedRow {
   instructorId: string | null;
   groupId: string;
   kind: 'DERIVED';
-  status: 'SCHEDULED' | 'CANCELLED' | 'MAKEUP';
+  status: 'SCHEDULED' | 'CANCELLED';
   jointKey: string | null;
   note: string | null;
 }

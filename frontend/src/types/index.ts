@@ -141,7 +141,7 @@ export type AssessmentType = 'EXAM' | 'CREDIT';
 export type SemesterType = 'WINTER' | 'SUMMER';
 
 export type ClassType = 'LECTURE' | 'EXERCISE' | 'LAB' | 'PROJECT' | 'SEMINAR';
-export type EntryStatus = 'SCHEDULED' | 'CANCELLED' | 'MAKEUP';
+export type EntryStatus = 'SCHEDULED' | 'CANCELLED';
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
 
 export interface RoomRef {
@@ -190,7 +190,7 @@ export interface DashboardStats {
   rooms: { total: number };
   buildings: { total: number };
   templates: { total: number };
-  entries: { scheduled: number; cancelled: number; makeup: number; total: number; todayCount: number };
+  entries: { scheduled: number; cancelled: number; total: number; todayCount: number };
   faculties: { total: number };
   subjects: { total: number };
   calendars: { total: number };
@@ -661,8 +661,7 @@ export interface GenerateReport {
   conflicts: { date: string; section: string; reason: string; with: string }[];
   beyondHours: number;
   shortfalls: { section: string; missing: number }[];
-  /** `makeup` — odwolanie ma odrobienie, ktore zostanie jako dodatkowe zajecia. */
-  orphanExceptions: { section: string; date: string; action: string; makeup?: string }[];
+  orphanExceptions: { section: string; date: string; action: string }[];
   calendarsMissing: string[];
   /** Roczniki pominiete, bo ich wersja programu jest w projekcie. */
   draftVersions: string[];
@@ -711,10 +710,6 @@ export interface OccurrenceRow {
   status: EntryStatus;
   changed: boolean;
   note: string | null;
-  /** Odwolany termin, ktory ma juz odrobienie — kiedy (wtedy nie da sie go przywrocic). */
-  madeUpBy: { date: string; startMinute: number; endMinute: number } | null;
-  /** Termin reczny bedacy odrobieniem — data odrabianych zajec (YYYY-MM-DD). */
-  makeupOf: string | null;
 }
 
 // ─── Etap 6: przenoszenie planu, przygotowanie semestru, moj plan ──
@@ -801,24 +796,4 @@ export interface MyPlanRow {
   instructor: string;
   status: EntryStatus;
   note: string | null;
-}
-
-// ─── Odrobienia ──────────────────────────────────────────────
-
-/** Odwolane zajecia semestru i ich odrobienie (lista "Do odrobienia" planisty). */
-export interface MakeupRow {
-  occurrenceId: string;
-  sectionId: string;
-  date: string;
-  time: string;
-  subject: string;
-  classType: ClassType;
-  program: string;
-  group: string;
-  instructor: string;
-  hours: number;
-  note: string | null;
-  /** TODO — do odrobienia, MADE_UP — odrobione (jest termin reczny wskazujacy te zajecia). */
-  state: 'TODO' | 'MADE_UP';
-  makeup: { date: string; time: string } | null;
 }

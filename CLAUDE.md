@@ -85,8 +85,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - `src/services/*` — logika domenowa z bazą: `termCalendars`, `cohorts`, `sections`
   (synchronizacja zajęć, przenoszenie obsady), `plan` (walidacja umieszczeń, dostępność,
   generowanie terminów), `occurrenceChanges` (odwołanie / przeniesienie / termin ręczny z kontrolą
-  kolizji — tylko planista), `makeups` (lista „Do odrobienia”: odwołane zajęcia i ich odrobienia),
-  `carryPlan`, `staleness` (terminy nieaktualne per rocznik), `visibility`
+  kolizji — tylko planista), `carryPlan`, `staleness` (terminy nieaktualne per rocznik), `visibility`
   `planLock` (zapisy planu po kolei w obrebie semestru — kontrola kolizji i zapis bez wyscigu;
   na trasach zapisu middleware `planLocked`)
 - `src/lib/*` — czyste funkcje domeny (bez bazy, testowane jednostkowo):
@@ -101,7 +100,6 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `timeGrid.ts` — siatki godzin: walidacja bloków, bloki → minuty, przerwy, dni z oknem godzin, kolizje w minutach, zestaw siatek wydziału i trybu (podstawowa + siatki dnia, `gridSet.forDay`)
   - `scheduleTime.ts` — typy sal dla form zajęć
   - `facultyScope.ts` — zakres wydziału wywołującego (`assertFacultyScope`)
-  - `occurrenceKey.ts` — tekstowy klucz terminu (już tylko zapisywany obok kluczy obcych; do usunięcia)
   - `occurrenceDiff.ts` — diff „Generuj terminy”: terminy z wzorca zachowują id (aktualizacja w miejscu)
   - `occurrenceSlot.ts` — ocena nowego miejsca terminu (blokada poza semestrem, ostrzeżenia do potwierdzenia)
 - `src/middleware/authenticate.ts` — weryfikacja JWT; role w enumie `Role`
@@ -128,7 +126,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - **Terminy powstają tylko z „Generuj terminy"** (`services/plan.ts → generate`). Zmiana
   wzorca NIE przelicza terminów — plan pokazuje wtedy „terminy nieaktualne".
   Ręczne poprawki terminów to `PlacementException` i przeżywają ponowne generowanie;
-  terminy ręczne (`Occurrence.kind = MANUAL`) nie znikają.
+  terminy ręczne (`Occurrence.kind = MANUAL`, zajęcia dodatkowe) nie znikają i liczą się do godzin.
 - **Kolizje sprawdzamy na konkretnych datach** w całej uczelni (sala, prowadzący, grupy wg
   `groupTree.groupsOverlap`) — jeden mechanizm dla umieszczeń i terminów.
 - **Semestr programu rocznika** = `termOrdinal(term) − termOrdinal(startTerm) + 1`
@@ -137,12 +135,17 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - **Dziekanat** zmienia tylko dane swojego wydziału (`assertFacultyScope`); semestry w
   archiwum są tylko do odczytu.
 - **Terminy zmienia tylko planista** (ADMIN, DEAN_OFFICE): odwołanie, przeniesienie, przywrócenie
-  i odrobienie robi się wprost w „Układaniu planu” → Terminy. Prowadzący i student plan tylko
+  i termin ręczny robi się wprost w „Układaniu planu” → Terminy. Prowadzący i student plan tylko
   oglądają („Mój plan”). W planista10 **nie ma zgłoszeń zmian ani powiadomień w aplikacji**
   (usunięte migracją `20261115120000_drop_change_requests_notifications`) — nie dokładaj ich
   z powrotem bez decyzji użytkownika.
+- **Nie ma odrobień** — ani na studiach stacjonarnych, ani na niestacjonarnych (strona „Odrobienia”,
+  powiązanie `makeupOfId` i status `MAKEUP` usunięte migracją `20261115200000_drop_makeups`).
+  Zajęcia, które mają się odbyć w innym dniu, planista **przenosi**; odwołany termin zużywa swoje
+  godziny (przepadają, „Przygotowanie semestru” pokaże brak godzin). Nie dokładaj odrobień
+  z powrotem bez decyzji użytkownika.
 - **Studia stacjonarne: ten sam plan w każdym tygodniu** + „Kalendarz roku akademickiego” Rektora
-  (dni wolne, „zajęcia z innego dnia” = `CalendarDay`, przerwy). Odwołań i odrobień się nie
+  (dni wolne, „zajęcia z innego dnia” = `CalendarDay`, przerwy). Odwołań ani przeniesień się nie
   rejestruje — terminy stacjonarnych są **tylko do wglądu** (zakładka „Terminy” bez akcji, API → 409
   w `occurrenceChanges.assertPlanEditable`). Zmiana planu od tygodnia X = we wzorcu dotychczasowe
   umieszczenie „do tygodnia X−1”, nowe „od tygodnia X”, potem „Generuj terminy”. Do publikacji

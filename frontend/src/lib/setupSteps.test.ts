@@ -127,7 +127,7 @@ describe('setupSteps', () => {
   it('krok 7: terminy nie wyczerpuja godzin -> "!" z podpowiedzia', () => {
     const data = ready({ cohorts: [cohort({ id: 'a', shortSections: 6 }), cohort({ id: 'b' })] }, { shortSections: 6 });
     expect(step(data, 7).state).toBe('warn');
-    expect(step(data, 7).todo).toBe('Uzupelnij godziny 6 zajeciom — terminy daja mniej godzin niz program (odrobienia albo zmiana wzorca)');
+    expect(step(data, 7).todo).toBe('Uzupelnij godziny 6 zajeciom — terminy daja mniej godzin niz program (zmiana wzorca albo termin reczny)');
   });
 
   it('braki obsady i roczniki bez kalendarza -> "!" z czynnoscia', () => {

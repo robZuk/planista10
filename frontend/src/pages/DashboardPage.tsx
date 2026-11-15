@@ -192,7 +192,6 @@ export default function DashboardPage() {
         <EntryStatusMeter
           scheduled={stats?.entries.scheduled ?? 0}
           cancelled={stats?.entries.cancelled ?? 0}
-          makeup={stats?.entries.makeup ?? 0}
           scopeName={stats?.scope.kind === 'FACULTY' ? stats.scope.name : undefined}
         />
       </div>

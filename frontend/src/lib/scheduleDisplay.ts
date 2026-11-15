@@ -41,7 +41,6 @@ export const CLASS_COLORS: Record<ClassType, string> = {
 export const STATUS_LABELS: Record<EntryStatus, string> = {
   SCHEDULED: 'Zaplanowane',
   CANCELLED: 'Odwolane',
-  MAKEUP: 'Odrobienie',
 };
 
 /**

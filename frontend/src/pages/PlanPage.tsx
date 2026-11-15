@@ -184,7 +184,7 @@ export default function PlanPage() {
       : null;
   const readOnly = locked || !plan?.calendar || draftVersion;
   // Studia stacjonarne: ten sam plan w kazdym tygodniu + kalendarz Rektora. Terminy sa tylko do
-  // wgladu (bez odwolan, przeniesien i odrobien) — zmiana planu od tygodnia idzie przez wzorzec.
+  // wgladu (bez odwolan i przeniesien) — zmiana planu od tygodnia idzie przez wzorzec.
   // Ta sama regula w API (services/occurrenceChanges.assertPlanEditable).
   const stationary = plan?.cohort.studyMode === 'FULL_TIME';
 
@@ -690,7 +690,7 @@ export default function PlanPage() {
             {stationary && (
               <p className="text-sm text-muted-foreground">
                 Studia stacjonarne — terminy tylko do wgladu: co bylo i co bedzie, dni wolne i zajecia z innego dnia wg
-                kalendarza. Odwolan i odrobien sie nie rejestruje. Zmiana planu od tygodnia: we wzorcu dotychczasowe
+                kalendarza. Odwolan ani przeniesien sie nie rejestruje. Zmiana planu od tygodnia: we wzorcu dotychczasowe
                 umieszczenie „Do tygodnia”, nowe „Od tygodnia”, potem „Generuj terminy”.
               </p>
             )}
