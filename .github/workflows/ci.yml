@@ -45,15 +45,10 @@ jobs:
 
       # Dev-stack (docker-compose.yml) buduje sie ze zrodel — testujemy kod z tego commita,
       # a nie obrazy z GHCR. up -d czeka na healthcheck bazy przed startem backendu.
+      # PLANISTA_SEED=0: baza startuje pusta (bez zrzutu db/planista10-dump.sql.gz) — testy
+      # dostaja dane z seed.ts; backend przy starcie generuje klienta i naklada migracje.
       - name: Postaw stack (db + backend + frontend)
-        run: docker compose up -d --build
-
-      # Backend w trybie dev (tsx watch) NIE robi migracji — baza startuje pusta, wiec
-      # nakladamy schemat i seed z konta demo (admin@umg.edu.pl), ktorego uzywaja testy.
-      - name: Migracje + seed bazy
-        run: |
-          docker compose exec -T backend npx prisma migrate deploy
-          docker compose exec -T backend npm run db:seed
+        run: PLANISTA_SEED=0 docker compose up -d --build
 
       # Pętla MUSI konczyc sie bledem, gdy usluga nie wstanie. Inaczej krok przechodzi
       # na zielono, a job pada dopiero na testach E2E — z mylacym komunikatem o
@@ -74,6 +69,14 @@ jobs:
           }
           wait_for backend http://localhost:4004/health || exit 1
           wait_for frontend http://localhost:5177 || exit 1
+
+      # Baza startuje pusta; backend nalozyl juz migracje przy starcie (deploy tu to no-op),
+      # wiec dokladamy seed z konta demo (admin@umg.edu.pl), ktorego uzywaja testy. Po
+      # "Czekaj": backend odpowiada dopiero po swoim prisma generate + migrate deploy.
+      - name: Migracje + seed bazy
+        run: |
+          docker compose exec -T backend npx prisma migrate deploy
+          docker compose exec -T backend npm run db:seed
 
       - name: Testy E2E
         working-directory: frontend

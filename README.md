@@ -175,12 +175,16 @@ flowchart LR
 
 ## ▶️ Uruchomienie lokalne
 
-Wymagany Docker. Cały system startuje jednym poleceniem:
+Wymagany Docker. Cały system (trzy kontenery: db, backend, frontend) startuje jednym poleceniem:
 
 ```bash
-docker compose up          # DEV — hot-reload, http://localhost:5177
-# lub: make dev
+docker compose up -d --build   # DEV — hot-reload, http://localhost:5177
+# lub: make dev-build (kolejne starty: make dev)
 ```
+
+Przy pierwszym starcie (pusty wolumen bazy) baza wgrywa seed `db/planista10-dump.sql.gz` — pełną bazę
+testową (opis, konta i odświeżanie: `db/README.md`). Backend przy starcie sam generuje klienta Prisma
+i nakłada migracje.
 
 Wersja produkcyjna lokalnie (nginx, zbudowane obrazy):
 
@@ -201,8 +205,9 @@ Skróty w `Makefile`: `make dev`, `make prod`, `make down`, `make logs` (`make` 
 | Prowadzący | prowadzacy@umg.edu.pl | `Prowadzacy1234!` |
 | Student | student@umg.edu.pl | `Student1234!` |
 
-Pełna baza testowa (`planista10_pelne`, generator `backend/scripts/pelne-dane/generuj.ts`) nie ma
-konta `dziekanat@umg.edu.pl` — dziekanat ma konto na każdy wydział:
+Seed z repo (`db/planista10-dump.sql.gz` — pełna baza testowa z generatora
+`backend/scripts/pelne-dane/generuj.ts`) nie ma konta `dziekanat@umg.edu.pl` (to konto daje
+`backend/prisma/seed.ts`) — dziekanat ma konto na każdy wydział:
 `dziekanat.wm@umg.edu.pl`, `dziekanat.we@umg.edu.pl`, `dziekanat.wn@umg.edu.pl`,
 `dziekanat.wznj@umg.edu.pl` (hasło `Dziekanat1234!`). Pozostałe konta z tabeli są takie same.
 

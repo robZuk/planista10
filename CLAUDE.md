@@ -15,23 +15,21 @@ sali. Porty są celowo inne niż w planista7 (4001/5434/5174), planista8 (4002/5
 planista9 (4003/5436/5176), więc projekty mogą działać równolegle.
 
 - **Backend:** Node.js + Express + TypeScript, ORM Prisma — port **4004**
-- **Baza:** PostgreSQL 16 w Dockerze — host port **5437**
+- **Baza:** PostgreSQL 16 w Dockerze — tylko w sieci kontenerów (bez portu na hoście; `docker exec planista10-db-1 psql …`)
 - **Frontend:** React 19 + Vite + TypeScript + Tailwind 4 + shadcn/ui — port **5177** (`strictPort`)
 
 ## Uruchamianie (dev)
 
 ```bash
-# 1. Baza (katalog główny) — kontener planista10-db-1, Postgres na :5437
-docker compose up -d
-
-# 2. Backend (:4004)
-cd backend
-cp .env.example .env        # przy pierwszym uruchomieniu
-npm install
-npx prisma migrate deploy   # albo: npm run prisma:migrate
-npm run db:seed             # minimalne dane; pelne dane dev: db/planista10-dump.sql (db/README.md)
-npm run dev
+# Trzy kontenery (katalog główny): db, backend (:4004), frontend (:5177) — kod montowany z dysku
+make dev-build              # albo: docker compose up -d --build   (kolejne starty: make dev)
+# Pierwszy start (pusty wolumen pgdata): baza wgrywa seed db/planista10-dump.sql.gz (db/README.md).
+# Backend przy każdym starcie: prisma generate + prisma migrate deploy, potem tsx watch.
+# Inna baza w tym samym Postgresie: PLANISTA_DB=planista10_pelne docker compose up -d backend
 ```
+
+Zależności (`node_modules`) są tylko w kontenerach — `npm test`, `tsc` itp. uruchamiaj przez
+`docker compose exec backend …` / `docker compose exec frontend …`.
 
 Health-check backendu: `GET http://localhost:4004/health` (poza prefiksem
 `/api`). Wszystkie właściwe endpointy są pod `/api/*` i wymagają tokenu JWT.

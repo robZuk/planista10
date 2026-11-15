@@ -11,23 +11,33 @@ services:
       POSTGRES_DB: planista10
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+      # Seed przy pierwszym starcie (db/README.md); PLANISTA_SEED=0 — pusta baza (CI E2E).
+      PLANISTA_SEED: ${PLANISTA_SEED:-1}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # Seed: przy PIERWSZYM starcie (pusty wolumen pgdata) baza planista10 wypelnia sie zrzutem
+      # db/planista10-dump.sql.gz (skrypt db/initdb/10-seed.sh). Istniejacy wolumen — bez zmian.
+      - ./db/initdb:/docker-entrypoint-initdb.d:ro
+      - ./db/planista10-dump.sql.gz:/seed/planista10-dump.sql.gz:ro
     # Baza tylko w sieci wewnetrznej (internal: true) — niedostepna z internetu ani dla frontu.
     networks:
       - internal
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d planista10']
+      # Po TCP: w czasie wgrywania seedu Postgres slucha tylko na gniezdzie, wiec backend czeka,
+      # az baza bedzie gotowa naprawde. start_period — czas na wgranie zrzutu przy pierwszym starcie.
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U postgres -d planista10']
       interval: 5s
       timeout: 3s
       retries: 10
+      start_period: 120s
 
   backend:
     image: planista10-backend-dev
     build:
       context: ./backend
       target: dev
-    command: npm run dev
+    # Klient Prisma z aktualnego schematu (obraz moze byc starszy niz kod) i migracje przed startem.
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run dev"
     environment:
       PORT: 4004
       # PLANISTA_DB=planista10_pelne docker compose up -d backend -> pelna baza testowa (scripts/pelne-dane)

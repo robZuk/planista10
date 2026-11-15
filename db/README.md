@@ -1,79 +1,83 @@
-# Zrzut bazy `planista10`
+# Seed bazy `planista10`
 
-`planista10-dump.sql` to pełny zrzut bazy (schemat + dane) w **nowym modelu planowania**:
-semestry i kalendarze, programy studiów, roczniki z grupami, zajęcia z obsadą, plan
-(umieszczenia) i terminy. Dane pochodzą z importu zimy 2024/2025 (Wydział Mechaniczny),
-przeniesionego ze starego modelu migracjami etapów 1–7. Plik jest **oczyszczony**, więc
-może leżeć w repozytorium (zwykły `pg_dump` nie może — patrz niżej).
+`planista10-dump.sql.gz` to spakowany zrzut bazy (schemat + dane). Kontener `db` wypełnia nim
+bazę `planista10` **przy pierwszym starcie**, czyli przy pustym wolumenie `pgdata` (skrypt
+`initdb/10-seed.sh`). Na nowym komputerze wystarczy sklonować repo i uruchomić trzy kontenery:
 
-Zrzut zrobiony `pg_dump --clean --if-exists --no-owner --no-privileges`, więc
-wgrywa się do dowolnej bazy i sam usuwa to, co w niej zastanie.
+```bash
+make dev-build        # albo: docker compose up -d --build  →  db, backend, frontend
+# aplikacja: http://localhost:5177 (konta niżej)
+```
+
+Backend przy starcie generuje klienta Prisma i robi `prisma migrate deploy`, więc baza ze zrzutu
+dostaje też migracje nowsze od zrzutu. Istniejącego wolumenu kontener nie rusza — dane, które już
+masz lokalnie, zostają.
 
 ## Co zawiera
 
+Pełna baza testowa (`planista10_pelne`, generator `backend/scripts/pelne-dane`): wydziały WE, WM, WN,
+WZNJ, programy (prawdziwe plany studiów WN i WM, reszta generowana), sale, **fikcyjni prowadzący**,
+roczniki z grupami, obsada i plan semestru zimowego 2026/27 z terminami. Model po migracji
+`20261115210000_drop_cancellations`.
+
 | Tabela | Wierszy | Co to jest |
 |---|---|---|
-| `Occurrence` | 3327 | terminy zimy 2024/25 (oba tryby) |
-| `Placement` | 243 | umieszczenia zajęć we wzorcu |
-| `ClassSection` | 413 | zajęcia semestru (przedmiot × forma × grupa) |
-| `SectionInstructor` | 243 | obsada (z dawnych wzorców) |
-| `ProgramEntry` | 304 | 3 programy po jednej wersji (zamiast 15 kopii rocznych) |
-| `StudentGroup` | 90 | grupy 8 roczników (nabory 2021–2024) |
-| `TermCalendar` | 48 | kalendarze 2023/24–2025/26 (archiwum) |
-| `AcademicTerm` | 10 | semestry 2021/22 – 2026/27 |
+| `Faculty` | 4 | wydziały WE, WM, WN, WZNJ |
+| `Room` | 199 | sale w 11 budynkach |
+| `Instructor` | 238 | prowadzący (fikcyjni) |
+| `Program` | 34 | programy studiów |
+| `Cohort` | 108 | roczniki (996 grup) |
+| `ClassSection` | 4124 | zajęcia semestru (przedmiot × forma × grupa) |
+| `Placement` | 4128 | umieszczenia zajęć w planie |
+| `Occurrence` | 48129 | terminy zimy 2026/27 |
 | `RefreshToken` | 0 | — |
 
-Semestry 2023–2025 są w archiwum (tylko odczyt). Zima i lato 2026/27 istnieją, ale bez
-kalendarzy — od nich zaczyna się praca w nowym modelu.
+Zrzut zrobiony `pg_dump --clean --if-exists --no-owner --no-privileges`, więc wgrywa się do
+dowolnej bazy i sam usuwa to, co w niej zastanie.
 
-`_prisma_migrations` jest w zrzucie, więc po wgraniu Prisma nie migruje od zera.
-Gdyby zrzut był starszy niż katalog `backend/prisma/migrations/`, domigruj:
+## Konta
 
-```bash
-docker exec planista10-backend-1 npx prisma migrate deploy
-```
+Hasła są przestawione na demonstracyjne (świeże sole bcrypt przy każdym zrzucie):
 
-## Czym różni się od stanu bazy roboczej
-
-- **`RefreshToken` jest pusty.** Tokeny sesji to sekrety, nie trafiają do gita.
-- **Hasła są przestawione na te z `backend/prisma/seed.ts`**, ze świeżymi solami bcrypt:
-
-  | Konto | Hasło |
-  |---|---|
-  | `admin@umg.edu.pl` | `Admin1234!` |
-  | `dziekanat@umg.edu.pl` (wydział WM) | `Dziekanat1234!` |
-  | `prowadzacy@umg.edu.pl` | `Prowadzacy1234!` |
-  | `student@umg.edu.pl` | `Student1234!` |
+| Konto | Rola | Hasło |
+|---|---|---|
+| `admin@umg.edu.pl` | administrator | `Admin1234!` |
+| `dziekanat.wm@umg.edu.pl` (też `.we`, `.wn`, `.wznj`) | dziekanat wydziału | `Dziekanat1234!` |
+| `planista.wm@umg.edu.pl` | dziekanat WM | `Planista1234!` |
+| `prowadzacy@umg.edu.pl` | prowadzący | `Prowadzacy1234!` |
+| `student@umg.edu.pl` | student | `Student1234!` |
 
 To są hasła demonstracyjne. **Nie stawiaj na tym zrzucie niczego wystawionego na świat**
 bez wcześniejszej zmiany haseł.
 
-## Odtworzenie
+## Ponowne wgranie (nadpisuje bazę)
 
 ```bash
-docker compose up -d
-docker exec -i planista10-db-1 psql -U postgres -d planista10 -v ON_ERROR_STOP=1 < db/planista10-dump.sql
+gunzip -c db/planista10-dump.sql.gz | docker exec -i planista10-db-1 psql -q -U postgres -d planista10 -v ON_ERROR_STOP=1
 ```
+
+Albo od zera — **kasuje wszystkie lokalne dane bazy**: `docker compose down -v && docker compose up -d`.
+
+Pusta baza zamiast zrzutu (tak jak w CI): przy pustym wolumenie `PLANISTA_SEED=0 docker compose up -d`,
+potem `docker compose exec backend npm run db:seed` (minimalne dane z `backend/prisma/seed.ts`).
 
 ## Odświeżenie zrzutu
 
-`make-dump.sh` kopiuje bazę roboczą, czyści kopię (tokeny, hasła), zrzuca ją i kasuje
-kopię. Baza `planista10` pozostaje nietknięta. Kopia przez `TEMPLATE` wymaga, żeby nikt
-nie był podłączony do bazy — zatrzymaj na chwilę backend:
-
 ```bash
-docker compose stop backend && bash db/make-dump.sh; docker compose start backend
+bash db/make-dump.sh planista10_pelne   # bez argumentu: baza planista10
 ```
+
+Skrypt kopiuje bazę źródłową (`pg_dump | psql` — backend może dalej działać), czyści kopię
+(tokeny sesji, hasła → demonstracyjne), sprawdza ją, zrzuca do `planista10-dump.sql.gz`
+i kasuje kopię. Konto spoza listy demonstracyjnej zatrzymuje skrypt (jego hasła by nie podmienił).
 
 ## Dlaczego nie zwykły `pg_dump`
 
 `.gitignore` blokuje `backup.sql` i `*.sql.bak`, bo surowy zrzut niesie hashe haseł
 i aktywne tokeny odświeżania. Ten plik przechodzi, bo jednego i drugiego jest pozbawiony.
 
-## Skąd się wzięły dane (stary model)
+## Wcześniejszy zrzut
 
-Dawny zrzut `planista7-dump.sql` (siatki kopiowane co rok, wzorce tygodnia, stary
-generator) został przeniesiony do nowego modelu migracjami `20261106090000` … `20261106130000`
-oraz jednorazowymi skryptami przeniesienia zajęć i planu (etapy 4–5, usunięte po użyciu —
-są w historii zmian). Migracja `20261106140000_drop_legacy_model` usuwa stare tabele i ma
-bramkę: nie pozwoli ich skasować, jeśli stary plan nie został wcześniej przeniesiony.
+Do 15.11.2026 w repo leżał `planista10-dump.sql` — import zimy 2024/25 (Wydział Mechaniczny)
+przeniesiony ze starego modelu migracjami etapów 1–7. Jest w historii gita; lokalna baza
+`planista10` z tym importem zostaje nietknięta.
