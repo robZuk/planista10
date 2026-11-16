@@ -113,9 +113,10 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         to: '/faculties',
-        label: 'Wydzialy',
+        label: 'Wydzialy i katedry',
         icon: School,
         roles: ['ADMIN', 'DEAN_OFFICE'],
+        keywords: ['katedry', 'zaklady', 'jednostki', 'studium', 'SJO'],
       },
       {
         to: '/buildings',

@@ -35,6 +35,18 @@ export interface Faculty {
   createdAt: string;
 }
 
+/** Katedra (zaklad, studium) — przysyla obciazenia swoich prowadzacych; bez wydzialu = miedzywydzialowa (SJO). */
+export interface Department {
+  id: string;
+  name: string;
+  shortName: string;
+  facultyId: string | null;
+  faculty: Pick<Faculty, 'id' | 'name' | 'shortName'> | null;
+  /** Liczba prowadzacych (lista katedr). */
+  _count?: { instructors: number };
+  createdAt: string;
+}
+
 export type RoomType = 'LECTURE' | 'EXERCISE' | 'LAB' | 'COMPUTER_LAB' | 'SEMINAR' | 'SPORTS';
 
 export interface Room {
@@ -63,6 +75,8 @@ export interface Instructor {
   title: string | null;
   facultyId: string | null;
   faculty?: Faculty | null;
+  departmentId: string | null;
+  department?: Department | null;
   /** Konto logowania powiazane z prowadzacym (lista prowadzacych). */
   user?: { id: string; name: string; email: string } | null;
   createdAt: string;

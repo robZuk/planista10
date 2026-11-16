@@ -21,6 +21,7 @@ model Faculty {
   shortName     String         @unique // "WM"
   buildings     Building[]
   instructors   Instructor[]
+  departments   Department[]
   fieldsOfStudy FieldOfStudy[]
   users         User[]
 
@@ -175,8 +176,27 @@ model Room {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  PROWADZACY
+//  KATEDRY I PROWADZACY
+//
+//  Katedra (zaklad, studium) to jednostka, ktora przysyla obciazenia swoich
+//  prowadzacych. Zwykle nalezy do wydzialu (KEO na WE = "KEO-WE", tak jak w zleceniach
+//  wydzialu), ale bywa miedzywydzialowa (SJO) — wtedy facultyId = null. Prowadzacy z
+//  katedra wydzialowa ma wydzial tej katedry (pilnuje tego API prowadzacych i katedr).
 // ═══════════════════════════════════════════════════════════════
+
+model Department {
+  id          String       @id @default(uuid())
+  name        String // "Katedra Elektroenergetyki Okretowej"
+  shortName   String // "KEO"
+  // Restrict: wydzial z katedrami nie znika (katedry nie staja sie po cichu miedzywydzialowe).
+  faculty     Faculty?     @relation(fields: [facultyId], references: [id], onDelete: Restrict)
+  facultyId   String? // null = jednostka miedzywydzialowa (SJO, prowadzacy zewnetrzni)
+  instructors Instructor[]
+  createdAt   DateTime     @default(now())
+
+  // Skrot jest unikalny w wydziale; dla jednostek bez wydzialu (NULL) pilnuje tego API.
+  @@unique([facultyId, shortName])
+}
 
 model Instructor {
   id                 String              @id @default(uuid())
@@ -186,6 +206,8 @@ model Instructor {
   title              String? // "prof. dr hab."
   faculty            Faculty?            @relation(fields: [facultyId], references: [id])
   facultyId          String?
+  department         Department?         @relation(fields: [departmentId], references: [id])
+  departmentId       String?
   user               User? // opcjonalne konto logowania
   sectionAssignments SectionInstructor[]
   placements         Placement[]

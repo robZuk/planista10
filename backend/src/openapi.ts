@@ -5,6 +5,7 @@ import { subjectCreateSchema } from './schemas/subject';
 import { fieldOfStudyCreateSchema } from './schemas/fieldOfStudy';
 import { specializationCreateSchema } from './schemas/specialization';
 import { instructorCreateSchema, instructorUpdateSchema } from './schemas/instructor';
+import { departmentCreateSchema, departmentInstructorsSchema, departmentUpdateSchema } from './schemas/department';
 import {
   buildingCreateSchema,
   buildingUpdateSchema,
@@ -54,6 +55,9 @@ const schemas = {
   TimeGridCreate: toJson(timeGridCreateSchema),
   InstructorCreate: toJson(instructorCreateSchema),
   InstructorUpdate: toJson(instructorUpdateSchema),
+  DepartmentCreate: toJson(departmentCreateSchema),
+  DepartmentUpdate: toJson(departmentUpdateSchema),
+  DepartmentInstructors: toJson(departmentInstructorsSchema),
   BuildingCreate: toJson(buildingCreateSchema),
   BuildingUpdate: toJson(buildingUpdateSchema),
   RoomCreate: toJson(roomCreateSchema),
@@ -251,6 +255,20 @@ export const openApiDocument = {
       get: { tags: ['Zasoby'], summary: 'Prowadzacy po id', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Prowadzacy'), 404: errResp('Nie znaleziono'), ...authErrors } },
       put: { tags: ['Zasoby'], summary: 'Aktualizuj prowadzacego (ADMIN)', security: bearer, parameters: [pathId()], requestBody: jsonBody('InstructorUpdate'), responses: { 200: dataResp('Zaktualizowany'), ...authErrors } },
       delete: { tags: ['Zasoby'], summary: 'Usun prowadzacego (ADMIN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usuniety'), 409: errResp('W planie'), ...authErrors } },
+    },
+
+    // ─── Zasoby: Katedry ─────────────────────────────────────
+    '/api/departments': {
+      get: { tags: ['Zasoby'], summary: 'Lista katedr (z wydzialem i liczba prowadzacych)', security: bearer, responses: { 200: dataResp('Katedry'), ...authErrors } },
+      post: { tags: ['Zasoby'], summary: 'Utworz katedre (ADMIN); bez wydzialu = jednostka miedzywydzialowa', security: bearer, requestBody: jsonBody('DepartmentCreate'), responses: { 201: dataResp('Utworzona'), 400: errResp('Blad walidacji'), 409: errResp('Skrot zajety'), ...authErrors } },
+    },
+    '/api/departments/{id}': {
+      get: { tags: ['Zasoby'], summary: 'Katedra po id (z prowadzacymi)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Katedra'), 404: errResp('Nie znaleziono'), ...authErrors } },
+      put: { tags: ['Zasoby'], summary: 'Aktualizuj katedre (ADMIN); zmiana wydzialu przenosi jej prowadzacych', security: bearer, parameters: [pathId()], requestBody: jsonBody('DepartmentUpdate'), responses: { 200: dataResp('Zaktualizowana'), 404: errResp('Nie znaleziono'), 409: errResp('Skrot zajety'), ...authErrors } },
+      delete: { tags: ['Zasoby'], summary: 'Usun katedre (ADMIN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usunieta'), 409: errResp('Ma prowadzacych'), ...authErrors } },
+    },
+    '/api/departments/{id}/instructors': {
+      put: { tags: ['Zasoby'], summary: 'Sklad katedry (ADMIN): pelna lista prowadzacych; pozostali traca te katedre', security: bearer, parameters: [pathId()], requestBody: jsonBody('DepartmentInstructors'), responses: { 200: dataResp('Zapisany'), 404: errResp('Nie znaleziono'), 409: errResp('Prowadzacy usuniety'), ...authErrors } },
     },
 
     // ─── Zasoby: Siatki godzin ───────────────────────────────

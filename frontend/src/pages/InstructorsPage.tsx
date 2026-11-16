@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,7 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -40,12 +41,15 @@ import {
   type InstructorInput,
 } from '@/api/instructors';
 import { fetchFaculties } from '@/api/faculties';
+import { fetchDepartments } from '@/api/departments';
+import { compareDepartments, departmentLabel } from '@/lib/departments';
 import { getErrorMessage } from '@/lib/errors';
 import { useAuthStore } from '@/store/authStore';
-import type { Instructor } from '@/types';
+import type { Department, Instructor } from '@/types';
 
-/** Radix Select nie przyjmuje pustego stringa jako wartosci — stad wartownik. */
+/** Radix Select nie przyjmuje pustego stringa jako wartosci — stad wartownicy. */
 const NO_FACULTY = '__none__';
+const NO_DEPARTMENT = '__none__';
 
 const instructorSchema = z.object({
   firstName: z.string().min(2, 'Imie musi miec co najmniej 2 znaki'),
@@ -53,9 +57,19 @@ const instructorSchema = z.object({
   email: z.string().min(1, 'Podaj adres email').email('To nie wyglada na adres email'),
   title: z.string().optional(),
   facultyId: z.string().optional(),
+  departmentId: z.string().optional(),
 });
 
 type InstructorValues = z.infer<typeof instructorSchema>;
+
+const EMPTY_FORM: InstructorValues = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  title: '',
+  facultyId: NO_FACULTY,
+  departmentId: NO_DEPARTMENT,
+};
 
 const COLUMN_LABELS = {
   title: 'Tytul',
@@ -63,6 +77,7 @@ const COLUMN_LABELS = {
   firstName: 'Imie',
   email: 'E-mail',
   faculty: 'Wydzial',
+  department: 'Katedra',
 };
 
 export default function InstructorsPage() {
@@ -73,24 +88,42 @@ export default function InstructorsPage() {
   const [editing, setEditing] = useState<Instructor | null>(null);
   const [deleting, setDeleting] = useState<Instructor | null>(null);
   const [facultyFilter, setFacultyFilter] = useState<string>('all');
+  const [departmentFilter, setDepartmentFilter] = useState<string>('all');
 
   const { data: instructors, isPending } = useQuery({
     queryKey: ['instructors'],
     queryFn: fetchInstructors,
   });
   const { data: faculties } = useQuery({ queryKey: ['faculties'], queryFn: fetchFaculties });
+  // Pelna lista katedr (takze pustych) potrzebna tylko w formularzu admina.
+  const { data: departments } = useQuery({ queryKey: ['departments'], queryFn: fetchDepartments, enabled: canEdit });
+  const departmentOptions = useMemo(() => [...(departments ?? [])].sort(compareDepartments), [departments]);
 
-  // Filtr wydzialu dziala obok globalnej szukajki DataTable, wiec zawezamy dane wejsciowe.
-  const visible = useMemo(() => {
-    if (facultyFilter === 'all') return instructors;
-    if (facultyFilter === NO_FACULTY) return instructors?.filter((i) => !i.facultyId);
-    return instructors?.filter((i) => i.facultyId === facultyFilter);
-  }, [instructors, facultyFilter]);
+  // Filtr katedr pokazuje katedry, ktore maja prowadzacych na liscie (dane z listy prowadzacych).
+  const departmentsInUse = useMemo(() => {
+    const byId = new Map<string, Department>();
+    for (const i of instructors ?? []) if (i.department) byId.set(i.department.id, i.department);
+    return [...byId.values()].sort(compareDepartments);
+  }, [instructors]);
+
+  // Filtry wydzialu i katedry dzialaja obok globalnej szukajki DataTable, wiec zawezamy dane wejsciowe.
+  const visible = useMemo(
+    () =>
+      instructors?.filter(
+        (i) =>
+          (facultyFilter === 'all' || (facultyFilter === NO_FACULTY ? !i.facultyId : i.facultyId === facultyFilter)) &&
+          (departmentFilter === 'all' ||
+            (departmentFilter === NO_DEPARTMENT ? !i.departmentId : i.departmentId === departmentFilter)),
+      ),
+    [instructors, facultyFilter, departmentFilter],
+  );
 
   const form = useForm<InstructorValues>({
     resolver: zodResolver(instructorSchema),
-    defaultValues: { firstName: '', lastName: '', email: '', title: '', facultyId: NO_FACULTY },
+    defaultValues: EMPTY_FORM,
   });
+  // Katedra wydzialowa ustala wydzial prowadzacego (serwer robi to samo) — pole wydzialu jest wtedy zablokowane.
+  const chosenDepartment = departments?.find((d) => d.id === form.watch('departmentId'));
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['instructors'] });
 
@@ -101,7 +134,9 @@ export default function InstructorsPage() {
         lastName: values.lastName,
         email: values.email,
         title: values.title || undefined,
-        facultyId: values.facultyId === NO_FACULTY ? undefined : values.facultyId,
+        // null (a nie undefined) — "Bez wydzialu"/"Bez katedry" ma odpiac, a nie zostawic jak bylo.
+        facultyId: !values.facultyId || values.facultyId === NO_FACULTY ? null : values.facultyId,
+        departmentId: !values.departmentId || values.departmentId === NO_DEPARTMENT ? null : values.departmentId,
       };
       return editing ? updateInstructor(editing.id, payload) : createInstructor(payload);
     },
@@ -109,6 +144,8 @@ export default function InstructorsPage() {
       toast.success(editing ? 'Dane prowadzacego zaktualizowane' : 'Prowadzacy dodany');
       setDialogOpen(false);
       void invalidate();
+      // Liczba prowadzacych katedry (zakladka Katedry) tez sie zmienia.
+      void queryClient.invalidateQueries({ queryKey: ['departments'] });
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   });
@@ -125,7 +162,7 @@ export default function InstructorsPage() {
 
   const openCreate = () => {
     setEditing(null);
-    form.reset({ firstName: '', lastName: '', email: '', title: '', facultyId: NO_FACULTY });
+    form.reset(EMPTY_FORM);
     setDialogOpen(true);
   };
 
@@ -137,6 +174,7 @@ export default function InstructorsPage() {
       email: instructor.email,
       title: instructor.title ?? '',
       facultyId: instructor.facultyId ?? NO_FACULTY,
+      departmentId: instructor.departmentId ?? NO_DEPARTMENT,
     });
     setDialogOpen(true);
   };
@@ -179,6 +217,19 @@ export default function InstructorsPage() {
           <span className="text-muted-foreground">—</span>
         ),
     },
+    {
+      id: 'department',
+      accessorFn: (row) => (row.department ? departmentLabel(row.department) : ''),
+      header: ({ column }) => <SortableHeader column={column}>Katedra</SortableHeader>,
+      cell: ({ row }) =>
+        row.original.department ? (
+          <Badge variant="outline" title={row.original.department.name}>
+            {departmentLabel(row.original.department)}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
     ...(canEdit
       ? [
           {
@@ -202,7 +253,7 @@ export default function InstructorsPage() {
     <>
       <PageHeader
         title="Prowadzacy"
-        description="Kadra dydaktyczna — przypisywana do zajec w obsadzie („Zajecia i obsada”), a stamtad do umieszczen w planie."
+        description="Kadra dydaktyczna z katedrami — przypisywana do zajec w obsadzie („Zajecia i obsada”), a stamtad do umieszczen w planie."
         actions={
           canEdit && (
             <Button onClick={openCreate}>
@@ -220,20 +271,36 @@ export default function InstructorsPage() {
         searchPlaceholder="Szukaj po nazwisku lub e-mailu…"
         columnLabels={COLUMN_LABELS}
         toolbar={
-          <Select value={facultyFilter} onValueChange={setFacultyFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Wydzial" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Wszystkie wydzialy</SelectItem>
-              <SelectItem value={NO_FACULTY}>Ogolnouczelniani</SelectItem>
-              {faculties?.map((faculty) => (
-                <SelectItem key={faculty.id} value={faculty.id}>
-                  {faculty.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <>
+            <Select value={facultyFilter} onValueChange={setFacultyFilter}>
+              <SelectTrigger className="w-48" aria-label="Wydzial">
+                <SelectValue placeholder="Wydzial" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Wszystkie wydzialy</SelectItem>
+                <SelectItem value={NO_FACULTY}>Ogolnouczelniani</SelectItem>
+                {faculties?.map((faculty) => (
+                  <SelectItem key={faculty.id} value={faculty.id}>
+                    {faculty.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+              <SelectTrigger className="w-44" aria-label="Katedra">
+                <SelectValue placeholder="Katedra" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Wszystkie katedry</SelectItem>
+                <SelectItem value={NO_DEPARTMENT}>Bez katedry</SelectItem>
+                {departmentsInUse.map((department) => (
+                  <SelectItem key={department.id} value={department.id}>
+                    {departmentLabel(department)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </>
         }
         emptyState={
           <Empty className="border">
@@ -299,6 +366,44 @@ export default function InstructorsPage() {
                 <FieldError errors={[form.formState.errors.email]} />
               </Field>
 
+              {/* Katedra przed wydzialem — katedra wydzialowa ustala wydzial (pole wydzialu jest wtedy zablokowane). */}
+              <Field>
+                <FieldLabel htmlFor="departmentId">Katedra (opcjonalnie)</FieldLabel>
+                <Controller
+                  control={form.control}
+                  name="departmentId"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        const department = departments?.find((d) => d.id === value);
+                        if (department?.facultyId) form.setValue('facultyId', department.facultyId);
+                      }}
+                    >
+                      <SelectTrigger id="departmentId">
+                        <SelectValue placeholder="Wybierz katedre" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NO_DEPARTMENT}>Bez katedry</SelectItem>
+                        {departmentOptions.map((department) => (
+                          <SelectItem key={department.id} value={department.id}>
+                            {departmentLabel(department)} — {department.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <FieldDescription>
+                  Katedry zaklada sie w{' '}
+                  <Link to="/faculties?widok=katedry" className="underline underline-offset-4">
+                    Wydzialy i katedry
+                  </Link>
+                  .
+                </FieldDescription>
+              </Field>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="title">Tytul (opcjonalnie)</FieldLabel>
@@ -311,7 +416,7 @@ export default function InstructorsPage() {
                     control={form.control}
                     name="facultyId"
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select value={field.value} onValueChange={field.onChange} disabled={!!chosenDepartment?.facultyId}>
                         <SelectTrigger id="facultyId">
                           <SelectValue placeholder="Wybierz wydzial" />
                         </SelectTrigger>
@@ -326,6 +431,7 @@ export default function InstructorsPage() {
                       </Select>
                     )}
                   />
+                  {chosenDepartment?.facultyId && <FieldDescription>Wydzial wynika z katedry.</FieldDescription>}
                 </Field>
               </div>
             </FieldGroup>

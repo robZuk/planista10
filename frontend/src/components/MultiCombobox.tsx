@@ -11,6 +11,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { matchesAllWords } from '@/lib/searchMatch';
 import { cn } from '@/lib/utils';
 import type { ComboboxOption } from '@/components/Combobox';
 
@@ -69,7 +70,9 @@ export function MultiCombobox({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
-          <Command>
+          {/* Jak w Combobox: kazde slowo jako fragment, bez rozmytego dopasowania cmdk
+              ("Zalewska" nie zwraca juz "Lewandowska" ani "Olszewska"). */}
+          <Command filter={(value, search) => (matchesAllWords(value, search) ? 1 : 0)}>
             <CommandInput placeholder={searchPlaceholder} />
             <CommandList>
               <CommandEmpty>{emptyText}</CommandEmpty>

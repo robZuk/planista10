@@ -1,13 +1,20 @@
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
+
+// Katedra ze skrotem wydzialu — lista pokazuje ja jak w zleceniach ("KEO-WE").
+const instructorInclude = {
+  faculty: true,
+  department: { include: { faculty: { select: { id: true, name: true, shortName: true } } } },
+} satisfies Prisma.InstructorInclude;
 
 export const getAll = asyncHandler(async (req, res) => {
   const { facultyId } = req.query;
   const data = await prisma.instructor.findMany({
     where: facultyId ? { facultyId: String(facultyId) } : undefined,
     // Konto logowania powiazane z prowadzacym — okno usuwania ostrzega, ze straci ono plan.
-    include: { faculty: true, user: { select: { id: true, name: true, email: true } } },
+    include: { ...instructorInclude, user: { select: { id: true, name: true, email: true } } },
     orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
   });
   res.json({ data });
@@ -16,7 +23,7 @@ export const getAll = asyncHandler(async (req, res) => {
 export const getOne = asyncHandler(async (req, res) => {
   const data = await prisma.instructor.findUnique({
     where: { id: req.params.id },
-    include: { faculty: true },
+    include: instructorInclude,
   });
   if (!data) throw new AppError(404, 'Prowadzacy nie znaleziony');
   res.json({ data });
@@ -34,33 +41,48 @@ async function assertEmailFree(email: string | undefined, exceptId?: string): Pr
   }
 }
 
+/**
+ * Katedra wydzialowa ustala wydzial prowadzacego (KEO-WE -> WE) — wydzial z formularza
+ * ustepuje katedrze, zeby prowadzacy KEO nie wisial na innym wydziale niz jego katedra.
+ * Katedra miedzywydzialowa (SJO) wydzialu nie zmienia.
+ */
+async function facultyOfDepartment(departmentId: string | null | undefined): Promise<{ facultyId?: string }> {
+  if (!departmentId) return {};
+  const department = await prisma.department.findUnique({ where: { id: departmentId }, select: { facultyId: true } });
+  if (!department) throw new AppError(400, 'Wybrana katedra nie istnieje');
+  return department.facultyId ? { facultyId: department.facultyId } : {};
+}
+
+type InstructorBody = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  title?: string;
+  facultyId?: string | null;
+  departmentId?: string | null;
+};
+
 export const create = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, title, facultyId } = req.body as {
-    firstName: string;
-    lastName: string;
-    email: string;
-    title?: string;
-    facultyId?: string;
-  };
+  const { firstName, lastName, email, title, facultyId, departmentId } = req.body as InstructorBody;
   await assertEmailFree(email);
   const data = await prisma.instructor.create({
-    data: { firstName, lastName, email, title, facultyId },
+    data: { firstName, lastName, email, title, facultyId, departmentId, ...(await facultyOfDepartment(departmentId)) },
   });
   res.status(201).json({ data, message: 'Prowadzacy utworzony' });
 });
 
 export const update = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, title, facultyId } = req.body as {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    title?: string;
-    facultyId?: string;
-  };
-  await assertEmailFree(email, String(req.params.id));
+  const id = String(req.params.id);
+  const { firstName, lastName, email, title, facultyId, departmentId } = req.body as Partial<InstructorBody>;
+  await assertEmailFree(email, id);
+  // Bez zmiany katedry obowiazuje dotychczasowa — sama zmiana wydzialu nie moze jej rozjechac.
+  const department =
+    departmentId !== undefined
+      ? departmentId
+      : (await prisma.instructor.findUnique({ where: { id }, select: { departmentId: true } }))?.departmentId;
   const data = await prisma.instructor.update({
-    where: { id: req.params.id },
-    data: { firstName, lastName, email, title, facultyId },
+    where: { id },
+    data: { firstName, lastName, email, title, facultyId, departmentId, ...(await facultyOfDepartment(department)) },
   });
   res.json({ data, message: 'Prowadzacy zaktualizowany' });
 });

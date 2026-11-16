@@ -54,7 +54,9 @@ export const update = asyncHandler(async (req, res) => {
 export const remove = asyncHandler(async (req, res) => {
   const faculty = await prisma.faculty.findUnique({
     where: { id: req.params.id },
-    include: { _count: { select: { fieldsOfStudy: true, buildings: true, instructors: true, termCalendars: true, users: true } } },
+    include: {
+      _count: { select: { fieldsOfStudy: true, buildings: true, instructors: true, departments: true, termCalendars: true, users: true } },
+    },
   });
   if (!faculty) throw new AppError(404, 'Wydzial nie znaleziony');
   if (faculty._count.fieldsOfStudy > 0) {
@@ -62,6 +64,10 @@ export const remove = asyncHandler(async (req, res) => {
   }
   if (faculty._count.buildings > 0 || faculty._count.instructors > 0) {
     throw new AppError(409, 'Nie mozna usunac wydzialu z przypisanymi budynkami lub prowadzacymi');
+  }
+  // Katedra trzyma wydzial kluczem obcym (RESTRICT) — bez tej kontroli wyszedlby ogolny blad relacji.
+  if (faculty._count.departments > 0) {
+    throw new AppError(409, 'Nie mozna usunac wydzialu z katedrami — przenies je na inny wydzial albo usun w zakladce Katedry');
   }
   // Kalendarz trzyma wydzial kluczem obcym — bez tej kontroli wyszedlby ogolny blad relacji.
   if (faculty._count.termCalendars > 0) {

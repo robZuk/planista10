@@ -5,7 +5,9 @@ export const instructorCreateSchema = z.object({
   lastName: z.string().trim().min(1, 'Nazwisko jest wymagane').max(80),
   email: z.email('Nieprawidlowy adres email'),
   title: z.string().trim().max(60).optional(),
-  facultyId: z.string().optional(),
+  // null = bez wydzialu / bez katedry (undefined w aktualizacji = bez zmian).
+  facultyId: z.string().min(1).nullable().optional(),
+  departmentId: z.string().min(1).nullable().optional(),
 });
 
 export const instructorUpdateSchema = instructorCreateSchema.partial();
