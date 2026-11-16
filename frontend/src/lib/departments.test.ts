@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Department, Instructor } from '@/types';
-import { compareDepartments, departmentLabel, memberOptions, membershipChanges } from './departments';
+import { compareDepartments, departmentLabel, instructorOptions, memberOptions, membershipChanges } from './departments';
 
 const WE = { id: 'f-we', name: 'Wydzial Elektryczny', shortName: 'WE' };
 const WM = { id: 'f-wm', name: 'Wydzial Mechaniczny', shortName: 'WM' };
@@ -65,6 +65,18 @@ describe('memberOptions', () => {
       'dr Tomasz Nowak · t2@umg.edu.pl',
       'dr Jan Kos',
     ]);
+  });
+});
+
+describe('instructorOptions', () => {
+  it('katedra przy nazwisku (albo wydzial), imiennicy z e-mailem, szukanie po nazwie katedry', () => {
+    const options = instructorOptions([
+      person('a', 'Anna', 'Lis', { departmentId: KEO.id, department: KEO }),
+      person('t1', 'Tomasz', 'Nowak', { facultyId: WM.id, faculty: { ...WM, createdAt: '' } }),
+      person('t2', 'Tomasz', 'Nowak'),
+    ]);
+    expect(options.map((o) => o.label)).toEqual(['dr Anna Lis · KEO-WE', 'dr Tomasz Nowak · WM · t1@umg.edu.pl', 'dr Tomasz Nowak · t2@umg.edu.pl']);
+    expect(options[0]!.keywords).toContain('Katedra KEO');
   });
 });
 

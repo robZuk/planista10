@@ -6,6 +6,7 @@ import { fieldOfStudyCreateSchema } from './schemas/fieldOfStudy';
 import { specializationCreateSchema } from './schemas/specialization';
 import { instructorCreateSchema, instructorUpdateSchema } from './schemas/instructor';
 import { departmentCreateSchema, departmentInstructorsSchema, departmentUpdateSchema } from './schemas/department';
+import { personStaffSchema, staffReplaceSchema } from './schemas/staffing';
 import {
   buildingCreateSchema,
   buildingUpdateSchema,
@@ -58,6 +59,8 @@ const schemas = {
   DepartmentCreate: toJson(departmentCreateSchema),
   DepartmentUpdate: toJson(departmentUpdateSchema),
   DepartmentInstructors: toJson(departmentInstructorsSchema),
+  StaffReplace: toJson(staffReplaceSchema),
+  PersonStaff: toJson(personStaffSchema),
   BuildingCreate: toJson(buildingCreateSchema),
   BuildingUpdate: toJson(buildingUpdateSchema),
   RoomCreate: toJson(roomCreateSchema),
@@ -379,6 +382,15 @@ export const openApiDocument = {
     },
     '/api/sections/{id}/instructors': {
       put: { tags: ['Obsada'], summary: 'Obsada zajec (podzial godzin, NN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zapisana'), 400: errResp('Za duzo godzin'), ...authErrors } },
+    },
+    '/api/terms/{key}/staff': {
+      put: { tags: ['Obsada'], summary: 'Obsada wielu zajec naraz (np. wszystkie grupy przedmiotu) — wszystko albo nic', security: bearer, parameters: [termKey], requestBody: jsonBody('StaffReplace'), responses: { 200: dataResp('Zapisana'), 400: errResp('Za duzo godzin'), 404: errResp('Zajecia znikly'), 409: errResp('Archiwum albo prowadzacy usuniety'), ...authErrors } },
+    },
+    '/api/terms/{key}/instructors/{instructorId}/staff': {
+      put: { tags: ['Obsada'], summary: 'Obciazenia: godziny jednej osoby w wybranych zajeciach (0 = bez niej); obsada innych zostaje, NN ustepuje', security: bearer, parameters: [termKey, pathId('instructorId')], requestBody: jsonBody('PersonStaff'), responses: { 200: dataResp('Zapisane'), 400: errResp('Brak wolnych godzin'), 404: errResp('Nie znaleziono'), ...authErrors } },
+    },
+    '/api/terms/{key}/workload': {
+      get: { tags: ['Obsada'], summary: 'Obciazenia prowadzacych: katedra, godziny stac./niestac. na wydziale i w uczelni, przedmioty z grupami', security: bearer, parameters: [termKey, { name: 'facultyId', in: 'query', schema: { type: 'string' } }], responses: { 200: dataResp('Obciazenia'), ...authErrors } },
     },
 
     // ─── Plan ────────────────────────────────────────────────

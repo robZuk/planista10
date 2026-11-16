@@ -427,7 +427,7 @@ export default function PlanPage() {
               >
                 {plan.cohort.programVersion.label}
               </Link>
-              , a potem zsynchronizuj zajecia w „Zajecia i obsada”. Istniejace umieszczenia zostaja.
+              , a potem zsynchronizuj zajecia na stronie „Obsada”. Istniejace umieszczenia zostaja.
             </p>
           </AlertDescription>
         </Alert>
@@ -637,7 +637,7 @@ export default function PlanPage() {
                       <li className="text-sm text-muted-foreground">
                         Rocznik nie ma zajec w tym semestrze — uruchom „Synchronizuj zajecia” na stronie{' '}
                         <Link to={`/obsada/${term.key}`} className="font-medium text-foreground underline underline-offset-4">
-                          Zajecia i obsada
+                          Obsada
                         </Link>
                         .
                       </li>

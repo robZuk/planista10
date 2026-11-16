@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Plus, Trash2 } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,16 +14,15 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-import { Combobox } from '@/components/Combobox';
 import { carryInstructors, importSectionsCsv, setSectionInstructors, syncSections } from '@/api/sections';
-import { fetchInstructors } from '@/api/instructors';
+import { useInstructorOptions } from '@/hooks/useInstructorOptions';
 import { getErrorMessage } from '@/lib/errors';
 import { plural } from '@/lib/setupSteps';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
+import { draftRows, staffRowsProblem, toAssignments } from '@/lib/staffRows';
 import { groupSyncProblems, splitArchivedProblems } from '@/lib/syncProblems';
 import type { CarryRow, ClassSectionRow, SyncReport, SyncRow } from '@/types';
-
-const NN = '__nn__';
+import { StaffRowsEditor } from './StaffRowsEditor';
 
 function RowList({ rows, empty }: { rows: SyncRow[] | CarryRow[]; empty?: string }) {
   if (rows.length === 0) return empty ? <p className="text-sm text-muted-foreground">{empty}</p> : null;
@@ -310,40 +308,12 @@ export function AssignmentDialog({
   onClose: () => void;
   onDone: () => void;
 }) {
-  const { data: instructors } = useQuery({ queryKey: ['instructors'], queryFn: fetchInstructors });
-  const [rows, setRows] = useState(
-    section.instructors.length > 0
-      ? section.instructors.map((i) => ({ instructorId: i.instructorId ?? NN, hours: String(i.hours) }))
-      : [{ instructorId: '', hours: String(section.hours) }],
-  );
-  const total = rows.reduce((s, r) => s + (Number(r.hours) || 0), 0);
-  // Wiersz bez prowadzacego bylby przy zapisie pominiety po cichu (licznik mowilby co innego
-  // niz zapis) — wymagamy wyboru prowadzacego albo NN, dodatnich godzin i bez powtorzen.
-  const chosen = rows.map((r) => r.instructorId).filter((id) => id && id !== NN);
-  const rowProblem = rows.some((r) => !r.instructorId)
-    ? 'Wybierz prowadzacego (albo NN) w kazdym wierszu albo usun pusty wiersz'
-    : rows.some((r) => !Number.isInteger(Number(r.hours)) || Number(r.hours) <= 0 || r.hours.trim() === '')
-      ? 'Godziny w kazdym wierszu musza byc liczba calkowita wieksza od zera'
-      : new Set(chosen).size !== chosen.length
-        ? 'Ten sam prowadzacy jest w obsadzie dwa razy — polacz jego godziny w jednym wierszu'
-        : total > section.hours
-          ? `Suma godzin (${total}) przekracza godziny zajec (${section.hours})`
-          : null;
-  const options = [
-    { value: NN, label: 'NN (wakat)' },
-    ...(instructors ?? []).map((i) => ({
-      value: i.id,
-      label: `${i.title ?? ''} ${i.firstName} ${i.lastName}`.trim(),
-      keywords: i.email,
-    })),
-  ];
+  const { options } = useInstructorOptions(true);
+  const [rows, setRows] = useState(() => draftRows(section));
+  const rowProblem = staffRowsProblem(rows, section.hours);
 
   const save = useMutation({
-    mutationFn: () =>
-      setSectionInstructors(
-        section.id,
-        rows.map((r) => ({ instructorId: r.instructorId === NN ? null : r.instructorId, hours: Number(r.hours) })),
-      ),
+    mutationFn: () => setSectionInstructors(section.id, toAssignments(rows)),
     onSuccess: (r) => {
       toast.success(r.message);
       onDone();
@@ -361,54 +331,7 @@ export function AssignmentDialog({
             miedzy kilku prowadzacych.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-2">
-          {rows.map((row, index) => (
-            <div key={index} className="grid grid-cols-[1fr_6rem_auto] items-center gap-2">
-              <Combobox
-                options={options}
-                value={row.instructorId}
-                onChange={(value) => setRows(rows.map((r, i) => (i === index ? { ...r, instructorId: value } : r)))}
-                placeholder="Wybierz prowadzacego"
-                searchPlaceholder="Szukaj po nazwisku lub e-mailu…"
-              />
-              <Input
-                type="number"
-                min={1}
-                value={row.hours}
-                aria-label="Godziny"
-                className="text-right tabular-nums"
-                onChange={(e) => setRows(rows.map((r, i) => (i === index ? { ...r, hours: e.target.value } : r)))}
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Usun"
-                onClick={() => setRows(rows.filter((_, i) => i !== index))}
-              >
-                <Trash2 />
-              </Button>
-            </div>
-          ))}
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setRows([...rows, { instructorId: '', hours: String(Math.max(0, section.hours - total)) }])}
-            >
-              <Plus /> Podziel godziny
-            </Button>
-            <span className={`text-sm tabular-nums ${total > section.hours ? 'text-destructive' : 'text-muted-foreground'}`}>
-              {total} / {section.hours} h
-            </span>
-          </div>
-          {/* Pusty wiersz (np. swiezo otwarte okno) to wskazowka, nie blad — bez czerwieni. */}
-          {rowProblem && (
-            <p className={`text-sm ${rows.some((r) => !r.instructorId) ? 'text-muted-foreground' : 'text-destructive'}`}>{rowProblem}</p>
-          )}
-          {rows.length === 0 && (
-            <p className="text-sm text-muted-foreground">Bez wierszy zapis usunie obsade tych zajec.</p>
-          )}
-        </div>
+        <StaffRowsEditor rows={rows} onChange={setRows} sectionHours={section.hours} options={options} />
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Anuluj

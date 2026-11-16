@@ -558,11 +558,38 @@ export interface CarryRow {
   instructors?: { name: string; hours: number }[];
 }
 
-export interface WorkloadRow {
+/** Grupa zajec w obciazeniu osoby: jej godziny w grupie i godziny zajec grupy. */
+export interface WorkloadGroup {
+  sectionId: string;
+  name: string;
+  hours: number;
+  sectionHours: number;
+}
+
+/** Przedmiot i forma w roczniku w obciazeniu osoby (np. cwiczenia 3 gr. × 15 h = 45 h). */
+export interface WorkloadItem {
+  key: string;
+  cohort: { id: string; code: string; semester: number; label: string };
+  subject: { id: string; name: string };
+  order: number;
+  classType: ClassType;
+  studyMode: StudyMode;
+  groups: WorkloadGroup[];
+  hours: number;
+}
+
+/** Obciazenie prowadzacego w semestrze (Obsada → Obciazenia), jak w arkuszach katedr. */
+export interface WorkloadPerson {
   id: string;
   name: string;
+  department: { id: string; name: string; label: string } | null;
+  /** Godziny na wybranym wydziale: razem, stacjonarne i niestacjonarne. */
   here: number;
+  fullTime: number;
+  partTime: number;
+  /** Godziny w calej uczelni (z zajeciami innych wydzialow). */
   total: number;
+  items: WorkloadItem[];
 }
 
 // ─── Plan (nowy model): umieszczenia i terminy ───────────────

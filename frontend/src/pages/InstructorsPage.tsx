@@ -253,7 +253,7 @@ export default function InstructorsPage() {
     <>
       <PageHeader
         title="Prowadzacy"
-        description="Kadra dydaktyczna z katedrami — przypisywana do zajec w obsadzie („Zajecia i obsada”), a stamtad do umieszczen w planie."
+        description="Kadra dydaktyczna z katedrami — przypisywana do zajec w „Obsadzie” (obciazenia z arkuszy katedr), a stamtad do umieszczen w planie."
         actions={
           canEdit && (
             <Button onClick={openCreate}>

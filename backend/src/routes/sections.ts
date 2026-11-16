@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { authenticate, authorize } from '../middleware/authenticate';
 import * as sections from '../controllers/sections.controller';
 import { planLocked, termFromKey } from '../middleware/planLocked';
+import { validateBody } from '../middleware/validate';
+import { personStaffSchema, staffReplaceSchema } from '../schemas/staffing';
 
 /**
  * Zajecia semestru i obsada: /api/terms/:key/sections... (lista, synchronizacja,
@@ -22,5 +24,16 @@ termSectionsRouter.post('/sections/sync', authenticate, planners, locked, sectio
 termSectionsRouter.post('/sections/carry', authenticate, planners, locked, sections.carry);
 termSectionsRouter.post('/sections/import', authenticate, planners, locked, sections.importCsv);
 termSectionsRouter.get('/workload', authenticate, viewers, sections.workload);
+// Obsada wielu zajec naraz (grupy przedmiotu) i godziny jednej osoby (Obciazenia) — zawsze zapis,
+// wiec zawsze pod blokada semestru (jak przeniesienie i import obsady).
+termSectionsRouter.put('/staff', authenticate, planners, validateBody(staffReplaceSchema), planLocked(termFromKey), sections.replaceStaffHandler);
+termSectionsRouter.put(
+  '/instructors/:instructorId/staff',
+  authenticate,
+  planners,
+  validateBody(personStaffSchema),
+  planLocked(termFromKey),
+  sections.personStaffHandler,
+);
 
 sectionsRouter.put('/:id/instructors', authenticate, planners, sections.setInstructors);

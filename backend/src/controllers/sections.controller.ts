@@ -7,6 +7,10 @@ import { asyncHandler } from '../middleware/asyncHandler';
 import { assertFacultyScope, getCallerScope } from '../lib/facultyScope';
 import { parseTermKey } from '../lib/terms';
 import { activeCohorts, carryInstructors, syncSections } from '../services/sections';
+import { replaceStaff, setPersonStaff } from '../services/staffing';
+import { staffProblem } from '../lib/staffing';
+import { aggregateWorkload } from '../lib/workload';
+import { departmentLabel } from '../lib/department';
 import { cohortLabel } from '../services/cohorts';
 import { archivedCohortIds } from '../services/cohortCalendar';
 import { assertCohortTermWritable } from '../services/plan';
@@ -160,15 +164,11 @@ export const setInstructors = asyncHandler(async (req, res) => {
   await assertCohortTermWritable(term, section.cohortId, 'obsada');
   const { assignments } = req.body as { assignments?: { instructorId: string | null; hours: number }[] };
   if (!Array.isArray(assignments)) throw new AppError(400, 'Podaj liste obsady');
-  for (const a of assignments) {
-    if (!Number.isInteger(a.hours) || a.hours <= 0) throw new AppError(400, 'Godziny prowadzacego musza byc dodatnie');
-  }
+  // Te same zasady co okna Obciazen i grup przedmiotu (lib/staffing).
+  const problem = staffProblem(assignments, section.hours);
+  if (problem) throw new AppError(400, problem);
   const total = assignments.reduce((s, a) => s + a.hours, 0);
-  if (total > section.hours) {
-    throw new AppError(400, `Suma godzin obsady (${total}) przekracza godziny zajec (${section.hours})`);
-  }
   const ids = assignments.map((a) => a.instructorId).filter((x): x is string => !!x);
-  if (new Set(ids).size !== ids.length) throw new AppError(400, 'Prowadzacy powtarza sie w obsadzie');
   // Prowadzacy usuniety w miedzyczasie (inne okno) — czytelny komunikat zamiast bledu klucza obcego.
   if (ids.length > 0 && (await prisma.instructor.count({ where: { id: { in: ids } } })) !== ids.length) {
     throw new AppError(409, 'Ktorys z wybranych prowadzacych zostal usuniety — odswiez liste i wybierz ponownie');
@@ -184,26 +184,104 @@ export const setInstructors = asyncHandler(async (req, res) => {
   });
 });
 
-/** Obciazenie prowadzacych w semestrze: godziny z obsady (na wybranym wydziale i lacznie). */
+/**
+ * Obciazenia prowadzacych w semestrze — jak w arkuszach katedr: osoba (z katedra) → przedmiot
+ * i forma w roczniku → grupy i godziny. Godziny na wybranym wydziale osobno stacjonarne
+ * i niestacjonarne, do tego suma w calej uczelni (zajecia na innych wydzialach).
+ */
 export const workload = asyncHandler(async (req, res) => {
   const term = await findTerm(String(req.params.key));
   const facultyId = await facultyOf(req);
+  const contexts = await activeCohorts(term, facultyId);
+  const ctxById = new Map(contexts.map((c) => [c.cohort.id, c]));
   const rows = await prisma.sectionInstructor.findMany({
     where: { instructorId: { not: null }, section: { termId: term.id, status: 'ACTIVE' } },
-    include: {
-      instructor: { select: { id: true, title: true, firstName: true, lastName: true } },
-      section: { select: { facultyId: true } },
+    select: {
+      instructorId: true,
+      hours: true,
+      section: {
+        select: {
+          id: true,
+          hours: true,
+          facultyId: true,
+          cohortId: true,
+          programEntryId: true,
+          classType: true,
+          groupId: true,
+          programEntry: { select: { orderInSemester: true, subject: { select: { id: true, name: true } } } },
+        },
+      },
     },
   });
-  const map = new Map<string, { id: string; name: string; here: number; total: number }>();
-  for (const r of rows) {
-    const id = r.instructorId!;
-    const item = map.get(id) ?? { id, name: instructorName(r.instructor), here: 0, total: 0 };
-    item.total += r.hours;
-    if (!facultyId || r.section.facultyId === facultyId) item.here += r.hours;
-    map.set(id, item);
-  }
-  res.json({ data: [...map.values()].filter((x) => x.here > 0).sort((a, b) => b.here - a.here) });
+  const people = aggregateWorkload(
+    rows.map((r) => {
+      const s = r.section;
+      const ctx = !facultyId || s.facultyId === facultyId ? ctxById.get(s.cohortId) : undefined;
+      return {
+        instructorId: r.instructorId!,
+        hours: r.hours,
+        sectionId: s.id,
+        sectionHours: s.hours,
+        cohortId: s.cohortId,
+        programEntryId: s.programEntryId,
+        classType: s.classType,
+        view: ctx
+          ? {
+              cohort: { id: ctx.cohort.id, code: ctx.cohort.program.code, semester: ctx.semester, label: cohortLabel(ctx.cohort) },
+              subject: s.programEntry.subject,
+              order: s.programEntry.orderInSemester,
+              group: ctx.nameOf(s.groupId),
+              studyMode: ctx.cohort.program.studyMode,
+            }
+          : null,
+      };
+    }),
+  );
+  const instructors = await prisma.instructor.findMany({
+    where: { id: { in: people.map((p) => p.instructorId) } },
+    select: {
+      id: true,
+      title: true,
+      firstName: true,
+      lastName: true,
+      department: { select: { id: true, name: true, shortName: true, faculty: { select: { shortName: true } } } },
+    },
+  });
+  const byId = new Map(instructors.map((i) => [i.id, i]));
+  res.json({
+    data: people.map(({ instructorId, ...person }) => {
+      const instructor = byId.get(instructorId) ?? null;
+      const department = instructor?.department;
+      return {
+        id: instructorId,
+        name: instructorName(instructor),
+        department: department ? { id: department.id, name: department.name, label: departmentLabel(department) } : null,
+        ...person,
+      };
+    }),
+  });
+});
+
+/** Obsada wielu zajec naraz (np. wszystkie grupy przedmiotu) — wszystko albo nic. */
+export const replaceStaffHandler = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  const { changes } = req.body as { changes: { sectionId: string; assignments: { instructorId: string | null; hours: number }[] }[] };
+  await replaceStaff(req, term, changes.map((c) => ({ sectionId: c.sectionId, rows: c.assignments })));
+  res.json({ message: `Obsada zapisana: ${plural(changes.length, 'zajecia', 'zajecia', 'zajec')}` });
+});
+
+/** Godziny jednej osoby w wybranych zajeciach (Obciazenia) — obsada innych zostaje. */
+export const personStaffHandler = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  const { items } = req.body as { items: { sectionId: string; hours: number }[] };
+  const result = await setPersonStaff(req, term, String(req.params.instructorId), items);
+  res.json({
+    data: result,
+    message:
+      result.sections > 0
+        ? `Obciazenie zapisane: ${plural(result.sections, 'grupa', 'grupy', 'grup')}, ${result.hours} h`
+        : 'Prowadzacy nie prowadzi juz tych zajec',
+  });
 });
 
 const CSV_HEADER = 'id_zajec;rocznik;semestr;przedmiot;forma;grupa;godziny;prowadzacy_email;godziny_prowadzacego';

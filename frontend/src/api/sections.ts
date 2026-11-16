@@ -1,5 +1,11 @@
 import { api } from '@/lib/api';
-import type { CarryRow, ClassSectionRow, SectionsSummary, SyncReport, WorkloadRow } from '@/types';
+import type { CarryRow, ClassSectionRow, SectionsSummary, SyncReport, WorkloadPerson } from '@/types';
+
+export interface StaffAssignmentInput {
+  /** null = NN (wakat). */
+  instructorId: string | null;
+  hours: number;
+}
 
 const facultyParams = (facultyId?: string) => (facultyId && facultyId !== 'all' ? { facultyId } : {});
 
@@ -35,9 +41,28 @@ export async function setSectionInstructors(
   return res.data;
 }
 
-export async function fetchWorkload(termKey: string, facultyId?: string): Promise<WorkloadRow[]> {
+export async function fetchWorkload(termKey: string, facultyId?: string): Promise<WorkloadPerson[]> {
   const res = await api.get(`/terms/${termKey}/workload`, { params: facultyParams(facultyId) });
   return res.data.data;
+}
+
+/** Obsada wielu zajec naraz (np. wszystkie grupy przedmiotu) — wszystko albo nic. */
+export async function replaceStaff(
+  termKey: string,
+  changes: { sectionId: string; assignments: StaffAssignmentInput[] }[],
+): Promise<{ message: string }> {
+  const res = await api.put(`/terms/${termKey}/staff`, { changes });
+  return res.data;
+}
+
+/** Godziny jednej osoby w wybranych zajeciach (0 = bez niej); obsada innych zostaje, NN ustepuje. */
+export async function setPersonStaff(
+  termKey: string,
+  instructorId: string,
+  items: { sectionId: string; hours: number }[],
+): Promise<{ message: string }> {
+  const res = await api.put(`/terms/${termKey}/instructors/${instructorId}/staff`, { items });
+  return res.data;
 }
 
 /** Pobranie CSV przez klienta z tokenem i zapis jako plik. */
