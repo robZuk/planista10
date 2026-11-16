@@ -41,6 +41,21 @@ export function memberOptions(instructors: Instructor[], departmentId: string): 
   });
 }
 
+/**
+ * Prowadzacy do wyboru w obsadzie: przy nazwisku katedra (albo wydzial osoby bez katedry), jak
+ * w arkuszach katedr; imiennikow rozroznia e-mail. Szukanie tez po e-mailu i nazwie katedry.
+ */
+export function instructorOptions(instructors: Instructor[]): ComboboxOption[] {
+  const sameName = new Map<string, number>();
+  for (const i of instructors) sameName.set(instructorName(i), (sameName.get(instructorName(i)) ?? 0) + 1);
+  return instructors.map((i) => {
+    const name = instructorName(i);
+    const unit = i.department ? departmentLabel(i.department) : i.faculty?.shortName;
+    const label = [name, unit, (sameName.get(name) ?? 0) > 1 ? i.email : null].filter(Boolean).join(' · ');
+    return { value: i.id, label, keywords: [i.email, i.department?.name].filter(Boolean).join(' ') };
+  });
+}
+
 export interface MembershipChanges {
   /** Przypieci, ktorzy dotad nalezeli do innej katedry. */
   moving: Instructor[];

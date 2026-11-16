@@ -310,8 +310,8 @@ export function PlacementDialog({
           {staff.length === 0 && (
             <p className="text-xs text-muted-foreground sm:col-span-3">
               Zajecia nie maja obsady, wiec do wyboru jest tylko NN. Przypisz prowadzacego tutaj albo na stronie{' '}
-              <Link to={`/obsada/${termKey}`} className="font-medium text-foreground underline underline-offset-4">
-                Zajecia i obsada
+              <Link to={`/obsada/${termKey}?widok=zajecia`} className="font-medium text-foreground underline underline-offset-4">
+                Obsada
               </Link>
               .
             </p>

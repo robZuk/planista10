@@ -81,7 +81,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - `src/routes/*` — definicje tras Express (montowane pod `/api/*` w `index.ts`)
 - `src/controllers/*` — obsługa żądań (walidacja wejścia, wywołanie logiki, odpowiedź)
 - `src/services/*` — logika domenowa z bazą: `termCalendars`, `cohorts`, `sections`
-  (synchronizacja zajęć, przenoszenie obsady), `plan` (walidacja umieszczeń, dostępność,
+  (synchronizacja zajęć, przenoszenie obsady), `staffing` (obsada wielu zajęć naraz i godziny
+  jednej osoby — Obciążenia), `plan` (walidacja umieszczeń, dostępność,
   generowanie terminów), `occurrenceChanges` (przeniesienie / przywrócenie / termin ręczny z kontrolą
   kolizji — tylko planista), `carryPlan`, `staleness` (terminy nieaktualne per rocznik), `visibility`
   `planLock` (zapisy planu po kolei w obrebie semestru — kontrola kolizji i zapis bez wyscigu;
@@ -94,6 +95,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `teachingCalendar.ts` — dni i tygodnie zajęć, zjazdy, `expandDates`
   - `groupTree.ts` — drzewo grup: reguła nakładania i nazwy liczone
   - `demand.ts` — zajęcia wynikające z programu i grup
+  - `staffing.ts` — zasady listy obsady (`staffProblem`), godziny jednej osoby z ustępującym NN (`withPersonHours`)
+  - `workload.ts` — obciążenia: osoba → przedmiot i forma w roczniku z grupami, stac./niestac., suma uczelni
   - `materializer.ts` — terminy z umieszczeń (limit godzin, wyjątki, kolizje)
   - `timeGrid.ts` — siatki godzin: walidacja bloków, bloki → minuty, przerwy, dni z oknem godzin, kolizje w minutach, zestaw siatek wydziału i trybu (podstawowa + siatki dnia, `gridSet.forDay`)
   - `scheduleTime.ts` — typy sal dla form zajęć

@@ -94,6 +94,21 @@ Prowadzący, Bloki              specjalność?)                                 
   usunąć. Zmiany tylko ADMIN (jak prowadzący), dziekanat widzi listę.
 - **Obsada z poprzedniego roku:** te same zajęcia poprzedniego rocznika tego programu
   (przedmiot + forma + sygnatura grupy) w ostatnim semestrze tego samego typu.
+- **Strona „Obsada”** — te same dane z dwóch stron (`?widok=zajecia`):
+  - **Obciążenia** — jak arkusze katedr: katedra → prowadzący → przedmiot i forma w roczniku
+    z grupami („ćwiczenia, 3 gr. × 15 h = 45 h”), godziny na wydziale osobno stacjonarne
+    i niestacjonarne oraz suma w uczelni (`GET /terms/:key/workload`, `lib/workload.ts`). Po
+    wybraniu katedry widać też jej członków bez godzin — żeby dopisać im zajęcia z arkusza.
+    „Dodaj zajęcia” ustawia **godziny jednej osoby** w wybranych grupach
+    (`PUT /terms/:key/instructors/:id/staff`): obsada innych zostaje, **NN ustępuje**
+    (`lib/staffing.withPersonHours`), godziny podpowiadają się jako wolne godziny grupy.
+  - **Zajęcia** — pozycje przedmiot × forma z grupami i ich obsadą; tu widać braki (NN, wakaty,
+    niepełne godziny). Okno pozycji zapisuje obsadę **wszystkich grup naraz**
+    (`PUT /terms/:key/staff`, „Ustaw wszystkim grupom”) — wszystko albo nic.
+  Zasady jednej listy obsady (dodatnie godziny, suma ≤ godziny zajęć, osoba raz) są wspólne dla
+  wszystkich okien (`lib/staffing.staffProblem`); zakres liczy się po wydziale **zajęć**, więc
+  dziekanat WM przypisze osobę z KEO-WE. Zajęcia łączone (`Placement.jointKey`) obciążenie
+  liczy na razie dwa razy — obsada nie wie, że to jedne zajęcia.
 
 ## 6. Plan i terminy
 
@@ -181,7 +196,7 @@ Prowadzący, Bloki              specjalność?)                                 
 ## 8. Praca planisty w nowym semestrze
 
 1. Kalendarz (z propozycji z zeszłego roku) → 2. Nowy nabór (struktura grup jak poprzedni)
-→ 3. Korekty roczników → 4. Synchronizacja zajęć i obsada (z poprzedniego roku, CSV)
+→ 3. Korekty roczników → 4. Synchronizacja zajęć i obsada (Obciążenia z arkuszy katedr, z poprzedniego roku, CSV)
 → 5. Plan ręcznie (opcjonalnie „Przenieś plan") → 6. Generuj terminy → 7. Publikacja.
 Strona „Przygotowanie semestru" pokazuje stan każdego kroku.
 

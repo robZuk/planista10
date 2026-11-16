@@ -34,8 +34,10 @@ studia) i **semestr** (jedyny kontekst planowania). Szczegóły: `docs/model-dan
 - **Programy studiów:** wersje programu (klon + zmiany), przedmioty wspólne i specjalnościowe.
 - **Roczniki i grupy:** nabór raz na studia, drzewo grup z nazwami liczonymi na semestr,
   podział na specjalności i korekty od wybranego semestru, nowy nabór ze strukturą poprzedniego.
-- **Zajęcia i obsada:** zajęcia wyliczone z programu i grup, prowadzący i podział godzin (NN),
-  obsada z poprzedniego roku, eksport/import CSV dla katedr, obciążenie prowadzących.
+- **Obsada:** zakładka **Obciążenia** jak arkusze katedr (katedra → prowadzący → przedmioty
+  z grupami, stac./niestac., wpisywanie zajęć osoby z rozkładem godzin na grupy) i zakładka
+  **Zajęcia** (przedmiot × forma z grupami, braki, obsada wszystkich grup naraz); zajęcia
+  wyliczone z programu i grup, podział godzin (NN), obsada z poprzedniego roku, CSV.
 - **Katedry:** jednostki przysyłające obciążenia (`KEO-WE`, międzywydziałowe jak SJO), skład
   katedry z podglądem zmian; katedra wydziałowa ustala wydział prowadzącego.
 - **Układanie planu — ręcznie:** podpowiedzi wolnych godzin, kolizje sprawdzane na

@@ -140,7 +140,7 @@ export function setupSteps(data: SetupStatus, termKey: string): SetupStep[] {
           ? 'Uzupelnij prowadzacych — recznie, z CSV albo „Obsada z poprzedniego roku”'
           : null,
       to: `/obsada/${termKey}`,
-      link: 'Zajecia i obsada',
+      link: 'Obsada',
     },
     {
       n: 6,

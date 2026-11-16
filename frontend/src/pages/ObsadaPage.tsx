@@ -1,34 +1,32 @@
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, CircleCheck, Download, FilterX, History, RefreshCw, Search, Upload, X } from 'lucide-react';
+import { Download, History, RefreshCw, Upload } from 'lucide-react';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-import { Input } from '@/components/ui/input';
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
-import { downloadSectionsCsv, fetchSections, fetchWorkload } from '@/api/sections';
+import { downloadSectionsCsv, fetchSections } from '@/api/sections';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage } from '@/lib/errors';
-import { matchesAllWords } from '@/lib/searchMatch';
-import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
+import { groupSections, type SectionGroup } from '@/lib/obsadaGroups';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
-import type { ClassSectionRow } from '@/types';
-import { AssignmentDialog, CarryDialog, ImportDialog, SyncDialog } from './obsada/ObsadaDialogs';
+import { CarryDialog, ImportDialog, SyncDialog } from './obsada/ObsadaDialogs';
+import { GroupStaffDialog } from './obsada/GroupStaffDialog';
+import SectionsTab from './obsada/SectionsTab';
+import WorkloadTab from './obsada/WorkloadTab';
 
 /**
- * Zajecia i obsada semestru — osobny etap przed ukladaniem planu. Lista zajec wynika
- * z programow i grup rocznikow (synchronizacja); tu wpisuje sie tez, kto prowadzi ile
- * godzin. Obsade mozna przeniesc z poprzedniego roku albo wczytac z CSV od katedr.
+ * Obsada semestru — osobny etap przed ukladaniem planu. Dwie strony tych samych danych:
+ *  - Obciazenia — od strony prowadzacych, tak jak przysylaja je katedry (katedra → osoba →
+ *    przedmioty z grupami); stad wpisuje sie zajecia z arkuszy katedr,
+ *  - Zajecia    — od strony zajec (przedmiot × forma z grupami): tu widac braki (NN, wakaty).
+ * Lista zajec wynika z programow i grup rocznikow (synchronizacja); obsade mozna tez przeniesc
+ * z poprzedniego roku albo wczytac z CSV. Zakladka w adresie (?widok=zajecia).
  */
-const PAGE_SIZE = 50;
 
 /** Procent obsady w dol — 100% dopiero przy pelnej obsadzie (99,99% to wciaz brakujace godziny). */
 function staffedPercent(assigned: number, total: number): number {
@@ -44,25 +42,21 @@ export default function ObsadaPage() {
   const facultyFilter = useFacultyFilterStore((s) => s.facultyId);
   const facultyId = isAdmin ? facultyFilter : undefined;
   const { term } = useCurrentTerm();
+  const [params, setParams] = useSearchParams();
+  const tab = params.get('widok') === 'zajecia' ? 'sections' : 'workload';
+  const setTab = (value: string) => setParams(value === 'sections' ? { widok: 'zajecia' } : {}, { replace: true });
 
-  const [cohortFilter, setCohortFilter] = useState('all');
-  const [onlyVacant, setOnlyVacant] = useState(false);
-  const [search, setSearch] = useState('');
-  // Prowadzacy wybrany w karcie obciazenia — lista pokazuje tylko jego zajecia.
+  // Prowadzacy wybrany w Obciazeniach ("Pokaz w Zajeciach") — lista zajec pokazuje tylko jego zajecia.
   const [instructorFilter, setInstructorFilter] = useState<{ id: string; name: string } | null>(null);
   const [dialog, setDialog] = useState<'sync' | 'carry' | 'import' | null>(null);
-  const [editing, setEditing] = useState<ClassSectionRow | null>(null);
+  const [editing, setEditing] = useState<SectionGroup | null>(null);
 
   const { data, isPending } = useQuery({
     queryKey: ['sections', term?.key, facultyId],
     queryFn: () => fetchSections(term!.key, facultyId),
     enabled: !!term,
   });
-  const { data: workload } = useQuery({
-    queryKey: ['workload', term?.key, facultyId],
-    queryFn: () => fetchWorkload(term!.key, facultyId),
-    enabled: !!term,
-  });
+  const groups = useMemo(() => groupSections(data?.rows ?? []), [data]);
 
   const refresh = async () => {
     setDialog(null);
@@ -71,58 +65,22 @@ export default function ObsadaPage() {
     await queryClient.invalidateQueries({ queryKey: ['workload'] });
   };
 
-  const cohorts = useMemo(() => {
-    const map = new Map<string, ClassSectionRow['cohort']>();
-    for (const row of data?.rows ?? []) map.set(row.cohort.id, row.cohort);
-    return [...map.values()];
-  }, [data]);
-
-  const rows = useMemo(() => {
-    const q = search.trim();
-    // Wspolne dopasowanie: kazde slowo gdziekolwiek w wierszu, bez znaczenia polskie znaki
-    // ("zarzadzanie" znajdzie "Zarządzanie", "matematyka dut" — przedmiot i grupe).
-    return (data?.rows ?? []).filter(
-      (r) =>
-        (cohortFilter === 'all' || r.cohort.id === cohortFilter) &&
-        (!onlyVacant || r.hasVacancy) &&
-        (!instructorFilter || r.instructors.some((i) => i.instructorId === instructorFilter.id)) &&
-        (!q || matchesAllWords([r.cohort.label, r.subject.name, r.group.name, ...r.instructors.map((i) => i.name)].join(' '), q)),
-    );
-  }, [data, cohortFilter, onlyVacant, search, instructorFilter]);
-
-  // Strony po 50 wierszy — semestr wydzialu to setki zajec (WM: ~900), cala uczelnia — tysiace.
-  // Zmiana filtra wraca na pierwsza strone (strona pamietana razem z kluczem filtrow).
-  const filterKey = `${cohortFilter}|${onlyVacant}|${search}|${instructorFilter?.id}|${facultyId}|${term?.key}`;
-  const [pageState, setPageState] = useState({ key: filterKey, page: 0 });
-  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
-  const page = pageState.key === filterKey ? Math.min(pageState.page, pageCount - 1) : 0;
-  const setPage = (p: number) => setPageState({ key: filterKey, page: p });
-  const pageRows = rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-
   const summary = data?.summary;
-  const filtersActive = cohortFilter !== 'all' || onlyVacant || search.trim() !== '' || !!instructorFilter;
-  const clearFilters = () => {
-    setCohortFilter('all');
-    setOnlyVacant(false);
-    setSearch('');
-    setInstructorFilter(null);
-  };
-  // Pusty wynik samego "Tylko braki" przy braku brakow to dobra wiadomosc, nie "nic nie znaleziono".
-  const allStaffed = onlyVacant && cohortFilter === 'all' && search.trim() === '' && !instructorFilter && summary?.vacancies === 0;
+  const editable = canEdit && !summary?.archived;
 
   return (
     <>
       <PageHeader
-        title="Zajecia i obsada"
+        title="Obsada"
         description={
           term
-            ? `Semestr ${term.label}: zajecia wynikajace z programow i grup rocznikow oraz kto je prowadzi i ile godzin.`
+            ? `Semestr ${term.label}: kto prowadzi zajecia — od strony prowadzacych (obciazenia z arkuszy katedr) i od strony zajec (braki).`
             : 'Wybierz semestr w naglowku.'
         }
         actions={
           <>
             {isAdmin && <FacultySelector />}
-            {canEdit && term && !summary?.archived && (
+            {editable && term && (
               <>
                 <Button variant="outline" onClick={() => setDialog('sync')}>
                   <RefreshCw /> Synchronizuj zajecia
@@ -144,13 +102,11 @@ export default function ObsadaPage() {
           </>
         }
       />
-
       {summary?.archived && (
         <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
           Kalendarze rocznikow sa w archiwum — zajecia i obsada tego semestru sa tylko do odczytu.
         </p>
       )}
-
       {summary && (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
           {[
@@ -167,208 +123,51 @@ export default function ObsadaPage() {
           ))}
         </div>
       )}
-
       {data && data.rows.length === 0 && (
         <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
           W tym semestrze nie ma jeszcze zajec. Uzyj „Synchronizuj zajecia” — powstana z programow i grup rocznikow.
         </p>
       )}
-
-      {data && data.rows.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3">
-          <NativeSelect value={cohortFilter} onChange={(e) => setCohortFilter(e.target.value)} className="w-72" aria-label="Rocznik">
-            <NativeSelectOption value="all">Wszystkie roczniki</NativeSelectOption>
-            {cohorts.map((c) => (
-              <NativeSelectOption key={c.id} value={c.id}>
-                {c.code} · semestr {c.semester}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-          <div className="relative">
-            <Search className="absolute top-2.5 left-2 size-4 text-muted-foreground" />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Przedmiot, grupa, prowadzacy…" className="w-72 pl-8" />
-          </div>
-          {instructorFilter && (
-            <Badge variant="secondary" className="h-7 gap-1 pr-1">
-              Prowadzacy: {instructorFilter.name}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-5"
-                aria-label="Pokaz zajecia wszystkich prowadzacych"
-                onClick={() => setInstructorFilter(null)}
-              >
-                <X />
-              </Button>
-            </Badge>
-          )}
-          <label className="flex items-center gap-2 text-sm">
-            <Checkbox checked={onlyVacant} onCheckedChange={(v) => setOnlyVacant(v === true)} />
-            Tylko braki (NN / niepelna obsada)
-          </label>
-          <span className="text-sm text-muted-foreground">
-            {filtersActive ? `${rows.length} z ${data.rows.length} pozycji` : `${rows.length} pozycji`}
-          </span>
-          {filtersActive && (
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
-              <FilterX /> Wyczysc filtry
-            </Button>
-          )}
-        </div>
-      )}
-
       {isPending && term && <Skeleton className="h-64 w-full" />}
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
-        {/* Lewa kolumna zostaje takze przy pustym wyniku filtra — inaczej karta obciazenia
-            zajmowala cala szerokosc i wygladala jak wynik filtra. */}
-        {data && data.rows.length > 0 && rows.length === 0 && (
-          <Empty className="h-fit border">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">{allStaffed ? <CircleCheck /> : <FilterX />}</EmptyMedia>
-              <EmptyTitle>{allStaffed ? 'Brak brakow w obsadzie' : 'Brak zajec dla tych filtrow'}</EmptyTitle>
-              <EmptyDescription>
-                {allStaffed
-                  ? 'Wszystkie zajecia semestru maja pelna obsade — nie ma NN ani niepelnych godzin.'
-                  : 'Zadne zajecia nie pasuja do wybranego rocznika, prowadzacego, wyszukiwania lub filtra brakow.'}
-              </EmptyDescription>
-            </EmptyHeader>
-            {filtersActive && (
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                <FilterX /> {allStaffed ? 'Pokaz wszystkie zajecia' : 'Wyczysc filtry'}
-              </Button>
-            )}
-          </Empty>
-        )}
-
-        {rows.length > 0 && (
-          <div className="min-w-0 space-y-2">
-            <div className="overflow-x-auto rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Rocznik</TableHead>
-                    <TableHead>Przedmiot</TableHead>
-                    <TableHead>Forma</TableHead>
-                    <TableHead>Grupa</TableHead>
-                    <TableHead className="text-right">Godz.</TableHead>
-                    <TableHead>Obsada</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pageRows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      className={canEdit && !row.cohort.archived ? 'cursor-pointer' : undefined}
-                      title={row.cohort.archived ? 'Kalendarz rocznika w archiwum — obsada tylko do odczytu' : undefined}
-                      onClick={() => canEdit && !row.cohort.archived && setEditing(row)}
-                    >
-                      <TableCell className="whitespace-nowrap text-muted-foreground">
-                        {row.cohort.code} · s{row.cohort.semester}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {row.subject.name}
-                        {row.specialization && (
-                          <Badge
-                            variant="outline"
-                            className="ml-2 cursor-help"
-                            title={`Przedmiot specjalnosci ${row.specialization}${row.specializationName ? ` (${row.specializationName})` : ''} — tylko dla jej studentow`}
-                          >
-                            {row.specialization}
-                          </Badge>
-                        )}
-                        {row.status === 'ORPHANED' && (
-                          <Badge variant="destructive" className="ml-2">
-                            osierocone
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{CLASS_FULL_LABELS[row.classType]}</TableCell>
-                      <TableCell className="whitespace-nowrap">{row.group.name}</TableCell>
-                      <TableCell className="text-right tabular-nums">{row.hours}</TableCell>
-                      <TableCell>
-                        {row.instructors.length === 0 ? (
-                          <Badge variant="destructive">brak obsady</Badge>
-                        ) : (
-                          <div className="flex flex-wrap gap-1">
-                            {row.instructors.map((i) => (
-                              <Badge key={i.id} variant={i.instructorId ? 'secondary' : 'destructive'}>
-                                {i.name} · {i.hours} h
-                              </Badge>
-                            ))}
-                            {row.assignedHours < row.hours && (
-                              <Badge variant="outline">brakuje {row.hours - row.assignedHours} h</Badge>
-                            )}
-                            {row.assignedHours > row.hours && (
-                              <Badge variant="destructive" title="Obsada ma wiecej godzin niz zajecia — popraw podzial godzin">
-                                nadmiar {row.assignedHours - row.hours} h
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            {pageCount > 1 && (
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm text-muted-foreground">
-                  Strona {page + 1} z {pageCount} (wiersze {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, rows.length)} z {rows.length})
-                </p>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 0}>
-                    <ChevronLeft />
-                    Poprzednia
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page >= pageCount - 1}>
-                    Nastepna
-                    <ChevronRight />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {workload && workload.length > 0 && (
-          <Card className="h-fit">
-            <CardHeader>
-              <CardTitle className="text-base">Obciazenie prowadzacych</CardTitle>
-              <CardDescription>Caly semestr — niezaleznie od filtrow listy. Kliknij nazwisko, zeby pokazac zajecia prowadzacego.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-0.5 text-sm">
-                {workload.map((w) => {
-                  const active = instructorFilter?.id === w.id;
-                  return (
-                    <li key={w.id}>
-                      <button
-                        type="button"
-                        aria-pressed={active}
-                        title={active ? 'Pokaz zajecia wszystkich prowadzacych' : `Pokaz zajecia: ${w.name}`}
-                        onClick={() => setInstructorFilter(active ? null : { id: w.id, name: w.name })}
-                        className={`-mx-1.5 flex w-[calc(100%+0.75rem)] justify-between gap-2 rounded px-1.5 py-0.5 text-left hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${active ? 'bg-primary/15 font-medium text-foreground' : ''}`}
-                      >
-                        <span className="min-w-0 truncate">{w.name}</span>
-                        <span className="shrink-0 whitespace-nowrap tabular-nums">
-                          {w.here} h{w.total !== w.here && <span className="text-muted-foreground"> / {w.total}</span>}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      {term && data && data.rows.length > 0 && (
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList>
+            <TabsTrigger value="workload">Obciazenia</TabsTrigger>
+            <TabsTrigger value="sections">Zajecia</TabsTrigger>
+          </TabsList>
+          <TabsContent value="workload" className="mt-4">
+            <WorkloadTab
+              termKey={term.key}
+              facultyId={facultyId}
+              groups={groups}
+              canEdit={editable}
+              onShowSections={(person) => {
+                setInstructorFilter(person);
+                setTab('sections');
+              }}
+              onChanged={refresh}
+            />
+          </TabsContent>
+          <TabsContent value="sections" className="mt-4">
+            <SectionsTab
+              rows={data.rows}
+              groups={groups}
+              canEdit={canEdit}
+              allStaffedOverall={summary?.vacancies === 0}
+              instructorFilter={instructorFilter}
+              onInstructorFilterChange={setInstructorFilter}
+              onEdit={setEditing}
+              scopeKey={`${term.key}|${facultyId}`}
+            />
+          </TabsContent>
+        </Tabs>
+      )}
 
       {term && dialog === 'sync' && <SyncDialog termKey={term.key} facultyId={facultyId} onClose={() => setDialog(null)} onDone={refresh} />}
       {term && dialog === 'carry' && <CarryDialog termKey={term.key} facultyId={facultyId} onClose={() => setDialog(null)} onDone={refresh} />}
       {term && dialog === 'import' && <ImportDialog termKey={term.key} facultyId={facultyId} onClose={() => setDialog(null)} onDone={refresh} />}
-      {editing && <AssignmentDialog section={editing} onClose={() => setEditing(null)} onDone={refresh} />}
+      {term && editing && <GroupStaffDialog termKey={term.key} group={editing} onClose={() => setEditing(null)} onDone={refresh} />}
     </>
   );
 }
