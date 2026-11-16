@@ -6,7 +6,9 @@ export interface InstructorInput {
   lastName: string;
   email: string;
   title?: string;
-  facultyId?: string;
+  /** null = bez wydzialu / bez katedry. Katedra wydzialowa ustala wydzial (serwer). */
+  facultyId?: string | null;
+  departmentId?: string | null;
 }
 
 export async function fetchInstructors(): Promise<Instructor[]> {

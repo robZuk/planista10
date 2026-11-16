@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,6 +21,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/PageHeader';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DataTable } from '@/components/data-table/DataTable';
@@ -35,6 +37,7 @@ import {
 import { getErrorMessage } from '@/lib/errors';
 import { useAuthStore } from '@/store/authStore';
 import type { Faculty } from '@/types';
+import DepartmentsTab from './faculties/DepartmentsTab';
 
 const facultySchema = z.object({
   name: z.string().min(3, 'Nazwa musi miec co najmniej 3 znaki'),
@@ -48,10 +51,18 @@ type FacultyValues = z.infer<typeof facultySchema>;
 
 const COLUMN_LABELS = { name: 'Nazwa', shortName: 'Skrot', createdAt: 'Dodano' };
 
+/**
+ * Wydzialy i katedry w dwoch zakladkach. Zakladka w adresie (?widok=katedry), zeby z innych
+ * stron (np. Prowadzacy) dalo sie przejsc prosto do katedr.
+ */
 export default function FacultiesPage() {
   const queryClient = useQueryClient();
   // Dziekanat widzi liste, ale edytowac moze tylko admin (tak samo jak na backendzie).
   const canEdit = useAuthStore((s) => s.user?.role) === 'ADMIN';
+  const [params, setParams] = useSearchParams();
+  const tab = params.get('widok') === 'katedry' ? 'departments' : 'faculties';
+  const setTab = (value: string) => setParams(value === 'departments' ? { widok: 'katedry' } : {}, { replace: true });
+  const [creatingDepartment, setCreatingDepartment] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Faculty | null>(null);
@@ -141,38 +152,57 @@ export default function FacultiesPage() {
   return (
     <>
       <PageHeader
-        title="Wydzialy"
-        description="Jednostki uczelni — do nich przypisane sa kierunki, budynki i prowadzacy."
+        title="Wydzialy i katedry"
+        description="Jednostki uczelni — do wydzialow przypisane sa kierunki, budynki i prowadzacy, a katedry przysylaja obciazenia swoich prowadzacych."
         actions={
-          canEdit && (
+          canEdit &&
+          (tab === 'faculties' ? (
             <Button onClick={openCreate}>
               <Plus />
               Dodaj wydzial
             </Button>
-          )
+          ) : (
+            <Button onClick={() => setCreatingDepartment(true)}>
+              <Plus />
+              Dodaj katedre
+            </Button>
+          ))
         }
       />
 
-      <DataTable
-        columns={columns}
-        data={data}
-        isLoading={isPending}
-        searchPlaceholder="Szukaj wydzialu…"
-        columnLabels={COLUMN_LABELS}
-        emptyState={
-          <Empty className="border">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <School />
-              </EmptyMedia>
-              <EmptyTitle>Brak wydzialow</EmptyTitle>
-              <EmptyDescription>
-                Od wydzialu zaczyna sie cala struktura — dodaj pierwszy, zeby ruszyc dalej.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        }
-      />
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList>
+          <TabsTrigger value="faculties">Wydzialy</TabsTrigger>
+          <TabsTrigger value="departments">Katedry</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="faculties" className="mt-4">
+          <DataTable
+            columns={columns}
+            data={data}
+            isLoading={isPending}
+            searchPlaceholder="Szukaj wydzialu…"
+            columnLabels={COLUMN_LABELS}
+            emptyState={
+              <Empty className="border">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <School />
+                  </EmptyMedia>
+                  <EmptyTitle>Brak wydzialow</EmptyTitle>
+                  <EmptyDescription>
+                    Od wydzialu zaczyna sie cala struktura — dodaj pierwszy, zeby ruszyc dalej.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            }
+          />
+        </TabsContent>
+
+        <TabsContent value="departments" className="mt-4">
+          <DepartmentsTab canEdit={canEdit} creating={creatingDepartment} onCreatingChange={setCreatingDepartment} />
+        </TabsContent>
+      </Tabs>
 
       {/* Jeden dialog obsluguje dodawanie i edycje — rozni je tylko `editing`. */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -230,7 +260,7 @@ export default function FacultiesPage() {
         open={!!deleting}
         onOpenChange={(open) => !open && setDeleting(null)}
         title={`Usunac wydzial ${deleting?.shortName ?? ''}?`}
-        description="Tej operacji nie da sie cofnac. Wydzial z przypisanymi kierunkami, budynkami lub prowadzacymi nie zostanie usuniety."
+        description="Tej operacji nie da sie cofnac. Wydzial z przypisanymi kierunkami, budynkami, prowadzacymi lub katedrami nie zostanie usuniety."
         isPending={deleteMutation.isPending}
         onConfirm={() => deleting && deleteMutation.mutate(deleting.id)}
       />

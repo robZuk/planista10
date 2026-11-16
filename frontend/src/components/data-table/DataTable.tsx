@@ -121,7 +121,8 @@ export function DataTable<TData>({
             </InputGroup>
           )}
 
-          <div className="ml-auto flex items-center gap-2">
+          {/* flex-wrap: dwa filtry (np. wydzial i katedra) nie wypychaja tabeli poza ekran telefonu. */}
+          <div className="ml-auto flex flex-wrap items-center gap-2">
             {toolbar}
             {hideableColumns.length > 0 && (
               <DropdownMenu>

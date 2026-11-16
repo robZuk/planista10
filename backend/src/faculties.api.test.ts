@@ -29,7 +29,7 @@ beforeEach(() => {
 
 const faculty = (c: object) => ({
   id: 'f1',
-  _count: { fieldsOfStudy: 0, buildings: 0, instructors: 0, termCalendars: 0, users: 0, ...c },
+  _count: { fieldsOfStudy: 0, buildings: 0, instructors: 0, departments: 0, termCalendars: 0, users: 0, ...c },
 });
 const remove = () => request(app).delete('/api/faculties/f1').set('Authorization', `Bearer ${admin}`);
 
@@ -47,6 +47,14 @@ describe('API — usuwanie wydzialu', () => {
     const res = await remove();
     expect(res.status).toBe(409);
     expect(res.body.error).toContain('kontami');
+    expect(prismaMock.faculty.delete).not.toHaveBeenCalled();
+  });
+
+  it('wydzial z katedrami -> 409, katedry nie staja sie po cichu miedzywydzialowe', async () => {
+    prismaMock.faculty.findUnique.mockResolvedValueOnce(faculty({ departments: 4 }));
+    const res = await remove();
+    expect(res.status).toBe(409);
+    expect(res.body.error).toContain('katedrami');
     expect(prismaMock.faculty.delete).not.toHaveBeenCalled();
   });
 
