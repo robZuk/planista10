@@ -132,6 +132,10 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - **Nazwy grup nie są zapisywane** — licz je `displayName` dla semestru.
 - **Dziekanat** zmienia tylko dane swojego wydziału (`assertFacultyScope`); semestry w
   archiwum są tylko do odczytu.
+- **Katedry** (`Department`, zakładka „Katedry” w „Wydziały i katedry”) to jednostki, które
+  przysyłają obciążenia prowadzących; oznaczenie jak w zleceniach (`KEO-WE`), międzywydziałowe
+  (SJO) bez wydziału. Katedra wydziałowa ustala wydział prowadzącego (`Instructor.facultyId` idzie
+  za katedrą). Katedry i prowadzących zmienia tylko ADMIN.
 - **Plan zmienia tylko planista** (ADMIN, DEAN_OFFICE) w „Układaniu planu”. Prowadzący i student plan
   tylko oglądają („Mój plan”). W planista10 **nie ma zgłoszeń zmian ani powiadomień w aplikacji**
   (usunięte migracją `20261115120000_drop_change_requests_notifications`) — nie dokładaj ich

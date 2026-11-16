@@ -36,6 +36,8 @@ studia) i **semestr** (jedyny kontekst planowania). Szczegóły: `docs/model-dan
   podział na specjalności i korekty od wybranego semestru, nowy nabór ze strukturą poprzedniego.
 - **Zajęcia i obsada:** zajęcia wyliczone z programu i grup, prowadzący i podział godzin (NN),
   obsada z poprzedniego roku, eksport/import CSV dla katedr, obciążenie prowadzących.
+- **Katedry:** jednostki przysyłające obciążenia (`KEO-WE`, międzywydziałowe jak SJO), skład
+  katedry z podglądem zmian; katedra wydziałowa ustala wydział prowadzącego.
 - **Układanie planu — ręcznie:** podpowiedzi wolnych godzin, kolizje sprawdzane na
   konkretnych datach (sala / prowadzący / grupy), rytmy tygodniowe i zjazdowe, zajęcia łączone,
   opcjonalne „Przenieś plan z zeszłego roku" (z podglądem).

@@ -38,6 +38,7 @@ import {
   type Mode,
   type ProgramDef,
 } from './struktura';
+import { assignTestDepartments } from './katedry';
 
 const TARGET = { startYear: 2026, type: 'WINTER' as const };
 const FORMS = ['W', 'C', 'L', 'P', 'S'] as const;
@@ -686,6 +687,10 @@ async function main() {
   for (let i = 0; i < placements.length; i += 2000) {
     await prisma.placement.createMany({ data: placements.slice(i, i + 2000).map((p) => ({ ...p, pattern: 'ALL', numbers: [] })) });
   }
+
+  // ── Katedry (przykladowe) — prowadzacy wg przedmiotu, ktorego ucza najwiecej ──
+  const katedry = await assignTestDepartments(prisma);
+  log(`Katedry: ${katedry.departments}, prowadzacych z katedra: ${katedry.assigned}`);
 
   // ── Uzytkownicy ──
   const hash = (plain: string) => bcrypt.hashSync(plain, 10);

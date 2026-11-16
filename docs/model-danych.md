@@ -9,8 +9,8 @@ modelowe. Aktualizować przy zmianach `backend/prisma/schema.prisma`.
 KATALOG (bez roku)      PROGRAM (wersje)             ROCZNIK (płynie w czasie)        SEMESTR (kontekst planowania)
 Wydział, Kierunek,      Program ─▶ ProgramVersion    Cohort(program, startTerm)        AcademicTerm (2026/27 letni)
 Specjalność, Przedmiot,     └▶ ProgramEntry          └▶ StudentGroup (drzewo)           └ TermCalendar (wydział × tryb × wariant)
-Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w semestrze     ├ CalendarBreak / CalendarDay
-                               specjalność?)                                               └ Zjazd
+Sala, Katedra,                 (sem. N, godziny,      CohortTerm = rocznik w semestrze     ├ CalendarBreak / CalendarDay
+Prowadzący, Bloki              specjalność?)                                               └ Zjazd
             ZAJĘCIA:  ClassSection (semestr, rocznik, pozycja programu, forma, grupa, godziny)
             OBSADA:   SectionInstructor (zajęcia, prowadzący | NN, godziny)
             PLAN:     Placement (dzień, bloki, sala, prowadzący, rytm) ─▶ Occurrence (terminy) + PlacementException
@@ -18,7 +18,7 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 
 | Oś | Co zawiera | Jak zmienia się w czasie |
 |---|---|---|
-| Katalog | wydziały, kierunki, specjalności, przedmioty, budynki, sale, prowadzący, bloki | rzadko; brak pola roku |
+| Katalog | wydziały, katedry, kierunki, specjalności, przedmioty, budynki, sale, prowadzący, bloki | rzadko; brak pola roku |
 | Program | program (kierunek + poziom + tryb) i jego wersje | nowa wersja tylko przy zmianie programu (klon poprzedniej) |
 | Rocznik | nabór na program, grupy | tworzony raz; grupy idą z nim przez studia, korekty zakresem semestrów |
 | Semestr | kalendarze, zajęcia, obsada, plan, terminy | co semestr; poprzednie przechodzą do archiwum |
@@ -84,6 +84,14 @@ Sala, Prowadzący, Bloki        (sem. N, godziny,      CohortTerm = rocznik w se
 - **Synchronizacja** to idempotentny diff z podglądem: dodaje, poprawia godziny,
   usuwa zbędne bez obsady i bez umieszczeń/terminów, pozostałe zbędne oznacza `ORPHANED`.
 - `SectionInstructor` — prowadzący (albo NN) i godziny; podział godzin = kilka wierszy.
+- **Katedra** (`Department`) — jednostka, która przysyła obciążenia swoich prowadzących
+  (zakładka „Katedry” na stronie „Wydziały i katedry”). Oznaczenie jak w zleceniach wydziału:
+  skrót katedry i wydziału (`KEO-WE`); jednostka międzywydziałowa (SJO, prowadzący zewnętrzni)
+  nie ma wydziału i ma sam skrót. Skrót jest unikalny w wydziale (bez wielkości liter).
+  Prowadzący ma najwyżej jedną katedrę (`Instructor.departmentId`); **katedra wydziałowa
+  ustala wydział prowadzącego** (API prowadzących i skład katedry), przeniesienie katedry na inny
+  wydział przenosi jej prowadzących. Katedry z prowadzącymi i wydziału z katedrami nie da się
+  usunąć. Zmiany tylko ADMIN (jak prowadzący), dziekanat widzi listę.
 - **Obsada z poprzedniego roku:** te same zajęcia poprzedniego rocznika tego programu
   (przedmiot + forma + sygnatura grupy) w ostatnim semestrze tego samego typu.
 

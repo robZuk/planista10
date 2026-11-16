@@ -61,6 +61,17 @@ Albo od zera — **kasuje wszystkie lokalne dane bazy**: `docker compose down -v
 Pusta baza zamiast zrzutu (tak jak w CI): przy pustym wolumenie `PLANISTA_SEED=0 docker compose up -d`,
 potem `docker compose exec backend npm run db:seed` (minimalne dane z `backend/prisma/seed.ts`).
 
+## Katedry testowe
+
+Zrzut powstał przed migracją `20261116120000_departments`, więc po wgraniu nie ma katedr
+(prowadzący są bez katedry). Przykładowe katedry i przypisanie fikcyjnych prowadzących wg
+przedmiotu, którego uczą najwięcej, dokłada skrypt — idempotentnie, bez ruszania reszty danych
+(generator `scripts/pelne-dane` woła go sam):
+
+```bash
+docker exec planista10-backend-1 npx tsx scripts/pelne-dane/katedry.ts
+```
+
 ## Odświeżenie zrzutu
 
 ```bash
