@@ -83,6 +83,11 @@ Prowadzący, Bloki              specjalność?)                                 
   Przedmiot specjalnościowy bez grupy specjalności jest **pomijany i zgłaszany**.
 - **Synchronizacja** to idempotentny diff z podglądem: dodaje, poprawia godziny,
   usuwa zbędne bez obsady i bez umieszczeń/terminów, pozostałe zbędne oznacza `ORPHANED`.
+  Nie ma osobnego przycisku: strona „Obsada” liczy podgląd sama przy wejściu (`dryRun`, bez
+  blokady) i pokazuje komunikat tylko, gdy jest coś do zrobienia — „Utwórz zajęcia semestru”
+  (nowy semestr), zmiany programu lub grup do zastosowania albo sprawy do wyjaśnienia (wersja
+  programu w projekcie, brak grupy specjalności; archiwum to informacja, nie problem).
+  Zmiany stosuje się z okna podglądu (`lib/syncNotice.ts`).
 - `SectionInstructor` — prowadzący (albo NN) i godziny; podział godzin = kilka wierszy.
 - **Katedra** (`Department`) — jednostka, która przysyła obciążenia swoich prowadzących
   (zakładka „Katedry” na stronie „Wydziały i katedry”). Oznaczenie jak w zleceniach wydziału:
@@ -196,7 +201,7 @@ Prowadzący, Bloki              specjalność?)                                 
 ## 8. Praca planisty w nowym semestrze
 
 1. Kalendarz (z propozycji z zeszłego roku) → 2. Nowy nabór (struktura grup jak poprzedni)
-→ 3. Korekty roczników → 4. Synchronizacja zajęć i obsada (Obciążenia z arkuszy katedr, z poprzedniego roku, CSV)
+→ 3. Korekty roczników → 4. Zajęcia (komunikat „Utwórz zajęcia semestru” na stronie Obsada) i obsada (Obciążenia z arkuszy katedr, z poprzedniego roku, CSV)
 → 5. Plan ręcznie (opcjonalnie „Przenieś plan") → 6. Generuj terminy → 7. Publikacja.
 Strona „Przygotowanie semestru" pokazuje stan każdego kroku.
 

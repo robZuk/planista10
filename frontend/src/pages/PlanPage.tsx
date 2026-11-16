@@ -427,7 +427,7 @@ export default function PlanPage() {
               >
                 {plan.cohort.programVersion.label}
               </Link>
-              , a potem zsynchronizuj zajecia na stronie „Obsada”. Istniejace umieszczenia zostaja.
+              , a potem zastosuj zmiany zajec na stronie „Obsada”. Istniejace umieszczenia zostaja.
             </p>
           </AlertDescription>
         </Alert>
@@ -635,7 +635,7 @@ export default function PlanPage() {
                     ) : (
                       // Pusta lista bez zajec to nie "wszystko zaplanowane" — zajecia powstaja z synchronizacji.
                       <li className="text-sm text-muted-foreground">
-                        Rocznik nie ma zajec w tym semestrze — uruchom „Synchronizuj zajecia” na stronie{' '}
+                        Rocznik nie ma zajec w tym semestrze — powstana z programu i grup po zastosowaniu zmian na stronie{' '}
                         <Link to={`/obsada/${term.key}`} className="font-medium text-foreground underline underline-offset-4">
                           Obsada
                         </Link>

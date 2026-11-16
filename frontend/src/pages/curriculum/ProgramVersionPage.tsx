@@ -480,7 +480,7 @@ export default function ProgramVersionPage() {
             <DialogDescription>
               Godziny lacznie na caly semestr, osobno dla kazdej formy zajec.
               {entryLocked &&
-                ` Z tej pozycji powstaly juz zajecia (${dialog!.entry!._count.sections}) — przedmiot, semestr i specjalnosc sa zablokowane; inna zmiane zrob w nowej wersji programu (klon). Zmiana godzin obejmie zajecia po „Synchronizuj zajecia”.`}
+                ` Z tej pozycji powstaly juz zajecia (${dialog!.entry!._count.sections}) — przedmiot, semestr i specjalnosc sa zablokowane; inna zmiane zrob w nowej wersji programu (klon). Zmiana godzin obejmie zajecia po zastosowaniu zmian na stronie „Obsada”.`}
             </DialogDescription>
           </DialogHeader>
           <form id="program-entry-form" onSubmit={form.handleSubmit((values) => saveMutation.mutate(values))} noValidate>

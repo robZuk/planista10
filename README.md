@@ -37,7 +37,8 @@ studia) i **semestr** (jedyny kontekst planowania). Szczegóły: `docs/model-dan
 - **Obsada:** zakładka **Obciążenia** jak arkusze katedr (katedra → prowadzący → przedmioty
   z grupami, stac./niestac., wpisywanie zajęć osoby z rozkładem godzin na grupy) i zakładka
   **Zajęcia** (przedmiot × forma z grupami, braki, obsada wszystkich grup naraz); zajęcia
-  wyliczone z programu i grup, podział godzin (NN), obsada z poprzedniego roku, CSV.
+  wyliczone z programu i grup — zmiany programu i grup same pokazują się jako komunikat
+  z podglądem — podział godzin (NN), obsada z poprzedniego roku, CSV.
 - **Katedry:** jednostki przysyłające obciążenia (`KEO-WE`, międzywydziałowe jak SJO), skład
   katedry z podglądem zmian; katedra wydziałowa ustala wydział prowadzącego.
 - **Układanie planu — ręcznie:** podpowiedzi wolnych godzin, kolizje sprawdzane na

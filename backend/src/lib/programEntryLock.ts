@@ -33,6 +33,6 @@ export function lockedEntryMessage(changes: string[], sections: number): string 
 export function lockedEntryDeleteMessage(sections: number): string {
   return (
     `Z tej pozycji powstaly juz zajecia (${sections}) — nie mozna jej usunac. Jesli sa tylko w biezacym ` +
-    'semestrze: wyzeruj godziny, uruchom „Synchronizuj zajecia” i usun pozycje. Inaczej usun ja w nowej wersji programu (klon).'
+    'semestrze: wyzeruj godziny, zastosuj zmiany zajec na stronie „Obsada” i usun pozycje. Inaczej usun ja w nowej wersji programu (klon).'
   );
 }

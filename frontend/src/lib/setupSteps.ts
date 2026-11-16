@@ -122,12 +122,12 @@ export function setupSteps(data: SetupStatus, termKey: string): SetupStep[] {
           : sectionsN(t.sections),
       todo:
         t.cohortsWithoutSections > 0
-          ? `Uruchom „Synchronizuj zajecia” — ${cohortsN(t.cohortsWithoutSections)} bez zajec`
+          ? `Zastosuj zmiany zajec na stronie Obsada — ${cohortsN(t.cohortsWithoutSections)} bez zajec`
           : noSections
-            ? 'Uruchom „Synchronizuj zajecia” — zajecia powstana z programow i grup'
+            ? 'Utworz zajecia semestru na stronie Obsada — powstana z programow i grup'
             : null,
       to: `/obsada/${termKey}`,
-      link: 'Synchronizuj zajecia',
+      link: 'Obsada',
     },
     {
       n: 5,

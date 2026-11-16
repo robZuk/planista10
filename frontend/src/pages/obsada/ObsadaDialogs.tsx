@@ -50,19 +50,24 @@ function RowList({ rows, empty }: { rows: SyncRow[] | CarryRow[]; empty?: string
   );
 }
 
-/** Synchronizacja zajec z programem i grupami: najpierw podglad zmian, potem zapis. */
+/**
+ * Synchronizacja zajec z programem i grupami: najpierw podglad zmian, potem zapis. Otwierana
+ * z komunikatu na stronie "Obsada" — dostaje policzony juz podglad (bez drugiego liczenia).
+ */
 export function SyncDialog({
   termKey,
   facultyId,
+  initialReport,
   onClose,
   onDone,
 }: {
   termKey: string;
   facultyId?: string;
+  initialReport?: SyncReport;
   onClose: () => void;
   onDone: () => void;
 }) {
-  const [report, setReport] = useState<SyncReport | null>(null);
+  const [report, setReport] = useState<SyncReport | null>(initialReport ?? null);
   const preview = useMutation({
     mutationFn: () => syncSections(termKey, { facultyId, dryRun: true }),
     onSuccess: (r) => setReport(r.data),
@@ -76,9 +81,9 @@ export function SyncDialog({
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
-  // Podglad liczymy od razu po otwarciu.
+  // Podglad liczymy od razu po otwarciu — chyba ze strona juz go policzyla.
   useEffect(() => {
-    preview.mutate();
+    if (!initialReport) preview.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -176,7 +181,8 @@ export function SyncDialog({
                           >
                             {g.programVersion.label}
                           </Link>{' '}
-                          i zsynchronizuj ponownie. Istniejace zajecia rocznika zostaja bez zmian.
+                          — potem zmiany zajec tego rocznika pojawia sie w komunikacie na stronie Obsada. Dotychczasowe
+                          zajecia zostaja bez zmian.
                         </div>
                       )}
                       {g.kind === 'MISSING_SPECIALIZATION_GROUP' && g.specialization && (
@@ -186,7 +192,7 @@ export function SyncDialog({
                           <Link to={`/cohorts/${termKey}`} className="font-medium text-foreground underline underline-offset-4">
                             Rocznikach
                           </Link>{' '}
-                          i zsynchronizuj ponownie.
+                          — jej zajecia pojawia sie potem w komunikacie na stronie Obsada.
                         </div>
                       )}
                     </li>

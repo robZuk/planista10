@@ -1,17 +1,19 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, History, RefreshCw, Upload } from 'lucide-react';
+import { Download, History, Info, RefreshCw, Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
-import { downloadSectionsCsv, fetchSections } from '@/api/sections';
+import { downloadSectionsCsv, fetchSections, syncSections } from '@/api/sections';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage } from '@/lib/errors';
 import { groupSections, type SectionGroup } from '@/lib/obsadaGroups';
+import { syncNotice } from '@/lib/syncNotice';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 import { CarryDialog, ImportDialog, SyncDialog } from './obsada/ObsadaDialogs';
@@ -24,8 +26,10 @@ import WorkloadTab from './obsada/WorkloadTab';
  *  - Obciazenia — od strony prowadzacych, tak jak przysylaja je katedry (katedra → osoba →
  *    przedmioty z grupami); stad wpisuje sie zajecia z arkuszy katedr,
  *  - Zajecia    — od strony zajec (przedmiot × forma z grupami): tu widac braki (NN, wakaty).
- * Lista zajec wynika z programow i grup rocznikow (synchronizacja); obsade mozna tez przeniesc
- * z poprzedniego roku albo wczytac z CSV. Zakladka w adresie (?widok=zajecia).
+ * Lista zajec wynika z programow i grup rocznikow (synchronizacja): podglad liczy sie sam przy
+ * wejsciu, a komunikat nad zakladkami pojawia sie tylko, gdy jest cos do zrobienia (nowy semestr,
+ * zmiany programu lub grup, sprawy do wyjasnienia) — zmiany stosuje sie z okna podgladu. Obsade
+ * mozna tez przeniesc z poprzedniego roku albo wczytac z CSV. Zakladka w adresie (?widok=zajecia).
  */
 
 /** Procent obsady w dol — 100% dopiero przy pelnej obsadzie (99,99% to wciaz brakujace godziny). */
@@ -57,16 +61,25 @@ export default function ObsadaPage() {
     enabled: !!term,
   });
   const groups = useMemo(() => groupSections(data?.rows ?? []), [data]);
+  // Podglad synchronizacji (dryRun — bez blokady i bez zapisu) liczony przy kazdym wejsciu:
+  // planista nie musi pamietac o synchronizacji po zmianie programu albo grup.
+  const { data: syncReport } = useQuery({
+    queryKey: ['sync-preview', term?.key, facultyId],
+    queryFn: () => syncSections(term!.key, { facultyId, dryRun: true }).then((r) => r.data),
+    enabled: !!term && canEdit,
+  });
 
   const refresh = async () => {
     setDialog(null);
     setEditing(null);
     await queryClient.invalidateQueries({ queryKey: ['sections'] });
     await queryClient.invalidateQueries({ queryKey: ['workload'] });
+    await queryClient.invalidateQueries({ queryKey: ['sync-preview'] });
   };
 
   const summary = data?.summary;
   const editable = canEdit && !summary?.archived;
+  const notice = editable && data && syncReport ? syncNotice(syncReport, data.rows.length) : null;
 
   return (
     <>
@@ -82,9 +95,6 @@ export default function ObsadaPage() {
             {isAdmin && <FacultySelector />}
             {editable && term && (
               <>
-                <Button variant="outline" onClick={() => setDialog('sync')}>
-                  <RefreshCw /> Synchronizuj zajecia
-                </Button>
                 <Button variant="outline" onClick={() => setDialog('carry')}>
                   <History /> Obsada z poprzedniego roku
                 </Button>
@@ -123,9 +133,22 @@ export default function ObsadaPage() {
           ))}
         </div>
       )}
-      {data && data.rows.length === 0 && (
+      {notice && (
+        <Alert className={notice.kind === 'problems' ? undefined : 'border-primary/50'}>
+          {notice.kind === 'problems' ? <Info /> : <RefreshCw className="text-primary" />}
+          <AlertTitle>{notice.title}</AlertTitle>
+          <AlertDescription>
+            <p>{notice.description}</p>
+            <Button size="sm" variant={notice.kind === 'problems' ? 'outline' : 'default'} onClick={() => setDialog('sync')}>
+              {notice.action}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+      {data && data.rows.length === 0 && notice?.kind !== 'create' && (
         <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-          W tym semestrze nie ma jeszcze zajec. Uzyj „Synchronizuj zajecia” — powstana z programow i grup rocznikow.
+          W tym semestrze nie ma jeszcze zajec. Powstaja z programow i grup rocznikow aktywnych w semestrze — gdy beda,
+          tu pojawi sie „Utworz zajecia semestru”.
         </p>
       )}
       {isPending && term && <Skeleton className="h-64 w-full" />}
@@ -164,7 +187,9 @@ export default function ObsadaPage() {
         </Tabs>
       )}
 
-      {term && dialog === 'sync' && <SyncDialog termKey={term.key} facultyId={facultyId} onClose={() => setDialog(null)} onDone={refresh} />}
+      {term && dialog === 'sync' && (
+        <SyncDialog termKey={term.key} facultyId={facultyId} initialReport={syncReport} onClose={() => setDialog(null)} onDone={refresh} />
+      )}
       {term && dialog === 'carry' && <CarryDialog termKey={term.key} facultyId={facultyId} onClose={() => setDialog(null)} onDone={refresh} />}
       {term && dialog === 'import' && <ImportDialog termKey={term.key} facultyId={facultyId} onClose={() => setDialog(null)} onDone={refresh} />}
       {term && editing && <GroupStaffDialog termKey={term.key} group={editing} onClose={() => setEditing(null)} onDone={refresh} />}

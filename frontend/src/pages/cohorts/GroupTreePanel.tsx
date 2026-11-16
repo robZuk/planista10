@@ -247,7 +247,7 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
         open={!!ending}
         onOpenChange={(open) => !open && setEnding(null)}
         title={`Zakonczyc grupe ${ending?.name ?? ''} po semestrze ${cohort.semester}?`}
-        description={`Od semestru ${cohort.semester + 1} tej grupy juz nie bedzie — po „Synchronizuj zajecia” jej zajecia w kolejnych semestrach znikna, a te z planem albo obsada zostana oznaczone jako osierocone. Do czasu synchronizacji mozna to cofnac przyciskiem „Nie koncz”.`}
+        description={`Od semestru ${cohort.semester + 1} tej grupy juz nie bedzie — po zastosowaniu zmian na stronie „Obsada” jej zajecia w kolejnych semestrach znikna, a te z planem albo obsada zostana oznaczone jako osierocone. Do tego czasu mozna to cofnac przyciskiem „Nie koncz”.`}
         confirmLabel="Zakoncz"
         isPending={update.isPending}
         onConfirm={() => update.mutate({ id: ending!.id, input: { toSemester: cohort.semester } })}

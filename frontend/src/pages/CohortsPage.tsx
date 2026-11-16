@@ -268,7 +268,7 @@ export default function CohortsPage() {
                       />
                       <span
                         className="cursor-help"
-                        title="Zaznaczone: jeden wyklad przedmiotu wspolnego dla calego rocznika; odznaczone: osobny dla kazdej specjalnosci. Zmiana obejmie zajecia po „Synchronizuj zajecia”."
+                        title="Zaznaczone: jeden wyklad przedmiotu wspolnego dla calego rocznika; odznaczone: osobny dla kazdej specjalnosci. Zmiana obejmie zajecia po zastosowaniu zmian na stronie „Obsada”."
                       >
                         Wyklady przedmiotow wspolnych razem dla calego rocznika
                       </span>

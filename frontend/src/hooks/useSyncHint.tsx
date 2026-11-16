@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 
 /**
  * Komunikat po zmianie, ktora zmienia zajecia rocznika (tryb wykladow, grupy): sam zapis
- * nie rusza zajec ani planu — zmienia je dopiero "Synchronizuj zajecia" (z podgladem).
- * Przycisk pod opisem (zwykly Button aplikacji, nie domyslna akcja sonnera) prowadzi do
- * "Zajec i obsady" biezacego semestru i zamyka komunikat.
+ * nie rusza zajec ani planu — zmienia je dopiero zastosowanie zmian na stronie "Obsada"
+ * (komunikat nad zakladkami z podgladem). Przycisk pod opisem (zwykly Button aplikacji, nie
+ * domyslna akcja sonnera) prowadzi do "Obsady" biezacego semestru i zamyka komunikat.
  */
 export function useSyncHint() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export function useSyncHint() {
       description: (
         <div className="mt-1 space-y-2">
           {warning && <p>{warning}</p>}
-          <p>Zajecia rocznika zmienia sie dopiero po „Synchronizuj zajecia” (z podgladem zmian).</p>
+          <p>Zajecia rocznika zmienia sie po zastosowaniu zmian na stronie „Obsada” (z podgladem).</p>
           <Button
             size="sm"
             onClick={() => {
@@ -26,7 +26,7 @@ export function useSyncHint() {
             }}
           >
             <RefreshCw />
-            Przejdz do synchronizacji
+            Pokaz zmiany w Obsadzie
           </Button>
         </div>
       ),

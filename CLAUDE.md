@@ -123,7 +123,9 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   rocznik (grupy idą z nim przez studia) · semestr kalendarzowy (jedyny kontekst planowania).
 - **Nic nie układa planu automatycznie.** Planista umieszcza każde zajęcia sam; masowe
   akcje („Przenieś plan z zeszłego roku", „Kopiuj zjazd", synchronizacja zajęć, obsada
-  z poprzedniego roku) są uruchamiane przyciskiem i zawsze mają podgląd (`dryRun`).
+  z poprzedniego roku) uruchamia planista i zawsze mają podgląd (`dryRun`). Podgląd
+  synchronizacji zajęć strona „Obsada” liczy sama przy wejściu i pokazuje komunikat tylko,
+  gdy jest coś do zrobienia (`lib/syncNotice`) — zmiany stosuje się z okna podglądu.
 - **Terminy powstają tylko z „Generuj terminy"** (`services/plan.ts → generate`). Zmiana
   wzorca NIE przelicza terminów — plan pokazuje wtedy „terminy nieaktualne".
   Ręczne poprawki terminów to `PlacementException` i przeżywają ponowne generowanie;
