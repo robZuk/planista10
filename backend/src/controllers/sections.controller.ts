@@ -213,11 +213,35 @@ export const workload = asyncHandler(async (req, res) => {
       },
     },
   });
+  // Zajecia laczone miedzy kierunkami: klucze z umieszczen tej osoby w tych zajeciach — obciazenie
+  // liczy je raz (lib/workload.jointCounting), choc w obsadzie sa w kazdym roczniku osobno.
+  const joints = await prisma.placement.findMany({
+    where: { termId: term.id, jointKey: { not: null }, instructorId: { not: null } },
+    select: { sectionId: true, instructorId: true, jointKey: true },
+  });
+  const jointKeysOf = new Map<string, Set<string>>();
+  for (const p of joints) {
+    const k = `${p.instructorId}|${p.sectionId}`;
+    jointKeysOf.set(k, (jointKeysOf.get(k) ?? new Set()).add(p.jointKey!));
+  }
+  // Opis zajec spoza widoku (inny wydzial) do "laczone z ..." — tylko gdy sa laczone.
+  const outsideJoint = [
+    ...new Set(rows.filter((r) => jointKeysOf.has(`${r.instructorId}|${r.section.id}`) && !ctxById.has(r.section.cohortId)).map((r) => r.section.cohortId)),
+  ];
+  const codeOf = new Map(
+    (outsideJoint.length
+      ? await prisma.cohort.findMany({ where: { id: { in: outsideJoint } }, select: { id: true, program: { select: { code: true } } } })
+      : []
+    ).map((c) => [c.id, c.program.code]),
+  );
   const people = aggregateWorkload(
     rows.map((r) => {
       const s = r.section;
       const ctx = !facultyId || s.facultyId === facultyId ? ctxById.get(s.cohortId) : undefined;
+      const jointKeys = [...(jointKeysOf.get(`${r.instructorId}|${s.id}`) ?? [])];
       return {
+        jointKeys,
+        label: ctx ? `${ctx.cohort.program.code} · ${ctx.nameOf(s.groupId)}` : (codeOf.get(s.cohortId) ?? 'inny wydzial'),
         instructorId: r.instructorId!,
         hours: r.hours,
         sectionId: s.id,

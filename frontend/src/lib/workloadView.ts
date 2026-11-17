@@ -2,12 +2,21 @@ import { departmentLabel, instructorName } from '@/lib/departments';
 import { matchesAllWords } from '@/lib/searchMatch';
 import type { Instructor, StudyMode, WorkloadItem, WorkloadPerson } from '@/types';
 
-/** Wymiar pozycji jak w arkuszu katedry: "3 gr. × 15 h = 45 h", "2 gr. = 25 h" (rozne godziny), "15 h". */
+/**
+ * Wymiar pozycji jak w arkuszu katedry: "3 gr. × 15 h = 45 h", "2 gr. = 25 h" (rozne godziny),
+ * "15 h". Zajecia laczone z innym rocznikiem licza sie raz — wtedy dopisek "liczone N h".
+ */
 export function itemSize(item: Pick<WorkloadItem, 'groups' | 'hours'>): string {
   const n = item.groups.length;
-  if (n <= 1) return `${item.hours} h`;
-  const first = item.groups[0]!.hours;
-  return item.groups.every((g) => g.hours === first) ? `${n} gr. × ${first} h = ${item.hours} h` : `${n} gr. = ${item.hours} h`;
+  const raw = item.groups.reduce((sum, g) => sum + g.hours, 0);
+  const first = item.groups[0]?.hours ?? 0;
+  const base = n <= 1 ? `${raw} h` : item.groups.every((g) => g.hours === first) ? `${n} gr. × ${first} h = ${raw} h` : `${n} gr. = ${raw} h`;
+  return item.hours < raw ? `${base}, liczone ${item.hours} h` : base;
+}
+
+/** Z czym laczone sa zajecia pozycji (bez powtorzen) — pusta lista, gdy nie sa laczone. */
+export function itemJointWith(item: Pick<WorkloadItem, 'groups'>): string[] {
+  return [...new Set(item.groups.flatMap((g) => g.jointWith))];
 }
 
 /** Tryb w filtrze obciazen: oba albo jeden (jak arkusze katedr "stac-zima" / "niestac-zima"). */

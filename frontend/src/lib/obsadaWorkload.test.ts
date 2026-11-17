@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ClassSectionRow, Instructor, WorkloadItem, WorkloadPerson } from '@/types';
 import { freeHoursFor, groupLabel, groupSections, groupSize, personHours } from './obsadaGroups';
-import { NO_DEPARTMENT, inMode, itemSize, workloadBlocks } from './workloadView';
+import { NO_DEPARTMENT, inMode, itemJointWith, itemSize, workloadBlocks } from './workloadView';
 
 const cohort = { id: 'c1', label: 'MiBM-N1 · nabor 2026/27', code: 'MiBM-N1', semester: 1, archived: false };
 const row = (id: string, over: Partial<ClassSectionRow> = {}): ClassSectionRow => ({
@@ -82,11 +82,15 @@ const person = (id: string, department: typeof KEO | null, fullTime: number, par
 });
 
 describe('itemSize', () => {
-  const g = (hours: number) => ({ sectionId: `s${hours}`, name: 'G', hours, sectionHours: 15 });
+  const g = (hours: number, countedHours = hours) => ({ sectionId: `s${hours}`, name: 'G', hours, sectionHours: 15, countedHours, jointWith: [] });
   it('jak w arkuszu katedry', () => {
     expect(itemSize({ groups: [g(15), g(15), g(15)], hours: 45 })).toBe('3 gr. × 15 h = 45 h');
     expect(itemSize({ groups: [g(15), g(10)], hours: 25 })).toBe('2 gr. = 25 h');
     expect(itemSize({ groups: [g(30)], hours: 30 })).toBe('30 h');
+  });
+  it('zajecia laczone z innym rocznikiem: dopisek, ile sie liczy', () => {
+    expect(itemSize({ groups: [g(30, 0)], hours: 0 })).toBe('30 h, liczone 0 h');
+    expect(itemJointWith({ groups: [{ ...g(30, 0), jointWith: ['EDST-N1 · W'] }, { ...g(15), jointWith: ['EDST-N1 · W'] }] })).toEqual(['EDST-N1 · W']);
   });
 });
 

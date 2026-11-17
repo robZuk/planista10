@@ -96,7 +96,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `groupTree.ts` — drzewo grup: reguła nakładania i nazwy liczone
   - `demand.ts` — zajęcia wynikające z programu i grup
   - `staffing.ts` — zasady listy obsady (`staffProblem`), godziny jednej osoby z ustępującym NN (`withPersonHours`)
-  - `workload.ts` — obciążenia: osoba → przedmiot i forma w roczniku z grupami, stac./niestac., suma uczelni
+  - `workload.ts` — obciążenia: osoba → przedmiot i forma w roczniku z grupami, stac./niestac., suma uczelni; zajęcia łączone (`jointKey`) liczone raz
   - `materializer.ts` — terminy z umieszczeń (limit godzin, wyjątki, kolizje)
   - `timeGrid.ts` — siatki godzin: walidacja bloków, bloki → minuty, przerwy, dni z oknem godzin, kolizje w minutach, zestaw siatek wydziału i trybu (podstawowa + siatki dnia, `gridSet.forDay`)
   - `scheduleTime.ts` — typy sal dla form zajęć

@@ -112,8 +112,12 @@ Prowadzący, Bloki              specjalność?)                                 
     (`PUT /terms/:key/staff`, „Ustaw wszystkim grupom”) — wszystko albo nic.
   Zasady jednej listy obsady (dodatnie godziny, suma ≤ godziny zajęć, osoba raz) są wspólne dla
   wszystkich okien (`lib/staffing.staffProblem`); zakres liczy się po wydziale **zajęć**, więc
-  dziekanat WM przypisze osobę z KEO-WE. Zajęcia łączone (`Placement.jointKey`) obciążenie
-  liczy na razie dwa razy — obsada nie wie, że to jedne zajęcia.
+  dziekanat WM przypisze osobę z KEO-WE. **Zajęcia łączone** między kierunkami są
+  w obsadzie osobno w każdym roczniku, ale obciążenie liczy je **raz**: pozycje jednej osoby,
+  których umieszczenia mają wspólny `Placement.jointKey`, tworzą klaster — pełne godziny ma
+  pozycja z największą liczbą godzin (najlepiej z wybranego wydziału), pozostałe 0, z dopiskiem
+  „łączone z …” (`lib/workload.jointCounting`). Działa od chwili umieszczenia zajęć w planie
+  jako łączonych — wcześniej system o łączeniu nie wie.
 
 ## 6. Plan i terminy
 

@@ -22,7 +22,7 @@ import { compareDepartments, departmentLabel, instructorName } from '@/lib/depar
 import type { SectionGroup } from '@/lib/obsadaGroups';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
 import { plural } from '@/lib/setupSteps';
-import { ALL_DEPARTMENTS, NO_DEPARTMENT, itemSize, workloadBlocks, type ModeFilter } from '@/lib/workloadView';
+import { ALL_DEPARTMENTS, NO_DEPARTMENT, itemJointWith, itemSize, workloadBlocks, type ModeFilter } from '@/lib/workloadView';
 import type { Department, WorkloadPerson } from '@/types';
 import { AddClassesDialog } from './AddClassesDialog';
 
@@ -212,6 +212,14 @@ export default function WorkloadTab({
                           </span>
                           <span className="tabular-nums">{itemSize(item)}</span>
                           <span className="text-xs text-muted-foreground">({item.groups.map((g) => g.name).join(', ')})</span>
+                          {itemJointWith(item).length > 0 && (
+                            <Badge
+                              variant="outline"
+                              title="Zajecia laczone w planie (wspolny klucz) — to te same godziny osoby, wiec licza sie raz"
+                            >
+                              laczone z {itemJointWith(item).join(', ')}
+                            </Badge>
+                          )}
                           {canEdit && (
                             <Button
                               variant="ghost"

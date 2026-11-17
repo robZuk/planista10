@@ -17,6 +17,7 @@ const prismaMock = vi.hoisted(() => ({
   termCalendar: { findMany: vi.fn().mockResolvedValue([]) },
   classSection: { findMany: vi.fn().mockResolvedValue([]) },
   sectionInstructor: { findMany: vi.fn().mockResolvedValue([]), deleteMany: vi.fn(), createMany: vi.fn() },
+  placement: { findMany: vi.fn().mockResolvedValue([]) },
   $transaction: vi.fn().mockResolvedValue([]),
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
@@ -215,5 +216,35 @@ describe('API — obciazenia prowadzacych', () => {
     expect(row.items).toHaveLength(1);
     expect(row.items[0]).toMatchObject({ subject: { name: 'Elektrotechnika i elektronika I' }, classType: 'EXERCISE', hours: 30 });
     expect(row.items[0].groups).toHaveLength(2);
+  });
+  it('zajecia laczone (wspolny jointKey w planie) licza sie raz', async () => {
+    prismaMock.cohort.findMany.mockResolvedValueOnce([cohortRow, { ...cohortRow, id: 'c2', program: { ...cohortRow.program, code: 'EDST-N1' } }]);
+    prismaMock.sectionInstructor.findMany.mockResolvedValueOnce(
+      [['s1', 'c1', 'pe1'], ['s2', 'c2', 'pe2']].map(([id, cohortId, programEntryId]) => ({
+        instructorId: 'i1',
+        hours: 30,
+        section: {
+          id,
+          hours: 30,
+          facultyId: 'wm',
+          cohortId,
+          programEntryId,
+          classType: 'LECTURE',
+          groupId: `g-${id}`,
+          programEntry: { orderInSemester: 1, subject: { id: 'sub1', name: 'Elektrotechnika' } },
+        },
+      })),
+    );
+    prismaMock.placement.findMany.mockResolvedValueOnce([
+      { sectionId: 's1', instructorId: 'i1', jointKey: 'EL-W' },
+      { sectionId: 's2', instructorId: 'i1', jointKey: 'EL-W' },
+    ]);
+    prismaMock.instructor.findMany.mockResolvedValueOnce([{ id: 'i1', title: null, firstName: 'Jan', lastName: 'Lis', department: null }]);
+    const res = await request(app).get('/api/terms/2026-Z/workload').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(200);
+    expect(res.body.data[0]).toMatchObject({ here: 30, total: 30 });
+    const groups = res.body.data[0].items.flatMap((i: { groups: { countedHours: number; jointWith: string[] }[] }) => i.groups);
+    expect(groups.map((g: { countedHours: number }) => g.countedHours).sort()).toEqual([0, 30]);
+    expect(groups.flatMap((g: { jointWith: string[] }) => g.jointWith)).toHaveLength(2);
   });
 });

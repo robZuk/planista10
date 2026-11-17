@@ -564,6 +564,10 @@ export interface WorkloadGroup {
   name: string;
   hours: number;
   sectionHours: number;
+  /** Godziny liczone do obciazenia — 0, gdy te same zajecia sa laczone z inna pozycja (liczone raz). */
+  countedHours: number;
+  /** Zajecia laczone z ta grupa w planie (wspolny klucz) — np. "EDST-N1 · W". */
+  jointWith: string[];
 }
 
 /** Przedmiot i forma w roczniku w obciazeniu osoby (np. cwiczenia 3 gr. × 15 h = 45 h). */

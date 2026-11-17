@@ -54,3 +54,34 @@ describe('aggregateWorkload', () => {
     expect(person!.items.map((i) => `${i.cohort.code} ${i.classType}`)).toEqual(['EDST-S1 EXERCISE', 'MiBM-N1 LECTURE', 'MiBM-N1 LAB']);
   });
 });
+
+describe('zajecia laczone miedzy kierunkami (wspolny jointKey w planie)', () => {
+  const joint = (sectionId: string, cohort: typeof MIBM, hours: number, over: Partial<WorkloadEntry> = {}) =>
+    entry('a', sectionId, hours, {
+      classType: 'LECTURE',
+      cohortId: cohort.id,
+      programEntryId: `pe-${cohort.id}`,
+      jointKeys: ['WYKLAD-EL'],
+      label: `${cohort.code} · W`,
+      view: { cohort, subject: ELEKTRO, order: 1, group: 'W', studyMode: 'PART_TIME' },
+      ...over,
+    });
+
+  it('jedne zajecia w dwoch rocznikach licza sie raz; obie pozycje wiedza, z czym sa laczone', () => {
+    const [person] = aggregateWorkload([joint('w-mibm', MIBM, 30), joint('w-edst', EDST, 30)]);
+    expect(person).toMatchObject({ here: 30, total: 30 });
+    const groups = person!.items.flatMap((i) => i.groups);
+    expect(groups.map((g) => g.countedHours).sort()).toEqual([0, 30]);
+    expect(groups.find((g) => g.sectionId === 'w-mibm')!.jointWith).toEqual(['EDST-S1 · W']);
+  });
+
+  it('godziny zostaja w widoku, gdy druga czesc jest na innym wydziale', () => {
+    const [person] = aggregateWorkload([joint('obce', EDST, 30, { view: null, label: 'EDST-S1' }), joint('w-mibm', MIBM, 30)]);
+    expect(person).toMatchObject({ here: 30, total: 30 });
+  });
+
+  it('ten sam klucz u roznych osob nie skleja ich obciazen; bez klucza liczy sie wszystko', () => {
+    const people = aggregateWorkload([joint('w1', MIBM, 30), { ...joint('w2', EDST, 30), instructorId: 'b' }, entry('a', 'c1', 15)]);
+    expect(people.map((p) => `${p.instructorId} ${p.here}`)).toEqual(['a 45', 'b 30']);
+  });
+});
