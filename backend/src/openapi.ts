@@ -401,6 +401,21 @@ export const openApiDocument = {
     '/api/terms/{key}/plan': {
       get: { tags: ['Plan'], summary: 'Plan rocznika: zajecia, umieszczenia, bilans godzin', security: bearer, parameters: [termKey, { name: 'cohortId', in: 'query', required: true, schema: { type: 'string' } }], responses: { 200: dataResp('Plan'), ...authErrors } },
     },
+    '/api/terms/{key}/plan/pdf': {
+      get: {
+        tags: ['Plan'],
+        summary: 'Druk planu (PDF, A4 poziomo): rocznik (strona na grupe wykladowa albo ?groupId), prowadzacy albo sala — dokladnie jeden z cohortId / instructorId / roomId; niestacjonarne — strona na zjazd',
+        security: bearer,
+        parameters: [
+          termKey,
+          { name: 'cohortId', in: 'query', schema: { type: 'string' } },
+          { name: 'groupId', in: 'query', schema: { type: 'string' } },
+          { name: 'instructorId', in: 'query', schema: { type: 'string' } },
+          { name: 'roomId', in: 'query', schema: { type: 'string' } },
+        ],
+        responses: { 200: { description: 'Plik PDF', content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } } }, 400: errResp('Brak albo kilka podmiotow'), 404: errResp('Nie znaleziono'), ...authErrors },
+      },
+    },
     '/api/terms/{key}/placements': {
       post: { tags: ['Plan'], summary: 'Umiesc zajecia (kolizje sprawdzane na datach)', security: bearer, parameters: [termKey], responses: { 201: dataResp('Umieszczone'), 400: errResp('Blad'), 409: errResp('Kolizje (lista dat)'), ...authErrors } },
     },

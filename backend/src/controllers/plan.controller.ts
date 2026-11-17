@@ -11,6 +11,9 @@ import { inPeriod } from '../lib/teachingCalendar';
 import { gridFor, loadGrids, pickGrid } from '../services/timeGrids';
 import { activeCohorts } from '../services/sections';
 import { conflictMessage } from '../lib/conflictMessage';
+import { pdfFileName } from '../lib/planPrint';
+import { renderPlanPdf } from '../lib/planPdf';
+import { planPrint, type PrintSubject } from '../services/planPrint';
 import {
   assertPlanEditable,
   createManualOccurrence as createManual,
@@ -99,6 +102,33 @@ export const getPlan = asyncHandler(async (req, res) => {
   const cohortId = String(req.query.cohortId ?? '');
   if (!cohortId) throw new AppError(400, 'Wskaz rocznik');
   res.json({ data: await planView(term, cohortId) });
+});
+
+/**
+ * Druk planu (PDF, A4 poziomo): rocznik (opcjonalnie grupa), prowadzacy albo sala —
+ * dokladnie jeden z parametrow cohortId / instructorId / roomId.
+ */
+export const getPlanPdf = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  const param = (name: string) => (typeof req.query[name] === 'string' && req.query[name] ? String(req.query[name]) : null);
+  const cohortId = param('cohortId');
+  const instructorId = param('instructorId');
+  const roomId = param('roomId');
+  if ([cohortId, instructorId, roomId].filter(Boolean).length !== 1) throw new AppError(400, 'Wskaz rocznik, prowadzacego albo sale');
+  const subject: PrintSubject = cohortId
+    ? { kind: 'cohort', cohortId, groupId: param('groupId') }
+    : instructorId
+      ? { kind: 'instructor', instructorId }
+      : { kind: 'room', roomId: roomId! };
+  const document = await planPrint(term, subject);
+  const pdf = await renderPlanPdf(document);
+  const fileName = pdfFileName([document.title.split(' — ')[0] ?? 'plan', `${term.startYear}-${term.type === 'SUMMER' ? 'L' : 'Z'}`]);
+  req.log.info({ subject: subject.kind, pages: document.pages.length, bytes: pdf.length }, 'wydruk planu');
+  res
+    .type('application/pdf')
+    .set('Content-Disposition', `attachment; filename="${fileName}"`)
+    .set('Access-Control-Expose-Headers', 'Content-Disposition')
+    .send(pdf);
 });
 
 export const getAvailability = asyncHandler(async (req, res) => {

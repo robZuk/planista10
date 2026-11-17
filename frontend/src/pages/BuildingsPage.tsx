@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Building2, DoorOpen, MapPin, Pencil, Plus, Trash2, Users } from 'lucide-react';
+import { Building2, DoorOpen, FileDown, MapPin, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Accordion,
@@ -58,6 +58,7 @@ import { fetchFaculties } from '@/api/faculties';
 import { getErrorMessage } from '@/lib/errors';
 import { ROOM_TYPES, ROOM_TYPE_LABELS } from '@/lib/labels';
 import { useAuthStore } from '@/store/authStore';
+import { usePlanPdf } from '@/hooks/usePlanPdf';
 import type { Building, Room, RoomType } from '@/types';
 
 const NO_FACULTY = '__none__';
@@ -91,6 +92,7 @@ interface RoomRef {
 export default function BuildingsPage() {
   const queryClient = useQueryClient();
   const canEdit = useAuthStore((s) => s.user?.role) === 'ADMIN';
+  const pdf = usePlanPdf();
 
   const [buildingDialog, setBuildingDialog] = useState(false);
   const [editingBuilding, setEditingBuilding] = useState<Building | null>(null);
@@ -345,7 +347,7 @@ export default function BuildingsPage() {
                             <TableHead>Numer</TableHead>
                             <TableHead>Typ</TableHead>
                             <TableHead className="text-right">Pojemnosc</TableHead>
-                            {canEdit && <TableHead className="w-24" />}
+                            <TableHead className={canEdit ? 'w-32' : 'w-12'} />
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -358,30 +360,44 @@ export default function BuildingsPage() {
                               <TableCell className="text-right tabular-nums">
                                 {room.capacity}
                               </TableCell>
-                              {canEdit && (
-                                <TableCell>
-                                  <div className="flex justify-end gap-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="size-8"
-                                      aria-label={`Edytuj sale ${room.number}`}
-                                      onClick={() => openEditRoom(building.id, room)}
-                                    >
-                                      <Pencil />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="size-8 text-destructive hover:text-destructive"
-                                      aria-label={`Usun sale ${room.number}`}
-                                      onClick={() => setDeletingRoom({ buildingId: building.id, room })}
-                                    >
-                                      <Trash2 />
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              )}
+                              <TableCell>
+                                <div className="flex justify-end gap-1">
+                                  {/* Druk planu sali — strona dostepna tylko planistom. */}
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8"
+                                    disabled={pdf.isPending}
+                                    aria-label={`Plan PDF sali ${room.number}`}
+                                    title={`Plan sali (PDF)${pdf.termLabel ? ` — semestr ${pdf.termLabel}` : ''}`}
+                                    onClick={() => pdf.download({ roomId: room.id })}
+                                  >
+                                    <FileDown />
+                                  </Button>
+                                  {canEdit && (
+                                    <>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8"
+                                        aria-label={`Edytuj sale ${room.number}`}
+                                        onClick={() => openEditRoom(building.id, room)}
+                                      >
+                                        <Pencil />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="size-8 text-destructive hover:text-destructive"
+                                        aria-label={`Usun sale ${room.number}`}
+                                        onClick={() => setDeletingRoom({ buildingId: building.id, room })}
+                                      >
+                                        <Trash2 />
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>

@@ -5,7 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { ColumnDef } from '@tanstack/react-table';
-import { GraduationCap, Plus } from 'lucide-react';
+import { FileDown, GraduationCap, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,6 +45,7 @@ import { fetchDepartments } from '@/api/departments';
 import { compareDepartments, departmentLabel } from '@/lib/departments';
 import { getErrorMessage } from '@/lib/errors';
 import { useAuthStore } from '@/store/authStore';
+import { usePlanPdf } from '@/hooks/usePlanPdf';
 import type { Department, Instructor } from '@/types';
 
 /** Radix Select nie przyjmuje pustego stringa jako wartosci — stad wartownicy. */
@@ -82,7 +83,11 @@ const COLUMN_LABELS = {
 
 export default function InstructorsPage() {
   const queryClient = useQueryClient();
-  const canEdit = useAuthStore((s) => s.user?.role) === 'ADMIN';
+  const role = useAuthStore((s) => s.user?.role);
+  const canEdit = role === 'ADMIN';
+  // Druk planu prowadzacego — planisci (semestr ostatnio uzywany albo planowany).
+  const canPrint = role === 'ADMIN' || role === 'DEAN_OFFICE';
+  const pdf = usePlanPdf();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Instructor | null>(null);
@@ -230,18 +235,33 @@ export default function InstructorsPage() {
           <span className="text-muted-foreground">—</span>
         ),
     },
-    ...(canEdit
+    ...(canEdit || canPrint
       ? [
           {
             id: 'actions',
             enableHiding: false,
-            size: 60,
+            size: 90,
             cell: ({ row }) => (
-              <div className="text-right">
-                <RowActions
-                  onEdit={() => openEdit(row.original)}
-                  onDelete={() => setDeleting(row.original)}
-                />
+              <div className="flex justify-end gap-1">
+                {canPrint && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    disabled={pdf.isPending}
+                    aria-label={`Plan PDF: ${row.original.lastName}`}
+                    title={`Plan zajec (PDF)${pdf.termLabel ? ` — semestr ${pdf.termLabel}` : ''}`}
+                    onClick={() => pdf.download({ instructorId: row.original.id })}
+                  >
+                    <FileDown />
+                  </Button>
+                )}
+                {canEdit && (
+                  <RowActions
+                    onEdit={() => openEdit(row.original)}
+                    onDelete={() => setDeleting(row.original)}
+                  />
+                )}
               </div>
             ),
           } satisfies ColumnDef<Instructor, unknown>,

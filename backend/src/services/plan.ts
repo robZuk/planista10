@@ -213,14 +213,14 @@ function sectionLabel(subject: string, classType: string, groupName: string) {
 
 // ─── Zakres planu: roczniki, kalendarze, zajecia, umieszczenia ──
 
-interface Scope {
+export interface Scope {
   contexts: CohortContext[];
   calendars: Map<string, CalendarRow>; // cohortId -> kalendarz
   teaching: Map<string, TeachingCalendar>; // cohortId -> kalendarz zajec
   grids: Map<string, FacultyGrids>; // cohortId -> siatki godzin wydzialu i trybu rocznika (bloki per dzien)
 }
 
-async function loadScope(term: AcademicTerm, facultyId: string | null, cohortIds?: string[]): Promise<Scope> {
+export async function loadScope(term: AcademicTerm, facultyId: string | null, cohortIds?: string[]): Promise<Scope> {
   const contexts = await activeCohorts(term, facultyId, cohortIds);
   const calendars = new Map<string, CalendarRow>();
   const teaching = new Map<string, TeachingCalendar>();

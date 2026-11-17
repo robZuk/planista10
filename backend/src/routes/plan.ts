@@ -20,6 +20,8 @@ const planners = authorize('ADMIN', 'DEAN_OFFICE');
 
 termPlanRouter.get('/plan', authenticate, planners, plan.getPlan);
 termPlanRouter.get('/plan/availability', authenticate, planners, plan.getAvailability);
+// Druk planu (PDF): ?cohortId=[&groupId=] | ?instructorId= | ?roomId=
+termPlanRouter.get('/plan/pdf', authenticate, planners, plan.getPlanPdf);
 termPlanRouter.post('/placements', authenticate, planners, planLocked(termFromKey), plan.createPlacement);
 termPlanRouter.post('/generate', authenticate, planners, planLocked(termFromKey, { onlyWrites: true }), plan.generateTerms);
 termPlanRouter.get('/occurrences', authenticate, planners, plan.listOccurrences);

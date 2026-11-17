@@ -138,3 +138,22 @@ export async function fetchMyPlan(
   const res = await api.get(`/terms/${termKey}/my-plan`, { params: { from, to } });
   return { rows: res.data.data, daysOff: res.data.daysOff ?? {}, range: res.data.range ?? null };
 }
+
+/** Czyj plan drukujemy: rocznik (opcjonalnie grupa), prowadzacy albo sala. */
+export type PlanPdfSubject = { cohortId: string; groupId?: string } | { instructorId: string } | { roomId: string };
+
+/**
+ * Druk planu (PDF z backendu, A4 poziomo) — pobranie pliku. Nazwa pliku z naglowka
+ * Content-Disposition (np. "plan-NAW-S2-semestr-2-2026-Z.pdf").
+ */
+export async function downloadPlanPdf(termKey: string, subject: PlanPdfSubject): Promise<void> {
+  const res = await api.get(`/terms/${termKey}/plan/pdf`, { params: subject, responseType: 'blob' });
+  const disposition = String(res.headers['content-disposition'] ?? '');
+  const name = /filename="([^"]+)"/.exec(disposition)?.[1] ?? `plan-${termKey}.pdf`;
+  const url = URL.createObjectURL(res.data as Blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  link.click();
+  URL.revokeObjectURL(url);
+}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarCheck, ChevronRight, Copy, FilterX, History, TriangleAlert, X } from 'lucide-react';
+import { CalendarCheck, ChevronRight, Copy, FileDown, FilterX, History, TriangleAlert, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,7 @@ import { FacultySelector } from '@/components/FacultySelector';
 import { fetchTermCohorts } from '@/api/cohorts';
 import { fetchAvailability, fetchPlan, updatePlacement } from '@/api/plan';
 import { useCurrentTerm } from '@/hooks/useTerm';
+import { usePlanPdf } from '@/hooks/usePlanPdf';
 import { usePlanCohortStore } from '@/store/planCohortStore';
 import { getErrorMessage } from '@/lib/errors';
 import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGroupFilter';
@@ -296,6 +297,7 @@ export default function PlanPage() {
   });
 
   const cohort = cohorts.find((c) => c.id === cohortId);
+  const pdf = usePlanPdf(term?.key);
 
   return (
     <>
@@ -304,6 +306,18 @@ export default function PlanPage() {
         description={term ? `Semestr ${term.label}. Zajecia umieszczasz recznie; terminy powstaja po „Generuj terminy”.` : 'Wybierz semestr w naglowku.'}
         actions={
           <>
+            {plan && (
+              // Druk: wybrana grupa (jej zajecia, grupy nadrzedne i podgrupy) albo caly rocznik —
+              // strona na kazda grupe wykladowa (specjalnosc); niestacjonarne — strona na zjazd.
+              <Button
+                variant="outline"
+                disabled={pdf.isPending}
+                onClick={() => pdf.download(groupFilter !== 'all' ? { cohortId, groupId: groupFilter } : { cohortId })}
+                title={groupFilter !== 'all' ? 'Plan wybranej grupy (PDF)' : 'Plan rocznika (PDF) — strona na kazda grupe wykladowa'}
+              >
+                <FileDown /> {pdf.isPending ? 'Przygotowuje PDF…' : 'PDF'}
+              </Button>
+            )}
             {plan && !locked && (
               // Dymek natywny na spanie: wylaczony przycisk nie reaguje na najechanie, a powod ma byc widoczny.
               <span title={blockedReason ?? undefined} className="inline-flex flex-wrap gap-2">
