@@ -1,4 +1,6 @@
-import type { DegreeLevel, Prisma, ProgramVersionStatus, SemesterType, StudyMode } from '@prisma/client';
+import type { ClassType, DegreeLevel, Prisma, ProgramVersionStatus, SemesterType, StudyMode } from '@prisma/client';
+import { CLASS_LABEL_PL } from '../lib/scheduleTime';
+import { plural } from '../lib/plural';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
@@ -162,7 +164,7 @@ export const createVersion = asyncHandler(async (req, res) => {
   };
 
   const source = body.cloneFromVersionId
-    ? await prisma.programVersion.findUnique({ where: { id: body.cloneFromVersionId }, include: { entries: true } })
+    ? await prisma.programVersion.findUnique({ where: { id: body.cloneFromVersionId }, include: { entries: { include: { departments: true } } } })
     : null;
   if (body.cloneFromVersionId && (!source || source.programId !== program.id)) {
     throw new AppError(400, 'Wersja zrodlowa nie nalezy do tego programu');
@@ -195,6 +197,8 @@ export const createVersion = asyncHandler(async (req, res) => {
                 hoursSeminar: e.hoursSeminar,
                 ects: e.ects,
                 assessmentType: e.assessmentType,
+                // Katedry form zajec (zlecenie wydzialu) ida z przedmiotem do nowej wersji.
+                departments: { create: e.departments.map((d) => ({ classType: d.classType, departmentId: d.departmentId })) },
               })),
           }
         : undefined,
@@ -388,4 +392,59 @@ export const reorderEntries = asyncHandler(async (req, res) => {
     ids.map((id, i) => prisma.programEntry.update({ where: { id }, data: { orderInSemester: i + 1 } })),
   );
   res.json({ message: 'Kolejnosc zapisana' });
+});
+
+const HOURS_OF: Record<ClassType, 'hoursLecture' | 'hoursExercise' | 'hoursLab' | 'hoursProject' | 'hoursSeminar'> = {
+  LECTURE: 'hoursLecture',
+  EXERCISE: 'hoursExercise',
+  LAB: 'hoursLab',
+  PROJECT: 'hoursProject',
+  SEMINAR: 'hoursSeminar',
+};
+
+/**
+ * Katedry form zajec przedmiotow (zlecenie wydzialu) — zbiorczo, np. z zakladki "Zlecenia"
+ * w Obsadzie. Dziekanat tylko w programach swojego wydzialu; forma musi miec godziny. Zmiana
+ * katedry nie rusza zajec, obsady ani planu, wiec mozna ja robic takze w zatwierdzonej wersji.
+ */
+export const setEntryDepartments = asyncHandler(async (req, res) => {
+  const { items } = req.body as { items: { programEntryId: string; classType: ClassType; departmentId: string | null }[] };
+  const entryIds = [...new Set(items.map((i) => i.programEntryId))];
+  const entries = await prisma.programEntry.findMany({
+    where: { id: { in: entryIds } },
+    include: { subject: { select: { name: true } }, version: { select: { program: { select: { fieldOfStudy: { select: { facultyId: true } } } } } } },
+  });
+  if (entries.length !== entryIds.length) throw new AppError(404, 'Ktoras z pozycji programu juz nie istnieje — odswiez liste');
+  for (const facultyId of new Set(entries.map((e) => e.version.program.fieldOfStudy.facultyId))) await assertFacultyScope(req, facultyId);
+  const byId = new Map(entries.map((e) => [e.id, e]));
+  for (const item of items) {
+    const entry = byId.get(item.programEntryId)!;
+    if (entry[HOURS_OF[item.classType]] <= 0) {
+      throw new AppError(400, `${entry.subject.name}: forma ${CLASS_LABEL_PL[item.classType]} nie ma godzin w programie`);
+    }
+  }
+  const departmentIds = [...new Set(items.map((i) => i.departmentId).filter((id): id is string => !!id))];
+  if (departmentIds.length > 0 && (await prisma.department.count({ where: { id: { in: departmentIds } } })) !== departmentIds.length) {
+    throw new AppError(409, 'Ktoras z wybranych katedr zostala usunieta — odswiez liste');
+  }
+  await prisma.$transaction(
+    items.map((i) =>
+      i.departmentId
+        ? prisma.programEntryDepartment.upsert({
+            where: { programEntryId_classType: { programEntryId: i.programEntryId, classType: i.classType } },
+            create: { programEntryId: i.programEntryId, classType: i.classType, departmentId: i.departmentId },
+            update: { departmentId: i.departmentId },
+          })
+        : prisma.programEntryDepartment.deleteMany({ where: { programEntryId: i.programEntryId, classType: i.classType } }),
+    ),
+  );
+  const set = items.filter((i) => i.departmentId).length;
+  res.json({
+    message:
+      set === items.length
+        ? `Katedra zapisana: ${plural(set, 'pozycja', 'pozycje', 'pozycji')}`
+        : set === 0
+          ? `Bez katedry: ${plural(items.length, 'pozycja', 'pozycje', 'pozycji')}`
+          : `Katedry zapisane: ${set}, bez katedry: ${items.length - set}`,
+  });
 });

@@ -40,7 +40,8 @@ studia) i **semestr** (jedyny kontekst planowania). Szczegóły: `docs/model-dan
   wyliczone z programu i grup — zmiany programu i grup same pokazują się jako komunikat
   z podglądem — podział godzin (NN), obsada z poprzedniego roku, CSV.
 - **Katedry:** jednostki przysyłające obciążenia (`KEO-WE`, międzywydziałowe jak SJO), skład
-  katedry z podglądem zmian; katedra wydziałowa ustala wydział prowadzącego.
+  katedry z podglądem zmian; katedra wydziałowa ustala wydział prowadzącego. Katedra każdej
+  formy przedmiotu (zlecenie wydziału): braki per katedra i CSV zlecenia dla katedry.
 - **Układanie planu — ręcznie:** podpowiedzi wolnych godzin, kolizje sprawdzane na
   konkretnych datach (sala / prowadzący / grupy), rytmy tygodniowe i zjazdowe, zajęcia łączone,
   opcjonalne „Przenieś plan z zeszłego roku" (z podglądem).

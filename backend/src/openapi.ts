@@ -14,7 +14,7 @@ import {
   roomUpdateSchema,
 } from './schemas/building';
 import { calendarBodySchema, calendarCreateSchema, calendarPreviewSchema, calendarStatusSchema, termCreateSchema } from './schemas/termCalendar';
-import { programCreateSchema, programEntrySchema, versionCreateSchema, versionUpdateSchema } from './schemas/program';
+import { entryDepartmentsSchema, programCreateSchema, programEntrySchema, versionCreateSchema, versionUpdateSchema } from './schemas/program';
 import { userCreateSchema, userUpdateSchema } from './schemas/user';
 import { timeGridCreateSchema, timeGridUpdateSchema } from './schemas/timeGrid';
 
@@ -61,6 +61,7 @@ const schemas = {
   DepartmentInstructors: toJson(departmentInstructorsSchema),
   StaffReplace: toJson(staffReplaceSchema),
   PersonStaff: toJson(personStaffSchema),
+  EntryDepartments: toJson(entryDepartmentsSchema),
   BuildingCreate: toJson(buildingCreateSchema),
   BuildingUpdate: toJson(buildingUpdateSchema),
   RoomCreate: toJson(roomCreateSchema),
@@ -382,6 +383,9 @@ export const openApiDocument = {
     },
     '/api/sections/{id}/instructors': {
       put: { tags: ['Obsada'], summary: 'Obsada zajec (podzial godzin, NN)', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zapisana'), 400: errResp('Za duzo godzin'), ...authErrors } },
+    },
+    '/api/program-entries/departments': {
+      put: { tags: ['Obsada'], summary: 'Katedry form zajec przedmiotow programu (zlecenie wydzialu); departmentId null = bez katedry', security: bearer, requestBody: jsonBody('EntryDepartments'), responses: { 200: dataResp('Zapisane'), 400: errResp('Forma bez godzin'), 404: errResp('Pozycja znikla'), 409: errResp('Katedra usunieta'), ...authErrors } },
     },
     '/api/terms/{key}/staff': {
       put: { tags: ['Obsada'], summary: 'Obsada wielu zajec naraz (np. wszystkie grupy przedmiotu) — wszystko albo nic', security: bearer, parameters: [termKey], requestBody: jsonBody('StaffReplace'), responses: { 200: dataResp('Zapisana'), 400: errResp('Za duzo godzin'), 404: errResp('Zajecia znikly'), 409: errResp('Archiwum albo prowadzacy usuniety'), ...authErrors } },

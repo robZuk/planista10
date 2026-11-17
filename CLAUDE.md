@@ -140,7 +140,9 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - **Katedry** (`Department`, zakładka „Katedry” w „Wydziały i katedry”) to jednostki, które
   przysyłają obciążenia prowadzących; oznaczenie jak w zleceniach (`KEO-WE`), międzywydziałowe
   (SJO) bez wydziału. Katedra wydziałowa ustala wydział prowadzącego (`Instructor.facultyId` idzie
-  za katedrą). Katedry i prowadzących zmienia tylko ADMIN.
+  za katedrą). Katedry i prowadzących zmienia tylko ADMIN. Katedra formy przedmiotu
+  (`ProgramEntryDepartment`, zlecenie wydziału) siedzi w pozycji programu — przypisuje ją planista
+  w Obsada → „Zlecenia dla katedr”.
 - **Plan zmienia tylko planista** (ADMIN, DEAN_OFFICE) w „Układaniu planu”. Prowadzący i student plan
   tylko oglądają („Mój plan”). W planista10 **nie ma zgłoszeń zmian ani powiadomień w aplikacji**
   (usunięte migracją `20261115120000_drop_change_requests_notifications`) — nie dokładaj ich

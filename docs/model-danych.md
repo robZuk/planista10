@@ -97,6 +97,14 @@ Prowadzący, Bloki              specjalność?)                                 
   ustala wydział prowadzącego** (API prowadzących i skład katedry), przeniesienie katedry na inny
   wydział przenosi jej prowadzących. Katedry z prowadzącymi i wydziału z katedrami nie da się
   usunąć. Zmiany tylko ADMIN (jak prowadzący), dziekanat widzi listę.
+- **Katedra przedmiotu** (`ProgramEntryDepartment`) — która katedra prowadzi formę zajęć
+  przedmiotu, jak kolumna „Katedra” w zleceniu wydziału; osobno dla każdej formy („KMOiTR/KEO”
+  = wykład jednej katedry, laboratorium drugiej). Zapisana w pozycji programu, więc obowiązuje
+  wszystkie roczniki wersji programu i przechodzi do klonów wersji. Zakładka **„Zlecenia dla
+  katedr”** w Obsadzie: godziny, obsadzone i braki (NN to brak) dla każdej katedry, przypisywanie
+  katedr pozycjom, „Podpowiedz katedry z obsady” (gdy wszyscy prowadzący pozycji są z jednej
+  katedry — z podglądem) i CSV zlecenia dla katedry (`lib/departmentOrders.ts`,
+  `PUT /program-entries/departments`). Katedry przypisanej do przedmiotów nie da się usunąć.
 - **Obsada z poprzedniego roku:** te same zajęcia poprzedniego rocznika tego programu
   (przedmiot + forma + sygnatura grupy) w ostatnim semestrze tego samego typu.
 - **Strona „Obsada”** — te same dane z dwóch stron (`?widok=zajecia`):

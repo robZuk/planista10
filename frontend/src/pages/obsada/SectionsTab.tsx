@@ -204,6 +204,11 @@ export default function SectionsTab({
                             {g.specialization}
                           </Badge>
                         )}
+                        {g.department && (
+                          <Badge variant="secondary" className="ml-2" title={`Katedra prowadzaca te forme: ${g.department.name}`}>
+                            {g.department.label}
+                          </Badge>
+                        )}
                         {g.orphaned && (
                           <Badge variant="destructive" className="ml-2">
                             osierocone

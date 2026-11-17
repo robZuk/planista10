@@ -12,6 +12,9 @@ export interface SectionGroup {
   specialization: string | null;
   specializationName: string | null;
   classType: ClassType;
+  programEntryId: string;
+  /** Katedra prowadzaca te forme przedmiotu (zlecenie wydzialu). */
+  department: ClassSectionRow['department'];
   sections: ClassSectionRow[];
   /** Suma godzin grup. */
   hours: number;
@@ -40,6 +43,8 @@ export function groupSections(rows: ClassSectionRow[]): SectionGroup[] {
         specialization: row.specialization,
         specializationName: row.specializationName,
         classType: row.classType,
+        programEntryId: row.programEntryId,
+        department: row.department,
         sections: [],
         hours: 0,
         assignedHours: 0,

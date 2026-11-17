@@ -136,7 +136,8 @@ model ProgramEntry {
   ects           Int            @default(0)
   assessmentType AssessmentType @default(CREDIT)
 
-  sections ClassSection[]
+  sections    ClassSection[]
+  departments ProgramEntryDepartment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,6 +145,21 @@ model ProgramEntry {
   // Unikalnosc (versionId, subjectId, semester, specializationId) z NULLS NOT DISTINCT
   // jest zalozona surowym SQL w migracji — Prisma tego nie wyraza.
   @@index([versionId, semester])
+}
+
+// Katedra prowadzaca forme zajec przedmiotu w programie — kolumna "Katedra" w zleceniu wydzialu
+// ("KMOiTR/KEO" = wyklad jednej katedry, laboratorium drugiej). Pozycja programu obowiazuje
+// wiele rocznikow, wiec przypisanie wystarcza raz na wersje programu (klon wersji je kopiuje).
+model ProgramEntryDepartment {
+  programEntry   ProgramEntry @relation(fields: [programEntryId], references: [id], onDelete: Cascade)
+  programEntryId String
+  classType      ClassType
+  // Restrict: katedry przypisanej do przedmiotow nie usuwa sie po cichu.
+  department     Department   @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  departmentId   String
+
+  @@id([programEntryId, classType])
+  @@index([departmentId])
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -185,14 +201,16 @@ model Room {
 // ═══════════════════════════════════════════════════════════════
 
 model Department {
-  id          String       @id @default(uuid())
-  name        String // "Katedra Elektroenergetyki Okretowej"
-  shortName   String // "KEO"
+  id             String                   @id @default(uuid())
+  name           String // "Katedra Elektroenergetyki Okretowej"
+  shortName      String // "KEO"
   // Restrict: wydzial z katedrami nie znika (katedry nie staja sie po cichu miedzywydzialowe).
-  faculty     Faculty?     @relation(fields: [facultyId], references: [id], onDelete: Restrict)
-  facultyId   String? // null = jednostka miedzywydzialowa (SJO, prowadzacy zewnetrzni)
-  instructors Instructor[]
-  createdAt   DateTime     @default(now())
+  faculty        Faculty?                 @relation(fields: [facultyId], references: [id], onDelete: Restrict)
+  facultyId      String? // null = jednostka miedzywydzialowa (SJO, prowadzacy zewnetrzni)
+  instructors    Instructor[]
+  // Formy zajec przedmiotow programu, ktore katedra prowadzi (zlecenie wydzialu).
+  programEntries ProgramEntryDepartment[]
+  createdAt      DateTime                 @default(now())
 
   // Skrot jest unikalny w wydziale; dla jednostek bez wydzialu (NULL) pilnuje tego API.
   @@unique([facultyId, shortName])
@@ -511,18 +529,18 @@ model Placement {
 // Przeniesienie pojedynczego terminu z wzorca: nowa data, godziny, sala albo prowadzacy
 // (pola new* = null -> bez zmiany). Przezywa ponowne "Generuj terminy".
 model PlacementException {
-  id              String          @id @default(uuid())
-  placement       Placement       @relation(fields: [placementId], references: [id], onDelete: Cascade)
+  id              String    @id @default(uuid())
+  placement       Placement @relation(fields: [placementId], references: [id], onDelete: Cascade)
   placementId     String
-  originalDate    DateTime        @db.Date
-  newDate         DateTime?       @db.Date
+  originalDate    DateTime  @db.Date
+  newDate         DateTime? @db.Date
   newStartOrder   Int?
   newEndOrder     Int?
   newRoomId       String?
   newOnline       Boolean? // true = termin przeniesiony na online (bez sali); null = bez zmiany
   newInstructorId String?
   note            String?
-  createdAt       DateTime        @default(now())
+  createdAt       DateTime  @default(now())
 
   @@unique([placementId, originalDate])
 }

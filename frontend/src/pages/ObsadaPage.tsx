@@ -20,16 +20,18 @@ import { CarryDialog, ImportDialog, SyncDialog } from './obsada/ObsadaDialogs';
 import { GroupStaffDialog } from './obsada/GroupStaffDialog';
 import SectionsTab from './obsada/SectionsTab';
 import WorkloadTab from './obsada/WorkloadTab';
+import OrdersTab from './obsada/OrdersTab';
 
 /**
  * Obsada semestru — osobny etap przed ukladaniem planu. Dwie strony tych samych danych:
  *  - Obciazenia — od strony prowadzacych, tak jak przysylaja je katedry (katedra → osoba →
  *    przedmioty z grupami); stad wpisuje sie zajecia z arkuszy katedr,
- *  - Zajecia    — od strony zajec (przedmiot × forma z grupami): tu widac braki (NN, wakaty).
+ *  - Zajecia    — od strony zajec (przedmiot × forma z grupami): tu widac braki (NN, wakaty),
+ *  - Zlecenia   — katedra kazdej formy przedmiotu (zlecenie wydzialu), braki i CSV dla katedry.
  * Lista zajec wynika z programow i grup rocznikow (synchronizacja): podglad liczy sie sam przy
  * wejsciu, a komunikat nad zakladkami pojawia sie tylko, gdy jest cos do zrobienia (nowy semestr,
  * zmiany programu lub grup, sprawy do wyjasnienia) — zmiany stosuje sie z okna podgladu. Obsade
- * mozna tez przeniesc z poprzedniego roku albo wczytac z CSV. Zakladka w adresie (?widok=zajecia).
+ * mozna tez przeniesc z poprzedniego roku albo wczytac z CSV. Zakladka w adresie (?widok=zajecia / zlecenia).
  */
 
 /** Procent obsady w dol — 100% dopiero przy pelnej obsadzie (99,99% to wciaz brakujace godziny). */
@@ -47,8 +49,9 @@ export default function ObsadaPage() {
   const facultyId = isAdmin ? facultyFilter : undefined;
   const { term } = useCurrentTerm();
   const [params, setParams] = useSearchParams();
-  const tab = params.get('widok') === 'zajecia' ? 'sections' : 'workload';
-  const setTab = (value: string) => setParams(value === 'sections' ? { widok: 'zajecia' } : {}, { replace: true });
+  const VIEW_PARAM: Record<string, string> = { sections: 'zajecia', orders: 'zlecenia' };
+  const tab = params.get('widok') === 'zajecia' ? 'sections' : params.get('widok') === 'zlecenia' ? 'orders' : 'workload';
+  const setTab = (value: string) => setParams(VIEW_PARAM[value] ? { widok: VIEW_PARAM[value] } : {}, { replace: true });
 
   // Prowadzacy wybrany w Obciazeniach ("Pokaz w Zajeciach") — lista zajec pokazuje tylko jego zajecia.
   const [instructorFilter, setInstructorFilter] = useState<{ id: string; name: string } | null>(null);
@@ -158,6 +161,7 @@ export default function ObsadaPage() {
           <TabsList>
             <TabsTrigger value="workload">Obciazenia</TabsTrigger>
             <TabsTrigger value="sections">Zajecia</TabsTrigger>
+            <TabsTrigger value="orders">Zlecenia dla katedr</TabsTrigger>
           </TabsList>
           <TabsContent value="workload" className="mt-4">
             <WorkloadTab
@@ -183,6 +187,9 @@ export default function ObsadaPage() {
               onEdit={setEditing}
               scopeKey={`${term.key}|${facultyId}`}
             />
+          </TabsContent>
+          <TabsContent value="orders" className="mt-4">
+            <OrdersTab termKey={term.key} groups={groups} canEdit={editable} onChanged={refresh} />
           </TabsContent>
         </Tabs>
       )}

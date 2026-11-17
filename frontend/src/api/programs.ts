@@ -1,6 +1,7 @@
 import { api } from '@/lib/api';
 import type {
   AssessmentType,
+  ClassType,
   DegreeLevel,
   Program,
   ProgramEntry,
@@ -87,4 +88,12 @@ export async function deleteProgramEntry(id: string): Promise<void> {
 
 export async function reorderProgramEntries(versionId: string, ids: string[]): Promise<void> {
   await api.put(`/program-versions/${versionId}/order`, { ids });
+}
+
+/** Katedry form zajec przedmiotow programu (zlecenie wydzialu); departmentId null = bez katedry. */
+export async function setEntryDepartments(
+  items: { programEntryId: string; classType: ClassType; departmentId: string | null }[],
+): Promise<{ message: string }> {
+  const res = await api.put('/program-entries/departments', { items });
+  return res.data;
 }

@@ -488,6 +488,9 @@ export interface ClassSectionRow {
   /** archived: kalendarz rocznika w archiwum — zajecia i obsada tylko do odczytu. */
   cohort: { id: string; label: string; code: string; semester: number; archived: boolean };
   subject: { id: string; name: string; code: string | null };
+  programEntryId: string;
+  /** Katedra prowadzaca te forme przedmiotu (z programu, zlecenie wydzialu); null = nieprzypisana. */
+  department: { id: string; name: string; label: string } | null;
   order: number;
   /** Skrot specjalnosci przedmiotu (null = przedmiot wspolny dla kierunku). */
   specialization: string | null;

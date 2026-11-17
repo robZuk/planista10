@@ -13,7 +13,7 @@ import { asyncHandler } from '../middleware/asyncHandler';
 
 const departmentInclude = {
   faculty: { select: { id: true, name: true, shortName: true } },
-  _count: { select: { instructors: true } },
+  _count: { select: { instructors: true, programEntries: true } },
 } satisfies Prisma.DepartmentInclude;
 
 const prowadzacych = (n: number) => plural(n, 'prowadzacy', 'prowadzacych', 'prowadzacych');
@@ -97,6 +97,14 @@ export const remove = asyncHandler(async (req, res) => {
       409,
       `Nie mozna usunac katedry ${departmentLabel(department)} — ma ${prowadzacych(department._count.instructors)}. ` +
         'Najpierw zmien ich katedre (sklad katedry albo „Prowadzacy”).',
+    );
+  }
+  // Katedra przypisana do form zajec przedmiotow (zlecenie wydzialu) — klucz obcy RESTRICT.
+  if (department._count.programEntries > 0) {
+    throw new AppError(
+      409,
+      `Nie mozna usunac katedry ${departmentLabel(department)} — prowadzi ${plural(department._count.programEntries, 'forme zajec', 'formy zajec', 'form zajec')} przedmiotow. ` +
+        'Najpierw przypisz je innej katedrze (Obsada → Zlecenia).',
     );
   }
   await prisma.department.delete({ where: { id: department.id } });

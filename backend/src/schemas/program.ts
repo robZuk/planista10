@@ -42,3 +42,17 @@ export const programEntrySchema = z.object({
 });
 
 export type ProgramEntryInput = z.infer<typeof programEntrySchema>;
+
+/** Katedry form zajec przedmiotow programu (zlecenie wydzialu); departmentId null = bez katedry. */
+export const entryDepartmentsSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        programEntryId: z.string().min(1),
+        classType: z.enum(['LECTURE', 'EXERCISE', 'LAB', 'PROJECT', 'SEMINAR']),
+        departmentId: z.string().min(1).nullable(),
+      }),
+    )
+    .min(1)
+    .max(5000),
+});

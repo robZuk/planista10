@@ -8,6 +8,7 @@ import {
   programUpdateSchema,
   versionCreateSchema,
   versionUpdateSchema,
+  entryDepartmentsSchema,
 } from '../schemas/program';
 
 /**
@@ -34,5 +35,7 @@ programVersionsRouter.delete('/:id', authenticate, planners, programs.deleteVers
 programVersionsRouter.post('/:id/entries', authenticate, planners, validateBody(programEntrySchema), programs.addEntry);
 programVersionsRouter.put('/:id/order', authenticate, planners, programs.reorderEntries);
 
+// Przed '/:id' — inaczej "departments" wzieloby sie za id pozycji.
+programEntriesRouter.put('/departments', authenticate, planners, validateBody(entryDepartmentsSchema), programs.setEntryDepartments);
 programEntriesRouter.put('/:id', authenticate, planners, validateBody(programEntrySchema), programs.updateEntry);
 programEntriesRouter.delete('/:id', authenticate, planners, programs.deleteEntry);

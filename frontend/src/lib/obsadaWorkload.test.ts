@@ -8,6 +8,8 @@ const row = (id: string, over: Partial<ClassSectionRow> = {}): ClassSectionRow =
   id,
   cohort,
   subject: { id: 'el', name: 'Elektrotechnika i elektronika I', code: null },
+  programEntryId: 'pe-el',
+  department: null,
   order: 1,
   specialization: null,
   specializationName: null,

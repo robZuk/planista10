@@ -44,6 +44,14 @@ function instructorName(i: { title: string | null; firstName: string; lastName: 
   return i ? `${i.title ?? ''} ${i.firstName} ${i.lastName}`.trim() : 'NN';
 }
 
+function departmentOf(
+  rows: { classType: string; department: { id: string; name: string; shortName: string; faculty: { shortName: string } | null } }[],
+  classType: string,
+) {
+  const d = rows.find((r) => r.classType === classType)?.department;
+  return d ? { id: d.id, name: d.name, label: departmentLabel(d) } : null;
+}
+
 export const listSections = asyncHandler(async (req, res) => {
   const term = await findTerm(String(req.params.key));
   const facultyId = await facultyOf(req);
@@ -66,6 +74,9 @@ export const listSections = asyncHandler(async (req, res) => {
           orderInSemester: true,
           subject: { select: { id: true, name: true, code: true } },
           specialization: { select: { shortName: true, name: true } },
+          departments: {
+            select: { classType: true, department: { select: { id: true, name: true, shortName: true, faculty: { select: { shortName: true } } } } },
+          },
         },
       },
       group: { select: { id: true, partitionKey: true } },
@@ -87,6 +98,9 @@ export const listSections = asyncHandler(async (req, res) => {
           archived: archived.has(s.cohortId),
         },
         subject: s.programEntry.subject,
+        programEntryId: s.programEntryId,
+        // Katedra formy zajec z programu (zlecenie wydzialu); null = jeszcze nieprzypisana.
+        department: departmentOf(s.programEntry.departments, s.classType),
         order: s.programEntry.orderInSemester,
         specialization: s.programEntry.specialization?.shortName ?? null,
         specializationName: s.programEntry.specialization?.name ?? null,
