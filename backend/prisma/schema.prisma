@@ -185,6 +185,7 @@ model Room {
   buildingId      String
   placements      Placement[]
   occurrences     Occurrence[]
+  externalBusy    ExternalBusy[]
   preferredGroups StudentGroup[]
   createdAt       DateTime       @default(now())
 
@@ -230,6 +231,7 @@ model Instructor {
   sectionAssignments SectionInstructor[]
   placements         Placement[]
   occurrences        Occurrence[]
+  externalBusy       ExternalBusy[]
   createdAt          DateTime            @default(now())
 }
 
@@ -296,6 +298,7 @@ model AcademicTerm {
   sections       ClassSection[]
   placements     Placement[]
   occurrences    Occurrence[]
+  externalBusy   ExternalBusy[]
   createdAt      DateTime           @default(now())
 
   @@unique([startYear, type])
@@ -582,6 +585,31 @@ model Occurrence {
   @@index([date, roomId])
   @@index([date, instructorId])
   @@index([sectionId])
+}
+
+// Zajetosc zewnetrzna: czas prowadzacego i/lub sali zajety poza planem w systemie (zajecia
+// innych wydzialow zgloszone mailem). To nie sa zajecia — bez programu, grup i godzin
+// w obciazeniu; licza sie tylko do kolizji (services/plan.termOccupancy). Czas w minutach
+// (inne wydzialy maja inne siatki), konkretne daty (inne wydzialy maja wlasne kalendarze
+// i zjazdy). Co najmniej jedno z instructorId/roomId — pilnuje CHECK w migracji.
+model ExternalBusy {
+  id           String       @id @default(uuid())
+  term         AcademicTerm @relation(fields: [termId], references: [id], onDelete: Cascade)
+  termId       String
+  source       String // kto zglosil: "WE – dziekanat"
+  receivedOn   DateTime     @db.Date // stan na (data zgloszenia)
+  instructor   Instructor?  @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  instructorId String?
+  room         Room?        @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId       String?
+  startMinute  Int
+  endMinute    Int
+  dates        DateTime[]   @db.Date
+  note         String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([termId])
 }
 
 // Rocznik w konkretnym semestrze: numer semestru programu (wyliczany, wyjatkowo do

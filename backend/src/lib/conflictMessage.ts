@@ -14,6 +14,9 @@ export interface ConflictLike {
   with: string;
 }
 
+/** Poczatek opisu zajetosci zewnetrznej (lib/externalBusy.externalLabel) w komunikatach kolizji. */
+export const EXTERNAL_PREFIX = 'zajecia poza wydzialem';
+
 const REASON_TEXT: Record<string, string> = {
   ROOM: 'Sala zajeta',
   INSTRUCTOR: 'Prowadzacy ma wtedy zajecia',
@@ -86,7 +89,8 @@ export function conflictMessage(conflicts: ConflictLike[], maxGroups = 3): strin
   }
   // Prowadzacy albo sala zajeta przez inne zajecia to czesto zamierzony wspolny wyklad kilku
   // kierunkow — wtedy wystarczy ten sam klucz w obu umieszczeniach (zajecia laczone).
-  if (groups.some((g) => g.reason === 'INSTRUCTOR' || g.reason === 'ROOM')) {
+  // Zajetosc zewnetrzna (zajecia innego wydzialu) nie jest wspolnym wykladem — bez podpowiedzi.
+  if (groups.some((g) => (g.reason === 'INSTRUCTOR' || g.reason === 'ROOM') && !g.with.startsWith(EXTERNAL_PREFIX))) {
     lines.push(JOINT_HINT);
   }
   return lines.join('\n');

@@ -103,6 +103,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `facultyScope.ts` — zakres wydziału wywołującego (`assertFacultyScope`)
   - `occurrenceDiff.ts` — diff „Generuj terminy”: terminy z wzorca zachowują id (aktualizacja w miejscu)
   - `occurrenceSlot.ts` — ocena nowego miejsca terminu (blokada poza semestrem, ostrzeżenia do potwierdzenia)
+  - `externalBusy.ts` — zajętości zewnętrzne (zajęcia innych wydziałów ze zgłoszeń): sloty bez grupy do kolizji, walidacja, kolizje wpisu z planem
 - `src/middleware/authenticate.ts` — weryfikacja JWT; role w enumie `Role`
 - `prisma/schema.prisma` — źródło prawdy o modelu danych (opis: `docs/model-danych.md`)
 
@@ -147,6 +148,10 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   tylko oglądają („Mój plan”). W planista10 **nie ma zgłoszeń zmian ani powiadomień w aplikacji**
   (usunięte migracją `20261115120000_drop_change_requests_notifications`) — nie dokładaj ich
   z powrotem bez decyzji użytkownika.
+- **Plan jednego wydziału; zajęcia innych wydziałów to „zajętości zewnętrzne”** (`ExternalBusy`,
+  strona „Zajętości zewnętrzne”): prowadzący i/lub sala, minuty i konkretne daty ze zgłoszeń
+  mailowych. Liczą się tylko do kolizji (dokłada je `termOccupancy`; `BusySlot.groupId = null`), nie
+  są zajęciami ani obciążeniem. Wpis kolidujący z ułożonym planem się zapisuje — lista pokazuje kolizje.
 - **Nie ma odwołań ani odrobień** — ani na studiach stacjonarnych, ani na niestacjonarnych
   (migracje `20261115200000_drop_makeups` i `20261115210000_drop_cancellations`: bez strony
   „Odrobienia”, `makeupOfId`, `Occurrence.status` i `PlacementException.action`). Zajęcia, które

@@ -430,6 +430,14 @@ export const openApiDocument = {
     '/api/occurrences/{id}': {
       put: { tags: ['Plan'], summary: 'Przenies (MODIFY) albo przywroc wg wzorca (RESTORE) termin', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zmieniony'), 409: errResp('Kolizja'), ...authErrors } },
     },
+    '/api/terms/{key}/external-busy': {
+      get: { tags: ['Plan'], summary: 'Zajetosci zewnetrzne (zajecia innych wydzialow ze zgloszen) z kolizjami z planem', security: bearer, parameters: [termKey], responses: { 200: dataResp('Zajetosci'), ...authErrors } },
+      post: { tags: ['Plan'], summary: 'Dodaj zajetosc zewnetrzna (prowadzacy i/lub sala, GG:MM, daty); zwraca kolizje z planem', security: bearer, parameters: [termKey], responses: { 201: dataResp('Dodana'), 400: errResp('Bledne dane'), 409: errResp('Semestr w archiwum'), ...authErrors } },
+    },
+    '/api/external-busy/{id}': {
+      put: { tags: ['Plan'], summary: 'Zmien zajetosc zewnetrzna', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Zapisana'), 400: errResp('Bledne dane'), 409: errResp('Semestr w archiwum'), ...authErrors } },
+      delete: { tags: ['Plan'], summary: 'Usun zajetosc zewnetrzna', security: bearer, parameters: [pathId()], responses: { 200: dataResp('Usunieta'), ...authErrors } },
+    },
     '/api/terms/{key}/my-plan': {
       get: { tags: ['Plan'], summary: 'Moj plan (student/prowadzacy, tylko opublikowane)', security: bearer, parameters: [termKey, dateQ('from'), dateQ('to')], responses: { 200: dataResp('Terminy'), ...authErrors } },
     },

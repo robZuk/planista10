@@ -10,6 +10,7 @@ const prismaMock = vi.hoisted(() => ({
   classSection: { findMany: vi.fn() },
   occurrence: { findMany: vi.fn() },
   placement: { findMany: vi.fn() },
+  externalBusy: { findMany: vi.fn() },
 }));
 vi.mock('../lib/prisma', () => ({ prisma: prismaMock }));
 
@@ -123,7 +124,8 @@ const orphanRow = (id: string, cohortId: string, roomId: string) => ({
   section: { ...manualRow.section, cohortId },
 });
 
-function setup(exceptions: unknown[] = [], manual: unknown[] = [], orphans: unknown[] = []) {
+function setup(exceptions: unknown[] = [], manual: unknown[] = [], orphans: unknown[] = [], external: unknown[] = []) {
+  prismaMock.externalBusy.findMany.mockResolvedValue(external);
   prismaMock.cohort.findMany.mockResolvedValue([cohort]);
   prismaMock.termCalendar.findMany.mockResolvedValue([calendar]);
   prismaMock.timeGrid.findMany.mockResolvedValue([grid]);
@@ -220,6 +222,36 @@ describe('termOccupancy — wspolna zajetosc wzorca i terminow', () => {
     setup([], [], orphans);
     const pattern = await termOccupancy(term, { patternOfCohortId: 'c1' });
     expect(pattern.filter((b) => ['r7', 'r8'].includes(b.roomId ?? '')).map((b) => b.roomId)).toEqual(['r8']);
+  });
+
+  it('zajetosci zewnetrzne: kazda data to zajetosc bez grupy, z opisem zrodla', async () => {
+    const external = {
+      id: 'x1',
+      source: 'WE – dziekanat',
+      receivedOn: d('2027-02-10'),
+      instructorId: 'i1',
+      roomId: null,
+      startMinute: 615,
+      endMinute: 705,
+      dates: [d('2026-10-07'), d('2026-10-14')],
+      note: null,
+    };
+    setup([], [], [], [external]);
+    const busy = (await termOccupancy(term)).filter((b) => b.groupId === null);
+    expect(busy.map((b) => [b.date, b.startMinute, b.endMinute, b.instructorId, b.roomId])).toEqual([
+      ['2026-10-07', 615, 705, 'i1', null],
+      ['2026-10-14', 615, 705, 'i1', null],
+    ]);
+    expect(busy[0]!.label).toBe('zajecia poza wydzialem (WE – dziekanat, stan na 10.02)');
+    // Filtr zasobow: tylko zajetosci tej sali albo tego prowadzacego; bez nich — nie pytamy.
+    setup([], [], [], [external]);
+    await termOccupancy(term, { relevantTo: { cohortId: 'c1', roomId: 'r1', instructorId: 'i1' } });
+    expect(prismaMock.externalBusy.findMany.mock.lastCall![0].where).toEqual({ termId: term.id, OR: [{ roomId: 'r1' }, { instructorId: 'i1' }] });
+    vi.clearAllMocks();
+    setup();
+    await termOccupancy(term, { relevantTo: { cohortId: 'c1' } });
+    await termOccupancy(term, { skipExternal: true });
+    expect(prismaMock.externalBusy.findMany).not.toHaveBeenCalled();
   });
 
   it('wzorzec rocznika: terminy reczne rocznika dalej blokuja (generowanie ich nie usuwa)', async () => {

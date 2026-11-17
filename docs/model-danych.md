@@ -202,6 +202,25 @@ Prowadzący, Bloki              specjalność?)                                 
   „do tygodnia X−1” + nowe „od tygodnia X”, potem „Generuj terminy” — przeszłe tygodnie zostają,
   a kolizje nowego miejsca liczą się od tygodnia X.
 
+## 6b. Zajętości zewnętrzne (zajęcia innych wydziałów)
+
+- Plan układa się dla jednego wydziału (dziś WM), a prowadzący i sale bywają wspólne z innymi
+  wydziałami. Ich zajęcia przychodzą **mailem** i planista wpisuje je na stronie „Zajętości
+  zewnętrzne” (`/external-busy/:termKey`) jako `ExternalBusy`: semestr, kto zgłosił (`source`),
+  stan na (`receivedOn`), prowadzący i/lub sala (co najmniej jedno — `CHECK` w migracji), godziny
+  w **minutach** (inne wydziały mają inne siatki) i **konkretne daty** (inne wydziały mają własne
+  kalendarze i zjazdy). Okno dodawania rozpisuje serię „dzień tygodnia od–do co 1/2 tygodnie”
+  albo przyjmuje pojedyncze daty.
+- To nie są zajęcia: bez programu, grup i godzin w obciążeniach. Liczą się **tylko do kolizji**
+  (sala, prowadzący) — `services/plan.termOccupancy` dokłada je do wspólnej zajętości, więc działają
+  przy zapisie umieszczenia, w podpowiedzi wolnych godzin, przy zmianie terminu i w „Generuj terminy”
+  (termin kolidujący jest pomijany i zgłoszony jak każda kolizja). Opis kolizji:
+  „zajecia poza wydzialem (WE – dziekanat, stan na 10.02)”.
+- Zgłoszenie bywa późniejsze niż plan, więc wpis kolidujący z ułożonym planem **zapisuje się**
+  (zajęcia innego wydziału są faktem), a lista i odpowiedź zapisu pokazują kolizje do przełożenia.
+- Usunięty prowadzący albo sala usuwa ich zajętości (`ON DELETE CASCADE`); semestr w archiwum
+  (wszystkie kalendarze) — tylko do odczytu.
+
 ## 7. Widoczność i uprawnienia
 
 - **ADMIN** — katalog, semestry, wszystko. **DEAN_OFFICE** — dane swojego wydziału

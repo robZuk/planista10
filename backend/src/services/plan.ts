@@ -25,6 +25,7 @@ import { activeCohorts, type CohortContext } from './sections';
 import { cohortLabel, toTreeGroup } from './cohorts';
 import { calendarFingerprint, staleReasonsByCohort } from './staleness';
 import { sectionIssues } from '../lib/planIssues';
+import { externalBusySlots } from '../lib/externalBusy';
 
 /**
  * Plan semestru (nowy model). Umieszczenia uklada planista; terminy powstaja tylko
@@ -267,6 +268,14 @@ export interface OccupancyOptions {
    * Terminy z usunietych umieszczen innych rocznikow dalej sa zajetoscia.
    */
   patternOfCohortId?: string;
+  /** Bez zajetosci zewnetrznych (sprawdzanie samej zajetosci zewnetrznej z planem). */
+  skipExternal?: boolean;
+  /**
+   * Tylko zajetosc tych sal i prowadzacych (bez grup) — kolizje zajetosci zewnetrznych z planem.
+   * Jak `relevantTo` bez rocznika: rozpisujemy tylko zajecia, ktorych wzorzec albo wyjatek
+   * dotyczy tych zasobow, wiec wynik dla nich jest taki sam jak bez filtra.
+   */
+  onlyResources?: { roomIds: string[]; instructorIds: string[] };
 }
 
 /**
@@ -276,7 +285,8 @@ export interface OccupancyOptions {
  *    "Generuj terminy" (materializer bez sprawdzania kolizji),
  *  - terminy reczne,
  *  - terminy wygenerowane z usunietych umieszczen (zyja do ponownego generowania),
- *  - opcjonalnie wszystkie wygenerowane terminy (includeGenerated — poziom terminow).
+ *  - opcjonalnie wszystkie wygenerowane terminy (includeGenerated — poziom terminow),
+ *  - zajetosci zewnetrzne prowadzacych i sal (zajecia innych wydzialow zgloszone mailem).
  * Czas w minutach — siatki wydzialow sie roznia.
  */
 export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions = {}): Promise<BusySlot[]> {
@@ -289,9 +299,17 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
   const touches: Prisma.PlacementWhereInput[] = [];
   if (rel?.roomId) touches.push({ roomId: rel.roomId }, { exceptions: { some: { newRoomId: rel.roomId } } });
   if (rel?.instructorId) touches.push({ instructorId: rel.instructorId }, { exceptions: { some: { newInstructorId: rel.instructorId } } });
+  const only = opts.onlyResources;
+  if (only) {
+    const rooms = { in: only.roomIds };
+    const instructors = { in: only.instructorIds };
+    touches.push({ roomId: rooms }, { exceptions: { some: { newRoomId: rooms } } }, { instructorId: instructors }, { exceptions: { some: { newInstructorId: instructors } } });
+  }
   const sectionRelevant: Prisma.ClassSectionWhereInput = rel
     ? { OR: [{ cohortId: rel.cohortId }, ...(touches.length ? [{ placements: { some: { OR: touches } } }] : [])] }
-    : {};
+    : only
+      ? { placements: { some: { OR: touches } } }
+      : {};
   const occurrenceRelevant: Prisma.OccurrenceWhereInput = rel
     ? {
         OR: [
@@ -300,9 +318,22 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
           ...(rel.instructorId ? [{ instructorId: rel.instructorId }] : []),
         ],
       }
-    : {};
+    : only
+      ? { OR: [{ roomId: { in: only.roomIds } }, { instructorId: { in: only.instructorIds } }] }
+      : {};
 
-  const [sections, manual, orphans] = await Promise.all([
+  // Zajetosci zewnetrzne koliduja tylko sala i prowadzacym — przy filtrze tylko te dwa zasoby.
+  const externalRelevant: Prisma.ExternalBusyWhereInput = rel
+    ? {
+        OR: [
+          ...(rel.roomId ? [{ roomId: rel.roomId }] : []),
+          ...(rel.instructorId ? [{ instructorId: rel.instructorId }] : []),
+        ],
+      }
+    : {};
+  const wantExternal = !opts.skipExternal && (!rel || !!rel.roomId || !!rel.instructorId);
+
+  const [sections, manual, orphans, external] = await Promise.all([
     prisma.classSection.findMany({
       where: { termId: term.id, cohortId: { in: cohortIds }, placements: { some: {} }, ...sectionRelevant },
       include: { ...sectionLabelInclude, placements: { include: { exceptions: true } } },
@@ -321,9 +352,10 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
       },
       include: { section: { include: sectionLabelInclude } },
     }),
+    wantExternal ? prisma.externalBusy.findMany({ where: { termId: term.id, ...externalRelevant } }) : Promise.resolve([]),
   ]);
 
-  const labelOf = (s: { cohortId: string; groupId: string; classType: string; programEntry: { subject: { name: string } } }) => {
+  const labelOf = (s:{ cohortId: string; groupId: string; classType: string; programEntry: { subject: { name: string } } }) => {
     const ctx = ctxById.get(s.cohortId);
     return ctx
       ? `${ctx.cohort.program.code} s${ctx.semester}: ${sectionLabel(s.programEntry.subject.name, s.classType, ctx.nameOf(s.groupId))}`
@@ -391,6 +423,7 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
       label: `${labelOf(o.section)}${o.kind === 'MANUAL' ? ' (termin reczny)' : ''}`,
     });
   }
+  for (const e of external) busy.push(...externalBusySlots(e));
   return busy;
 }
 
@@ -536,7 +569,7 @@ export async function availability(
         if (!minutesOverlap(time.startMinute, time.endMinute, b.startMinute, b.endMinute)) continue;
         if (opts.roomId && b.roomId === opts.roomId) reason = `Sala zajeta: ${b.label}`;
         else if (instructorId && b.instructorId === instructorId) reason = `Prowadzacy zajety: ${b.label}`;
-        else if (overlap(section.groupId, b.groupId)) reason = `Grupa zajeta: ${b.label}`;
+        else if (b.groupId !== null && overlap(section.groupId, b.groupId)) reason = `Grupa zajeta: ${b.label}`;
         if (reason) break;
       }
       cells[dayOfWeek]![block.order] = reason;

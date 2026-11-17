@@ -2,7 +2,7 @@ import type { AcademicTerm, ClassSection, Occurrence, Placement } from '@prisma/
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { fromIsoDate, isIsoDate, toIsoDate, weekdayOf } from '../lib/isoDate';
-import { findConflict, type BusySlot } from '../lib/materializer';
+import { findConflict, type CandidateSlot } from '../lib/materializer';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
 import { dayWindowProblem, type GridTime } from '../lib/timeGrid';
 import { singleConflictMessage } from '../lib/conflictMessage';
@@ -30,7 +30,7 @@ import { assertVersionApproved, calendarFor, termOccupancy, type OccupancyOption
 export type OccurrenceFull = Occurrence & { placement: Placement | null; section: ClassSection };
 
 /** Kolizje terminu na konkretnej dacie z zajetoscia calej uczelni (bez niego samego). */
-export async function occurrenceConflicts(term: AcademicTerm, slot: Omit<BusySlot, 'label'>, opts: OccupancyOptions) {
+export async function occurrenceConflicts(term: AcademicTerm, slot: CandidateSlot, opts: OccupancyOptions) {
   // Wspolna zajetosc uczelni (wzorce z wyjatkami, terminy reczne i wygenerowane) na te date —
   // zawezona do rocznika grupy, sali i prowadzacego terminu (tylko one moga z nim kolidowac).
   const group = await prisma.studentGroup.findUniqueOrThrow({ where: { id: slot.groupId }, select: { cohortId: true } });

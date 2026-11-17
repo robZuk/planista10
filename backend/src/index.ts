@@ -18,6 +18,7 @@ import { programEntriesRouter, programsRouter, programVersionsRouter } from './r
 import { cohortGroupsRouter, cohortsRouter } from './routes/cohorts';
 import { sectionsRouter, termSectionsRouter } from './routes/sections';
 import { occurrencesRouter, placementsRouter, termPlanRouter } from './routes/plan';
+import { externalBusyRouter, termExternalBusyRouter } from './routes/externalBusy';
 import swaggerUi from 'swagger-ui-express';
 import { openApiDocument } from './openapi';
 import { errorHandler } from './middleware/errorHandler';
@@ -78,10 +79,12 @@ export function createApp(): Express {
   app.use('/api/users', usersRoutes);
   app.use('/api/terms/:key', termSectionsRouter);
   app.use('/api/terms/:key', termPlanRouter);
+  app.use('/api/terms/:key', termExternalBusyRouter);
   app.use('/api/terms', termsRouter);
   app.use('/api/sections', sectionsRouter);
   app.use('/api/placements', placementsRouter);
   app.use('/api/occurrences', occurrencesRouter);
+  app.use('/api/external-busy', externalBusyRouter);
   app.use('/api/term-calendars', termCalendarsRouter);
   app.use('/api/programs', programsRouter);
   app.use('/api/program-versions', programVersionsRouter);

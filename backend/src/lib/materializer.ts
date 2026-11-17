@@ -72,10 +72,14 @@ export interface BusySlot {
   /** null = bez sali (zajecia online) — nie koliduje salowo. */
   roomId: string | null;
   instructorId: string | null;
-  groupId: string;
+  /** null = zajetosc zewnetrzna (lib/externalBusy) — bez grupy, koliduje tylko sala i prowadzacy. */
+  groupId: string | null;
   jointKey: string | null;
   label: string;
 }
+
+/** Sprawdzany slot (termin, umieszczenie na dacie) — zawsze zajecia konkretnej grupy. */
+export type CandidateSlot = Omit<BusySlot, 'label' | 'groupId'> & { groupId: string };
 
 export interface PlannedOccurrence {
   sectionId: string;
@@ -112,7 +116,7 @@ export interface MatResult {
 
 /** Pierwszy konflikt slotu z zajetymi (sala, prowadzacy, grupy), albo null. */
 export function findConflict(
-  slot: Omit<BusySlot, 'label'>,
+  slot: CandidateSlot,
   busy: BusySlot[],
   groupsOverlap: (a: string, b: string) => boolean,
 ): { reason: MatConflict['reason']; with: string } | null {
@@ -121,7 +125,7 @@ export function findConflict(
     if (slot.jointKey && slot.jointKey === b.jointKey) continue;
     if (slot.roomId !== null && b.roomId === slot.roomId) return { reason: 'ROOM', with: b.label };
     if (slot.instructorId && b.instructorId === slot.instructorId) return { reason: 'INSTRUCTOR', with: b.label };
-    if (groupsOverlap(slot.groupId, b.groupId)) return { reason: 'GROUP', with: b.label };
+    if (b.groupId !== null && groupsOverlap(slot.groupId, b.groupId)) return { reason: 'GROUP', with: b.label };
   }
   return null;
 }
@@ -130,7 +134,7 @@ export function materialize(input: {
   sections: MatSection[];
   placements: MatPlacement[];
   exceptions: MatException[];
-  /** Zajete sloty spoza generowanego zakresu (inne wydzialy, terminy MANUAL...). */
+  /** Zajete sloty spoza generowanego zakresu (inne wydzialy, terminy MANUAL, zajetosci zewnetrzne...). */
   busy: BusySlot[];
   groupsOverlap: (a: string, b: string) => boolean;
   /** Generuj tylko od tej daty (opublikowany semestr — przeszlosc zostaje). */

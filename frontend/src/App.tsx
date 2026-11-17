@@ -10,6 +10,7 @@ import ProgramVersionPage from '@/pages/curriculum/ProgramVersionPage';
 import CohortsPage from '@/pages/CohortsPage';
 import ObsadaPage from '@/pages/ObsadaPage';
 import PlanPage from '@/pages/PlanPage';
+import ExternalBusyPage from '@/pages/ExternalBusyPage';
 import TermSetupPage from '@/pages/TermSetupPage';
 import MyPlanPage from '@/pages/MyPlanPage';
 import TermCalendarPage from '@/pages/TermCalendarPage';
@@ -27,6 +28,7 @@ const PAGES: Record<string, ComponentType> = {
   '/cohorts': CohortsPage,
   '/obsada': ObsadaPage,
   '/plan': PlanPage,
+  '/external-busy': ExternalBusyPage,
   '/setup': TermSetupPage,
   '/my-plan': MyPlanPage,
   '/calendar': TermCalendarPage,
