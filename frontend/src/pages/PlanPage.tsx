@@ -17,6 +17,7 @@ import { fetchTermCohorts } from '@/api/cohorts';
 import { fetchAvailability, fetchPlan, updatePlacement } from '@/api/plan';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { usePlanPdf } from '@/hooks/usePlanPdf';
+import { PlanPdfDialog } from '@/components/PlanPdfDialog';
 import { usePlanCohortStore } from '@/store/planCohortStore';
 import { getErrorMessage } from '@/lib/errors';
 import { groupTreeOptions, treeOptionLabel, visibleGroupIds } from '@/lib/planGroupFilter';
@@ -312,7 +313,11 @@ export default function PlanPage() {
               <Button
                 variant="outline"
                 disabled={pdf.isPending}
-                onClick={() => pdf.download(groupFilter !== 'all' ? { cohortId, groupId: groupFilter } : { cohortId })}
+                onClick={() => {
+                  const group = groups.find((g) => g.id === groupFilter);
+                  const what = cohort ? `${cohort.program.code} · sem. ${cohort.semester}` : 'Plan rocznika';
+                  pdf.open(group ? { cohortId, groupId: group.id } : { cohortId }, group ? `${what} · ${group.name}` : what);
+                }}
                 title={groupFilter !== 'all' ? 'Plan wybranej grupy (PDF)' : 'Plan rocznika (PDF) — strona na kazda grupe wykladowa'}
               >
                 <FileDown /> {pdf.isPending ? 'Przygotowuje PDF…' : 'PDF'}
@@ -827,6 +832,7 @@ export default function PlanPage() {
           }}
         />
       )}
+      <PlanPdfDialog preview={pdf.preview} onClose={pdf.close} />
     </>
   );
 }

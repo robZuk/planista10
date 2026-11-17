@@ -59,6 +59,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { ROOM_TYPES, ROOM_TYPE_LABELS } from '@/lib/labels';
 import { useAuthStore } from '@/store/authStore';
 import { usePlanPdf } from '@/hooks/usePlanPdf';
+import { PlanPdfDialog } from '@/components/PlanPdfDialog';
 import type { Building, Room, RoomType } from '@/types';
 
 const NO_FACULTY = '__none__';
@@ -370,7 +371,7 @@ export default function BuildingsPage() {
                                     disabled={pdf.isPending}
                                     aria-label={`Plan PDF sali ${room.number}`}
                                     title={`Plan sali (PDF)${pdf.termLabel ? ` — semestr ${pdf.termLabel}` : ''}`}
-                                    onClick={() => pdf.download({ roomId: room.id })}
+                                    onClick={() => pdf.open({ roomId: room.id }, `Sala ${room.number} — ${building.name}`)}
                                   >
                                     <FileDown />
                                   </Button>
@@ -582,6 +583,7 @@ export default function BuildingsPage() {
         isPending={removeRoom.isPending}
         onConfirm={() => deletingRoom && removeRoom.mutate(deletingRoom)}
       />
+      <PlanPdfDialog preview={pdf.preview} onClose={pdf.close} />
     </>
   );
 }

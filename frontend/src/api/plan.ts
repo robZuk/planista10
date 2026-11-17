@@ -143,17 +143,12 @@ export async function fetchMyPlan(
 export type PlanPdfSubject = { cohortId: string; groupId?: string } | { instructorId: string } | { roomId: string };
 
 /**
- * Druk planu (PDF z backendu, A4 poziomo) — pobranie pliku. Nazwa pliku z naglowka
- * Content-Disposition (np. "plan-NAW-S2-semestr-2-2026-Z.pdf").
+ * Druk planu (PDF z backendu, A4 poziomo) — plik i jego nazwa z naglowka Content-Disposition
+ * (np. "plan-NAW-S2-semestr-2-2026-Z.pdf"). Okno podgladu pokazuje go i pozwala pobrac.
  */
-export async function downloadPlanPdf(termKey: string, subject: PlanPdfSubject): Promise<void> {
+export async function fetchPlanPdf(termKey: string, subject: PlanPdfSubject): Promise<{ blob: Blob; fileName: string }> {
   const res = await api.get(`/terms/${termKey}/plan/pdf`, { params: subject, responseType: 'blob' });
   const disposition = String(res.headers['content-disposition'] ?? '');
-  const name = /filename="([^"]+)"/.exec(disposition)?.[1] ?? `plan-${termKey}.pdf`;
-  const url = URL.createObjectURL(res.data as Blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = name;
-  link.click();
-  URL.revokeObjectURL(url);
+  const fileName = /filename="([^"]+)"/.exec(disposition)?.[1] ?? `plan-${termKey}.pdf`;
+  return { blob: res.data as Blob, fileName };
 }

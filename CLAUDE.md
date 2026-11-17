@@ -158,7 +158,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   prowadzący, sala. Stacjonarne: plan tygodnia z wzorca (rytm przy zajęciach, gdy nie co tydzień);
   niestacjonarne: strona na zjazd z datami — to, co dałoby „Generuj terminy” z obecnego wzorca
   (materializer) + terminy ręczne, święta i dni wolne opisane w kolumnie; prowadzący i sala — strony po tygodniach. W wąskim kafelku sala bez budynku i prowadzący z inicjałem (bez tytułu). Przyciski: Układanie
-  planu (rocznik / filtr grupy), Prowadzący, Budynki i sale (semestr ostatnio używany).
+  planu (rocznik / filtr grupy), Prowadzący, Budynki i sale (semestr ostatnio używany) — otwierają
+  podgląd w oknie aplikacji (`PlanPdfDialog`), z którego plik się pobiera albo drukuje.
 - **Nie ma odwołań ani odrobień** — ani na studiach stacjonarnych, ani na niestacjonarnych
   (migracje `20261115200000_drop_makeups` i `20261115210000_drop_cancellations`: bez strony
   „Odrobienia”, `makeupOfId`, `Occurrence.status` i `PlacementException.action`). Zajęcia, które

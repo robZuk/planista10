@@ -46,6 +46,7 @@ import { compareDepartments, departmentLabel } from '@/lib/departments';
 import { getErrorMessage } from '@/lib/errors';
 import { useAuthStore } from '@/store/authStore';
 import { usePlanPdf } from '@/hooks/usePlanPdf';
+import { PlanPdfDialog } from '@/components/PlanPdfDialog';
 import type { Department, Instructor } from '@/types';
 
 /** Radix Select nie przyjmuje pustego stringa jako wartosci — stad wartownicy. */
@@ -251,7 +252,7 @@ export default function InstructorsPage() {
                     disabled={pdf.isPending}
                     aria-label={`Plan PDF: ${row.original.lastName}`}
                     title={`Plan zajec (PDF)${pdf.termLabel ? ` — semestr ${pdf.termLabel}` : ''}`}
-                    onClick={() => pdf.download({ instructorId: row.original.id })}
+                    onClick={() => pdf.open({ instructorId: row.original.id }, `${row.original.title ?? ''} ${row.original.firstName} ${row.original.lastName}`.trim())}
                   >
                     <FileDown />
                   </Button>
@@ -481,6 +482,7 @@ export default function InstructorsPage() {
         isPending={deleteMutation.isPending}
         onConfirm={() => deleting && deleteMutation.mutate(deleting.id)}
       />
+      <PlanPdfDialog preview={pdf.preview} onClose={pdf.close} />
     </>
   );
 }
