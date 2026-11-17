@@ -13,13 +13,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from '@/components/ui/native-select';
 import { Spinner } from '@/components/ui/spinner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { fetchDepartments } from '@/api/departments';
 import { setEntryDepartments } from '@/api/programs';
 import { useInstructorOptions } from '@/hooks/useInstructorOptions';
-import { compareDepartments, departmentLabel } from '@/lib/departments';
+import { departmentLabel, departmentSelectGroups } from '@/lib/departments';
 import { departmentOrders, orderCsv, staffedHours, suggestDepartments, type DepartmentSuggestion } from '@/lib/departmentOrders';
 import { getErrorMessage } from '@/lib/errors';
 import { groupLabel, groupSize, type SectionGroup } from '@/lib/obsadaGroups';
@@ -45,11 +45,14 @@ function downloadCsv(name: string, text: string) {
  */
 export default function OrdersTab({
   termKey,
+  viewFacultyId,
   groups,
   canEdit,
   onChanged,
 }: {
   termKey: string;
+  /** Wydzial widoku (null = cala uczelnia) — jego katedry na gorze wyboru. */
+  viewFacultyId: string | null;
   groups: SectionGroup[];
   canEdit: boolean;
   onChanged: () => Promise<void> | void;
@@ -61,7 +64,11 @@ export default function OrdersTab({
   const [suggesting, setSuggesting] = useState(false);
 
   const orders = useMemo(() => departmentOrders(groups), [groups]);
-  const sortedDepartments = useMemo(() => [...(departments ?? [])].sort(compareDepartments), [departments]);
+  // Katedry tego wydzialu i juz przypisane tutaj na gorze; katedry innych wydzialow osobno (np. KEO-WE uczy na WM).
+  const departmentGroups = useMemo(
+    () => departmentSelectGroups(departments ?? [], { facultyId: viewFacultyId, usedIds: new Set(groups.flatMap((g) => (g.department ? [g.department.id] : []))) }),
+    [departments, groups, viewFacultyId],
+  );
   const suggestions = useMemo(
     () => (canEdit ? suggestDepartments(groups, instructors ?? [], departmentLabel) : []),
     [groups, instructors, canEdit],
@@ -202,10 +209,14 @@ export default function OrdersTab({
                             onChange={(e) => save.mutate([{ group: g, departmentId: e.target.value === NONE ? null : e.target.value }])}
                           >
                             <NativeSelectOption value={NONE}>Bez katedry</NativeSelectOption>
-                            {sortedDepartments.map((d) => (
-                              <NativeSelectOption key={d.id} value={d.id}>
-                                {departmentLabel(d)}
-                              </NativeSelectOption>
+                            {departmentGroups.map((group) => (
+                              <NativeSelectOptGroup key={group.label} label={group.label}>
+                                {group.departments.map((d) => (
+                                  <NativeSelectOption key={d.id} value={d.id}>
+                                    {departmentLabel(d)}
+                                  </NativeSelectOption>
+                                ))}
+                              </NativeSelectOptGroup>
                             ))}
                           </NativeSelect>
                         ) : (

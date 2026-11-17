@@ -79,3 +79,27 @@ export function membershipChanges(
     facultyChanging: department.facultyId ? joining.filter((i) => i.facultyId !== department.facultyId) : [],
   };
 }
+
+export interface DepartmentOptionGroup {
+  label: string;
+  departments: Department[];
+}
+
+/**
+ * Katedry w wyborze na stronach wydzialu (Obsada): najpierw katedry tego wydzialu, jednostki
+ * miedzywydzialowe (SJO) i katedry, ktore juz maja tu zajecia; reszta uczelni osobno na koncu —
+ * potrzebna rzadko (osoba z katedry innego wydzialu, ktorej dopisuje sie zajecia), wiec nie
+ * miesza sie z wlasnymi. Bez wybranego wydzialu (cala uczelnia) — jedna lista.
+ */
+export function departmentSelectGroups(
+  departments: Department[],
+  opts: { facultyId: string | null; usedIds: Set<string> },
+): DepartmentOptionGroup[] {
+  const sorted = [...departments].sort(compareDepartments);
+  if (!opts.facultyId) return [{ label: 'Katedry', departments: sorted }];
+  const near = (d: Department) => d.facultyId === opts.facultyId || d.facultyId === null || opts.usedIds.has(d.id);
+  return [
+    { label: 'Ten wydzial i katedry z zajeciami na nim', departments: sorted.filter(near) },
+    { label: 'Inne wydzialy', departments: sorted.filter((d) => !near(d)) },
+  ].filter((g) => g.departments.length > 0);
+}

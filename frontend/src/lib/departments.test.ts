@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Department, Instructor } from '@/types';
-import { compareDepartments, departmentLabel, instructorOptions, memberOptions, membershipChanges } from './departments';
+import { compareDepartments, departmentLabel, departmentSelectGroups, instructorOptions, memberOptions, membershipChanges } from './departments';
 
 const WE = { id: 'f-we', name: 'Wydzial Elektryczny', shortName: 'WE' };
 const WM = { id: 'f-wm', name: 'Wydzial Mechaniczny', shortName: 'WM' };
@@ -96,5 +96,20 @@ describe('membershipChanges', () => {
 
   it('jednostka miedzywydzialowa nie zmienia wydzialu', () => {
     expect(membershipChanges(people, SJO, ['a', 'b']).facultyChanging).toEqual([]);
+  });
+});
+
+describe('departmentSelectGroups', () => {
+  it('wlasny wydzial, miedzywydzialowe i katedry z zajeciami na gorze; reszta osobno', () => {
+    const KAE = dept('KAE', WE);
+    const groups = departmentSelectGroups([KEO, KAE, KPT, SJO], { facultyId: WM.id, usedIds: new Set([KEO.id]) });
+    expect(groups.map((g) => [g.label, g.departments.map(departmentLabel)])).toEqual([
+      ['Ten wydzial i katedry z zajeciami na nim', ['KEO-WE', 'KPT-WM', 'SJO']],
+      ['Inne wydzialy', ['KAE-WE']],
+    ]);
+  });
+
+  it('cala uczelnia — jedna lista', () => {
+    expect(departmentSelectGroups([KEO, KPT], { facultyId: null, usedIds: new Set() })).toHaveLength(1);
   });
 });

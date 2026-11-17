@@ -13,12 +13,12 @@ import {
 } from '@/components/ui/dialog';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Combobox } from '@/components/Combobox';
 import { fetchWorkload } from '@/api/sections';
 import { useInstructorOptions } from '@/hooks/useInstructorOptions';
-import { compareDepartments, departmentLabel, instructorName } from '@/lib/departments';
+import { departmentLabel, departmentSelectGroups, instructorName } from '@/lib/departments';
 import type { SectionGroup } from '@/lib/obsadaGroups';
 import { CLASS_FULL_LABELS } from '@/lib/scheduleDisplay';
 import { plural } from '@/lib/setupSteps';
@@ -51,6 +51,7 @@ function HoursSplit({ person, mode }: { person: Pick<WorkloadPerson, 'here' | 'f
 export default function WorkloadTab({
   termKey,
   facultyId,
+  viewFacultyId,
   groups,
   canEdit,
   onShowSections,
@@ -58,6 +59,8 @@ export default function WorkloadTab({
 }: {
   termKey: string;
   facultyId?: string;
+  /** Wydzial widoku (null = cala uczelnia) — jego katedry na gorze filtra. */
+  viewFacultyId: string | null;
   groups: SectionGroup[];
   canEdit: boolean;
   /** "Pokaz w Zajeciach": lista zajec przefiltrowana do tej osoby. */
@@ -77,11 +80,14 @@ export default function WorkloadTab({
   const [picking, setPicking] = useState(false);
 
   // W filtrze wszystkie katedry z prowadzacymi — takze te, ktorych nikt nie ma jeszcze godzin.
-  const departments = useMemo(() => {
+  // W filtrze wszystkie katedry z prowadzacymi (takze bez godzin tutaj — do dopisania zajec z arkusza
+  // katedry innego wydzialu), ale wlasny wydzial i katedry z zajeciami tutaj na gorze.
+  const departmentGroups = useMemo(() => {
     const byId = new Map<string, Department>();
     for (const i of instructors ?? []) if (i.department) byId.set(i.department.id, i.department);
-    return [...byId.values()].sort(compareDepartments);
-  }, [instructors]);
+    const used = new Set((workload ?? []).flatMap((p) => (p.department ? [p.department.id] : [])));
+    return departmentSelectGroups([...byId.values()], { facultyId: viewFacultyId, usedIds: used });
+  }, [instructors, workload, viewFacultyId]);
   const blocks = useMemo(
     () => workloadBlocks(workload ?? [], { department, mode, search, members: instructors }),
     [workload, department, mode, search, instructors],
@@ -102,10 +108,14 @@ export default function WorkloadTab({
       <div className="flex flex-wrap items-center gap-3">
         <NativeSelect value={department} onChange={(e) => setDepartment(e.target.value)} className="w-60" aria-label="Katedra">
           <NativeSelectOption value={ALL_DEPARTMENTS}>Wszystkie katedry</NativeSelectOption>
-          {departments.map((d) => (
-            <NativeSelectOption key={d.id} value={d.id}>
-              {departmentLabel(d)} — {d.name}
-            </NativeSelectOption>
+          {departmentGroups.map((group) => (
+            <NativeSelectOptGroup key={group.label} label={group.label}>
+              {group.departments.map((d) => (
+                <NativeSelectOption key={d.id} value={d.id}>
+                  {departmentLabel(d)} — {d.name}
+                </NativeSelectOption>
+              ))}
+            </NativeSelectOptGroup>
           ))}
           <NativeSelectOption value={NO_DEPARTMENT}>Bez katedry</NativeSelectOption>
         </NativeSelect>

@@ -47,6 +47,9 @@ export default function ObsadaPage() {
   const canEdit = isAdmin || (me?.role === 'DEAN_OFFICE' && !!me.facultyId);
   const facultyFilter = useFacultyFilterStore((s) => s.facultyId);
   const facultyId = isAdmin ? facultyFilter : undefined;
+  // Wydzial widoku (dziekanat — swoj, admin — wybrany; null = cala uczelnia): katedry tego wydzialu
+  // ida w wyborach na gore, katedry innych wydzialow osobno.
+  const viewFacultyId = isAdmin ? (facultyFilter && facultyFilter !== 'all' ? facultyFilter : null) : (me?.facultyId ?? null);
   const { term } = useCurrentTerm();
   const [params, setParams] = useSearchParams();
   const VIEW_PARAM: Record<string, string> = { sections: 'zajecia', orders: 'zlecenia' };
@@ -165,6 +168,7 @@ export default function ObsadaPage() {
           </TabsList>
           <TabsContent value="workload" className="mt-4">
             <WorkloadTab
+              viewFacultyId={viewFacultyId}
               termKey={term.key}
               facultyId={facultyId}
               groups={groups}
@@ -189,7 +193,7 @@ export default function ObsadaPage() {
             />
           </TabsContent>
           <TabsContent value="orders" className="mt-4">
-            <OrdersTab termKey={term.key} groups={groups} canEdit={editable} onChanged={refresh} />
+            <OrdersTab termKey={term.key} viewFacultyId={viewFacultyId} groups={groups} canEdit={editable} onChanged={refresh} />
           </TabsContent>
         </Tabs>
       )}
