@@ -69,8 +69,10 @@ it('renderPlanPdf — plik PDF z polskimi znakami i strona na kazda strone planu
     pages: [
       { heading: 'MiBM-S1 · semestr 1', subheading: 'Plan tygodnia', columns: weekdayColumns(['MONDAY', 'TUESDAY']), entries: [entry] },
       { heading: 'Pusta', subheading: '', columns: weekdayColumns(['MONDAY']), entries: [], emptyText: 'Brak zajęć.' },
+      // Dzien wolny w kolumnie i krotkie wersje linii w waskim kafelku.
+      { heading: 'Zjazd', subheading: '', columns: [...dateColumns(['2026-10-31']), { ...dateColumns(['2026-11-01'])[0]!, closed: 'Wszystkich Świętych' }], entries: [{ ...entry, column: '2026-10-31', compactLines: ['s. 114', 'MiBM-1-W · Ż. Łęcka'] }] },
     ],
   });
   expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
-  expect((pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length).toBe(2);
+  expect((pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length).toBe(3);
 });

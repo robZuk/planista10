@@ -38,20 +38,20 @@ export function polishHolidays(year: number): Holiday[] {
   const easter = easterSunday(year);
   const list: Holiday[] = [
     { date: isoDate(year, 1, 1), name: 'Nowy Rok' },
-    { date: isoDate(year, 1, 6), name: 'Swieto Trzech Kroli' },
+    { date: isoDate(year, 1, 6), name: 'Święto Trzech Króli' },
     { date: easter, name: 'Niedziela Wielkanocna' },
-    { date: addDays(easter, 1), name: 'Poniedzialek Wielkanocny' },
-    { date: isoDate(year, 5, 1), name: 'Swieto Pracy' },
-    { date: isoDate(year, 5, 3), name: 'Swieto Konstytucji 3 Maja' },
-    { date: addDays(easter, 49), name: 'Zeslanie Ducha Swietego' },
-    { date: addDays(easter, 60), name: 'Boze Cialo' },
-    { date: isoDate(year, 8, 15), name: 'Wniebowziecie NMP' },
-    { date: isoDate(year, 11, 1), name: 'Wszystkich Swietych' },
-    { date: isoDate(year, 11, 11), name: 'Narodowe Swieto Niepodleglosci' },
-    { date: isoDate(year, 12, 25), name: 'Boze Narodzenie' },
-    { date: isoDate(year, 12, 26), name: 'Drugi dzien Bozego Narodzenia' },
+    { date: addDays(easter, 1), name: 'Poniedziałek Wielkanocny' },
+    { date: isoDate(year, 5, 1), name: 'Święto Pracy' },
+    { date: isoDate(year, 5, 3), name: 'Święto Konstytucji 3 Maja' },
+    { date: addDays(easter, 49), name: 'Zesłanie Ducha Świętego' },
+    { date: addDays(easter, 60), name: 'Boże Ciało' },
+    { date: isoDate(year, 8, 15), name: 'Wniebowzięcie NMP' },
+    { date: isoDate(year, 11, 1), name: 'Wszystkich Świętych' },
+    { date: isoDate(year, 11, 11), name: 'Narodowe Święto Niepodległości' },
+    { date: isoDate(year, 12, 25), name: 'Boże Narodzenie' },
+    { date: isoDate(year, 12, 26), name: 'Drugi dzień Bożego Narodzenia' },
   ];
-  if (year >= 2025) list.push({ date: isoDate(year, 12, 24), name: 'Wigilia Bozego Narodzenia' });
+  if (year >= 2025) list.push({ date: isoDate(year, 12, 24), name: 'Wigilia Bożego Narodzenia' });
   return list.sort((x, y) => x.date.localeCompare(y.date));
 }
 

@@ -157,7 +157,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   grupę wykładową — rocznik albo specjalność — z jej ćwiczeniami i laboratoriami; albo wybrana grupa),
   prowadzący, sala. Stacjonarne: plan tygodnia z wzorca (rytm przy zajęciach, gdy nie co tydzień);
   niestacjonarne: strona na zjazd z datami — to, co dałoby „Generuj terminy” z obecnego wzorca
-  (materializer) + terminy ręczne; prowadzący i sala — strony po tygodniach. Przyciski: Układanie
+  (materializer) + terminy ręczne, święta i dni wolne opisane w kolumnie; prowadzący i sala — strony po tygodniach. W wąskim kafelku sala bez budynku i prowadzący z inicjałem (bez tytułu). Przyciski: Układanie
   planu (rocznik / filtr grupy), Prowadzący, Budynki i sale (semestr ostatnio używany).
 - **Nie ma odwołań ani odrobień** — ani na studiach stacjonarnych, ani na niestacjonarnych
   (migracje `20261115200000_drop_makeups` i `20261115210000_drop_cancellations`: bez strony

@@ -99,6 +99,16 @@ function drawPage(doc: PDFKit.PDFDocument, page: PrintPage) {
     if (c.sublabel) doc.font('regular').fontSize(8).fillColor(MUTED).text(c.sublabel, x, top + 13, { width: colW, align: 'center', lineBreak: false });
   });
 
+  // Dni bez zajec (swieto, przerwa, dzien wolny) — kolumna wyszarzona z opisem, zeby pusta
+  // kolumna nie wygladala na blad planu.
+  page.columns.forEach((c, i) => {
+    if (!c.closed) return;
+    const x = gridLeft + i * colW;
+    doc.rect(x, gridTop, colW, bottom - gridTop).fill('#f4f4f5');
+    doc.font('bold').fontSize(9).fillColor(MUTED).text('Dzień wolny', x + 6, gridTop + 24, { width: colW - 12, align: 'center' });
+    doc.font('regular').fontSize(8).fillColor(MUTED).text(c.closed, x + 6, gridTop + 37, { width: colW - 12, align: 'center' });
+  });
+
   // Os czasu: pelne godziny (linie przez cala szerokosc).
   doc.lineWidth(0.5);
   for (let m = start; m <= end; m += 60) {
@@ -154,8 +164,14 @@ function drawEntry(doc: PDFKit.PDFDocument, e: PrintPage['entries'][number], x: 
   let cy = doc.y + 0.5;
   doc.font('regular').fontSize(size - 0.5).fillColor(TEXT);
   const lineH = doc.currentLineHeight(true);
-  const [first, ...rest] = e.lines;
-  for (const line of [first ? `${time} · ${first}` : time, ...rest]) {
+  // Kazda linia w pelnej wersji, a gdy sie nie miesci — w krotkiej (sala bez budynku, inicjal).
+  const pick = (i: number, render: (text: string) => string) => {
+    const full = render(e.lines[i]!);
+    const short = e.compactLines?.[i];
+    return short !== undefined && doc.widthOfString(full) > textW ? render(short) : full;
+  };
+  const lines = e.lines.length > 0 ? [pick(0, (t) => `${time} · ${t}`), ...e.lines.slice(1).map((_, i) => pick(i + 1, (t) => t))] : [time];
+  for (const line of lines) {
     // Ostatnia linia moze nieco wejsc w dolny margines kafelka (kafelek jest przyciety).
     if (cy + lineH * 0.85 > y + h) break;
     doc.text(line, textX, cy, { width: textW, height: lineH + 0.5, ellipsis: true, lineGap: 0 });

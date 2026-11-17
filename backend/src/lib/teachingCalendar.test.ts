@@ -259,7 +259,7 @@ describe('calendarPeriods — okresy widoku tygodnia terminow', () => {
     // 30.09 przed startem semestru — nie jest dniem zajec, bez etykiety.
     expect(periods[0]!.days[0]).toMatchObject({ date: '2024-09-30', dayOfWeek: 'MONDAY', teaching: false, label: null });
     const nov = periods.find((p) => p.from === '2024-11-11')!;
-    expect(nov.days[0]).toMatchObject({ dayOfWeek: 'MONDAY', teaching: false, label: 'Narodowe Swieto Niepodleglosci' });
+    expect(nov.days[0]).toMatchObject({ dayOfWeek: 'MONDAY', teaching: false, label: 'Narodowe Święto Niepodległości' });
     // Sobota wg planu poniedzialku.
     expect(nov.days[5]).toMatchObject({ dayOfWeek: 'SATURDAY', teaching: true, followsWeekday: 'MONDAY' });
     const xmas = periods.find((p) => p.from === '2024-12-23')!;
@@ -362,7 +362,7 @@ describe('personalDaysOff', () => {
   const week = ['2026-11-09', '2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13'];
 
   it('swieto ustawowe — takze gdy drugi kalendarz (zjazdy) po prostu nie ma tego dnia zajec', () => {
-    expect(personalDaysOff(week, [weekly(), zjazdy])).toEqual({ '2026-11-11': 'Narodowe Swieto Niepodleglosci' });
+    expect(personalDaysOff(week, [weekly(), zjazdy])).toEqual({ '2026-11-11': 'Narodowe Święto Niepodległości' });
   });
 
   it('przerwa jednego wydzialu nie jest dniem wolnym, gdy w drugim sa zajecia', () => {
@@ -374,7 +374,7 @@ describe('personalDaysOff', () => {
   it('dzien wolny uczelni z wlasna nazwa; bez kalendarzy — same swieta', () => {
     const cal = weekly({ days: [{ date: '2026-11-10', kind: 'DAY_OFF', name: 'Dzien sportu' }] });
     expect(personalDaysOff(week, [cal])['2026-11-10']).toBe('Dzien sportu');
-    expect(personalDaysOff(week, [])).toEqual({ '2026-11-11': 'Narodowe Swieto Niepodleglosci' });
+    expect(personalDaysOff(week, [])).toEqual({ '2026-11-11': 'Narodowe Święto Niepodległości' });
   });
 });
 

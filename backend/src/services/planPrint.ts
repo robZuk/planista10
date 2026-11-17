@@ -150,18 +150,33 @@ async function namesOf(slots: Slot[]) {
     prisma.room.findMany({ where: { id: { in: roomIds } }, include: { building: { select: { name: true } } } }),
     prisma.instructor.findMany({ where: { id: { in: instructorIds } } }),
   ]);
-  const roomName = new Map(rooms.map((r) => [r.id, `s. ${r.number} (${r.building.name})`]));
-  const personName = new Map(instructors.map((i) => [i.id, `${i.title ?? ''} ${i.firstName} ${i.lastName}`.trim()]));
+  // Pelna i krotka postac (waski kafelek): "s. 235 (Centrum Symulatorowe (WN))" / "s. 235",
+  // "dr hab. inż. Tomasz Kozłowski" / "T. Kozłowski" (tytuly bywaja dluzsze niz nazwisko).
+  const roomName = new Map(rooms.map((r) => [r.id, [`s. ${r.number} (${r.building.name})`, `s. ${r.number}`] as Line]));
+  const personName = new Map(
+    instructors.map((i) => [
+      i.id,
+      [`${i.title ?? ''} ${i.firstName} ${i.lastName}`.trim(), `${i.firstName.charAt(0)}. ${i.lastName}`] as Line,
+    ]),
+  );
   return {
-    room: (id: string | null) => (id ? (roomName.get(id) ?? 'sala?') : 'on-line'),
-    instructor: (id: string | null) => (id ? (personName.get(id) ?? '?') : 'NN'),
+    room: (id: string | null): Line => (id ? (roomName.get(id) ?? 'sala?') : 'on-line'),
+    instructor: (id: string | null): Line => (id ? (personName.get(id) ?? '?') : 'NN'),
   };
 }
+
+/** Linia opisu kafelka: tekst albo para [pelna, krotka] — krotka, gdy pelna sie nie miesci. */
+type Line = string | [string, string];
+const fullOf = (l: Line) => (typeof l === 'string' ? l : l[0]);
+const shortOf = (l: Line) => (typeof l === 'string' ? l : l[1]);
+/** Polaczenie linii w jedna ("grupa · prowadzacy") z zachowaniem wersji krotkiej. */
+const joinLines = (...parts: Line[]): Line => [parts.map(fullOf).join(' · '), parts.map(shortOf).join(' · ')];
 
 const groupOf = (s: Slot) => s.ctx.nameOf(s.section.groupId);
 const cohortGroupOf = (s: Slot) => `${s.ctx.cohort.program.code} s${s.ctx.semester} · ${groupOf(s)}`;
 
-function toEntry(s: Slot, column: string, lines: string[]): PrintEntry {
+function toEntry(s: Slot, column: string, lines: Line[]): PrintEntry {
+  const kept = lines.filter((l) => fullOf(l) !== '');
   return {
     id: s.id,
     column,
@@ -169,12 +184,13 @@ function toEntry(s: Slot, column: string, lines: string[]): PrintEntry {
     endMinute: s.endMinute,
     classType: s.section.classType,
     title: s.section.programEntry.subject.name,
-    lines: lines.filter(Boolean),
+    lines: kept.map(fullOf),
+    compactLines: kept.map(shortOf),
   };
 }
 
 /** Strony z dat zgrupowanych po tygodniach (prowadzacy, sala). */
-function weekPages(heading: string, dated: DateSlot[], describe: (s: DateSlot) => string[], subheadingOf: (range: string) => string): PrintPage[] {
+function weekPages(heading: string, dated: DateSlot[], describe: (s: DateSlot) => Line[], subheadingOf: (range: string) => string): PrintPage[] {
   const byWeek = new Map<IsoDate, DateSlot[]>();
   for (const s of dated) byWeek.set(mondayOf(s.date), [...(byWeek.get(mondayOf(s.date)) ?? []), s]);
   return [...byWeek.entries()]
@@ -219,7 +235,7 @@ export async function planPrint(term: AcademicTerm, subject: PrintSubject): Prom
   const week = weekly.filter(mine);
   const dates = dated.filter(mine);
   const names = await namesOf([...week, ...dates]);
-  const describe = (s: Slot) => [isRoom ? names.instructor(s.instructorId) : names.room(s.roomId), cohortGroupOf(s)];
+  const describe = (s: Slot): Line[] => [isRoom ? names.instructor(s.instructorId) : names.room(s.roomId), cohortGroupOf(s)];
 
   const pages: PrintPage[] = [];
   if (week.length > 0) {
@@ -270,7 +286,7 @@ async function cohortPrint(term: AcademicTerm, termName: string, cohortId: strin
   const about = `${program.fieldOfStudy.name}, ${mode} — ${cohortLabel(ctx.cohort)}`;
   const base = `${program.code} · semestr ${ctx.semester}`;
   const names = await namesOf([...collected.weekly, ...collected.dated]);
-  const describe = (s: Slot) => [names.room(s.roomId), `${groupOf(s)} · ${names.instructor(s.instructorId)}`];
+  const describe = (s: Slot): Line[] => [names.room(s.roomId), joinLines(groupOf(s), names.instructor(s.instructorId))];
   const units = printUnits(ctx, groupId);
   const pages: PrintPage[] = [];
 
@@ -297,6 +313,7 @@ async function cohortPrint(term: AcademicTerm, termName: string, cohortId: strin
 
     // Zjazdy: strona na zjazd; kolumny — dni zjazdu, w ktore wydzial ma zajecia tego trybu.
     const modeDays = new Set<string>(scope.grids.get(cohortId)?.days.map((d) => d.day) ?? []);
+    const teaching = scope.teaching.get(cohortId);
     const start = toIsoDate(calendar.startDate);
     const zjazdPages = [...calendar.zjazdy]
       .sort((a, b) => a.number - b.number)
@@ -308,7 +325,12 @@ async function cohortPrint(term: AcademicTerm, termName: string, cohortId: strin
         return {
           heading,
           subheading: `${about}. Zjazd tydz. ${semesterWeekOf(from, start)}: ${shortDate(from)}–${fullDate(to)}`,
-          columns: dateColumns(days),
+          // Swieto, przerwa albo dzien wolny w zjezdzie — opis w kolumnie (pusta kolumna wygladalaby na blad).
+          columns: dateColumns(days).map((c) => {
+            const info = teaching?.dayInfo(c.key);
+            const off = info && !info.teaching && ['HOLIDAY', 'BREAK', 'DAY_OFF'].includes(info.reason ?? '');
+            return off && !slots.some((s) => s.date === c.key) ? { ...c, closed: info.label ?? 'bez zajęć' } : c;
+          }),
           entries: slots.map((s) => toEntry(s, s.date, describe(s))),
         };
       })

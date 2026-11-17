@@ -21,12 +21,19 @@ export interface PrintEntry {
   title: string;
   /** Kolejne linie opisu; pierwsza idzie w jednej linii z godzinami ("8:00–9:30 · s. 114"). */
   lines: string[];
+  /**
+   * Krotsze wersje linii (ten sam porzadek): uzyte zamiast pelnej, gdy pelna nie miesci sie
+   * w waskim kafelku — sala bez budynku, prowadzacy z inicjalem imienia.
+   */
+  compactLines?: string[];
 }
 
 export interface PrintColumn {
   key: string;
   label: string;
   sublabel?: string;
+  /** Dzien bez zajec w kalendarzu (swieto, przerwa, dzien wolny) — opis w kolumnie. */
+  closed?: string;
 }
 
 export interface PrintPage {
