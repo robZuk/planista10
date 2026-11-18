@@ -28,6 +28,7 @@ import { getErrorMessage } from '@/lib/errors';
 import { defaultSubPartition } from '@/lib/subPartition';
 import { partitionOverflows } from '@/lib/groupSizes';
 import { useSyncHint } from '@/hooks/useSyncHint';
+import { plural } from '@/lib/setupSteps';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import type { CohortGroup, TermCohort } from '@/types';
 
@@ -79,7 +80,7 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
       if (vars.input.toSemester !== undefined) {
         syncHint(
           vars.input.toSemester === null ? 'Grupa trwa dalej (bez daty konca)' : `Grupa konczy sie po semestrze ${vars.input.toSemester}`,
-          data.warning,
+          { warning: data.warning, sync: data.sync },
         );
         setEnding(null);
       }
@@ -89,8 +90,8 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
   });
   const remove = useMutation({
     mutationFn: (id: string) => deleteCohortGroup(id),
-    onSuccess: async () => {
-      syncHint('Grupa usunieta');
+    onSuccess: async (data) => {
+      syncHint('Grupa usunieta', { sync: data?.sync });
       setDeleting(null);
       await refresh();
     },
@@ -298,14 +299,14 @@ function AddGroupsDialog({
   const mutation = useMutation({
     mutationFn: async () => {
       if (target.mode === 'spec') {
-        await createCohortGroup(cohort.id, {
+        const result = await createCohortGroup(cohort.id, {
           parentId: target.parent.id,
           partitionKey: 'SPEC',
           specializationId: specId,
           size: Number(size),
           fromSemester: Number(fromSemester),
         });
-        return 'Specjalnosc dodana';
+        return { message: 'Specjalnosc dodana', sync: result.sync };
       }
       const result = await createCohortGroupsBulk(cohort.id, {
         parentIds: [target.parent.id],
@@ -314,10 +315,10 @@ function AddGroupsDialog({
         size: Number(size),
         fromSemester: Number(fromSemester),
       });
-      return result.message;
+      return { message: `Dodano ${plural(Number(count), 'grupe', 'grupy', 'grup')}`, sync: result.sync };
     },
-    onSuccess: (message) => {
-      syncHint(message);
+    onSuccess: ({ message, sync }) => {
+      syncHint(message, { sync });
       onDone();
     },
     onError: (error) => toast.error(getErrorMessage(error)),

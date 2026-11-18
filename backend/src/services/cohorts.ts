@@ -58,7 +58,18 @@ export function toTreeGroup(g: StudentGroup): TreeGroup {
 export async function cohortGroupsView(cohort: CohortFull, semester: number) {
   const groups = await prisma.studentGroup.findMany({
     where: { cohortId: cohort.id },
-    include: { _count: { select: { members: true, sections: true, occurrences: true, subGroups: true } } },
+    include: {
+      _count: {
+        select: {
+          members: true,
+          // Tylko zajecia z praca planisty (obsada, umieszczenia, terminy) — zajecia "puste" powstaja
+          // same po dodaniu grupy i nie blokuja jej usuniecia (services/sections.bareSection).
+          sections: { where: { OR: [{ instructors: { some: {} } }, { placements: { some: {} } }, { occurrences: { some: {} } }] } },
+          occurrences: true,
+          subGroups: true,
+        },
+      },
+    },
     orderBy: [{ fromSemester: 'asc' }, { code: 'asc' }],
   });
   const tree = groups.map(toTreeGroup);

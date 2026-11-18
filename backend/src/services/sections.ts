@@ -4,15 +4,32 @@ import { deriveSections, rescaleStaff, scaleHours, sectionKey, type DemandProble
 import { displayName, indexGroups, pathFromRoot, ROOT, type GroupIndex, type TreeGroup } from '../lib/groupTree';
 import { cohortSemesterInTerm, termLabel, termOrdinal } from '../lib/terms';
 import { cohortLabel, toTreeGroup } from './cohorts';
-import { archivedCohortIds } from './cohortCalendar';
+import { archivedCohortIds, calendarsFor } from './cohortCalendar';
 
 /**
  * Zajecia semestru (ClassSection) i obsada. Synchronizacja to idempotentny diff:
  * dodaje brakujace zajecia, poprawia godziny, a zbedne usuwa tylko wtedy, gdy nie maja
  * obsady, umieszczen w planie ani terminow — inaczej oznacza je jako ORPHANED (do decyzji
- * planisty). Przeniesienie
- * obsady z poprzedniego roku uzupelnia wylacznie zajecia bez obsady.
+ * planisty). Zmiany dodajace (tryb "additive") stosuja sie same po zmianie naboru, grup,
+ * programu albo kalendarza (services/autoPlan); reszta czeka na podglad na stronie "Obsada".
+ * Przeniesienie obsady z poprzedniego roku uzupelnia wylacznie zajecia bez obsady.
  */
+
+/**
+ * Zajecia "puste": bez obsady, umieszczen i terminow — w calosci wynikaja z programu i grup,
+ * synchronizacja odtworzy je w razie potrzeby. Nie blokuja usuniecia grupy, rocznika ani pozycji
+ * programu (usuwa sie je razem z nimi).
+ */
+export const bareSection = {
+  instructors: { none: {} },
+  placements: { none: {} },
+  occurrences: { none: {} },
+} satisfies Prisma.ClassSectionWhereInput;
+
+/** Zajecia z praca planisty: obsada, umieszczenia albo terminy. */
+export const usedSection = {
+  OR: [{ instructors: { some: {} } }, { placements: { some: {} } }, { occurrences: { some: {} } }],
+} satisfies Prisma.ClassSectionWhereInput;
 
 const cohortForTerm = {
   program: {
@@ -85,6 +102,7 @@ export function groupSignature(groupId: string, index: GroupIndex): string {
 // ─── Synchronizacja ──────────────────────────────────────────
 
 export interface SyncRow {
+  cohortId: string;
   cohort: string;
   subject: string;
   classType: ClassType;
@@ -104,7 +122,19 @@ export interface SyncReport {
   deleted: SyncRow[];
   unchanged: number;
   problems: SyncProblem[];
+  /**
+   * Tryb "additive": zmiany pominiete — usuniecia, osierocenia i zmiana godzin zajec, ktore sa
+   * w planie. Zostaja do decyzji planisty w podgladzie na stronie "Obsada".
+   */
+  pending: number;
 }
+
+/**
+ * Tryby synchronizacji: `all` — pelny diff (podglad i "Zastosuj zmiany" na stronie Obsada);
+ * `additive` — tylko zmiany dodajace (nowe zajecia, przywrocenie osieroconych, godziny zajec bez
+ * planu), wylacznie rocznikom z kalendarzem w semestrze. Ten tryb stosuje sie sam.
+ */
+export type SyncMode = 'all' | 'additive';
 
 export interface SyncProblem {
   /** Pelna etykieta rocznika ("EDST-N1 · nabor 2023/24 zimowy" albo nazwa wlasna). */
@@ -122,15 +152,20 @@ export interface SyncProblem {
 
 export async function syncSections(
   term: AcademicTerm,
-  opts: { facultyId: string | null; cohortIds?: string[]; dryRun: boolean },
+  opts: { facultyId: string | null; cohortIds?: string[]; dryRun: boolean; mode?: SyncMode },
 ): Promise<SyncReport> {
-  const report: SyncReport = { created: [], hoursChanged: [], reactivated: [], orphaned: [], deleted: [], unchanged: 0, problems: [] };
+  const report: SyncReport = { created: [], hoursChanged: [], reactivated: [], orphaned: [], deleted: [], unchanged: 0, problems: [], pending: 0 };
+  const additive = opts.mode === 'additive';
   const contexts = await activeCohorts(term, opts.facultyId, opts.cohortIds);
-  const archived = await archivedCohortIds(term, contexts);
+  const calendars = await calendarsFor(term, contexts);
+  const archived = new Set([...calendars].filter(([, c]) => c.status === 'ARCHIVED').map(([cohortId]) => cohortId));
   const ops: Prisma.PrismaPromise<unknown>[] = [];
 
   for (const ctx of contexts) {
     const { cohort, semester } = ctx;
+    // Tryb samoczynny: tylko semestry, w ktorych rocznik ma kalendarz — bez niego plan i tak nie
+    // powstanie, a zajecia w dawnych semestrach (np. starszy rocznik zalozony od zera) bylyby smieciem.
+    if (additive && !calendars.has(cohort.id)) continue;
     // Kalendarz w archiwum: zajecia to zapis tego, co sie odbylo — synchronizacja ich nie rusza.
     if (archived.has(cohort.id)) {
       report.problems.push({
@@ -206,6 +241,7 @@ export async function syncSections(
     const existingByKey = new Map(existing.map((s) => [sectionKey(s), s]));
     const desiredKeys = new Set(desired.map(sectionKey));
     const row = (s: { programEntryId: string; classType: ClassType; groupId: string; hours: number }, subject?: string): SyncRow => ({
+      cohortId: cohort.id,
       cohort: label,
       subject: subject ?? subjectOf.get(s.programEntryId) ?? '',
       classType: s.classType,
@@ -234,6 +270,11 @@ export async function syncSections(
       }
       if (found.status === 'ORPHANED') report.reactivated.push(row(d));
       else if (found.hours !== d.hours) {
+        // Godziny zajec, ktore sa juz w planie, zmieniaja jego bilans — to decyzja planisty (podglad).
+        if (additive && (found._count.placements > 0 || found._count.occurrences > 0)) {
+          report.pending++;
+          continue;
+        }
         // Obsada idzie za godzinami: pelna zostaje pelna, nadmiarowa jest przycinana.
         const staff = rescaleStaff(found.instructors.map((i) => i.hours), found.hours, d.hours);
         report.hoursChanged.push({
@@ -258,9 +299,15 @@ export async function syncSections(
     for (const s of existing) {
       if (desiredKeys.has(sectionKey(s))) continue;
       const r = row(s, s.programEntry.subject.name);
+      const used = s._count.instructors > 0 || s._count.placements > 0 || s._count.occurrences > 0;
+      // Usuniecia i osierocenia nie dzieja sie same — czekaja na podglad na stronie "Obsada".
+      if (additive) {
+        if (!used || s.status !== 'ORPHANED') report.pending++;
+        continue;
+      }
       // Umieszczenia i terminy trzymaja zajecia kluczem obcym (RESTRICT) — usuniecie wywrociloby
       // cala transakcje synchronizacji. Poza tym to praca planisty, ktorej nie kasujemy po cichu.
-      if (s._count.instructors > 0 || s._count.placements > 0 || s._count.occurrences > 0) {
+      if (used) {
         if (s.status !== 'ORPHANED') {
           report.orphaned.push(r);
           ops.push(prisma.classSection.update({ where: { id: s.id }, data: { status: 'ORPHANED' } }));

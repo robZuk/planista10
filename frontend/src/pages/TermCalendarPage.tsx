@@ -117,8 +117,11 @@ export default function TermCalendarPage() {
 
   const statusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: CalendarStatus }) => setTermCalendarStatus(id, status),
-    onSuccess: async (calendar) => {
-      toast.success(`Status: ${CALENDAR_STATUS_LABELS[calendar.status].toLowerCase()}`);
+    onSuccess: async ({ calendar, message, warning }) => {
+      // Publikacja przelicza terminy — komunikat mowi ile, ostrzezenie: kolizje i braki godzin.
+      const text = message || `Status: ${CALENDAR_STATUS_LABELS[calendar.status].toLowerCase()}`;
+      if (warning) toast.warning(text, { description: warning, duration: 15000 });
+      else toast.success(text);
       setStatusChange(null);
       await refresh();
     },

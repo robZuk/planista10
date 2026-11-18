@@ -117,7 +117,7 @@ export function OccurrencesTab({
   if (!data || data.length === 0) {
     return (
       <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-        Brak terminow. Uloz wzorzec i uzyj „Generuj terminy”.
+        Brak terminow. Powstana z wzorca — w kalendarzu w przygotowaniu same, w opublikowanym po „Generuj terminy”.
       </p>
     );
   }

@@ -28,9 +28,11 @@ import { sectionIssues } from '../lib/planIssues';
 import { externalBusySlots } from '../lib/externalBusy';
 
 /**
- * Plan semestru (nowy model). Umieszczenia uklada planista; terminy powstaja tylko
- * przyciskiem "Generuj terminy". Kolizje sprawdzamy na konkretnych datach w calej
- * uczelni: sala, prowadzacy i grupy (regula nakladania z lib/groupTree).
+ * Plan semestru (nowy model). Umieszczenia uklada planista; terminy liczy generowanie:
+ * dopoki kalendarz rocznika jest "w przygotowaniu", po kazdej zmianie planu samo
+ * (refreshPlanningTerms), a w opublikowanym — tylko przyciskiem "Generuj terminy".
+ * Kolizje sprawdzamy na konkretnych datach w calej uczelni: sala, prowadzacy i grupy
+ * (regula nakladania z lib/groupTree).
  */
 
 const CLASS_LETTER: Record<string, string> = { LECTURE: 'W', EXERCISE: 'C', LAB: 'L', PROJECT: 'P', SEMINAR: 'S' };
@@ -82,11 +84,19 @@ export interface CalendarUsage {
   occurrences: number;
 }
 
-export async function calendarUsage(calendar: Pick<TermCalendar, 'id' | 'termId' | 'facultyId' | 'studyMode'>): Promise<CalendarUsage> {
-  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: calendar.termId } });
+/** Roczniki semestru, ktorych kalendarzem jest ten (wybrany w Rocznikach albo domyslny wydzialu). */
+export async function cohortIdsOfCalendar(
+  term: AcademicTerm,
+  calendar: Pick<TermCalendar, 'id' | 'facultyId' | 'studyMode'>,
+): Promise<string[]> {
   const contexts = (await activeCohorts(term, calendar.facultyId)).filter((c) => c.cohort.program.studyMode === calendar.studyMode);
   const chosen = await calendarsFor(term, contexts);
-  const cohortIds = contexts.filter((c) => chosen.get(c.cohort.id)?.id === calendar.id).map((c) => c.cohort.id);
+  return contexts.filter((c) => chosen.get(c.cohort.id)?.id === calendar.id).map((c) => c.cohort.id);
+}
+
+export async function calendarUsage(calendar: Pick<TermCalendar, 'id' | 'termId' | 'facultyId' | 'studyMode'>): Promise<CalendarUsage> {
+  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: calendar.termId } });
+  const cohortIds = await cohortIdsOfCalendar(term, calendar);
   if (cohortIds.length === 0) return { cohorts: 0, cohortsWithPlan: 0, placements: 0, occurrences: 0 };
   const ofCohorts = { termId: term.id, section: { cohortId: { in: cohortIds } } };
   const [placements, occurrences, cohortsWithPlan] = await Promise.all([
@@ -782,6 +792,31 @@ export interface GenerateReport {
   draftVersions: string[];
 }
 
+/** Sale i prowadzacy, ktorych moga dotyczyc terminy tych zajec: z umieszczen i z przeniesien terminow. */
+function resourcesOf(
+  sections: {
+    placements: {
+      roomId: string | null;
+      instructorId: string | null;
+      exceptions: { newRoomId: string | null; newInstructorId: string | null }[];
+    }[];
+  }[],
+): { roomIds: string[]; instructorIds: string[] } {
+  const rooms = new Set<string>();
+  const instructors = new Set<string>();
+  for (const s of sections) {
+    for (const p of s.placements) {
+      if (p.roomId) rooms.add(p.roomId);
+      if (p.instructorId) instructors.add(p.instructorId);
+      for (const e of p.exceptions) {
+        if (e.newRoomId) rooms.add(e.newRoomId);
+        if (e.newInstructorId) instructors.add(e.newInstructorId);
+      }
+    }
+  }
+  return { roomIds: [...rooms], instructorIds: [...instructors] };
+}
+
 /** Duze listy id dzielimy na porcje — limit parametrow zapytania w Postgresie. */
 const ID_CHUNK = 5000;
 function chunks<T>(items: T[], size: number): T[][] {
@@ -792,7 +827,19 @@ function chunks<T>(items: T[], size: number): T[][] {
 
 export async function generate(
   term: AcademicTerm,
-  opts: { facultyId: string | null; cohortIds?: string[]; fromDate?: IsoDate | null; dryRun: boolean },
+  opts: {
+    facultyId: string | null;
+    cohortIds?: string[];
+    fromDate?: IsoDate | null;
+    dryRun: boolean;
+    /**
+     * Zajetosc innych rocznikow tylko w salach i u prowadzacych z umieszczen generowanych
+     * rocznikow (przeliczanie po kazdej zmianie planu). Grupy roznych rocznikow nie koliduja
+     * (groupsOverlap), wiec kolizje wychodza te same — a rozpisujemy kilkadziesiat zajec
+     * zamiast calej uczelni.
+     */
+    relevantOccupancy?: boolean;
+  },
 ): Promise<GenerateReport> {
   const scope = await loadScope(term, opts.facultyId, opts.cohortIds);
   const report: GenerateReport = { added: 0, removed: 0, changed: 0, unchanged: 0, total: 0, conflicts: [], beyondHours: 0, shortfalls: [], orphanExceptions: [], calendarsMissing: [], draftVersions: [] };
@@ -881,7 +928,10 @@ export async function generate(
   // Zajete poza zakresem: wzorce pozostalych rocznikow calej uczelni (takze jeszcze
   // niewygenerowane, z przeniesieniami) + terminy reczne + osierocone terminy,
   // a w zakresie — zachowana przeszlosc (generowanie od daty).
-  const busy: BusySlot[] = await termOccupancy(term, { excludeCohortIds: cohortIds });
+  const busy: BusySlot[] = await termOccupancy(term, {
+    excludeCohortIds: cohortIds,
+    ...(opts.relevantOccupancy ? { onlyResources: resourcesOf(sections) } : {}),
+  });
   if (from) {
     const past = await prisma.occurrence.findMany({
       where: { sectionId: { in: sectionIds }, kind: 'DERIVED', ...beforeRange },
@@ -975,4 +1025,39 @@ export async function generate(
     ]);
   }
   return report;
+}
+
+// ─── Terminy kalendarzy "w przygotowaniu" ───────────────────
+
+export interface RefreshResult {
+  /** Roczniki, ktorych terminy przeliczono (kalendarz w przygotowaniu, zatwierdzony program). */
+  cohortIds: string[];
+  report: GenerateReport | null;
+}
+
+/**
+ * Dopoki kalendarz rocznika jest "w przygotowaniu", terminy przeliczaja sie same po kazdej zmianie
+ * planu (umieszczenia, terminy reczne, kalendarz, ustawienia rocznika w semestrze) — widzi je tylko
+ * planista, wiec nie ma czego chronic przed cicha zmiana. W opublikowanym kalendarzu terminy zmienia
+ * wylacznie "Generuj terminy" (z podgladem), a zmiana wzorca daje "terminy nieaktualne".
+ * Wywolujacy trzyma blokade planu semestru (services/planLock) — to zapis terminow.
+ */
+export async function refreshPlanningTerms(term: AcademicTerm, cohortIds: string[]): Promise<RefreshResult> {
+  const ids = [...new Set(cohortIds)];
+  if (ids.length === 0) return { cohortIds: [], report: null };
+  const contexts = await activeCohorts(term, null, ids);
+  const calendars = await calendarsFor(term, contexts);
+  const planning = contexts
+    .filter((c) => calendars.get(c.cohort.id)?.status === 'PLANNING' && c.cohort.programVersion.status === 'APPROVED')
+    .map((c) => c.cohort.id);
+  if (planning.length === 0) return { cohortIds: [], report: null };
+  const report = await generate(term, { facultyId: null, cohortIds: planning, fromDate: null, dryRun: false, relevantOccupancy: true });
+  return { cohortIds: planning, report };
+}
+
+/** Dopisek do komunikatu zapisu planu: terminy przeliczone same albo czekaja na "Generuj terminy". */
+export function termsNote(refresh: RefreshResult): string {
+  if (refresh.cohortIds.length === 0) return 'terminy zmienia sie po "Generuj terminy"';
+  const conflicts = refresh.report?.conflicts.length ?? 0;
+  return conflicts > 0 ? `terminy przeliczone (pominiete przez kolizje: ${conflicts})` : 'terminy przeliczone';
 }

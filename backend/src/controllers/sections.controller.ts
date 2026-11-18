@@ -13,7 +13,7 @@ import { aggregateWorkload } from '../lib/workload';
 import { departmentLabel } from '../lib/department';
 import { cohortLabel } from '../services/cohorts';
 import { archivedCohortIds } from '../services/cohortCalendar';
-import { assertCohortTermWritable } from '../services/plan';
+import { assertCohortTermWritable, refreshPlanningTerms } from '../services/plan';
 
 /**
  * Zajecia semestru i obsada. Dziekanat dziala na swoim wydziale, admin na wybranym
@@ -147,6 +147,12 @@ export const sync = asyncHandler(async (req, res) => {
   const facultyId = await facultyOf(req);
   const { dryRun = true, cohortIds } = req.body as { dryRun?: boolean; cohortIds?: string[] };
   const report = await syncSections(term, { facultyId, cohortIds, dryRun });
+  if (!dryRun) {
+    // Zmienione godziny, przywrocone i osierocone zajecia zmieniaja terminy rocznikow — w kalendarzu
+    // w przygotowaniu przeliczamy je od razu (zapis idzie pod blokada semestru, jak cala trasa).
+    const touched = [...report.hoursChanged, ...report.reactivated, ...report.orphaned].map((r) => r.cohortId);
+    if (touched.length > 0) await refreshPlanningTerms(term, touched);
+  }
   res.json({
     data: report,
     message: dryRun

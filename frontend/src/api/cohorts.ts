@@ -1,5 +1,11 @@
 import { api } from '@/lib/api';
-import type { CohortDto, CohortGroup, CohortLectureMode, IntakeCandidate, TermCohort } from '@/types';
+import type { AutoSyncSummary, CohortDto, CohortGroup, CohortLectureMode, IntakeCandidate, TermCohort } from '@/types';
+
+/** Odpowiedz zapisu naboru i grup: komunikat + zajecia zmienione samoczynnie (zmiany dodajace). */
+export interface SyncedResult {
+  message: string;
+  sync?: AutoSyncSummary;
+}
 
 export async function fetchTermCohorts(
   termKey: string,
@@ -21,7 +27,7 @@ export async function createCohort(input: {
   programVersionId?: string;
   copyStructure?: boolean;
   rootSize?: number;
-}): Promise<{ data: CohortDto; message: string }> {
+}): Promise<{ data: CohortDto } & SyncedResult> {
   const res = await api.post('/cohorts', input);
   return res.data;
 }
@@ -29,9 +35,9 @@ export async function createCohort(input: {
 export async function updateCohort(
   id: string,
   input: { programVersionId?: string; lectureMode?: CohortLectureMode; name?: string | null },
-): Promise<CohortDto> {
+): Promise<{ data: CohortDto } & SyncedResult> {
   const res = await api.put(`/cohorts/${id}`, input);
-  return res.data.data;
+  return res.data;
 }
 
 export async function deleteCohort(id: string): Promise<void> {
@@ -42,8 +48,9 @@ export async function setCohortTerm(
   termKey: string,
   cohortId: string,
   input: { semester?: number | null; calendarId?: string | null },
-): Promise<void> {
-  await api.put(`/terms/${termKey}/cohorts/${cohortId}`, input);
+): Promise<SyncedResult & { termsRefreshed?: boolean }> {
+  const res = await api.put(`/terms/${termKey}/cohorts/${cohortId}`, input);
+  return res.data;
 }
 
 export async function fetchCohortGroups(
@@ -65,14 +72,15 @@ export async function createCohortGroup(
     fromSemester?: number;
     toSemester?: number | null;
   },
-): Promise<void> {
-  await api.post(`/cohorts/${cohortId}/groups`, input);
+): Promise<SyncedResult> {
+  const res = await api.post(`/cohorts/${cohortId}/groups`, input);
+  return res.data;
 }
 
 export async function createCohortGroupsBulk(
   cohortId: string,
   input: { parentIds: string[]; partitionKey: string; perParent: number; size: number; fromSemester?: number },
-): Promise<{ message: string }> {
+): Promise<SyncedResult> {
   const res = await api.post(`/cohorts/${cohortId}/groups/bulk`, input);
   return res.data;
 }
@@ -80,14 +88,15 @@ export async function createCohortGroupsBulk(
 export async function updateCohortGroup(
   id: string,
   input: { code?: string; size?: number; fromSemester?: number; toSemester?: number | null },
-): Promise<{ warning?: string | null }> {
+): Promise<SyncedResult & { warning?: string | null }> {
   const res = await api.put(`/cohort-groups/${id}`, input);
   // Ostrzezenie: grupa nie obejmuje juz semestrow, w ktorych ma zajecia w planie.
-  return { warning: res.data?.warning ?? null };
+  return { message: res.data?.message ?? 'Grupa zapisana', sync: res.data?.sync, warning: res.data?.warning ?? null };
 }
 
-export async function deleteCohortGroup(id: string): Promise<void> {
-  await api.delete(`/cohort-groups/${id}`);
+export async function deleteCohortGroup(id: string): Promise<SyncedResult> {
+  const res = await api.delete(`/cohort-groups/${id}`);
+  return res.data;
 }
 
 export interface GroupOption {

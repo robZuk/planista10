@@ -18,8 +18,20 @@ import {
   toCalendarInput,
 } from '../services/termCalendars';
 import type { CalendarBody } from '../schemas/termCalendar';
-import { calendarUsage, placementsWithMissingPeriods, type CalendarUsage } from '../services/plan';
+import { calendarUsage, placementsWithMissingPeriods, type CalendarUsage, type RefreshResult } from '../services/plan';
+import { autoSyncTermFaculties, changeCalendarStatus, refreshCalendarTerms, syncNote } from '../services/autoPlan';
 import { plural } from '../lib/plural';
+
+/** Ostrzezenie po przeliczeniu terminow: kolizje i godziny, ktorych terminy nie wyczerpuja. */
+function refreshWarning(refresh: RefreshResult): string | null {
+  const report = refresh.report;
+  if (!report) return null;
+  const parts = [
+    report.conflicts.length > 0 && `${plural(report.conflicts.length, 'termin pominiety', 'terminy pominiete', 'terminow pominietych')} przez kolizje`,
+    report.shortfalls.length > 0 && `${plural(report.shortfalls.length, 'zajecia maja', 'zajecia maja', 'zajec ma')} mniej godzin w terminach niz w programie`,
+  ].filter(Boolean);
+  return parts.length > 0 ? `${parts.join('; ')} — szczegoly w Ukladaniu planu i Przygotowaniu semestru.` : null;
+}
 
 /** Semestr z klucza URL ("2026-Z") albo 404. */
 async function findTerm(key: string) {
@@ -222,12 +234,15 @@ export const createCalendar = asyncHandler(async (req, res) => {
     ),
   );
   const skipped = targets.length - toCreate.length;
+  // Nowy kalendarz = semestr, ktory bedzie mial plan: zajecia rocznikow powstaja od razu (zmiany dodajace).
+  const sync = await autoSyncTermFaculties(term, toCreate);
   res.status(201).json({
     data: created.map(serializeCalendar),
     message:
-      created.length === 1
+      (created.length === 1
         ? 'Kalendarz utworzony'
-        : `Kalendarz utworzony dla ${created.length} wydzialow${skipped ? ` (${skipped} pominieto — maja juz wlasny)` : ''}`,
+        : `Kalendarz utworzony dla ${created.length} wydzialow${skipped ? ` (${skipped} pominieto — maja juz wlasny)` : ''}`) + syncNote(sync),
+    sync,
   });
 });
 
@@ -292,12 +307,22 @@ export const updateCalendar = asyncHandler(async (req, res) => {
             : `wybrane ${updated.kind === 'ZJAZD' ? 'zjazdy' : 'tygodnie'} nr ${lost.numbers.join(', ')}, ktorych`
         } w kalendarzu juz nie ma — w te dni zajecia sie nie odbeda. Popraw je w Ukladaniu planu (Niezgodnosci w planie).`
       : null;
-  res.json({ data: serializeCalendar(updated), message: 'Kalendarz zapisany', warning });
+  // Kalendarz w przygotowaniu: terminy jego rocznikow przeliczaja sie od razu (w opublikowanym —
+  // "terminy nieaktualne" i "Generuj terminy").
+  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: current.termId } });
+  const refresh = datesChanged || body.kind !== current.kind ? await refreshCalendarTerms(term, current) : null;
+  const termsWarning = refresh ? refreshWarning(refresh) : null;
+  res.json({
+    data: serializeCalendar(updated),
+    message: `Kalendarz zapisany${refresh && refresh.cohortIds.length > 0 ? ' — terminy przeliczone' : ''}`,
+    warning: [warning, termsWarning].filter(Boolean).join(' ') || null,
+  });
 });
 
 /**
  * Zmiana statusu. Dziekanat przelacza swoj kalendarz miedzy przygotowaniem,
- * publikacja i archiwum; wyjsc z archiwum moze tylko admin.
+ * publikacja i archiwum; wyjsc z archiwum moze tylko admin. Publikacja przelicza najpierw
+ * terminy rocznikow kalendarza (services/autoPlan) — studenci i prowadzacy dostaja aktualny plan.
  */
 export const setCalendarStatus = asyncHandler(async (req, res) => {
   const current = await loadCalendar(String(req.params.id));
@@ -306,12 +331,17 @@ export const setCalendarStatus = asyncHandler(async (req, res) => {
   if (current.status === 'ARCHIVED' && status !== 'ARCHIVED' && req.user!.role !== 'ADMIN') {
     throw new AppError(403, 'Kalendarz z archiwum moze przywrocic tylko administrator');
   }
-  const updated = await prisma.termCalendar.update({
-    where: { id: current.id },
-    data: { status },
-    include: calendarInclude,
+  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: current.termId } });
+  const { result: updated, refresh } = await changeCalendarStatus(term, current, status, () =>
+    prisma.termCalendar.update({ where: { id: current.id }, data: { status }, include: calendarInclude }),
+  );
+  const published = current.status === 'PLANNING' && status === 'PUBLISHED';
+  const counted = refresh.report ? ` — terminy przeliczone (${refresh.report.total})` : '';
+  res.json({
+    data: serializeCalendar(updated),
+    message: published ? `Kalendarz opublikowany${counted}` : `Status kalendarza zmieniony${counted}`,
+    warning: refreshWarning(refresh),
   });
-  res.json({ data: serializeCalendar(updated), message: 'Status kalendarza zmieniony' });
 });
 
 /** Liczba z rzeczownikiem w polskiej odmianie: 1 rocznik, 2 roczniki, 5 rocznikow. */

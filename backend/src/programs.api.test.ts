@@ -8,19 +8,23 @@ process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn().mockResolvedValue({ facultyId: 'wm' }) },
-  programVersion: { findUnique: vi.fn() },
+  programVersion: { findUnique: vi.fn(), update: vi.fn((args: { data: object }) => Promise.resolve({ id: 'v1', ...args.data })) },
   programEntry: {
     findMany: vi.fn().mockResolvedValue([]),
     findUnique: vi.fn(),
     aggregate: vi.fn(),
     create: vi.fn(),
     update: vi.fn().mockResolvedValue({}),
-    delete: vi.fn().mockResolvedValue({}),
+    delete: vi.fn((args: unknown) => ({ op: 'programEntry.delete', args })),
   },
-  classSection: { count: vi.fn() },
+  classSection: { count: vi.fn(), deleteMany: vi.fn((args: unknown) => ({ op: 'classSection.deleteMany', args })) },
+  $transaction: vi.fn().mockResolvedValue([]),
   specialization: { findUnique: vi.fn() },
 }));
 vi.mock('./lib/prisma', () => ({ prisma: prismaMock }));
+// Zajecia po zatwierdzeniu wersji — testowane w services/autoPlan.test; tu tylko wywolanie.
+const autoSyncVersionMock = vi.hoisted(() => vi.fn());
+vi.mock('./services/autoPlan', async (importOriginal) => ({ ...(await importOriginal<object>()), autoSyncVersion: autoSyncVersionMock }));
 
 import { createApp } from './index';
 import { signAccessToken } from './lib/jwt';
@@ -42,6 +46,8 @@ const version = (facultyId: string, status: 'DRAFT' | 'APPROVED') => ({
 });
 
 const entry = { subjectId: 's1', semester: 1, specializationId: null, hoursLecture: 30 };
+// Zajecia "puste" (services/sections.bareSection): bez obsady, umieszczen i terminow.
+const bare = { instructors: { none: {} }, placements: { none: {} }, occurrences: { none: {} } };
 
 describe('API — programy studiow', () => {
   it('prowadzacy nie dodaje przedmiotow -> 403', async () => {
@@ -160,8 +166,12 @@ describe('API — pozycja programu, z ktorej powstaly zajecia', () => {
     prismaMock.programEntry.findUnique.mockResolvedValueOnce(stored);
     prismaMock.classSection.count.mockResolvedValueOnce(0);
     prismaMock.programEntry.aggregate.mockResolvedValueOnce({ _max: { orderInSemester: 2 } });
+    prismaMock.classSection.deleteMany.mockClear();
     const res = await putEntry({ ...entry, semester: 2 });
     expect(res.status).toBe(200);
+    expect(prismaMock.classSection.count).toHaveBeenLastCalledWith({ where: { programEntryId: 'e1', NOT: bare } });
+    // Puste zajecia (np. z zatwierdzenia przed cofnieciem do projektu) odchodza — powstana na nowo.
+    expect(prismaMock.classSection.deleteMany).toHaveBeenCalledWith({ where: { programEntryId: 'e1', ...bare } });
   });
 
   it('usuniecie pozycji z zajeciami -> 409, bez usuwania', async () => {
@@ -174,11 +184,35 @@ describe('API — pozycja programu, z ktorej powstaly zajecia', () => {
     expect(prismaMock.programEntry.delete).not.toHaveBeenCalled();
   });
 
-  it('usuniecie pozycji bez zajec — usunieta', async () => {
+  it('usuniecie pozycji bez zajec z praca planisty — usunieta razem z pustymi zajeciami', async () => {
     prismaMock.programEntry.findUnique.mockResolvedValueOnce(stored);
     prismaMock.classSection.count.mockResolvedValueOnce(0);
     const res = await request(app).delete('/api/program-entries/e1').set('Authorization', `Bearer ${dean}`);
     expect(res.status).toBe(200);
-    expect(prismaMock.programEntry.delete).toHaveBeenCalledWith({ where: { id: 'e1' } });
+    expect(prismaMock.$transaction).toHaveBeenLastCalledWith([
+      { op: 'classSection.deleteMany', args: { where: { programEntryId: 'e1', ...bare } } },
+      { op: 'programEntry.delete', args: { where: { id: 'e1' } } },
+    ]);
+  });
+});
+
+describe('API — zatwierdzenie wersji programu', () => {
+  const draft = { ...version('wm', 'DRAFT'), programId: 'p1', label: 'Wersja 1' };
+
+  it('zatwierdzenie od razu tworzy zajecia rocznikow tej wersji', async () => {
+    prismaMock.programVersion.findUnique.mockResolvedValueOnce(draft);
+    autoSyncVersionMock.mockResolvedValueOnce({ created: 29, reactivated: 0, hoursChanged: 0, pending: 0 });
+    const res = await request(app).put('/api/program-versions/v1').set('Authorization', `Bearer ${dean}`).send({ status: 'APPROVED' });
+    expect(res.status).toBe(200);
+    expect(autoSyncVersionMock).toHaveBeenCalledWith('v1');
+    expect(res.body.message).toBe('Wersja zatwierdzona; zajecia semestru: +29');
+  });
+
+  it('cofniecie do projektu zajec nie rusza', async () => {
+    prismaMock.programVersion.findUnique.mockResolvedValueOnce({ ...draft, status: 'APPROVED' });
+    autoSyncVersionMock.mockClear();
+    const res = await request(app).put('/api/program-versions/v1').set('Authorization', `Bearer ${dean}`).send({ status: 'DRAFT' });
+    expect(res.status).toBe(200);
+    expect(autoSyncVersionMock).not.toHaveBeenCalled();
   });
 });

@@ -15,8 +15,13 @@ describe('statusChangeWarning', () => {
     expect(statusChangeWarning({ status: 'PLANNING', endDate: '2027-01-31' }, 'ARCHIVED', '2026-11-08')).not.toBeNull();
   });
 
-  it('bez pytania: publikacja, archiwum po semestrze, ten sam status, przywrocenie z archiwum', () => {
-    expect(statusChangeWarning({ status: 'PLANNING', endDate: '2027-01-31' }, 'PUBLISHED', '2026-11-08')).toBeNull();
+  it('publikacja pyta (terminy przeliczone jeszcze raz, potem tylko „Generuj terminy”)', () => {
+    const w = statusChangeWarning({ status: 'PLANNING', endDate: '2027-01-31' }, 'PUBLISHED', '2026-11-08');
+    expect(w?.confirmLabel).toBe('Opublikuj');
+    expect(w?.effect).toContain('przelicza sie jeszcze raz');
+  });
+
+  it('bez pytania: archiwum po semestrze, ten sam status, przywrocenie z archiwum', () => {
     expect(statusChangeWarning(published, 'ARCHIVED', '2027-02-01')).toBeNull();
     expect(statusChangeWarning(published, 'PUBLISHED', '2026-11-08')).toBeNull();
     expect(statusChangeWarning({ status: 'ARCHIVED', endDate: '2027-01-31' }, 'PUBLISHED', '2026-11-08')).toBeNull();

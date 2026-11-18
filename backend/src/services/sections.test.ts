@@ -202,3 +202,79 @@ describe('syncSections — kalendarz w archiwum', () => {
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 });
+
+describe('syncSections — tryb additive (zmiany dodajace stosuja sie same)', () => {
+  const entryRow = (id: string) => ({
+    id,
+    specializationId: null,
+    hoursLecture: 30,
+    hoursExercise: 0,
+    hoursLab: 0,
+    hoursProject: 0,
+    hoursSeminar: 0,
+    subject: { name: `Przedmiot ${id}` },
+  });
+
+  it('tworzy brakujace zajecia; zbednych nie usuwa ani nie osieroca — czekaja na podglad', async () => {
+    prismaMock.programEntry.findMany.mockResolvedValue([entryRow('nowy')]);
+    prismaMock.classSection.findMany.mockResolvedValue([stale('wolne', {}), stale('w-planie', { placements: 1 })]);
+
+    const report = await syncSections(term, { facultyId: null, dryRun: false, mode: 'additive' });
+
+    expect(report.created.map((r) => [r.cohortId, r.subject])).toEqual([['c1', 'Przedmiot nowy']]);
+    expect(report.deleted).toEqual([]);
+    expect(report.orphaned).toEqual([]);
+    expect(report.pending).toBe(2);
+    expect(prismaMock.classSection.create).toHaveBeenCalledTimes(1);
+    expect(prismaMock.classSection.delete).not.toHaveBeenCalled();
+    expect(prismaMock.classSection.update).not.toHaveBeenCalled();
+  });
+
+  it('godziny: zajecia bez planu poprawia od razu, zajecia w planie zostawia do decyzji', async () => {
+    prismaMock.programEntry.findMany.mockResolvedValue([entryRow('e-a'), entryRow('e-b')]);
+    prismaMock.classSection.findMany.mockResolvedValue([
+      { ...stale('a', {}), hours: 20, instructors: [] },
+      { ...stale('b', { placements: 2 }), hours: 20, instructors: [] },
+    ]);
+
+    const report = await syncSections(term, { facultyId: null, dryRun: false, mode: 'additive' });
+
+    expect(report.hoursChanged.map((r) => r.subject)).toEqual(['Przedmiot e-a']);
+    expect(report.pending).toBe(1);
+    expect(prismaMock.classSection.update).toHaveBeenCalledTimes(1);
+    expect(prismaMock.classSection.update).toHaveBeenCalledWith({ where: { id: 'a' }, data: { status: 'ACTIVE', hours: 30 } });
+  });
+
+  it('przywraca osierocone zajecia, ktore znow wynikaja z programu', async () => {
+    prismaMock.programEntry.findMany.mockResolvedValue([entryRow('e-wraca')]);
+    prismaMock.classSection.findMany.mockResolvedValue([{ ...stale('wraca', { placements: 1 }, 'ORPHANED'), instructors: [] }]);
+
+    const report = await syncSections(term, { facultyId: null, dryRun: false, mode: 'additive' });
+
+    expect(report.reactivated.map((r) => r.cohortId)).toEqual(['c1']);
+    expect(prismaMock.classSection.update).toHaveBeenCalledWith({ where: { id: 'wraca' }, data: { status: 'ACTIVE', hours: 30 } });
+  });
+
+  it('rocznik bez kalendarza w semestrze — pominiety (np. starszy rocznik w dawnym semestrze)', async () => {
+    prismaMock.termCalendar.findMany.mockResolvedValue([]);
+    prismaMock.programEntry.findMany.mockResolvedValue([entryRow('nowy')]);
+    prismaMock.classSection.findMany.mockResolvedValue([]);
+
+    const report = await syncSections(term, { facultyId: null, dryRun: false, mode: 'additive' });
+
+    expect(report.created).toEqual([]);
+    expect(prismaMock.programEntry.findMany).not.toHaveBeenCalled();
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('pelna synchronizacja (podglad w Obsadzie) dalej obejmuje rocznik bez kalendarza', async () => {
+    prismaMock.termCalendar.findMany.mockResolvedValue([]);
+    prismaMock.programEntry.findMany.mockResolvedValue([entryRow('nowy')]);
+    prismaMock.classSection.findMany.mockResolvedValue([]);
+
+    const report = await syncSections(term, { facultyId: null, dryRun: true });
+
+    expect(report.created).toHaveLength(1);
+    expect(report.pending).toBe(0);
+  });
+});

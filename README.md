@@ -37,16 +37,18 @@ studia) i **semestr** (jedyny kontekst planowania). Szczegóły: `docs/model-dan
 - **Obsada:** zakładka **Obciążenia** jak arkusze katedr (katedra → prowadzący → przedmioty
   z grupami, stac./niestac., wpisywanie zajęć osoby z rozkładem godzin na grupy) i zakładka
   **Zajęcia** (przedmiot × forma z grupami, braki, obsada wszystkich grup naraz); zajęcia
-  wyliczone z programu i grup — zmiany programu i grup same pokazują się jako komunikat
-  z podglądem — podział godzin (NN), obsada z poprzedniego roku, CSV.
+  wyliczone z programu i grup powstają same (zmiany dodające), a usunięcia i osierocenia czekają
+  na decyzję w komunikacie z podglądem — podział godzin (NN), obsada z poprzedniego roku, CSV.
 - **Katedry:** jednostki przysyłające obciążenia (`KEO-WE`, międzywydziałowe jak SJO), skład
   katedry z podglądem zmian; katedra wydziałowa ustala wydział prowadzącego. Katedra każdej
   formy przedmiotu (zlecenie wydziału): braki per katedra i CSV zlecenia dla katedry.
 - **Układanie planu — ręcznie:** podpowiedzi wolnych godzin, kolizje sprawdzane na
   konkretnych datach (sala / prowadzący / grupy), rytmy tygodniowe i zjazdowe, zajęcia łączone,
   opcjonalne „Przenieś plan z zeszłego roku" (z podglądem).
-- **Generuj terminy (z podglądem):** terminy z wzorca do wyczerpania godzin; ręczne poprawki
-  terminów i terminy ręczne (zajęcia dodatkowe) przeżywają ponowne generowanie; odwołań i odrobień nie ma.
+- **Terminy:** z wzorca do wyczerpania godzin — dopóki kalendarz jest w przygotowaniu, przeliczają
+  się same po każdej zmianie planu i jeszcze raz przy publikacji; po publikacji zmienia je „Generuj
+  terminy” (z podglądem). Ręczne poprawki terminów i terminy ręczne (zajęcia dodatkowe) przeżywają
+  ponowne generowanie; odwołań i odrobień nie ma.
 - **Przygotowanie semestru i publikacja:** lista kontrolna wydziału; studenci i prowadzący
   widzą „Mój plan" dopiero po publikacji.
 - **Użytkownicy i role:** ADMIN / dziekanat (swój wydział) / prowadzący / student, impersonacja.

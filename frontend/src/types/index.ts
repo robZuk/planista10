@@ -515,6 +515,7 @@ export interface SectionsSummary {
 }
 
 export interface SyncRow {
+  cohortId?: string;
   cohort: string;
   subject: string;
   classType: ClassType;
@@ -534,6 +535,19 @@ export interface SyncReport {
   deleted: SyncRow[];
   unchanged: number;
   problems: SyncProblem[];
+  /** Tryb samoczynny: zmiany, ktore czekaja na decyzje (usuniecia, osierocenia, godziny zajec w planie). */
+  pending?: number;
+}
+
+/**
+ * Zajecia zmienione samoczynnie po zapisie naboru, grup, wersji programu albo kalendarza
+ * (zmiany dodajace); `pending` — zmiany, ktore czekaja na podglad na stronie "Obsada".
+ */
+export interface AutoSyncSummary {
+  created: number;
+  reactivated: number;
+  hoursChanged: number;
+  pending: number;
 }
 
 export interface SyncProblem {

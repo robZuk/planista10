@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 
 // Testy HTTP tras semestrow i kalendarzy — Prisma mockowana, wiec sprawdzamy uprawnienia,
@@ -8,7 +8,12 @@ process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn().mockResolvedValue({ facultyId: 'wm' }) },
-  academicTerm: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]), delete: vi.fn().mockResolvedValue({}) },
+  academicTerm: {
+    findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    findUniqueOrThrow: vi.fn().mockResolvedValue({ id: 't1', startYear: 2026, type: 'WINTER' }),
+    delete: vi.fn().mockResolvedValue({}),
+  },
   cohort: { count: vi.fn().mockResolvedValue(0) },
   classSection: { count: vi.fn().mockResolvedValue(0) },
   termCalendar: {
@@ -32,6 +37,22 @@ vi.mock('./services/plan', async (importOriginal) => ({
   calendarUsage: usageMock,
   placementsWithMissingPeriods: missingPeriodsMock,
 }));
+// Samoczynne zmiany (zajecia, terminy) — testowane w services/autoPlan.test; tu tylko wywolania.
+const noRefresh = { cohortIds: [] as string[], report: null };
+const autoPlanMock = vi.hoisted(() => ({
+  autoSyncTermFaculties: vi.fn(),
+  refreshCalendarTerms: vi.fn(),
+  changeCalendarStatus: vi.fn(),
+}));
+vi.mock('./services/autoPlan', async (importOriginal) => ({ ...(await importOriginal<object>()), ...autoPlanMock }));
+beforeEach(() => {
+  autoPlanMock.autoSyncTermFaculties.mockResolvedValue({ created: 0, reactivated: 0, hoursChanged: 0, pending: 0 });
+  autoPlanMock.refreshCalendarTerms.mockResolvedValue(noRefresh);
+  autoPlanMock.changeCalendarStatus.mockImplementation(async (_t: unknown, _c: unknown, _s: unknown, update: () => Promise<unknown>) => ({
+    result: await update(),
+    refresh: noRefresh,
+  }));
+});
 
 import { createApp } from './index';
 import { signAccessToken } from './lib/jwt';
@@ -211,9 +232,24 @@ describe('API — edycja dat kalendarza (terminy nieaktualne)', () => {
     return prismaMock.termCalendar.update.mock.calls[0]![0] as { data: Record<string, unknown> };
   };
 
-  it('nowa nazwa przerwy — daty bez zmian, bez znacznika', async () => {
+  it('nowa nazwa przerwy — daty bez zmian, bez znacznika i bez przeliczania terminow', async () => {
+    autoPlanMock.refreshCalendarTerms.mockClear();
     const args = await save({ ...validCalendar, breaks: [{ ...validCalendar.breaks[0], name: 'Boze Narodzenie' }] });
     expect(args.data).not.toHaveProperty('datesChangedAt');
+    expect(autoPlanMock.refreshCalendarTerms).not.toHaveBeenCalled();
+  });
+
+  it('nowe daty kalendarza w przygotowaniu — terminy jego rocznikow przeliczone od razu', async () => {
+    autoPlanMock.refreshCalendarTerms.mockResolvedValueOnce({ cohortIds: ['c1'], report: null });
+    prismaMock.termCalendar.findUnique.mockResolvedValueOnce(stored);
+    prismaMock.$transaction.mockResolvedValueOnce([{}, {}, {}, {}, stored]);
+    const res = await request(app)
+      .put('/api/term-calendars/c4')
+      .set('Authorization', `Bearer ${dean}`)
+      .send({ ...validCalendar, endDate: '2027-01-24' });
+    expect(res.status).toBe(200);
+    expect(autoPlanMock.refreshCalendarTerms).toHaveBeenCalledWith(expect.objectContaining({ id: 't1' }), expect.objectContaining({ id: 'c4' }));
+    expect(res.body.message).toBe('Kalendarz zapisany — terminy przeliczone');
   });
 
   it('nowa przerwa — znacznik zmiany dat', async () => {
@@ -265,5 +301,46 @@ describe('API — usuwanie kalendarza', () => {
     expect(calendarDeleteBlock({ cohorts: 2, cohortsWithPlan: 0, placements: 0, occurrences: 0 })).toBeNull();
     expect(calendarDeleteBlock({ cohorts: 2, cohortsWithPlan: 1, placements: 0, occurrences: 7 })).toContain('1 rocznik ma 7 terminow');
     expect(calendarDeleteBlock({ cohorts: 2, cohortsWithPlan: 2, placements: 3, occurrences: 7 })).toContain('2 roczniki maja 3 umieszczenia i 7 terminow');
+  });
+});
+
+describe('API — publikacja kalendarza', () => {
+  const stored = {
+    id: 'c5',
+    termId: 't1',
+    facultyId: 'wm',
+    studyMode: 'FULL_TIME',
+    status: 'PLANNING',
+    name: 'Podstawowy',
+    kind: 'WEEKLY',
+    startDate: new Date('2026-10-01T00:00:00Z'),
+    endDate: new Date('2027-01-31T00:00:00Z'),
+    breaks: [],
+    days: [],
+    zjazdy: [],
+    term: { id: 't1', startYear: 2026, type: 'WINTER' },
+  };
+
+  it('publikacja przelicza terminy przed zmiana statusu i mowi o pominietych terminach', async () => {
+    prismaMock.termCalendar.findUnique.mockResolvedValueOnce(stored);
+    prismaMock.termCalendar.update.mockReturnValueOnce(Promise.resolve({ ...stored, status: 'PUBLISHED' }) as never);
+    const conflict = { date: '2026-10-05', section: 'Fizyka', reason: 'Sala zajeta', with: 'Chemia' };
+    autoPlanMock.changeCalendarStatus.mockImplementationOnce(async (_t: unknown, _c: unknown, _s: unknown, update: () => Promise<unknown>) => ({
+      result: await update(),
+      refresh: {
+        cohortIds: ['c1'],
+        report: { added: 12, removed: 0, changed: 0, unchanged: 0, total: 12, conflicts: [conflict], beyondHours: 0, shortfalls: [], orphanExceptions: [], calendarsMissing: [], draftVersions: [] },
+      },
+    }));
+    const res = await request(app).put('/api/term-calendars/c5/status').set('Authorization', `Bearer ${dean}`).send({ status: 'PUBLISHED' });
+    expect(res.status).toBe(200);
+    expect(autoPlanMock.changeCalendarStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 't1' }),
+      expect.objectContaining({ id: 'c5', status: 'PLANNING' }),
+      'PUBLISHED',
+      expect.any(Function),
+    );
+    expect(res.body.message).toBe('Kalendarz opublikowany — terminy przeliczone (12)');
+    expect(res.body.warning).toMatch(/^1 termin pominiety przez kolizje/);
   });
 });

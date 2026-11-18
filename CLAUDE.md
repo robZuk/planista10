@@ -86,7 +86,9 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   generowanie terminów), `occurrenceChanges` (przeniesienie / przywrócenie / termin ręczny z kontrolą
   kolizji — tylko planista), `carryPlan`, `staleness` (terminy nieaktualne per rocznik), `visibility`
   `planLock` (zapisy planu po kolei w obrebie semestru — kontrola kolizji i zapis bez wyscigu;
-  na trasach zapisu middleware `planLocked`)
+  na trasach zapisu middleware `planLocked`), `autoPlan` (samoczynne zmiany pod blokadą planu:
+  zajęcia po zapisie naboru, grup, wersji programu i kalendarza — synchronizacja w trybie
+  `additive`; terminy kalendarza w przygotowaniu po zmianie jego dat; publikacja z przeliczeniem terminów)
 - `src/lib/*` — czyste funkcje domeny (bez bazy, testowane jednostkowo):
   - `prisma.ts` — **singleton PrismaClient**; nigdy nie rób `new PrismaClient()`, importuj `prisma` stąd
   - `isoDate.ts` — daty jako tekst `YYYY-MM-DD` (arytmetyka w UTC)
@@ -124,14 +126,29 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - **Cztery osie czasu:** katalog (bez roku) · program (wersje, wiele roczników na wersję) ·
   rocznik (grupy idą z nim przez studia) · semestr kalendarzowy (jedyny kontekst planowania).
 - **Nic nie układa planu automatycznie.** Planista umieszcza każde zajęcia sam; masowe
-  akcje („Przenieś plan z zeszłego roku", „Kopiuj zjazd", synchronizacja zajęć, obsada
-  z poprzedniego roku) uruchamia planista i zawsze mają podgląd (`dryRun`). Podgląd
-  synchronizacji zajęć strona „Obsada” liczy sama przy wejściu i pokazuje komunikat tylko,
-  gdy jest coś do zrobienia (`lib/syncNotice`) — zmiany stosuje się z okna podglądu.
-- **Terminy powstają tylko z „Generuj terminy"** (`services/plan.ts → generate`). Zmiana
-  wzorca NIE przelicza terminów — plan pokazuje wtedy „terminy nieaktualne".
-  Ręczne poprawki terminów to `PlacementException` i przeżywają ponowne generowanie;
-  terminy ręczne (`Occurrence.kind = MANUAL`, zajęcia dodatkowe) nie znikają i liczą się do godzin.
+  akcje („Przenieś plan z zeszłego roku", „Kopiuj zjazd", obsada z poprzedniego roku)
+  uruchamia planista i zawsze mają podgląd (`dryRun`).
+- **Zajęcia semestru powstają same — tylko zmiany dodające.** Po zapisie naboru, grup (zakres
+  semestrów), trybu wykładów, wersji programu rocznika, zatwierdzeniu wersji programu, zmianie
+  ustawień rocznika w semestrze i po założeniu kalendarza synchronizacja w trybie `additive`
+  (`services/autoPlan`, `syncSections`) od razu tworzy brakujące zajęcia, przywraca osierocone
+  i poprawia godziny zajęć bez planu — tylko rocznikom z kalendarzem poza archiwum w danym
+  semestrze. Usunięcia, osierocenia i zmiana godzin zajęć, które są w planie, czekają na podgląd:
+  strona „Obsada” liczy go sama przy wejściu i pokazuje komunikat tylko, gdy jest coś do zrobienia
+  (`lib/syncNotice`) — te zmiany stosuje się z okna podglądu. Zajęcia „puste” (bez obsady,
+  umieszczeń i terminów — `sections.bareSection`) nie blokują usunięcia grupy, rocznika ani
+  pozycji programu: odchodzą razem z nimi.
+- **Terminy liczy generowanie** (`services/plan.ts → generate`). Dopóki kalendarz rocznika jest
+  „w przygotowaniu”, terminy przeliczają się same po każdej zmianie planu: umieszczenia, terminy
+  ręczne, przeniesienie planu, synchronizacja, daty kalendarza, ustawienia rocznika w semestrze
+  (`refreshPlanningTerms`, pod blokadą planu; zajętość innych roczników tylko w salach i u
+  prowadzących rocznika). Publikacja kalendarza przelicza je jeszcze raz przed zmianą statusu
+  (`autoPlan.changeCalendarStatus`) — opublikowany plan nie bywa pusty ani nieaktualny. W
+  **opublikowanym** kalendarzu zmiana wzorca NIE przelicza terminów — plan pokazuje „terminy
+  nieaktualne” i trzeba „Generuj terminy” (od dnia, z podglądem); przycisk widać, gdy kalendarz
+  jest opublikowany albo terminy są nieaktualne. Ręczne poprawki terminów to `PlacementException`
+  i przeżywają ponowne generowanie; terminy ręczne (`Occurrence.kind = MANUAL`, zajęcia dodatkowe)
+  nie znikają i liczą się do godzin.
 - **Kolizje sprawdzamy na konkretnych datach** w całej uczelni (sala, prowadzący, grupy wg
   `groupTree.groupsOverlap`) — jeden mechanizm dla umieszczeń i terminów.
 - **Semestr programu rocznika** = `termOrdinal(term) − termOrdinal(startTerm) + 1`
@@ -169,8 +186,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   (dni wolne, „zajęcia z innego dnia” = `CalendarDay`, przerwy). Pojedynczych terminów się nie
   przenosi — terminy stacjonarnych są **tylko do wglądu** (zakładka „Terminy” bez akcji, API → 409
   w `occurrenceChanges.assertPlanEditable`). Zmiana planu od tygodnia X = we wzorcu dotychczasowe
-  umieszczenie „do tygodnia X−1”, nowe „od tygodnia X”, potem „Generuj terminy”. Do publikacji
-  idzie plan tygodnia + kalendarz Rektora (druki — później).
+  umieszczenie „do tygodnia X−1”, nowe „od tygodnia X”, potem (w opublikowanym kalendarzu)
+  „Generuj terminy”. Do publikacji idzie plan tygodnia + kalendarz Rektora (druki — później).
 - **Studia niestacjonarne: „Plan zjazdu”** — kalendarz zjazdów ma jeden widok na konkretny zjazd
   („tydz. N” z datami w nagłówkach, domyślnie trwający albo najbliższy), bez zakładki „Terminy”:
   plan różni się z weekendu na weekend (przedmioty blokami na wybranych zjazdach — `week.pdf`,
@@ -178,7 +195,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   zmienia się albo usuwa „tylko w tym zjeździe” (`POST /api/placements/:id/split` rozdziela
   umieszczenie) albo w całości. Pole „Zjazd” w oknie zajęć przenosi je do innego zjazdu (z jednego
   zjazdu — zmiana rytmu, z kilku — rozdzielenie z `toZjazd`; kolizje liczą się też z ich
-  spotkaniem, które zostaje w zjeździe docelowym). Terminy powstają z „Generuj terminy”; pojedynczych terminów UI
+  spotkaniem, które zostaje w zjeździe docelowym). Terminy liczy generowanie (w przygotowaniu — samo,
+  po publikacji — „Generuj terminy”); pojedynczych terminów UI
   zjazdów już nie zmienia (przeniesienia i terminy ręczne zostały dla kalendarzy tygodniowych).
 
 ## Konwencje

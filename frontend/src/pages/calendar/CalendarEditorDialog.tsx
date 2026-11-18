@@ -187,8 +187,9 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
     mutationFn: async (values: FormValues): Promise<{ message: string; warning?: string | null }> => {
       const body = toBody(values);
       if (target?.mode === 'edit') {
-        const { warning } = await updateTermCalendar(target.calendar.id, body);
-        return { message: 'Kalendarz zapisany', warning };
+        // Kalendarz w przygotowaniu: terminy przeliczaja sie od razu (komunikat z serwera to mowi).
+        const { message, warning } = await updateTermCalendar(target.calendar.id, body);
+        return { message, warning };
       }
       if (target?.mode !== 'create') return { message: '' };
       const result = await createTermCalendar(term.key, {
@@ -263,9 +264,11 @@ export function CalendarEditorDialog({ target, term, isAdmin, onClose, onSaved }
             <TriangleAlert />
             <AlertTitle>Wedlug tego kalendarza sa juz wygenerowane terminy</AlertTitle>
             <AlertDescription>
-              Terminy: {usage.occurrences}, roczniki z planem: {usage.cohortsWithPlan}. Zmiana dat,
-              przerw, dni wolnych albo zjazdow oznaczy je jako nieaktualne — trzeba bedzie uzyc „Generuj terminy” w Ukladaniu planu. Sama
-              zmiana nazwy niczego nie unieaktualnia.
+              Terminy: {usage.occurrences}, roczniki z planem: {usage.cohortsWithPlan}.{' '}
+              {target?.mode === 'edit' && target.calendar.status === 'PLANNING'
+                ? 'Kalendarz jest w przygotowaniu — zmiana dat, przerw, dni wolnych albo zjazdow od razu przeliczy terminy jego rocznikow.'
+                : 'Zmiana dat, przerw, dni wolnych albo zjazdow oznaczy je jako nieaktualne — trzeba bedzie uzyc „Generuj terminy” w Ukladaniu planu.'}{' '}
+              Sama zmiana nazwy niczego nie zmienia.
             </AlertDescription>
           </Alert>
         )}

@@ -31,6 +31,12 @@ vi.mock('./middleware/planLocked', async (orig) => ({
   ...(await orig<typeof import('./middleware/planLocked')>()),
   planLocked: () => (_req: unknown, _res: unknown, next: () => void) => next(),
 }));
+// Przeliczanie terminow kalendarza w przygotowaniu — testowane w services/plan.refresh.test.
+const refreshMock = vi.hoisted(() => vi.fn().mockResolvedValue({ cohortIds: [], report: null }));
+vi.mock('./services/plan', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./services/plan')>()),
+  refreshPlanningTerms: refreshMock,
+}));
 
 import { createApp } from './index';
 import { signAccessToken } from './lib/jwt';
@@ -188,6 +194,30 @@ describe('API — plan', () => {
       { op: 'occurrence.updateMany', args: { where: { placementId: 'p1' }, data: { placementId: null } } },
       { op: 'placement.delete', args: { where: { id: 'p1' } } },
     ]);
+    // Kalendarz opublikowany (albo bez rocznikow w przygotowaniu) — terminy po "Generuj terminy".
+    expect(refreshMock).toHaveBeenCalledWith(expect.objectContaining({ id: 't1' }), ['c1']);
+    expect(res.body.message).toMatch(/znikna przy kolejnym "Generuj terminy"/);
+  });
+
+  it('usuniecie umieszczenia w kalendarzu w przygotowaniu — terminy przeliczone od razu', async () => {
+    prismaMock.placement.findUnique.mockResolvedValueOnce({
+      id: 'p1',
+      facultyId: 'wm',
+      term: { id: 't1', startYear: 2026, type: 'SUMMER' },
+      section: {
+        cohort: {
+          id: 'c1',
+          name: null,
+          program: { code: 'EDST-S1' },
+          programVersion: { label: 'Wersja 1', status: 'APPROVED' },
+          startTerm: { startYear: 2026, type: 'WINTER' },
+        },
+      },
+    });
+    refreshMock.mockResolvedValueOnce({ cohortIds: ['c1'], report: null });
+    const res = await request(app).delete('/api/placements/p1').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('Umieszczenie usuniete — terminy przeliczone');
   });
 
   it('usuniecie umieszczenia, gdy kalendarz rocznika jest w archiwum -> 409', async () => {

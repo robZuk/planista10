@@ -5,9 +5,11 @@ import type { SyncProblem, SyncReport } from '@/types';
 /**
  * Komunikat na stronie "Obsada" zamiast przycisku "Synchronizuj zajecia": podglad synchronizacji
  * liczy sie sam przy wejsciu, a komunikat pojawia sie tylko, gdy jest cos do zrobienia. Zmiany
- * stosuje sie z okna podgladu (jak dotad — nic nie dzieje sie bez potwierdzenia).
- *  - create   — semestr bez zajec: "Utworz zajecia semestru",
- *  - changes  — program albo grupy rocznikow zmienily sie od ostatniego zastosowania,
+ * dodajace (nowe zajecia, godziny zajec bez planu) stosuja sie same po zapisie naboru, grup,
+ * wersji programu albo kalendarza — tu zostaja glownie decyzje: usuniecia, osierocenia i godziny
+ * zajec w planie. Stosuje sie je z okna podgladu.
+ *  - create   — semestr bez zajec (np. dane sprzed samoczynnej synchronizacji): "Utworz zajecia semestru",
+ *  - changes  — zmiany zajec do zastosowania (z podgladem),
  *  - problems — tylko sprawy do wyjasnienia (program w projekcie, brak grupy specjalnosci).
  * Roczniki z kalendarzem w archiwum to informacja, nie problem — same nie daja komunikatu.
  */
@@ -54,9 +56,13 @@ export function syncNotice(report: SyncReport, sections: number): SyncNotice | n
       report.orphaned.length > 0 && `osierocone: ${report.orphaned.length}`,
       toExplain,
     ].filter(Boolean);
+    // Same usuniecia, osierocenia i godziny zajec w planie — to, czego nie stosujemy samoczynnie.
+    const decisionsOnly = report.created.length === 0 && report.reactivated.length === 0;
     return {
       kind: 'changes',
-      title: 'Program lub grupy rocznikow zmienily sie — zajecia czekaja na zmiany',
+      title: decisionsOnly
+        ? 'Zmiany zajec czekaja na Twoja decyzje'
+        : 'Program lub grupy rocznikow zmienily sie — zajecia czekaja na zmiany',
       description: parts.join(' · '),
       action: `Pokaz i zastosuj (${changes})`,
     };

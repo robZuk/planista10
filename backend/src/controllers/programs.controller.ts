@@ -8,12 +8,15 @@ import { assertFacultyScope } from '../lib/facultyScope';
 import type { ProgramEntryInput } from '../schemas/program';
 import { lockedEntryChanges, lockedEntryDeleteMessage, lockedEntryMessage } from '../lib/programEntryLock';
 import { cohortLabel } from '../services/cohorts';
+import { bareSection } from '../services/sections';
+import { autoSyncVersion, syncNote } from '../services/autoPlan';
 
 /**
  * Programy studiow (nowy model). Program = kierunek + poziom + tryb; wersja programu
  * obowiazuje wiele rocznikow. Zatwierdzonej wersji nie edytuje sie po cichu — zmiana
  * programu to nowa wersja sklonowana z poprzedniej (albo swiadome cofniecie do projektu).
- * Zmieniac moze admin albo planista wydzialu, do ktorego nalezy kierunek.
+ * Zmieniac moze admin albo planista wydzialu, do ktorego nalezy kierunek. Zatwierdzenie
+ * wersji od razu tworzy zajecia jej rocznikow (services/autoPlan, zmiany dodajace).
  */
 
 const programInclude = {
@@ -233,8 +236,9 @@ export const getVersion = asyncHandler(async (req, res) => {
         include: {
           subject: { select: { id: true, name: true, code: true } },
           specialization: { select: { id: true, shortName: true, name: true } },
-          // Pozycje z zajeciami: UI blokuje zmiane przedmiotu/specjalnosci/semestru i usuwanie.
-          _count: { select: { sections: true } },
+          // Pozycje z zajeciami z praca planisty (obsada, plan, terminy): UI blokuje zmiane
+          // przedmiotu/specjalnosci/semestru i usuwanie. Zajecia "puste" nie blokuja (odchodza z pozycja).
+          _count: { select: { sections: { where: { NOT: bareSection } } } },
         },
         orderBy: [{ semester: 'asc' }, { orderInSemester: 'asc' }],
       },
@@ -285,13 +289,16 @@ export const updateVersion = asyncHandler(async (req, res) => {
     }
   }
   const data = await prisma.programVersion.update({ where: { id: version.id }, data: body });
+  // Zatwierdzona wersja daje zajecia rocznikom, ktore z niej korzystaja (w semestrach z kalendarzem).
+  const sync = body.status === 'APPROVED' && version.status !== 'APPROVED' ? await autoSyncVersion(version.id) : undefined;
   res.json({
     data,
     message: body.status
       ? body.status === 'APPROVED'
-        ? 'Wersja zatwierdzona'
+        ? `Wersja zatwierdzona${sync ? syncNote(sync) : ''}`
         : 'Wersja cofnieta do projektu'
       : 'Wersja zapisana',
+    sync,
   });
 });
 
@@ -349,11 +356,14 @@ export const updateEntry = asyncHandler(async (req, res) => {
   if (input.semester > version.totalSemesters) {
     throw new AppError(400, `Semestr musi byc w zakresie 1-${version.totalSemesters}`);
   }
-  // Pozycja z zajeciami: przedmiot, specjalnosc i semestr sa czescia historii planu.
+  // Pozycja z zajeciami: przedmiot, specjalnosc i semestr sa czescia historii planu. Zajecia "puste"
+  // (bez obsady, planu i terminow — np. utworzone samoczynnie przy zatwierdzeniu) usuwamy: po ponownym
+  // zatwierdzeniu wersji powstana na nowo.
   const changes = lockedEntryChanges(entry, input);
   if (changes.length > 0) {
-    const sections = await prisma.classSection.count({ where: { programEntryId: entry.id } });
+    const sections = await prisma.classSection.count({ where: { programEntryId: entry.id, NOT: bareSection } });
     if (sections > 0) throw new AppError(409, lockedEntryMessage(changes, sections));
+    await prisma.classSection.deleteMany({ where: { programEntryId: entry.id, ...bareSection } });
   }
   await assertSpecialization(version.program.fieldOfStudyId, input.specializationId);
   await assertNoOverlap(version.id, input, entry.id);
@@ -373,9 +383,13 @@ export const deleteEntry = asyncHandler(async (req, res) => {
   const entry = await loadEntry(String(req.params.id));
   await assertFacultyScope(req, entry.version.program.fieldOfStudy.facultyId);
   assertDraft(entry.version.status);
-  const sections = await prisma.classSection.count({ where: { programEntryId: entry.id } });
+  // Zajecia "puste" z tej pozycji odchodza razem z nia; z obsada, planem albo terminami — blokuja.
+  const sections = await prisma.classSection.count({ where: { programEntryId: entry.id, NOT: bareSection } });
   if (sections > 0) throw new AppError(409, lockedEntryDeleteMessage(sections));
-  await prisma.programEntry.delete({ where: { id: entry.id } });
+  await prisma.$transaction([
+    prisma.classSection.deleteMany({ where: { programEntryId: entry.id, ...bareSection } }),
+    prisma.programEntry.delete({ where: { id: entry.id } }),
+  ]);
   res.json({ message: 'Przedmiot usuniety z programu' });
 });
 

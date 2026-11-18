@@ -438,7 +438,7 @@ export function PlacementDialog({
         </div>
         <p className="text-xs text-muted-foreground">
           Zajecia laczone: wpisz ten sam klucz w umieszczeniach innych kierunkow/trybow — beda w tym samym czasie i sali,
-          bez kolizji miedzy soba. Terminy (Moj plan, publikacja) zmienia sie dopiero po „Generuj terminy”.
+          bez kolizji miedzy soba. Terminy przeliczaja sie same, dopoki kalendarz jest w przygotowaniu; w opublikowanym zmienia je dopiero „Generuj terminy”.
         </p>
         <DialogFooter className="sm:justify-between">
           {placement ? (
@@ -464,8 +464,8 @@ export function PlacementDialog({
         onOpenChange={setConfirmRemove}
         title={onlyThisZjazd ? `Usunac zajecia z tygodnia ${weekOfZjazd(target.zjazd!)}?` : 'Usunac zajecia z planu?'}
         description={onlyThisZjazd
-          ? `${section.subject.name} (${CLASS_FULL_LABELS[section.classType].toLowerCase()}) · ${section.group.name}. W pozostalych zjazdach tych zajec (${otherZjazdy.length}) zostaja; terminy zmienia sie po „Generuj terminy”.`
-          : `${section.subject.name} (${CLASS_FULL_LABELS[section.classType].toLowerCase()}) · ${section.group.name}${placement ? ` · ${WEEKDAY_LABELS[placement.dayOfWeek].toLowerCase()}` : ''}. Wygenerowane terminy tego umieszczenia znikna przy kolejnym „Generuj terminy”${placement && placement.exceptionCount > 0 ? ` — razem z przeniesieniami pojedynczych terminow (${placement.exceptionCount})` : ''}.`}
+          ? `${section.subject.name} (${CLASS_FULL_LABELS[section.classType].toLowerCase()}) · ${section.group.name}. W pozostalych zjazdach tych zajec (${otherZjazdy.length}) zostaja; terminy przeliczaja sie same (w opublikowanym kalendarzu — po „Generuj terminy”).`
+          : `${section.subject.name} (${CLASS_FULL_LABELS[section.classType].toLowerCase()}) · ${section.group.name}${placement ? ` · ${WEEKDAY_LABELS[placement.dayOfWeek].toLowerCase()}` : ''}. Terminy tego umieszczenia znikna — w kalendarzu w przygotowaniu od razu, w opublikowanym przy kolejnym „Generuj terminy”${placement && placement.exceptionCount > 0 ? ` — razem z przeniesieniami pojedynczych terminow (${placement.exceptionCount})` : ''}.`}
         confirmLabel={onlyThisZjazd ? 'Usun z tego zjazdu' : 'Usun z planu'}
         isPending={remove.isPending}
         onConfirm={() => remove.mutate()}

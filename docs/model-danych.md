@@ -81,13 +81,24 @@ Prowadzący, Bloki              specjalność?)                                 
   Wyprowadzane przez `lib/demand.ts`: W → grupa wykładowa (rocznik / specjalność),
   C → C, L → L (brak → C), P → P (brak → C), S → S (brak → C), brak C → grupa wykładowa.
   Przedmiot specjalnościowy bez grupy specjalności jest **pomijany i zgłaszany**.
-- **Synchronizacja** to idempotentny diff z podglądem: dodaje, poprawia godziny,
-  usuwa zbędne bez obsady i bez umieszczeń/terminów, pozostałe zbędne oznacza `ORPHANED`.
-  Nie ma osobnego przycisku: strona „Obsada” liczy podgląd sama przy wejściu (`dryRun`, bez
-  blokady) i pokazuje komunikat tylko, gdy jest coś do zrobienia — „Utwórz zajęcia semestru”
-  (nowy semestr), zmiany programu lub grup do zastosowania albo sprawy do wyjaśnienia (wersja
-  programu w projekcie, brak grupy specjalności; archiwum to informacja, nie problem).
-  Zmiany stosuje się z okna podglądu (`lib/syncNotice.ts`).
+- **Synchronizacja** to idempotentny diff: dodaje, poprawia godziny, usuwa zbędne bez obsady
+  i bez umieszczeń/terminów, pozostałe zbędne oznacza `ORPHANED`.
+  - **Zmiany dodające stosują się same** (`syncSections` w trybie `additive`, `services/autoPlan`):
+    nowe zajęcia, przywrócenie osieroconych i godziny zajęć bez planu — po zapisie naboru, grup
+    (zakres semestrów), trybu wykładów, wersji programu rocznika, po zatwierdzeniu wersji programu,
+    zmianie ustawień rocznika w semestrze i po założeniu kalendarza. Tylko roczniki z kalendarzem
+    poza archiwum w danym semestrze (semestr bez kalendarza nie dostaje zajęć — np. dawny semestr
+    starszego rocznika zakładanego od zera). Odpowiedź zapisu niesie podsumowanie (`sync`:
+    zastosowane i czekające).
+  - **Reszta czeka na podgląd:** usunięcia, osierocenia i zmiana godzin zajęć, które są w planie.
+    Strona „Obsada” liczy podgląd sama przy wejściu (`dryRun`, bez blokady) i pokazuje komunikat
+    tylko, gdy jest coś do zrobienia — zmiany do decyzji, „Utwórz zajęcia semestru” (dane sprzed
+    samoczynnej synchronizacji) albo sprawy do wyjaśnienia (wersja programu w projekcie, brak grupy
+    specjalności; archiwum to informacja, nie problem). Zmiany stosuje się z okna podglądu
+    (`lib/syncNotice.ts`).
+  - **Zajęcia „puste”** (bez obsady, umieszczeń i terminów — `sections.bareSection`) w całości
+    wynikają z programu i grup: nie blokują usunięcia grupy, rocznika ani pozycji programu
+    (ani zmiany przedmiotu, semestru i specjalności pozycji) — odchodzą razem z nimi.
 - `SectionInstructor` — prowadzący (albo NN) i godziny; podział godzin = kilka wierszy.
 - **Katedra** (`Department`) — jednostka, która przysyła obciążenia swoich prowadzących
   (zakładka „Katedry” na stronie „Wydziały i katedry”). Oznaczenie jak w zleceniach wydziału:
@@ -146,10 +157,21 @@ Prowadzący, Bloki              specjalność?)                                 
   podświetleniu, przeniesieniu terminu, terminie ręcznym i generowaniu.
 - **Zajęcia łączone między wydziałami** dzielą rzeczywisty czas: dołączenie wymaga tego samego
   dnia i godzin, zmiana przenosi pozostałe umieszczenia do ich siatek po godzinach.
-- `Occurrence` — termin (bloki + rzeczywisty czas `startMinute/endMinute`). `DERIVED` powstają **tylko** przez „Generuj terminy"
-  (`services/plan.ts → generate`, najpierw podgląd): godziny wyczerpywane w kolejności dat
-  przez wszystkie umieszczenia zajęć, ostatni termin skracany, kolidujące pomijane i zgłaszane.
-  W opublikowanym semestrze generowanie od wybranej daty.
+- `Occurrence` — termin (bloki + rzeczywisty czas `startMinute/endMinute`). `DERIVED` liczy
+  generowanie (`services/plan.ts → generate`): godziny wyczerpywane w kolejności dat przez
+  wszystkie umieszczenia zajęć, ostatni termin skracany, kolidujące pomijane i zgłaszane.
+  - **Kalendarz „w przygotowaniu”:** terminy przeliczają się same po każdej zmianie planu
+    rocznika — umieszczenie (także zajęć łączonych innych roczników), rozdzielenie zjazdu,
+    usunięcie, termin ręczny, „Przenieś plan”, synchronizacja, daty kalendarza, ustawienia
+    rocznika w semestrze (`refreshPlanningTerms`, pod blokadą planu semestru). Zajętość innych
+    roczników liczy się wtedy tylko w salach i u prowadzących z planu rocznika
+    (`relevantOccupancy` — grupy różnych roczników nie kolidują, wynik ten sam).
+  - **Publikacja** (`autoPlan.changeCalendarStatus`) przelicza terminy roczników kalendarza, póki
+    jest jeszcze w przygotowaniu, i dopiero potem zmienia status; komunikat podaje liczbę terminów,
+    ostrzeżenie — terminy pominięte przez kolizje i braki godzin. Cofnięcie publikacji przelicza
+    je od razu; powrót z archiwum terminów nie rusza.
+  - **Kalendarz opublikowany:** terminy zmienia tylko „Generuj terminy” (najpierw podgląd,
+    domyślnie od dziś).
 - `PlacementException(placement, originalDate)` — przeniesienie pojedynczego
   terminu; **przeżywa ponowne generowanie**. Wyjątek bez daty we wzorcu trafia do raportu.
 - `Occurrence.kind = MANUAL` — terminy ręczne (zajęcia dodatkowe, jednorazowe); liczą się do godzin
@@ -163,7 +185,8 @@ Prowadzący, Bloki              specjalność?)                                 
   kluczu (umieszczenie + data z wzorca, unikalny indeks `Occurrence(placementId, originalDate)`)
   jest aktualizowany w miejscu i zachowuje id; nowe daty wzorca → nowe terminy, daty, których już
   nie ma (i terminy usuniętych umieszczeń) → usunięte. Zakres „od dnia" liczony jest po dacie z wzorca.
-- Zmiana wzorca po generowaniu → „terminy nieaktualne" — liczone per rocznik od jego ostatniego
+- Zmiana wzorca po generowaniu (w opublikowanym kalendarzu; w przygotowaniu terminy nadążają
+  same) → „terminy nieaktualne" — liczone per rocznik od jego ostatniego
   generowania (`CohortGeneration`, nie od kalendarza, który dzieli wiele roczników);
   jedno źródło dla planu i „Przygotowania semestru" (`services/staleness.ts`).
   Powód „kalendarz" porównuje **odcisk** kalendarza zapisany przy generowaniu
@@ -232,8 +255,10 @@ Prowadzący, Bloki              specjalność?)                                 
 ## 8. Praca planisty w nowym semestrze
 
 1. Kalendarz (z propozycji z zeszłego roku) → 2. Nowy nabór (struktura grup jak poprzedni)
-→ 3. Korekty roczników → 4. Zajęcia (komunikat „Utwórz zajęcia semestru” na stronie Obsada) i obsada (Obciążenia z arkuszy katedr, z poprzedniego roku, CSV)
-→ 5. Plan ręcznie (opcjonalnie „Przenieś plan") → 6. Generuj terminy → 7. Publikacja.
+→ 3. Korekty roczników → 4. Obsada (Obciążenia z arkuszy katedr, z poprzedniego roku, CSV) —
+zajęcia powstają same z programu i grup (decyzje: komunikat na stronie Obsada)
+→ 5. Plan ręcznie (opcjonalnie „Przenieś plan"); terminy przeliczają się same
+→ 6. Publikacja (przelicza terminy jeszcze raz). „Generuj terminy” — dopiero przy zmianach po publikacji.
 Strona „Przygotowanie semestru" pokazuje stan każdego kroku.
 
 ## 9. Skąd model się wziął

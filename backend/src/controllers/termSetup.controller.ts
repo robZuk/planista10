@@ -11,7 +11,7 @@ import { parseTermKey } from '../lib/terms';
 import { groupsOverlap, indexGroups } from '../lib/groupTree';
 import { activeCohorts } from '../services/sections';
 import { cohortLabel, toTreeGroup } from '../services/cohorts';
-import { calendarsFor } from '../services/plan';
+import { calendarsFor, refreshPlanningTerms, termsNote } from '../services/plan';
 import { publishedCohortKeys } from '../services/visibility';
 import { carryPlan } from '../services/carryPlan';
 import { staleReasonsByCohort } from '../services/staleness';
@@ -42,11 +42,14 @@ export const carryPlanHandler = asyncHandler(async (req, res) => {
   if (!Array.isArray(cohortIds) || cohortIds.length === 0) throw new AppError(400, 'Wybierz roczniki');
   await assertCohortsInScope(req, cohortIds);
   const report = await carryPlan(term, { facultyId, cohortIds, dryRun });
+  // Zapis idzie pod blokada semestru (trasa) — terminy kalendarzy w przygotowaniu przeliczamy od razu.
+  const refresh = !dryRun && report.created.length > 0 ? await refreshPlanningTerms(term, cohortIds) : null;
   res.json({
     data: report,
     message: dryRun
       ? 'Podglad przeniesienia planu'
-      : `Przeniesiono ${report.created.length} umieszczen; kolizje ${report.conflicts.length}, bez odpowiednika ${report.unmatched.length}`,
+      : `Przeniesiono ${report.created.length} umieszczen; kolizje ${report.conflicts.length}, bez odpowiednika ${report.unmatched.length}` +
+        (refresh ? `; ${termsNote(refresh)}` : ''),
   });
 });
 

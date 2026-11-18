@@ -54,14 +54,24 @@ export async function createTermCalendar(
 }
 
 /** Zapis kalendarza; `warning` — np. umieszczenia na zjazdach, ktorych juz nie ma (zapis przeszedl). */
-export async function updateTermCalendar(id: string, input: CalendarBody): Promise<{ calendar: TermCalendar; warning: string | null }> {
+export async function updateTermCalendar(
+  id: string,
+  input: CalendarBody,
+): Promise<{ calendar: TermCalendar; message: string; warning: string | null }> {
   const res = await api.put(`/term-calendars/${id}`, input);
-  return { calendar: res.data.data, warning: res.data.warning ?? null };
+  return { calendar: res.data.data, message: res.data.message ?? 'Kalendarz zapisany', warning: res.data.warning ?? null };
 }
 
-export async function setTermCalendarStatus(id: string, status: CalendarStatus): Promise<TermCalendar> {
+/**
+ * Zmiana statusu; publikacja najpierw przelicza terminy rocznikow kalendarza. `warning` — terminy
+ * pominiete przez kolizje albo godziny, ktorych terminy nie wyczerpuja.
+ */
+export async function setTermCalendarStatus(
+  id: string,
+  status: CalendarStatus,
+): Promise<{ calendar: TermCalendar; message: string; warning: string | null }> {
   const res = await api.put(`/term-calendars/${id}/status`, { status });
-  return res.data.data;
+  return { calendar: res.data.data, message: res.data.message ?? 'Status kalendarza zmieniony', warning: res.data.warning ?? null };
 }
 
 /** Ile planu stoi na kalendarzu; deleteBlock = powod, dla ktorego nie mozna go usunac. */

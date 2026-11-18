@@ -4,6 +4,8 @@ import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { assertFacultyScope } from '../lib/facultyScope';
 import { assertCohortTermWritable } from '../services/plan';
+import { bareSection, usedSection } from '../services/sections';
+import { autoSyncCohortTerm, autoSyncCohorts, syncNote } from '../services/autoPlan';
 import { cohortSemesterInTerm, parseTermKey, termLabel, termOfDate, termOrdinal, type TermRef } from '../lib/terms';
 import { nextCodes, ROOT, SPEC } from '../lib/groupTree';
 import {
@@ -21,6 +23,8 @@ import {
  * przechodza z nim automatycznie, a ich nazwy przeliczaja sie z numeru semestru.
  * Korekty (scalenia, podzial na specjalnosci) zapisuje sie zakresem obowiazywania
  * grupy (od semestru / do semestru), a nie kasowaniem i zakladaniem od nowa.
+ * Po kazdej zmianie naboru i grup zajecia semestru dostaja zmiany dodajace same
+ * (services/autoPlan) — odpowiedz niesie ich podsumowanie (`sync`).
  */
 
 async function requireCohort(id: string) {
@@ -219,9 +223,11 @@ export const createCohort = asyncHandler(async (req, res) => {
   });
 
   const full = await requireCohort(cohort.id);
+  const sync = await autoSyncCohorts([cohort.id]);
   res.status(201).json({
     data: cohortDto(full),
-    message: `Utworzono ${cohortLabel(full)}${sourceGroups.length > 0 ? ' ze struktura grup poprzedniego naboru' : ''}`,
+    message: `Utworzono ${cohortLabel(full)}${sourceGroups.length > 0 ? ' ze struktura grup poprzedniego naboru' : ''}${syncNote(sync)}`,
+    sync,
   });
 });
 
@@ -241,20 +247,27 @@ export const updateCohort = asyncHandler(async (req, res) => {
       name: body.name === undefined ? undefined : body.name?.trim() || null,
     },
   });
-  res.json({ data: cohortDto(await requireCohort(cohort.id)), message: 'Rocznik zapisany' });
+  // Wersja programu i tryb wykladow wyznaczaja zajecia; sama nazwa — nie.
+  const demandChanged =
+    (body.programVersionId !== undefined && body.programVersionId !== cohort.programVersionId) ||
+    (body.lectureMode !== undefined && body.lectureMode !== cohort.lectureMode);
+  const sync = demandChanged ? await autoSyncCohorts([cohort.id]) : undefined;
+  res.json({ data: cohortDto(await requireCohort(cohort.id)), message: `Rocznik zapisany${sync ? syncNote(sync) : ''}`, sync });
 });
 
 export const deleteCohort = asyncHandler(async (req, res) => {
   const cohort = await requireCohort(String(req.params.id));
   await assertFacultyScope(req, cohort.program.fieldOfStudy.facultyId);
+  // Zajecia bez obsady, planu i terminow (np. utworzone samoczynnie po naborze) nie blokuja usuniecia.
   const used = await prisma.studentGroup.count({
     where: {
       cohortId: cohort.id,
-      OR: [{ sections: { some: {} } }, { occurrences: { some: {} } }, { members: { some: {} } }],
+      OR: [{ sections: { some: usedSection } }, { occurrences: { some: {} } }, { members: { some: {} } }],
     },
   });
   if (used > 0) throw new AppError(409, 'Grupy rocznika sa w planie albo maja studentow — nie mozna go usunac');
   await prisma.$transaction(async (tx) => {
+    await tx.classSection.deleteMany({ where: { cohortId: cohort.id, ...bareSection } });
     // Od lisci do korzenia (FK rodzica).
     let groups = await tx.studentGroup.findMany({ where: { cohortId: cohort.id }, select: { id: true, parentGroupId: true } });
     while (groups.length > 0) {
@@ -303,7 +316,15 @@ export const setCohortTerm = asyncHandler(async (req, res) => {
     create: { cohortId: cohort.id, termId: term.id, semester, calendarId, ...changedAt },
     update: { semester, calendarId, ...changedAt },
   });
-  res.json({ data, message: 'Zapisano ustawienia rocznika w semestrze' });
+  // Inny semestr programu = inne zajecia; inny wariant kalendarza = inne daty terminow.
+  const auto = changed ? await autoSyncCohortTerm(term, cohort.id) : null;
+  const refreshed = (auto?.refresh.cohortIds.length ?? 0) > 0;
+  res.json({
+    data,
+    message: `Zapisano ustawienia rocznika w semestrze${auto ? syncNote(auto.sync) : ''}${refreshed ? '; terminy przeliczone' : ''}`,
+    sync: auto?.sync,
+    termsRefreshed: refreshed,
+  });
 });
 
 // ─── Grupy rocznika ──────────────────────────────────────────
@@ -398,7 +419,8 @@ export const createGroup = asyncHandler(async (req, res) => {
   const cohort = await requireCohort(String(req.params.id));
   await assertFacultyScope(req, cohort.program.fieldOfStudy.facultyId);
   const group = await createGroupIn(cohort, req.body as NewGroupInput);
-  res.status(201).json({ data: group, message: 'Grupa dodana' });
+  const sync = await autoSyncCohorts([cohort.id]);
+  res.status(201).json({ data: group, message: `Grupa dodana${syncNote(sync)}`, sync });
 });
 
 /**
@@ -425,7 +447,8 @@ export const createGroupsBulk = asyncHandler(async (req, res) => {
       );
     }
   }
-  res.status(201).json({ data: created, message: `Dodano ${created.length} grup` });
+  const sync = await autoSyncCohorts([cohort.id]);
+  res.status(201).json({ data: created, message: `Dodano ${created.length} grup${syncNote(sync)}`, sync });
 });
 
 export const updateGroup = asyncHandler(async (req, res) => {
@@ -448,7 +471,11 @@ export const updateGroup = asyncHandler(async (req, res) => {
       toSemester: to,
     },
   });
-  res.json({ data, message: 'Grupa zapisana', warning: await plannedOutsideRange(group.id, from, to) });
+  const warning = await plannedOutsideRange(group.id, from, to);
+  // Zajecia zmienia tylko zakres semestrow grupy (liczebnosc i kod — nie: klucz zajec to grupa).
+  const demandChanged = from !== group.fromSemester || to !== group.toSemester;
+  const sync = demandChanged ? await autoSyncCohorts([cohort.id]) : undefined;
+  res.json({ data, message: `Grupa zapisana${sync ? syncNote(sync) : ''}`, warning, sync });
 });
 
 /**
@@ -486,8 +513,9 @@ export const deleteGroup = asyncHandler(async (req, res) => {
   if (group.partitionKey === ROOT) throw new AppError(409, 'Korzenia rocznika nie usuwa sie — usun caly rocznik');
   const [children, usage, members] = await Promise.all([
     prisma.studentGroup.count({ where: { parentGroupId: group.id } }),
+    // Zajecia bez obsady, planu i terminow (np. utworzone samoczynnie po dodaniu grupy) nie blokuja.
     prisma.studentGroup.count({
-      where: { id: group.id, OR: [{ sections: { some: {} } }, { occurrences: { some: {} } }] },
+      where: { id: group.id, OR: [{ sections: { some: usedSection } }, { occurrences: { some: {} } }] },
     }),
     prisma.user.count({ where: { studentGroups: { some: { id: group.id } } } }),
   ]);
@@ -496,8 +524,12 @@ export const deleteGroup = asyncHandler(async (req, res) => {
     throw new AppError(409, 'Grupa jest w planie zajec — zamiast usuwac, zakoncz ja na wybranym semestrze');
   }
   if (members > 0) throw new AppError(409, 'Grupa ma przypisanych studentow');
-  await prisma.studentGroup.delete({ where: { id: group.id } });
-  res.json({ message: 'Grupa usunieta' });
+  await prisma.$transaction([
+    prisma.classSection.deleteMany({ where: { groupId: group.id, ...bareSection } }),
+    prisma.studentGroup.delete({ where: { id: group.id } }),
+  ]);
+  const sync = await autoSyncCohorts([cohort.id]);
+  res.json({ message: `Grupa usunieta${syncNote(sync)}`, sync });
 });
 
 /**

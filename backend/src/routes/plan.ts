@@ -33,7 +33,8 @@ termPlanRouter.get('/my-plan', authenticate, authorize('INSTRUCTOR', 'STUDENT'),
 placementsRouter.put('/:id', authenticate, planners, planLocked(termOfPlacement), plan.updatePlacement);
 // "Plan zjazdu": zmiana zajec tylko w jednym zjezdzie (rozdzielenie umieszczenia).
 placementsRouter.post('/:id/split', authenticate, planners, planLocked(termOfPlacement), plan.splitPlacementZjazd);
-placementsRouter.delete('/:id', authenticate, planners, plan.deletePlacement);
+// Usuniecie przelicza terminy kalendarza w przygotowaniu — tez pod blokada semestru.
+placementsRouter.delete('/:id', authenticate, planners, planLocked(termOfPlacement), plan.deletePlacement);
 
 occurrencesRouter.put('/:id', authenticate, planners, planLocked(termOfOccurrence), plan.changeOccurrence);
-occurrencesRouter.delete('/:id', authenticate, planners, plan.deleteManualOccurrence);
+occurrencesRouter.delete('/:id', authenticate, planners, planLocked(termOfOccurrence), plan.deleteManualOccurrence);

@@ -21,7 +21,8 @@ import { plural } from '@/lib/setupSteps';
 const REASON: Record<string, string> = { ROOM: 'sala', INSTRUCTOR: 'prowadzacy', GROUP: 'grupa' };
 
 /**
- * "Generuj terminy" — jedyne miejsce, gdzie powstaja terminy z wzorca. Najpierw podglad
+ * "Generuj terminy" — terminy z wzorca na zadanie (w opublikowanym kalendarzu jedyna droga; w kalendarzu
+ * w przygotowaniu terminy przeliczaja sie tez same po kazdym zapisie planu). Najpierw podglad
  * (co dojdzie, zniknie, zmieni sie; kolizje; braki godzin; wyjatki bez daty), potem zapis.
  * Reczne poprawki terminow i terminy reczne zostaja. Zakres: wybrany rocznik albo wszystkie
  * roczniki z biezacych filtrow (po "Przenies plan" dla calego wydzialu).

@@ -59,7 +59,9 @@ function patternLabel(p: PlanPlacement, weekOf: (zjazd: number) => number | stri
 /**
  * Ukladanie planu rocznika — RECZNIE. Planista wybiera zajecia z panelu "do zaplanowania"
  * (siatka podswietla wolne/zajete godziny) i klika godzine, w ktorej je umiescic.
- * Terminy (konkretne daty) powstaja dopiero po "Generuj terminy" (z podgladem).
+ * Terminy (konkretne daty): dopoki kalendarz rocznika jest w przygotowaniu, przeliczaja sie same
+ * po kazdym zapisie planu; w opublikowanym — dopiero po "Generuj terminy" (z podgladem). Przycisk
+ * "Generuj terminy" pokazujemy, gdy kalendarz jest opublikowany albo terminy sa nieaktualne.
  */
 export default function PlanPage() {
   const queryClient = useQueryClient();
@@ -299,12 +301,25 @@ export default function PlanPage() {
 
   const cohort = cohorts.find((c) => c.id === cohortId);
   const pdf = usePlanPdf(term?.key);
+  // Kalendarz w przygotowaniu: terminy licza sie same — "Generuj terminy" tylko, gdy cos zostalo w tyle.
+  const planningCalendar = plan?.calendar?.status === 'PLANNING';
+  const showGenerate = !!plan && (!planningCalendar || plan.stale);
 
   return (
     <>
       <PageHeader
         title="Ukladanie planu"
-        description={term ? `Semestr ${term.label}. Zajecia umieszczasz recznie; terminy powstaja po „Generuj terminy”.` : 'Wybierz semestr w naglowku.'}
+        description={
+          term
+            ? `Semestr ${term.label}. Zajecia umieszczasz recznie; ${
+                !plan?.calendar
+                  ? 'terminy przeliczaja sie same, dopoki kalendarz jest w przygotowaniu (po publikacji — „Generuj terminy”).'
+                  : planningCalendar
+                    ? 'kalendarz w przygotowaniu — terminy przeliczaja sie same po kazdej zmianie.'
+                    : 'kalendarz opublikowany — terminy zmienia „Generuj terminy”.'
+              }`
+            : 'Wybierz semestr w naglowku.'
+        }
         actions={
           <>
             {plan && (
@@ -329,13 +344,15 @@ export default function PlanPage() {
                     <Button variant="outline" disabled={!!blockedReason} onClick={() => setCarrying(true)}>
                       <History /> Przenies plan z zeszlego roku
                     </Button>
-                    <Button
-                      disabled={!!blockedReason}
-                      onClick={() => setGenerating(true)}
-                      variant={plan.stale ? 'default' : 'outline'}
-                    >
-                      <CalendarCheck /> Generuj terminy
-                    </Button>
+                    {showGenerate && (
+                      <Button
+                        disabled={!!blockedReason}
+                        onClick={() => setGenerating(true)}
+                        variant={plan.stale ? 'default' : 'outline'}
+                      >
+                        <CalendarCheck /> Generuj terminy
+                      </Button>
+                    )}
               </span>
             )}
           </>
@@ -731,7 +748,7 @@ export default function PlanPage() {
               <p className="text-sm text-muted-foreground">
                 Studia stacjonarne — terminy tylko do wgladu: co bylo i co bedzie, dni wolne i zajecia z innego dnia wg
                 kalendarza. Pojedynczych terminow sie nie przenosi. Zmiana planu od tygodnia: we wzorcu dotychczasowe
-                umieszczenie „Do tygodnia”, nowe „Od tygodnia”, potem „Generuj terminy”.
+                umieszczenie „Do tygodnia”, nowe „Od tygodnia”; w opublikowanym kalendarzu potem „Generuj terminy”.
               </p>
             )}
             <OccurrencesTab

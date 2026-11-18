@@ -2,11 +2,12 @@ import type { CalendarStatus } from '@/types';
 import { formatDayKey } from './calendarUtils';
 
 /**
- * Zmiany statusu kalendarza, ktore wymagaja potwierdzenia, bo jednym kliknieciem psuja
- * dzialajacy plan:
+ * Zmiany statusu kalendarza, ktore wymagaja potwierdzenia:
+ * - publikacja: terminy rocznikow przeliczaja sie jeszcze raz i trafiaja do studentow i prowadzacych,
+ *   a dalsze zmiany wzorca wejda do terminow dopiero po „Generuj terminy” (podglad: ile rocznikow);
  * - opublikowany -> w przygotowaniu: plan znika studentom i prowadzacym;
  * - archiwum przed koncem semestru: plan zamarza (bez przesuwania zajec).
- * Zwykla publikacja i archiwizacja po semestrze ida bez pytania.
+ * Archiwizacja po semestrze i powrot z archiwum ida bez pytania.
  */
 export interface StatusChangeWarning {
   title: string;
@@ -21,10 +22,21 @@ export function statusChangeWarning(
   today: string,
 ): StatusChangeWarning | null {
   if (next === calendar.status) return null;
+  if (calendar.status === 'PLANNING' && next === 'PUBLISHED') {
+    return {
+      title: 'Opublikowac plan?',
+      effect:
+        'Terminy rocznikow tego kalendarza przelicza sie jeszcze raz i zobacza je studenci i prowadzacy („Moj plan”). ' +
+        'Potem zmiany wzorca wejda do terminow dopiero po „Generuj terminy”.',
+      confirmLabel: 'Opublikuj',
+    };
+  }
   if (calendar.status === 'PUBLISHED' && next === 'PLANNING') {
     return {
       title: 'Cofnac publikacje?',
-      effect: 'Plan przestanie byc widoczny dla studentow i prowadzacych, dopoki nie opublikujesz go ponownie.',
+      effect:
+        'Plan przestanie byc widoczny dla studentow i prowadzacych, dopoki nie opublikujesz go ponownie. ' +
+        'Terminy znow beda sie przeliczac same po kazdej zmianie planu.',
       confirmLabel: 'Cofnij publikacje',
     };
   }

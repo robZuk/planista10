@@ -30,13 +30,16 @@ import {
   checkPlacement,
   generate,
   planView,
+  refreshPlanningTerms,
+  termsNote,
   type PlacementInput,
 } from '../services/plan';
 
 /**
- * Plan semestru: umieszczenia (wzorzec) i terminy. Uklada wylacznie planista; terminy
- * powstaja tylko z "Generuj terminy" (najpierw podglad). Reczne poprawki terminow sa
- * zapisywane jako wyjatki i przezywaja ponowne generowanie.
+ * Plan semestru: umieszczenia (wzorzec) i terminy. Uklada wylacznie planista. Terminy rocznikow
+ * z kalendarzem "w przygotowaniu" przeliczaja sie po kazdym zapisie planu (refreshPlanningTerms),
+ * w opublikowanym — tylko z "Generuj terminy" (najpierw podglad). Reczne poprawki terminow sa
+ * zapisywane jako wyjatki i przezywaja ponowne generowanie. Zapisy ida pod blokada planu semestru.
  */
 
 async function findTerm(key: string) {
@@ -156,13 +159,14 @@ export const createPlacement = asyncHandler(async (req, res) => {
   const check = await checkPlacement(term, input);
   rejectIfInvalid(check);
   const data = await prisma.placement.create({ data: { ...input, termId: term.id, facultyId: section.facultyId } });
+  const refresh = await refreshPlanningTerms(term, [section.cohortId]);
   // Bilans godzin jak w widoku planu (z limitem godzin zajec) — liczba dat we wzorcu bywa
   // wieksza niz liczba terminow, ktore faktycznie powstana (np. brakowala tylko 1 h).
   const planned = (await planView(term, section.cohortId)).sections.find((s) => s.id === section.id);
   const summary = planned
     ? `zaplanowane ${planned.plannedHours}/${planned.hours} h${planned.plannedHours < planned.hours ? ` — brakuje ${planned.hours - planned.plannedHours} h` : ''}`
     : `${check.dates} terminow w semestrze`;
-  res.status(201).json({ data, message: `Zajecia umieszczone — ${summary}` });
+  res.status(201).json({ data, message: `Zajecia umieszczone — ${summary}; ${termsNote(refresh)}` });
 });
 
 async function loadPlacement(id: string) {
@@ -186,7 +190,7 @@ export const updatePlacement = asyncHandler(async (req, res) => {
   const joined = input.jointKey
     ? await prisma.placement.findMany({
         where: { termId: current.termId, jointKey: input.jointKey, id: { not: current.id } },
-        include: { section: { select: { cohort: { select: { program: { select: { studyMode: true } } } } } } },
+        include: { section: { select: { cohortId: true, cohort: { select: { program: { select: { studyMode: true } } } } } } },
       })
     : [];
   // Bloki dnia, w ktory zajecia trafiaja (siatki dnia moga miec inne godziny niz podstawowa).
@@ -218,7 +222,9 @@ export const updatePlacement = asyncHandler(async (req, res) => {
     }
     return updated;
   });
-  res.json({ data, message: 'Umieszczenie zapisane — terminy zmienia sie po "Generuj terminy"' });
+  // Zajecia laczone przesuwaja tez umieszczenia innych rocznikow — ich terminy rowniez.
+  const refresh = await refreshPlanningTerms(current.term, [current.section.cohort.id, ...joined.map((j) => j.section.cohortId)]);
+  res.json({ data, message: `Umieszczenie zapisane — ${termsNote(refresh)}` });
 });
 
 /**
@@ -271,8 +277,9 @@ export const splitPlacementZjazd = asyncHandler(async (req, res) => {
     await tx.placement.update({ where: { id: current.id }, data: { pattern: 'LIST', numbers: rest, fromIndex: null, toIndex: null } });
     return tx.placement.create({ data: { ...input, termId: current.termId, facultyId: current.facultyId } });
   });
+  const refresh = await refreshPlanningTerms(current.term, [current.section.cohort.id]);
   const what = toZjazd === zjazd ? 'Zajecia zmienione tylko w tym zjezdzie' : 'Zajecia przeniesione do innego zjazdu';
-  res.status(201).json({ data, message: `${what} — terminy zmienia sie po "Generuj terminy"` });
+  res.status(201).json({ data, message: `${what} — ${termsNote(refresh)}` });
 });
 
 export const deletePlacement = asyncHandler(async (req, res) => {
@@ -282,12 +289,16 @@ export const deletePlacement = asyncHandler(async (req, res) => {
   await assertCohortTermWritable(current.term, current.section.cohort.id, 'plan');
   // Wygenerowane terminy zostaja (placementId -> null) do najblizszego generowania. Odlaczamy je
   // jawnie (a nie przez ON DELETE SET NULL), zeby updatedAt zapisal chwile usuniecia — po niej
-  // plan pokazuje "terminy nieaktualne", dopoki terminow nie wygeneruje sie od nowa.
+  // plan pokazuje "terminy nieaktualne", dopoki terminow nie wygeneruje sie od nowa. W kalendarzu
+  // "w przygotowaniu" przeliczenie zaraz po usunieciu kasuje je od razu.
   await prisma.$transaction([
     prisma.occurrence.updateMany({ where: { placementId: current.id }, data: { placementId: null } }),
     prisma.placement.delete({ where: { id: current.id } }),
   ]);
-  res.json({ message: 'Umieszczenie usuniete — jego terminy znikna przy kolejnym "Generuj terminy"' });
+  const refresh = await refreshPlanningTerms(current.term, [current.section.cohort.id]);
+  res.json({
+    message: refresh.cohortIds.length > 0 ? 'Umieszczenie usuniete — terminy przeliczone' : 'Umieszczenie usuniete — jego terminy znikna przy kolejnym "Generuj terminy"',
+  });
 });
 
 export const generateTerms = asyncHandler(async (req, res) => {
@@ -390,7 +401,9 @@ export const createManualOccurrence = asyncHandler(async (req, res) => {
   await assertFacultyScope(req, section.facultyId);
   const grid = await assertPlanEditable(term.id, section.cohortId);
   const data = await createManual(term, section, grid, body);
-  res.status(201).json({ data, message: 'Termin reczny dodany' });
+  // Termin reczny zuzywa godziny — w kalendarzu "w przygotowaniu" terminy z wzorca od razu ustepuja.
+  const refresh = await refreshPlanningTerms(term, [section.cohortId]);
+  res.status(201).json({ data, message: `Termin reczny dodany${refresh.cohortIds.length > 0 ? ' — terminy przeliczone' : ''}` });
 });
 
 export const deleteManualOccurrence = asyncHandler(async (req, res) => {
@@ -400,5 +413,7 @@ export const deleteManualOccurrence = asyncHandler(async (req, res) => {
   if (occ.kind !== 'MANUAL') throw new AppError(409, 'Termin z wzorca mozna przeniesc, ale nie usunac');
   await assertPlanEditable(occ.termId, occ.section.cohortId);
   await prisma.occurrence.delete({ where: { id: occ.id } });
-  res.json({ message: 'Termin reczny usuniety' });
+  const term = await prisma.academicTerm.findUniqueOrThrow({ where: { id: occ.termId } });
+  const refresh = await refreshPlanningTerms(term, [occ.section.cohortId]);
+  res.json({ message: `Termin reczny usuniety${refresh.cohortIds.length > 0 ? ' — terminy przeliczone' : ''}` });
 });

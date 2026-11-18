@@ -124,7 +124,7 @@ export function setupSteps(data: SetupStatus, termKey: string): SetupStep[] {
         t.cohortsWithoutSections > 0
           ? `Zastosuj zmiany zajec na stronie Obsada — ${cohortsN(t.cohortsWithoutSections)} bez zajec`
           : noSections
-            ? 'Utworz zajecia semestru na stronie Obsada — powstana z programow i grup'
+            ? 'Zajecia powstaja same z programow i grup, gdy rocznik ma kalendarz i zatwierdzony program — sprawdz komunikat na stronie Obsada'
             : null,
       to: `/obsada/${termKey}`,
       link: 'Obsada',

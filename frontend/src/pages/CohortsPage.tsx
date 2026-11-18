@@ -79,13 +79,16 @@ export default function CohortsPage() {
   const calendarMutation = useMutation({
     mutationFn: ({ cohort, calendarId }: { cohort: TermCohort; calendarId: string }) =>
       setCohortTerm(term!.key, cohort.id, { calendarId }),
-    onSuccess: async (_d, vars) => {
+    onSuccess: async (result, vars) => {
       const chosen = vars.cohort.availableCalendars.find((c) => c.id === vars.calendarId);
+      // Kalendarz w przygotowaniu: terminy przeliczyly sie same; opublikowany — "Generuj terminy".
       toast.success('Kalendarz rocznika zapisany', {
         description:
           chosen?.status === 'PLANNING'
-            ? 'Ten kalendarz nie jest opublikowany — studenci i prowadzacy nie zobacza planu rocznika do publikacji.'
-            : 'Terminy rocznika trzeba wygenerowac od nowa („Generuj terminy” w Ukladaniu planu).',
+            ? `Ten kalendarz nie jest opublikowany — studenci i prowadzacy nie zobacza planu rocznika do publikacji.${result.termsRefreshed ? ' Terminy rocznika przeliczone.' : ''}`
+            : result.termsRefreshed
+              ? 'Terminy rocznika przeliczone.'
+              : 'Terminy rocznika trzeba wygenerowac od nowa („Generuj terminy” w Ukladaniu planu).',
         duration: 8000,
       });
       await refresh();
@@ -97,8 +100,8 @@ export default function CohortsPage() {
   const lectureMutation = useMutation({
     mutationFn: ({ cohort, joint }: { cohort: TermCohort; joint: boolean }) =>
       updateCohort(cohort.id, { lectureMode: joint ? 'JOINT' : 'SEPARATE' }),
-    onSuccess: async (_d, vars) => {
-      syncHint(vars.joint ? 'Wyklady wspolne dla calego rocznika' : 'Wyklady osobno dla specjalnosci');
+    onSuccess: async (result, vars) => {
+      syncHint(vars.joint ? 'Wyklady wspolne dla calego rocznika' : 'Wyklady osobno dla specjalnosci', { sync: result.sync });
       await refresh();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
