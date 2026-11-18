@@ -23,6 +23,8 @@ export interface SectionGroup {
   assignedHours: number;
   hasVacancy: boolean;
   orphaned: boolean;
+  /** Umieszczenia w planie z prowadzacym spoza obsady (suma po grupach). */
+  planOutsideStaff: number;
   archived: boolean;
 }
 
@@ -52,6 +54,7 @@ export function groupSections(rows: ClassSectionRow[]): SectionGroup[] {
         assignedHours: 0,
         hasVacancy: false,
         orphaned: false,
+        planOutsideStaff: 0,
         archived: row.cohort.archived,
       };
       groups.set(key, group);
@@ -61,6 +64,7 @@ export function groupSections(rows: ClassSectionRow[]): SectionGroup[] {
     group.assignedHours += Math.min(row.assignedHours, row.hours);
     group.hasVacancy ||= row.hasVacancy;
     group.orphaned ||= row.status === 'ORPHANED';
+    group.planOutsideStaff += row.planOutsideStaff;
   }
   return [...groups.values()];
 }

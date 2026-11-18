@@ -123,6 +123,13 @@ export default function ObsadaPage() {
           Kalendarze rocznikow sa w archiwum — zajecia i obsada tego semestru sa tylko do odczytu.
         </p>
       )}
+      {summary && summary.planOutsideStaff > 0 && (
+        <p className="rounded-lg border border-amber-500/50 bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+          W planie {summary.planOutsideStaff} umieszczen ma prowadzacego, ktorego nie ma juz w obsadzie tych zajec (obsada
+          zmieniona po ulozeniu planu). Zajecia maja znaczek „plan: inny prowadzacy” — otworz je w Ukladaniu planu i wybierz
+          prowadzacego.
+        </p>
+      )}
       {summary && (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
           {[

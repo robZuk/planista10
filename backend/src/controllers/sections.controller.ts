@@ -82,6 +82,8 @@ export const listSections = asyncHandler(async (req, res) => {
       },
       group: { select: { id: true, partitionKey: true } },
       instructors: { include: { instructor: { select: { id: true, title: true, firstName: true, lastName: true } } } },
+      // Prowadzacy umieszczen — do ostrzezenia "w planie prowadzacy spoza obsady".
+      placements: { select: { instructorId: true } },
     },
   });
 
@@ -89,6 +91,7 @@ export const listSections = asyncHandler(async (req, res) => {
     .map((s) => {
       const ctx = ctxById.get(s.cohortId);
       const assigned = s.instructors.reduce((sum, i) => sum + i.hours, 0);
+      const staffIds = new Set(s.instructors.map((i) => i.instructorId).filter(Boolean));
       return {
         id: s.id,
         cohort: {
@@ -112,6 +115,8 @@ export const listSections = asyncHandler(async (req, res) => {
         status: s.status,
         assignedHours: assigned,
         hasVacancy: s.instructors.length === 0 || s.instructors.some((i) => !i.instructorId) || assigned < s.hours,
+        // Umieszczenia, ktorych prowadzacy wypadl z obsady (obsada zmieniona po ulozeniu planu).
+        planOutsideStaff: s.placements.filter((p) => p.instructorId && !staffIds.has(p.instructorId)).length,
         instructors: s.instructors.map((i) => ({
           id: i.id,
           instructorId: i.instructorId,
@@ -138,6 +143,7 @@ export const listSections = asyncHandler(async (req, res) => {
       assignedHours: data.reduce((s, x) => s + Math.min(x.assignedHours, x.hours), 0),
       vacancies: data.filter((x) => x.hasVacancy).length,
       orphaned: data.filter((x) => x.status === 'ORPHANED').length,
+      planOutsideStaff: data.reduce((sum, x) => sum + x.planOutsideStaff, 0),
       // Caly widok w archiwum (zwykle caly semestr): akcje masowe nie maja czego zmieniac.
       archived: contexts.length > 0 && contexts.every((c) => archived.has(c.cohort.id)),
     },

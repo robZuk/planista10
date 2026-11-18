@@ -503,10 +503,14 @@ export interface ClassSectionRow {
   status: 'ACTIVE' | 'ORPHANED';
   assignedHours: number;
   hasVacancy: boolean;
+  /** Umieszczenia w planie z prowadzacym spoza obecnej obsady tych zajec. */
+  planOutsideStaff: number;
   instructors: SectionAssignment[];
 }
 
 export interface SectionsSummary {
+  /** Umieszczenia w planie z prowadzacym spoza obsady (suma po zajeciach). */
+  planOutsideStaff: number;
   sections: number;
   hours: number;
   assignedHours: number;

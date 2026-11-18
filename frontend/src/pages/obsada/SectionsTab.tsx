@@ -219,6 +219,15 @@ export default function SectionsTab({
                             {g.department.label}
                           </Badge>
                         )}
+                        {g.planOutsideStaff > 0 && (
+                          <Badge
+                            variant="outline"
+                            className="ml-2 border-amber-500 text-amber-700 dark:text-amber-400"
+                            title="W planie te zajecia ma prowadzacy, ktorego nie ma juz w obsadzie. Otworz je w Ukladaniu planu i wybierz prowadzacego."
+                          >
+                            plan: inny prowadzacy ({g.planOutsideStaff})
+                          </Badge>
+                        )}
                         {g.orphaned && (
                           <Badge variant="destructive" className="ml-2">
                             osierocone

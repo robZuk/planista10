@@ -20,6 +20,7 @@ const row = (id: string, over: Partial<ClassSectionRow> = {}): ClassSectionRow =
   status: 'ACTIVE',
   assignedHours: 0,
   hasVacancy: true,
+  planOutsideStaff: 0,
   instructors: [],
   ...over,
 });
