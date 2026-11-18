@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, FilterX, Search, UserPlus, Users } from 'lucide-react';
+import { ChevronDown, ChevronUp, FilterX, Search, Trash2, UserPlus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSyncHint } from '@/hooks/useSyncHint';
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +24,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
-import { createCohort, fetchTermCohorts, setCohortTerm, updateCohort } from '@/api/cohorts';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { createCohort, deleteCohort, fetchTermCohorts, setCohortTerm, updateCohort } from '@/api/cohorts';
 import { fetchPrograms } from '@/api/programs';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage } from '@/lib/errors';
@@ -49,6 +50,7 @@ export default function CohortsPage() {
   const { term } = useCurrentTerm();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [intakeOpen, setIntakeOpen] = useState(false);
+  const [deletingCohort, setDeletingCohort] = useState<TermCohort | null>(null);
   // Wyszukiwanie i "tylko bez kalendarza" sa tylko tej strony; reszta filtrow wspolna z Planem.
   const [search, setSearch] = useState('');
   const [withoutCalendar, setWithoutCalendar] = useState(false);
@@ -102,6 +104,17 @@ export default function CohortsPage() {
       updateCohort(cohort.id, { lectureMode: joint ? 'JOINT' : 'SEPARATE' }),
     onSuccess: async (result, vars) => {
       syncHint(vars.joint ? 'Wyklady wspolne dla calego rocznika' : 'Wyklady osobno dla specjalnosci', { sync: result.sync });
+      await refresh();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (cohort: TermCohort) => deleteCohort(cohort.id),
+    onSuccess: async (_result, cohort) => {
+      toast.success(`Rocznik ${cohort.label} usuniety`);
+      setDeletingCohort(null);
+      if (expanded === cohort.id) setExpanded(null);
       await refresh();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -218,11 +231,26 @@ export default function CohortsPage() {
                   {cohort.programVersion.status === 'DRAFT' && ' (projekt)'} · {cohort.size} studentow ·{' '}
                   {cohort.groupCount} grup
                 </CardDescription>
-                <CardAction>
+                <CardAction className="flex items-center gap-1">
                   <Button variant="outline" size="sm" onClick={() => setExpanded(open ? null : cohort.id)}>
                     {open ? <ChevronUp /> : <ChevronDown />}
                     Grupy
                   </Button>
+                  {editable && (
+                    // span: wylaczony przycisk nie pokazuje dymka, a powod ma byc widoczny
+                    <span title={cohort.deleteBlocker ? `${cohort.deleteBlocker} — rocznika nie mozna usunac` : 'Usun rocznik'}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 text-destructive hover:text-destructive"
+                        aria-label={`Usun rocznik ${cohort.label}`}
+                        disabled={!!cohort.deleteBlocker}
+                        onClick={() => setDeletingCohort(cohort)}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </span>
+                  )}
                 </CardAction>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -284,6 +312,16 @@ export default function CohortsPage() {
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={!!deletingCohort}
+        onOpenChange={(open) => !open && setDeletingCohort(null)}
+        title={`Usunac rocznik ${deletingCohort?.label ?? ''}?`}
+        description="Rocznik zniknie razem ze wszystkimi grupami (ze wszystkich semestrow) i zajeciami bez obsady i planu. Tej operacji nie da sie cofnac — gdyby byl potrzebny, zaloz nabor od nowa."
+        confirmLabel="Usun rocznik"
+        isPending={deleteMutation.isPending}
+        onConfirm={() => deletingCohort && deleteMutation.mutate(deletingCohort)}
+      />
 
       {intakeOpen && term && data && (
         <NewIntakeDialog

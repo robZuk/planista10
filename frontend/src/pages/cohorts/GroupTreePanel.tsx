@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronRight, Flag, Plus, Trash2, TriangleAlert, Undo2 } from 'lucide-react';
+import { ChevronRight, Flag, Pencil, Plus, Trash2, TriangleAlert, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Field, FieldLabel } from '@/components/ui/field';
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,6 +46,14 @@ const SUB_PARTITIONS = ['C', 'L', 'P', 'S', 'JEZ'];
 
 type AddTarget = { parent: CohortGroup; mode: 'sub' | 'spec' } | null;
 
+/** Powod, dla ktorego grupy nie mozna usunac (null — mozna); ten sam warunek sprawdza serwer. */
+function deleteBlock(group: CohortGroup): string | null {
+  if (group.childCount > 0) return 'Grupa ma podgrupy — usun je najpierw';
+  if (group.usedInPlan) return 'Grupa ma zajecia z obsada albo w planie — zamiast usuwac, zakoncz ja po semestrze (flaga)';
+  if (group.memberCount > 0) return 'Grupa ma przypisanych studentow — zmien ich grupy w Uzytkownikach';
+  return null;
+}
+
 /**
  * Drzewo grup rocznika w wybranym semestrze. Grupy ida z rocznikiem przez studia —
  * tu sie je tylko koryguje: liczebnosc, podgrupy, podzial na specjalnosci, a zmiana
@@ -60,6 +68,7 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
   });
   const [addTarget, setAddTarget] = useState<AddTarget>(null);
   const [deleting, setDeleting] = useState<CohortGroup | null>(null);
+  const [editing, setEditing] = useState<CohortGroup | null>(null);
   // Zakonczenie grupy po biezacym semestrze — z potwierdzeniem (zmienia zajecia kolejnych semestrow).
   const [ending, setEnding] = useState<CohortGroup | null>(null);
 
@@ -116,6 +125,38 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
   }, [data]);
 
   if (isPending) return <Skeleton className="h-32 w-full" />;
+
+  const editButton = (group: CohortGroup) => (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="size-7"
+      title="Edytuj grupe: kod, liczebnosc, semestry"
+      aria-label={`Edytuj ${group.name}`}
+      onClick={() => setEditing(group)}
+    >
+      <Pencil />
+    </Button>
+  );
+  // Kosz widac zawsze; gdy grupy nie mozna usunac — wylaczony, a powod jest w dymku.
+  const deleteButton = (group: CohortGroup) => {
+    const block = deleteBlock(group);
+    return (
+      // span: wylaczony przycisk nie pokazuje dymka, a powod ma byc widoczny
+      <span title={block ?? 'Usun grupe'}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-7 text-destructive hover:text-destructive"
+          aria-label={`Usun ${group.name}`}
+          disabled={!!block}
+          onClick={() => setDeleting(group)}
+        >
+          <Trash2 />
+        </Button>
+      </span>
+    );
+  };
 
   const renderNode = (group: CohortGroup, depth: number): React.ReactNode => {
     const kids = (children.get(group.id) ?? []).sort((a, b) =>
@@ -177,6 +218,7 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
                 <Button variant="ghost" size="sm" onClick={() => setAddTarget({ parent: group, mode: 'sub' })}>
                   <Plus /> Podgrupy
                 </Button>
+                {!isRoot && editButton(group)}
                 {!isRoot &&
                   (group.toSemester === cohort.semester ? (
                     // Zakonczona wlasnie na tym semestrze — cofniecie od razu, bez szukania jej w kolejnym semestrze.
@@ -201,17 +243,7 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
                       <Flag />
                     </Button>
                   ))}
-                {!isRoot && group.childCount === 0 && !group.usedInPlan && group.memberCount === 0 && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7 text-destructive hover:text-destructive"
-                    aria-label={`Usun ${group.name}`}
-                    onClick={() => setDeleting(group)}
-                  >
-                    <Trash2 />
-                  </Button>
-                )}
+                {!isRoot && deleteButton(group)}
               </>
             )}
           </span>
@@ -238,6 +270,13 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
                   <Button variant="link" size="sm" onClick={() => update.mutate({ id: g.id, input: { toSemester: null } })}>
                     przywroc
                   </Button>
+                )}
+                {/* Grupa spoza tego semestru (zakonczona albo od pozniejszego) — poprawka bez przelaczania semestru. */}
+                {canEdit && g.partitionKey !== 'ROOT' && (
+                  <>
+                    {editButton(g)}
+                    {deleteButton(g)}
+                  </>
                 )}
               </li>
             ))}
@@ -272,7 +311,141 @@ export function GroupTreePanel({ cohort, canEdit }: { cohort: TermCohort; canEdi
           }}
         />
       )}
+      {editing && (
+        <EditGroupDialog
+          cohort={cohort}
+          group={editing}
+          onClose={() => setEditing(null)}
+          onSaved={async () => {
+            setEditing(null);
+            await refresh();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+const GROUP_CODE = /^[A-Z0-9]{1,8}$/;
+
+/**
+ * Edycja grupy: kod (grupy podzialow — z niego liczy sie nazwa), liczebnosc i zakres semestrow.
+ * Szerszy zakres od razu daje brakujace zajecia; zajecia poza nowym zakresem czekaja na podglad
+ * w Obsadzie, a te z planem serwer zglasza ostrzezeniem.
+ */
+function EditGroupDialog({
+  cohort,
+  group,
+  onClose,
+  onSaved,
+}: {
+  cohort: TermCohort;
+  group: CohortGroup;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const syncHint = useSyncHint();
+  const total = cohort.programVersion.totalSemesters;
+  // Grupa specjalnosci bierze kod ze skrotu specjalnosci — tu go nie zmienia sie.
+  const isSpec = group.partitionKey === 'SPEC';
+  const spec = isSpec ? cohort.program.fieldOfStudy.specializations.find((s) => s.id === group.specializationId) : undefined;
+  const [code, setCode] = useState(group.code ?? '');
+  const [size, setSize] = useState(String(group.size));
+  const [from, setFrom] = useState(String(group.fromSemester));
+  const [to, setTo] = useState(group.toSemester === null ? '' : String(group.toSemester));
+
+  const normalized = code.trim().toUpperCase();
+  const codeValid = isSpec || GROUP_CODE.test(normalized);
+  // Nazwa konczy sie kodem (EDST-3-L-A1) — podglad nowej nazwy bez liczenia jej od nowa.
+  const preview =
+    !isSpec && group.code && codeValid && group.name.endsWith(`-${group.code}`)
+      ? `${group.name.slice(0, -group.code.length)}${normalized}`
+      : null;
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      updateCohortGroup(group.id, {
+        ...(isSpec ? {} : { code: normalized }),
+        size: Number(size),
+        fromSemester: Number(from),
+        toSemester: to.trim() === '' ? null : Number(to),
+      }),
+    onSuccess: (result) => {
+      syncHint('Grupa zapisana', { warning: result.warning, sync: result.sync });
+      onSaved();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edytuj grupe {group.name}</DialogTitle>
+          <DialogDescription>
+            Grupa idzie z rocznikiem przez studia — zakres semestrow mowi, kiedy obowiazuje. Zajecia z nowych semestrow
+            powstana same; te poza zakresem znikna po zastosowaniu zmian na stronie „Obsada”.
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          id="edit-group-form"
+          className="grid grid-cols-2 gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            mutation.mutate();
+          }}
+        >
+          {isSpec ? (
+            <Field>
+              <FieldLabel>Specjalnosc</FieldLabel>
+              <p className="text-sm">{spec ? `${spec.name} (${spec.shortName})` : (group.code ?? '—')}</p>
+            </Field>
+          ) : (
+            <Field data-invalid={!codeValid || undefined}>
+              <FieldLabel htmlFor="group-code">Kod</FieldLabel>
+              <Input
+                id="group-code"
+                value={code}
+                maxLength={8}
+                aria-invalid={!codeValid || undefined}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+              />
+              <FieldDescription>{preview ? `Nazwa: ${preview}` : 'Litery i cyfry, np. A albo A1'}</FieldDescription>
+            </Field>
+          )}
+          <Field>
+            <FieldLabel htmlFor="group-size">Liczebnosc</FieldLabel>
+            <Input id="group-size" type="number" min={0} value={size} onChange={(e) => setSize(e.target.value)} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="group-from">Od semestru</FieldLabel>
+            <Input id="group-from" type="number" min={1} max={total} value={from} onChange={(e) => setFrom(e.target.value)} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="group-to">Do semestru</FieldLabel>
+            <Input
+              id="group-to"
+              type="number"
+              min={1}
+              max={total}
+              value={to}
+              placeholder="do konca studiow"
+              onChange={(e) => setTo(e.target.value)}
+            />
+            <FieldDescription>Puste — do konca studiow (semestr {total})</FieldDescription>
+          </Field>
+        </form>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Anuluj
+          </Button>
+          <Button type="submit" form="edit-group-form" disabled={!codeValid || size === '' || from === '' || mutation.isPending}>
+            {mutation.isPending && <Spinner />}
+            Zapisz
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

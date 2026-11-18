@@ -449,6 +449,8 @@ export interface TermCohort extends CohortDto {
   availableCalendars: { id: string; name: string; kind: CalendarKind; status: CalendarStatus }[];
   groupCount: number;
   size: number;
+  /** Powod, dla ktorego rocznika nie mozna usunac (grupy z obsada/planem albo ze studentami); null — mozna. */
+  deleteBlocker: string | null;
 }
 
 export interface IntakeCandidate {

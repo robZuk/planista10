@@ -11,7 +11,7 @@ const prismaMock = vi.hoisted(() => ({
   cohort: { findUnique: vi.fn(), findMany: vi.fn() },
   termCalendar: { findMany: vi.fn(), findUnique: vi.fn() },
   cohortTerm: { upsert: vi.fn().mockResolvedValue({}), findUnique: vi.fn().mockResolvedValue(null) },
-  program: { findUnique: vi.fn() },
+  program: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
   txCohortCreate: vi.fn((args: { data: object }) => Promise.resolve({ id: 'c-new', ...args.data })),
   $transaction: vi.fn(),
   studentGroup: {
@@ -248,5 +248,106 @@ describe('API — usuwanie grupy i rocznika z zajeciami "pustymi"', () => {
       where: { cohortId: 'c1', instructors: { none: {} }, placements: { none: {} }, occurrences: { none: {} } },
     });
     expect(tx.cohort.delete).toHaveBeenCalledWith({ where: { id: 'c1' } });
+  });
+});
+
+// Grupy rocznika z praca planisty / ze studentami — odpowiedz wg filtra zapytania (kolejnosc wywolan bez znaczenia).
+const blockingGroups = (opts: { worked?: boolean; students?: boolean }) => (args: { where: { members?: unknown } }) =>
+  Promise.resolve((args.where.members ? opts.students : opts.worked) ? [{ cohortId: 'c1' }] : []);
+
+describe('API — edycja grupy: kod i zakres semestrow', () => {
+  const groupRow = { id: 'g1', cohortId: 'c1', parentGroupId: 'gc', partitionKey: 'L', code: 'A1', fromSemester: 1, toSemester: null, size: 12 };
+  const putGroup = (body: object) => request(app).put('/api/cohort-groups/g1').set('Authorization', `Bearer ${dean}`).send(body);
+  const arrange = (group: object = groupRow) => {
+    prismaMock.studentGroup.findUnique.mockResolvedValueOnce(group);
+    prismaMock.cohort.findUnique.mockResolvedValueOnce(cohortRow);
+    prismaMock.studentGroup.update.mockClear();
+  };
+
+  it('nowy kod — wielkie litery, zapisany bez synchronizacji zajec (klucz zajec to grupa)', async () => {
+    arrange();
+    prismaMock.studentGroup.findMany.mockResolvedValueOnce([{ code: 'A2', fromSemester: 1, toSemester: null }]);
+    const res = await putGroup({ code: ' b1 ' });
+    expect(res.status).toBe(200);
+    expect(prismaMock.studentGroup.update.mock.calls[0]![0].data).toMatchObject({ code: 'B1', fromSemester: 1, toSemester: null });
+    expect(autoPlanMock.autoSyncCohorts).not.toHaveBeenCalled();
+  });
+
+  it.each([[''], ['A-1'], ['ABCDEFGHI'], ['Ą1']])('kod %o -> 400 bez zapisu', async (code) => {
+    arrange();
+    const res = await putGroup({ code });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Kod grupy/);
+    expect(prismaMock.studentGroup.update).not.toHaveBeenCalled();
+  });
+
+  it('kod zajety w tym samym podziale i semestrach -> 409 bez zapisu', async () => {
+    arrange();
+    prismaMock.studentGroup.findMany.mockResolvedValueOnce([{ code: 'A2', fromSemester: 1, toSemester: null }]);
+    const res = await putGroup({ code: 'a2' });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('Grupa L-A2 juz istnieje w tym zakresie semestrow');
+    expect(prismaMock.studentGroup.update).not.toHaveBeenCalled();
+  });
+
+  it('ten sam kod w rozlacznych semestrach (grupa zakonczona wczesniej) — zapisany', async () => {
+    arrange({ ...groupRow, fromSemester: 3 });
+    prismaMock.studentGroup.findMany.mockResolvedValueOnce([{ code: 'A2', fromSemester: 1, toSemester: 2 }]);
+    expect((await putGroup({ code: 'A2' })).status).toBe(200);
+  });
+
+  it('przywrocenie zakonczonej grupy, gdy jej kod przejela nowa grupa -> 409', async () => {
+    arrange({ ...groupRow, toSemester: 2 });
+    prismaMock.studentGroup.findMany.mockResolvedValueOnce([{ code: 'A1', fromSemester: 3, toSemester: null }]);
+    const res = await putGroup({ toSemester: null });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/L-A1 juz istnieje/);
+    expect(prismaMock.studentGroup.update).not.toHaveBeenCalled();
+  });
+
+  it('grupa specjalnosci zachowuje kod (skrot specjalnosci)', async () => {
+    arrange({ ...groupRow, parentGroupId: 'root', partitionKey: 'SPEC', code: 'DUT', fromSemester: 5 });
+    const res = await putGroup({ code: 'X', size: 20 });
+    expect(res.status).toBe(200);
+    expect(prismaMock.studentGroup.update.mock.calls[0]![0].data).toMatchObject({ code: 'DUT', size: 20, fromSemester: 5 });
+  });
+
+  it('usuniecie grupy z obsada albo planem -> 409 z podpowiedzia o zakonczeniu', async () => {
+    prismaMock.studentGroup.findUnique.mockResolvedValueOnce(groupRow);
+    prismaMock.cohort.findUnique.mockResolvedValueOnce(cohortRow);
+    prismaMock.studentGroup.count.mockResolvedValueOnce(0).mockResolvedValueOnce(1);
+    prismaMock.$transaction.mockClear();
+    const res = await request(app).delete('/api/cohort-groups/g1').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('Grupa ma zajecia z obsada albo w planie — zamiast usuwac, zakoncz ja na wybranym semestrze');
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+});
+
+describe('API — usuwanie rocznika: powod blokady', () => {
+  const remove = () => request(app).delete('/api/cohorts/c1').set('Authorization', `Bearer ${dean}`);
+
+  it.each([
+    [{ worked: true, students: true }, 'Grupy rocznika maja zajecia z obsada albo w planie — nie mozna go usunac'],
+    [{ students: true }, 'Grupy rocznika maja przypisanych studentow — nie mozna go usunac'],
+  ])('%o -> 409 bez usuwania', async (opts, message) => {
+    prismaMock.cohort.findUnique.mockResolvedValueOnce(cohortRow);
+    prismaMock.studentGroup.findMany.mockImplementationOnce(blockingGroups(opts)).mockImplementationOnce(blockingGroups(opts));
+    prismaMock.$transaction.mockClear();
+    const res = await remove();
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe(message);
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('lista rocznikow w semestrze niesie powod blokady (ten sam co odmowa usuniecia)', async () => {
+    prismaMock.cohort.findMany.mockResolvedValueOnce([cohortRow]).mockResolvedValueOnce([]);
+    prismaMock.termCalendar.findMany.mockResolvedValueOnce([]);
+    prismaMock.studentGroup.findMany
+      .mockImplementationOnce(blockingGroups({ students: true }))
+      .mockImplementationOnce(blockingGroups({ students: true }));
+    const res = await request(app).get('/api/terms/2026-L/cohorts').set('Authorization', `Bearer ${dean}`);
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual([expect.objectContaining({ id: 'c1', semester: 4, deleteBlocker: 'Grupy rocznika maja przypisanych studentow' })]);
   });
 });
