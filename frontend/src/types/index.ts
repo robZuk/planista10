@@ -533,6 +533,36 @@ export interface SyncRow {
   instructors?: { name: string; hours: number }[];
 }
 
+/**
+ * Plan a obsada: zajecia w planie z prowadzacym spoza obsady (FOREIGN) albo NN mimo pelnej obsady
+ * (MISSING) — strona Obsada, "Przepnij w planie".
+ */
+export interface StaffMismatchRow {
+  placementId: string;
+  cohort: { id: string; label: string; code: string; semester: number };
+  subject: string;
+  specialization: string | null;
+  classType: ClassType;
+  group: string;
+  /** Kiedy zajecia sa w planie (dzien, godziny, rytm). */
+  slot: string;
+  kind: 'FOREIGN' | 'MISSING';
+  /** Prowadzacy w planie (null = NN). */
+  current: { id: string; name: string } | null;
+  /** Osoby z obsady zajec (bez NN), od najwiekszej liczby godzin. */
+  staff: { id: string; name: string; hours: number }[];
+  /** Podpowiedz: na kogo przepiac (null = NN). */
+  proposed: string | null;
+}
+
+export interface StaffChangeCheck {
+  placementId: string;
+  instructorId: string | null;
+  /** Powod, dla ktorego zmiany nie da sie zapisac (poza kolizjami); null = mozna. */
+  error: string | null;
+  conflicts: { date: string; with: string }[];
+}
+
 export interface SyncReport {
   created: SyncRow[];
   hoursChanged: SyncRow[];

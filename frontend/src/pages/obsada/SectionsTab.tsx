@@ -223,7 +223,7 @@ export default function SectionsTab({
                           <Badge
                             variant="outline"
                             className="ml-2 border-amber-500 text-amber-700 dark:text-amber-400"
-                            title="W planie te zajecia ma prowadzacy, ktorego nie ma juz w obsadzie. Otworz je w Ukladaniu planu i wybierz prowadzacego."
+                            title="W planie te zajecia ma prowadzacy, ktorego nie ma juz w obsadzie. Przepnij go przyciskiem Pokaz i przepnij nad zakladkami albo w Ukladaniu planu."
                           >
                             plan: inny prowadzacy ({g.planOutsideStaff})
                           </Badge>

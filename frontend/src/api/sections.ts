@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import type { CarryRow, ClassSectionRow, SectionsSummary, SyncReport, WorkloadPerson } from '@/types';
+import type { CarryRow, ClassSectionRow, SectionsSummary, StaffChangeCheck, StaffMismatchRow, SyncReport, WorkloadPerson } from '@/types';
 
 export interface StaffAssignmentInput {
   /** null = NN (wakat). */
@@ -84,5 +84,20 @@ export async function importSectionsCsv(
   input: { csv: string; dryRun: boolean; facultyId?: string },
 ): Promise<{ data: { applied: number; errors: string[] }; message: string }> {
   const res = await api.post(`/terms/${termKey}/sections/import`, { ...input, ...facultyParams(input.facultyId) });
+  return res.data;
+}
+
+/** Zajecia w planie rozjechane z obsada (prowadzacy spoza obsady albo NN mimo pelnej obsady). */
+export async function fetchPlanStaff(termKey: string, facultyId?: string): Promise<StaffMismatchRow[]> {
+  const res = await api.get(`/terms/${termKey}/plan-staff`, { params: facultyParams(facultyId) });
+  return res.data.data;
+}
+
+/** Przepiecie prowadzacego w planie; dryRun — tylko kolizje kazdej zmiany. */
+export async function changePlanStaff(
+  termKey: string,
+  input: { changes: { placementId: string; instructorId: string | null }[]; dryRun: boolean },
+): Promise<{ data: { results: StaffChangeCheck[]; applied: number }; message?: string; warning?: string }> {
+  const res = await api.post(`/terms/${termKey}/plan-staff`, input);
   return res.data;
 }

@@ -251,6 +251,8 @@ export async function loadScope(term: AcademicTerm, facultyId: string | null, co
 export interface OccupancyOptions {
   /** Pomin umieszczenie (zapis jego nowej wersji). */
   excludePlacementId?: string;
+  /** Pomin wiele umieszczen naraz (przepiecie prowadzacych z listy — services/planStaff). */
+  excludePlacementIds?: string[];
   /** Pomin jeden termin wzorca: "placementId|originalDate" (przenoszony termin). */
   excludePatternKey?: string;
   /** Pomin termin reczny lub osierocony o tym id. */
@@ -302,6 +304,7 @@ export interface OccupancyOptions {
 export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions = {}): Promise<BusySlot[]> {
   const scope = await loadScope(term, null);
   const skip = new Set(opts.excludeCohortIds ?? []);
+  const skipPlacements = new Set([...(opts.excludePlacementIds ?? []), ...(opts.excludePlacementId ? [opts.excludePlacementId] : [])]);
   const ctxById = new Map(scope.contexts.map((c) => [c.cohort.id, c]));
   const cohortIds = scope.contexts.map((c) => c.cohort.id).filter((id) => scope.teaching.has(id) && !skip.has(id));
   const rel = opts.relevantTo;
@@ -384,7 +387,7 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
       consumedHours: manualHours.get(s.id) ?? 0,
       label: s.id,
     })),
-    placements: sections.flatMap((s) => s.placements.filter((p) => p.id !== opts.excludePlacementId).map(toMatPlacement)),
+    placements: sections.flatMap((s) => s.placements.filter((p) => !skipPlacements.has(p.id)).map(toMatPlacement)),
     exceptions: sections.flatMap((s) =>
       s.placements.flatMap((p) =>
         p.exceptions.map((e) => ({
@@ -420,7 +423,7 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
   for (const o of [...manual, ...orphans]) {
     if (o.id === opts.excludeOccurrenceId) continue;
     if (o.placementId && o.originalDate && `${o.placementId}|${toIsoDate(o.originalDate)}` === opts.excludePatternKey) continue;
-    if (o.placementId && o.placementId === opts.excludePlacementId) continue;
+    if (o.placementId && skipPlacements.has(o.placementId)) continue;
     if (opts.patternOfCohortId && o.kind === 'DERIVED' && !o.placementId && o.section.cohortId === opts.patternOfCohortId) continue;
     busy.push({
       date: toIsoDate(o.date),

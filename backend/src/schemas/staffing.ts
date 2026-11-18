@@ -21,3 +21,12 @@ export const personStaffSchema = z.object({
     .min(1)
     .max(500),
 });
+
+/** Przepiecie prowadzacego w planie (Obsada → "Przepnij w planie"); dryRun — tylko podglad kolizji. */
+export const planStaffSchema = z.object({
+  dryRun: z.boolean(),
+  changes: z
+    .array(z.object({ placementId: z.string().min(1), instructorId: z.string().min(1).nullable() }))
+    .min(1)
+    .max(500),
+});

@@ -13,7 +13,8 @@ import { aggregateWorkload } from '../lib/workload';
 import { departmentLabel } from '../lib/department';
 import { cohortLabel } from '../services/cohorts';
 import { archivedCohortIds } from '../services/cohortCalendar';
-import { assertCohortTermWritable, refreshPlanningTerms } from '../services/plan';
+import { assertCohortTermWritable, refreshPlanningTerms, termsNote } from '../services/plan';
+import { changePlanStaff, staffMismatches, type StaffChange } from '../services/planStaff';
 
 /**
  * Zajecia semestru i obsada. Dziekanat dziala na swoim wydziale, admin na wybranym
@@ -471,5 +472,37 @@ export const importCsv = asyncHandler(async (req, res) => {
     message: dryRun
       ? `Do wczytania: ${plural(applied, 'zajecia', 'zajecia', 'zajec')}`
       : `Wczytano obsade: ${plural(applied, 'zajecia', 'zajecia', 'zajec')}`,
+  });
+});
+
+/** Zajecia w planie rozjechane z obsada (prowadzacy spoza obsady albo NN mimo pelnej obsady). */
+export const planStaffList = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  res.json({ data: await staffMismatches(term, await facultyOf(req)) });
+});
+
+/**
+ * Przepiecie prowadzacego w planie: dryRun — kolizje kazdej zmiany; zapis — tylko zmiany bez bledow
+ * i kolizji, potem terminy jak po kazdej zmianie planu (w przygotowaniu — przeliczone od razu).
+ */
+export const planStaffChange = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  const { changes, dryRun } = req.body as { changes: StaffChange[]; dryRun: boolean };
+  const result = await changePlanStaff(term, changes, { dryRun, assertScope: (facultyId) => assertFacultyScope(req, facultyId) });
+  if (dryRun) {
+    res.json({ data: { results: result.results, applied: 0 } });
+    return;
+  }
+  const skipped = result.results.filter((r) => r.error || r.conflicts.length > 0).length;
+  if (result.applied > 0) {
+    req.log.info({ termId: term.id, applied: result.applied, skipped }, 'przepieto prowadzacych w planie');
+  }
+  res.json({
+    data: { results: result.results, applied: result.applied },
+    message:
+      result.applied > 0
+        ? `Prowadzacy przepieci w planie: ${plural(result.applied, 'zajecia', 'zajecia', 'zajec')}${result.refresh ? `; ${termsNote(result.refresh)}` : ''}`
+        : 'Nic nie przepieto',
+    ...(skipped > 0 ? { warning: `Pominiete (kolizje albo bledy): ${plural(skipped, 'zajecia', 'zajecia', 'zajec')}` } : {}),
   });
 });

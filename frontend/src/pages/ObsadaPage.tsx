@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, History, Info, RefreshCw, Upload } from 'lucide-react';
+import { Download, History, Info, RefreshCw, Upload, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -9,15 +9,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/PageHeader';
 import { FacultySelector } from '@/components/FacultySelector';
-import { downloadSectionsCsv, fetchSections, syncSections } from '@/api/sections';
+import { downloadSectionsCsv, fetchPlanStaff, fetchSections, syncSections } from '@/api/sections';
 import { useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage } from '@/lib/errors';
 import { groupSections, type SectionGroup } from '@/lib/obsadaGroups';
 import { syncNotice } from '@/lib/syncNotice';
+import { planStaffNotice } from '@/lib/planStaff';
 import { useAuthStore } from '@/store/authStore';
 import { useFacultyFilterStore } from '@/store/facultyStore';
 import { CarryDialog, ImportDialog, SyncDialog } from './obsada/ObsadaDialogs';
 import { GroupStaffDialog } from './obsada/GroupStaffDialog';
+import { PlanStaffDialog } from './obsada/PlanStaffDialog';
 import SectionsTab from './obsada/SectionsTab';
 import WorkloadTab from './obsada/WorkloadTab';
 import OrdersTab from './obsada/OrdersTab';
@@ -31,7 +33,9 @@ import OrdersTab from './obsada/OrdersTab';
  * Lista zajec wynika z programow i grup rocznikow (synchronizacja): podglad liczy sie sam przy
  * wejsciu, a komunikat nad zakladkami pojawia sie tylko, gdy jest cos do zrobienia (nowy semestr,
  * zmiany programu lub grup, sprawy do wyjasnienia) — zmiany stosuje sie z okna podgladu. Obsade
- * mozna tez przeniesc z poprzedniego roku albo wczytac z CSV. Zakladka w adresie (?widok=zajecia / zlecenia).
+ * mozna tez przeniesc z poprzedniego roku albo wczytac z CSV. Zmiana obsady planu nie zmienia: gdy plan ma
+ * prowadzacego spoza obsady albo NN mimo pelnej obsady, drugi komunikat prowadzi do "Przepnij w planie".
+ * Zakladka w adresie (?widok=zajecia / zlecenia).
  */
 
 /** Procent obsady w dol — 100% dopiero przy pelnej obsadzie (99,99% to wciaz brakujace godziny). */
@@ -58,7 +62,7 @@ export default function ObsadaPage() {
 
   // Prowadzacy wybrany w Obciazeniach ("Pokaz w Zajeciach") — lista zajec pokazuje tylko jego zajecia.
   const [instructorFilter, setInstructorFilter] = useState<{ id: string; name: string } | null>(null);
-  const [dialog, setDialog] = useState<'sync' | 'carry' | 'import' | null>(null);
+  const [dialog, setDialog] = useState<'sync' | 'carry' | 'import' | 'plan-staff' | null>(null);
   const [editing, setEditing] = useState<SectionGroup | null>(null);
 
   const { data, isPending } = useQuery({
@@ -74,6 +78,12 @@ export default function ObsadaPage() {
     queryFn: () => syncSections(term!.key, { facultyId, dryRun: true }).then((r) => r.data),
     enabled: !!term && canEdit,
   });
+  // Plan a obsada: klucz pod 'sections', wiec kazdy zapis obsady (refresh) liczy rozjazd od nowa.
+  const { data: planStaff } = useQuery({
+    queryKey: ['sections', 'plan-staff', term?.key, facultyId],
+    queryFn: () => fetchPlanStaff(term!.key, facultyId),
+    enabled: !!term && canEdit,
+  });
 
   const refresh = async () => {
     setDialog(null);
@@ -86,6 +96,7 @@ export default function ObsadaPage() {
   const summary = data?.summary;
   const editable = canEdit && !summary?.archived;
   const notice = editable && data && syncReport ? syncNotice(syncReport, data.rows.length) : null;
+  const staffNotice = editable && planStaff ? planStaffNotice(planStaff) : null;
 
   return (
     <>
@@ -123,11 +134,11 @@ export default function ObsadaPage() {
           Kalendarze rocznikow sa w archiwum — zajecia i obsada tego semestru sa tylko do odczytu.
         </p>
       )}
-      {summary && summary.planOutsideStaff > 0 && (
+      {/* Planista dostaje komunikat z "Pokaz i przepnij" (nizej); tu tylko informacja przy podgladzie bez edycji. */}
+      {!editable && summary && summary.planOutsideStaff > 0 && (
         <p className="rounded-lg border border-amber-500/50 bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
           W planie {summary.planOutsideStaff} umieszczen ma prowadzacego, ktorego nie ma juz w obsadzie tych zajec (obsada
-          zmieniona po ulozeniu planu). Zajecia maja znaczek „plan: inny prowadzacy” — otworz je w Ukladaniu planu i wybierz
-          prowadzacego.
+          zmieniona po ulozeniu planu). Zajecia maja znaczek „plan: inny prowadzacy”.
         </p>
       )}
       {summary && (
@@ -154,6 +165,18 @@ export default function ObsadaPage() {
             <p>{notice.description}</p>
             <Button size="sm" variant={notice.kind === 'problems' ? 'outline' : 'default'} onClick={() => setDialog('sync')}>
               {notice.action}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+      {staffNotice && (
+        <Alert className="border-primary/50">
+          <UserCog className="text-primary" />
+          <AlertTitle>{staffNotice.title}</AlertTitle>
+          <AlertDescription>
+            <p>{staffNotice.description}</p>
+            <Button size="sm" onClick={() => setDialog('plan-staff')}>
+              {staffNotice.action}
             </Button>
           </AlertDescription>
         </Alert>
@@ -210,6 +233,18 @@ export default function ObsadaPage() {
       )}
       {term && dialog === 'carry' && <CarryDialog termKey={term.key} facultyId={facultyId} onClose={() => setDialog(null)} onDone={refresh} />}
       {term && dialog === 'import' && <ImportDialog termKey={term.key} facultyId={facultyId} onClose={() => setDialog(null)} onDone={refresh} />}
+      {term && dialog === 'plan-staff' && planStaff && planStaff.length > 0 && (
+        <PlanStaffDialog
+          termKey={term.key}
+          rows={planStaff}
+          onClose={() => setDialog(null)}
+          onDone={() => {
+            void refresh();
+            void queryClient.invalidateQueries({ queryKey: ['plan'] });
+            void queryClient.invalidateQueries({ queryKey: ['occurrences'] });
+          }}
+        />
+      )}
       {term && editing && <GroupStaffDialog termKey={term.key} group={editing} onClose={() => setEditing(null)} onDone={refresh} />}
     </>
   );

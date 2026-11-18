@@ -3,7 +3,7 @@ import { authenticate, authorize } from '../middleware/authenticate';
 import * as sections from '../controllers/sections.controller';
 import { planLocked, termFromKey } from '../middleware/planLocked';
 import { validateBody } from '../middleware/validate';
-import { personStaffSchema, staffReplaceSchema } from '../schemas/staffing';
+import { personStaffSchema, planStaffSchema, staffReplaceSchema } from '../schemas/staffing';
 
 /**
  * Zajecia semestru i obsada: /api/terms/:key/sections... (lista, synchronizacja,
@@ -35,5 +35,9 @@ termSectionsRouter.put(
   planLocked(termFromKey),
   sections.personStaffHandler,
 );
+
+// Plan a obsada: zajecia w planie z prowadzacym spoza obsady albo NN mimo obsady; przepiecie z podgladem.
+termSectionsRouter.get('/plan-staff', authenticate, planners, sections.planStaffList);
+termSectionsRouter.post('/plan-staff', authenticate, planners, validateBody(planStaffSchema), locked, sections.planStaffChange);
 
 sectionsRouter.put('/:id/instructors', authenticate, planners, sections.setInstructors);
