@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, CircleCheck, FilterX, Search, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { BookOpen, ChevronLeft, ChevronRight, CircleCheck, FilterX, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -195,6 +196,15 @@ export default function SectionsTab({
                       </TableCell>
                       <TableCell className="align-top font-medium">
                         {g.subject.name}
+                        <Link
+                          to={`/curriculum/program/${g.programVersionId}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="ml-1.5 inline-flex align-middle text-muted-foreground hover:text-foreground"
+                          title="Pozycja w programie studiow (godziny, ECTS, wersja programu)"
+                          aria-label="Pozycja w programie studiow"
+                        >
+                          <BookOpen className="size-3.5" />
+                        </Link>
                         {g.specialization && (
                           <Badge
                             variant="outline"

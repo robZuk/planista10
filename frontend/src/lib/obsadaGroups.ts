@@ -13,6 +13,7 @@ export interface SectionGroup {
   specializationName: string | null;
   classType: ClassType;
   programEntryId: string;
+  programVersionId: string;
   /** Katedra prowadzaca te forme przedmiotu (zlecenie wydzialu). */
   department: ClassSectionRow['department'];
   sections: ClassSectionRow[];
@@ -44,6 +45,7 @@ export function groupSections(rows: ClassSectionRow[]): SectionGroup[] {
         specializationName: row.specializationName,
         classType: row.classType,
         programEntryId: row.programEntryId,
+        programVersionId: row.programVersionId,
         department: row.department,
         sections: [],
         hours: 0,

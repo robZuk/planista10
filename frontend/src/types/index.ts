@@ -489,6 +489,8 @@ export interface ClassSectionRow {
   cohort: { id: string; label: string; code: string; semester: number; archived: boolean };
   subject: { id: string; name: string; code: string | null };
   programEntryId: string;
+  /** Wersja programu pozycji — link "pozycja w programie" ze strony Obsada. */
+  programVersionId: string;
   /** Katedra prowadzaca te forme przedmiotu (z programu, zlecenie wydzialu); null = nieprzypisana. */
   department: { id: string; name: string; label: string } | null;
   order: number;

@@ -71,6 +71,7 @@ export const listSections = asyncHandler(async (req, res) => {
       programEntry: {
         select: {
           id: true,
+          versionId: true,
           orderInSemester: true,
           subject: { select: { id: true, name: true, code: true } },
           specialization: { select: { shortName: true, name: true } },
@@ -98,6 +99,7 @@ export const listSections = asyncHandler(async (req, res) => {
           archived: archived.has(s.cohortId),
         },
         subject: s.programEntry.subject,
+        programVersionId: s.programEntry.versionId,
         programEntryId: s.programEntryId,
         // Katedra formy zajec z programu (zlecenie wydzialu); null = jeszcze nieprzypisana.
         department: departmentOf(s.programEntry.departments, s.classType),
