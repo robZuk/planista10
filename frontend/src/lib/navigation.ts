@@ -69,13 +69,6 @@ export const NAV_GROUPS: NavGroup[] = [
         termScoped: true,
       },
       {
-        to: '/curriculum',
-        label: 'Programy studiow',
-        icon: Table2,
-        roles: ['ADMIN', 'DEAN_OFFICE', 'INSTRUCTOR'],
-        keywords: ['siatka godzin', 'program', 'przedmioty', 'ects', 'kierunki', 'wersje'],
-      },
-      {
         to: '/calendar',
         label: 'Kalendarz semestru',
         icon: CalendarRange,
@@ -140,6 +133,13 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: GraduationCap,
         roles: ['ADMIN', 'DEAN_OFFICE', 'INSTRUCTOR'],
         keywords: ['wykladowcy', 'kadra'],
+      },
+      {
+        to: '/curriculum',
+        label: 'Programy studiow',
+        icon: Table2,
+        roles: ['ADMIN', 'DEAN_OFFICE', 'INSTRUCTOR'],
+        keywords: ['siatka godzin', 'program', 'przedmioty', 'ects', 'kierunki', 'wersje'],
       },
     ],
   },

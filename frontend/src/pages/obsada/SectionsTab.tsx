@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, CircleCheck, FilterX, Search, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { BookOpen, ChevronLeft, ChevronRight, CircleCheck, FilterX, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -195,6 +196,15 @@ export default function SectionsTab({
                       </TableCell>
                       <TableCell className="align-top font-medium">
                         {g.subject.name}
+                        <Link
+                          to={`/curriculum/program/${g.programVersionId}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="ml-1.5 inline-flex align-middle text-muted-foreground hover:text-foreground"
+                          title="Pozycja w programie studiow (godziny, ECTS, wersja programu)"
+                          aria-label="Pozycja w programie studiow"
+                        >
+                          <BookOpen className="size-3.5" />
+                        </Link>
                         {g.specialization && (
                           <Badge
                             variant="outline"
@@ -207,6 +217,15 @@ export default function SectionsTab({
                         {g.department && (
                           <Badge variant="secondary" className="ml-2" title={`Katedra prowadzaca te forme: ${g.department.name}`}>
                             {g.department.label}
+                          </Badge>
+                        )}
+                        {g.planOutsideStaff > 0 && (
+                          <Badge
+                            variant="outline"
+                            className="ml-2 border-amber-500 text-amber-700 dark:text-amber-400"
+                            title="W planie te zajecia ma prowadzacy, ktorego nie ma juz w obsadzie. Przepnij go przyciskiem Pokaz i przepnij nad zakladkami albo w Ukladaniu planu."
+                          >
+                            plan: inny prowadzacy ({g.planOutsideStaff})
                           </Badge>
                         )}
                         {g.orphaned && (

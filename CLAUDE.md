@@ -82,7 +82,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
 - `src/controllers/*` — obsługa żądań (walidacja wejścia, wywołanie logiki, odpowiedź)
 - `src/services/*` — logika domenowa z bazą: `termCalendars`, `cohorts`, `sections`
   (synchronizacja zajęć, przenoszenie obsady), `staffing` (obsada wielu zajęć naraz i godziny
-  jednej osoby — Obciążenia), `plan` (walidacja umieszczeń, dostępność,
+  jednej osoby — Obciążenia), `planStaff` (plan a obsada: zajęcia w planie z prowadzącym spoza obsady
+  albo NN mimo pełnej obsady, przepięcie prowadzącego z kontrolą kolizji), `plan` (walidacja umieszczeń, dostępność,
   generowanie terminów), `occurrenceChanges` (przeniesienie / przywrócenie / termin ręczny z kontrolą
   kolizji — tylko planista), `carryPlan`, `staleness` (terminy nieaktualne per rocznik), `visibility`
   `planLock` (zapisy planu po kolei w obrebie semestru — kontrola kolizji i zapis bez wyscigu;
@@ -98,6 +99,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `groupTree.ts` — drzewo grup: reguła nakładania i nazwy liczone
   - `demand.ts` — zajęcia wynikające z programu i grup
   - `staffing.ts` — zasady listy obsady (`staffProblem`), godziny jednej osoby z ustępującym NN (`withPersonHours`)
+  - `planStaff.ts` — rozjazd planu z obsadą (`staffMismatch`: FOREIGN / MISSING), podpowiedź osoby, kolizje prowadzącego
   - `workload.ts` — obciążenia: osoba → przedmiot i forma w roczniku z grupami, stac./niestac., suma uczelni; zajęcia łączone (`jointKey`) liczone raz
   - `materializer.ts` — terminy z umieszczeń (limit godzin, wyjątki, kolizje)
   - `timeGrid.ts` — siatki godzin: walidacja bloków, bloki → minuty, przerwy, dni z oknem godzin, kolizje w minutach, zestaw siatek wydziału i trybu (podstawowa + siatki dnia, `gridSet.forDay`)
@@ -166,6 +168,11 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   tylko oglądają („Mój plan”). W planista10 **nie ma zgłoszeń zmian ani powiadomień w aplikacji**
   (usunięte migracją `20261115120000_drop_change_requests_notifications`) — nie dokładaj ich
   z powrotem bez decyzji użytkownika.
+- **Plan a obsada.** Umieszczenie niesie prowadzącego wybranego z obsady swojej grupy (`Placement.instructorId`;
+  spoza obsady serwer odrzuca). Zmiana obsady planu **nie zmienia** — Obsada pokazuje zajęcia w planie z prowadzącym
+  spoza obsady albo NN mimo pełnej obsady i „Pokaż i przepnij” (`services/planStaff`, `/api/terms/:key/plan-staff`):
+  podgląd kolizji prowadzącego liczony na stanie po zmianach (zamiana osób między grupami równoległymi przechodzi
+  w jednym kroku), zapis tylko zmian bez kolizji, terminy jak po każdej zmianie planu.
 - **Plan jednego wydziału; zajęcia innych wydziałów to „zajętości zewnętrzne”** (`ExternalBusy`,
   strona „Zajętości zewnętrzne”): prowadzący i/lub sala, minuty i konkretne daty ze zgłoszeń
   mailowych. Liczą się tylko do kolizji (dokłada je `termOccupancy`; `BusySlot.groupId = null`), nie

@@ -489,6 +489,8 @@ export interface ClassSectionRow {
   cohort: { id: string; label: string; code: string; semester: number; archived: boolean };
   subject: { id: string; name: string; code: string | null };
   programEntryId: string;
+  /** Wersja programu pozycji — link "pozycja w programie" ze strony Obsada. */
+  programVersionId: string;
   /** Katedra prowadzaca te forme przedmiotu (z programu, zlecenie wydzialu); null = nieprzypisana. */
   department: { id: string; name: string; label: string } | null;
   order: number;
@@ -501,10 +503,14 @@ export interface ClassSectionRow {
   status: 'ACTIVE' | 'ORPHANED';
   assignedHours: number;
   hasVacancy: boolean;
+  /** Umieszczenia w planie z prowadzacym spoza obecnej obsady tych zajec. */
+  planOutsideStaff: number;
   instructors: SectionAssignment[];
 }
 
 export interface SectionsSummary {
+  /** Umieszczenia w planie z prowadzacym spoza obsady (suma po zajeciach). */
+  planOutsideStaff: number;
   sections: number;
   hours: number;
   assignedHours: number;
@@ -525,6 +531,36 @@ export interface SyncRow {
   fallback?: boolean;
   /** Obsada po zmianie godzin (przeskalowana do nowych godzin zajec). */
   instructors?: { name: string; hours: number }[];
+}
+
+/**
+ * Plan a obsada: zajecia w planie z prowadzacym spoza obsady (FOREIGN) albo NN mimo pelnej obsady
+ * (MISSING) — strona Obsada, "Przepnij w planie".
+ */
+export interface StaffMismatchRow {
+  placementId: string;
+  cohort: { id: string; label: string; code: string; semester: number };
+  subject: string;
+  specialization: string | null;
+  classType: ClassType;
+  group: string;
+  /** Kiedy zajecia sa w planie (dzien, godziny, rytm). */
+  slot: string;
+  kind: 'FOREIGN' | 'MISSING';
+  /** Prowadzacy w planie (null = NN). */
+  current: { id: string; name: string } | null;
+  /** Osoby z obsady zajec (bez NN), od najwiekszej liczby godzin. */
+  staff: { id: string; name: string; hours: number }[];
+  /** Podpowiedz: na kogo przepiac (null = NN). */
+  proposed: string | null;
+}
+
+export interface StaffChangeCheck {
+  placementId: string;
+  instructorId: string | null;
+  /** Powod, dla ktorego zmiany nie da sie zapisac (poza kolizjami); null = mozna. */
+  error: string | null;
+  conflicts: { date: string; with: string }[];
 }
 
 export interface SyncReport {
