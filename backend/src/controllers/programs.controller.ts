@@ -24,7 +24,8 @@ const programInclude = {
   versions: {
     orderBy: { createdAt: 'asc' as const },
     include: {
-      _count: { select: { entries: true } },
+      // cohorts: wersji uzywanej przez roczniki nie usuwa sie (UI wylacza kosz z powodem).
+      _count: { select: { entries: true, cohorts: true } },
       clonedFrom: { select: { id: true, label: true } },
     },
   },
@@ -280,12 +281,24 @@ export const updateVersion = asyncHandler(async (req, res) => {
     defaultStartType?: SemesterType;
   };
   await assertVersionLabelFree(version.programId, body.label, version.id);
-  if (body.totalSemesters !== undefined && body.totalSemesters < version.totalSemesters) {
-    const beyond = await prisma.programEntry.count({
-      where: { versionId: version.id, semester: { gt: body.totalSemesters } },
-    });
-    if (beyond > 0) {
-      throw new AppError(409, `W semestrach powyzej ${body.totalSemesters} sa przedmioty (${beyond}) — usun je najpierw`);
+  const semesters = body.totalSemesters;
+  if (semesters !== undefined && semesters !== version.totalSemesters) {
+    // Liczba semestrow wyznacza zajecia i semestry rocznikow — jak przedmioty, zmienia sie ja w projekcie.
+    if (version.status === 'APPROVED') {
+      throw new AppError(409, 'Wersja jest zatwierdzona — liczbe semestrow zmienia sie w projekcie (cofnij ja do projektu)');
+    }
+    if (semesters < version.totalSemesters) {
+      const beyond = await prisma.programEntry.count({ where: { versionId: version.id, semester: { gt: semesters } } });
+      if (beyond > 0) {
+        throw new AppError(409, `W semestrach powyzej ${semesters} sa przedmioty (${beyond}) — usun je najpierw`);
+      }
+      // Grupa poza zakresem programu nie dalaby sie potem nawet edytowac (walidacja zakresu grupy).
+      const groups = await prisma.studentGroup.count({
+        where: { cohort: { programVersionId: version.id }, OR: [{ fromSemester: { gt: semesters } }, { toSemester: { gt: semesters } }] },
+      });
+      if (groups > 0) {
+        throw new AppError(409, `Grupy rocznikow tej wersji obowiazuja po semestrze ${semesters} (${groups}) — popraw najpierw ich zakres`);
+      }
     }
   }
   const data = await prisma.programVersion.update({ where: { id: version.id }, data: body });

@@ -348,7 +348,8 @@ export interface ProgramVersionSummary {
   clonedFrom: { id: string; label: string } | null;
   createdAt: string;
   updatedAt: string;
-  _count: { entries: number };
+  /** cohorts: roczniki na tej wersji (takiej wersji nie usuwa sie). */
+  _count: { entries: number; cohorts: number };
 }
 
 export interface Program {

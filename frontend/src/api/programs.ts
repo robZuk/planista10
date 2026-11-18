@@ -30,6 +30,12 @@ export async function createProgram(input: ProgramInput): Promise<Program> {
   return res.data.data;
 }
 
+/** Kod i nazwa programu; kierunek, poziom i tryb sa stale (od nich zalezy reszta modelu). */
+export async function updateProgram(id: string, input: { code: string; name: string }): Promise<Program> {
+  const res = await api.put(`/programs/${id}`, input);
+  return res.data.data;
+}
+
 export async function deleteProgram(id: string): Promise<void> {
   await api.delete(`/programs/${id}`);
 }

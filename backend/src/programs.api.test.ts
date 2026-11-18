@@ -8,8 +8,14 @@ process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
 
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn().mockResolvedValue({ facultyId: 'wm' }) },
-  programVersion: { findUnique: vi.fn(), update: vi.fn((args: { data: object }) => Promise.resolve({ id: 'v1', ...args.data })) },
+  programVersion: {
+    findUnique: vi.fn(),
+    findFirst: vi.fn().mockResolvedValue(null),
+    update: vi.fn((args: { data: object }) => Promise.resolve({ id: 'v1', ...args.data })),
+  },
+  studentGroup: { count: vi.fn().mockResolvedValue(0) },
   programEntry: {
+    count: vi.fn().mockResolvedValue(0),
     findMany: vi.fn().mockResolvedValue([]),
     findUnique: vi.fn(),
     aggregate: vi.fn(),
@@ -214,5 +220,50 @@ describe('API — zatwierdzenie wersji programu', () => {
     const res = await request(app).put('/api/program-versions/v1').set('Authorization', `Bearer ${dean}`).send({ status: 'DRAFT' });
     expect(res.status).toBe(200);
     expect(autoSyncVersionMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('API — edycja wersji programu: etykieta i liczba semestrow', () => {
+  const draft = { ...version('wm', 'DRAFT'), programId: 'p1', label: 'Wersja 1' };
+  const putVersion = (body: object) => request(app).put('/api/program-versions/v1').set('Authorization', `Bearer ${dean}`).send(body);
+
+  it('zatwierdzona: zmiana liczby semestrow -> 409 bez zapisu', async () => {
+    prismaMock.programVersion.findUnique.mockResolvedValueOnce({ ...draft, status: 'APPROVED' });
+    prismaMock.programVersion.update.mockClear();
+    const res = await putVersion({ totalSemesters: 6 });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/zatwierdzona — liczbe semestrow zmienia sie w projekcie/);
+    expect(prismaMock.programVersion.update).not.toHaveBeenCalled();
+  });
+
+  it('zatwierdzona: nowa etykieta przy tej samej liczbie semestrow — zapisana', async () => {
+    prismaMock.programVersion.findUnique.mockResolvedValueOnce({ ...draft, status: 'APPROVED' });
+    prismaMock.programVersion.update.mockClear();
+    const res = await putVersion({ label: 'od naboru 2027/28', totalSemesters: 7, defaultStartType: 'SUMMER' });
+    expect(res.status).toBe(200);
+    expect(prismaMock.programVersion.update).toHaveBeenCalledWith({
+      where: { id: 'v1' },
+      data: { label: 'od naboru 2027/28', totalSemesters: 7, defaultStartType: 'SUMMER' },
+    });
+  });
+
+  it('projekt: skrocenie, gdy grupy rocznikow obowiazuja dluzej -> 409 bez zapisu', async () => {
+    prismaMock.programVersion.findUnique.mockResolvedValueOnce(draft);
+    prismaMock.studentGroup.count.mockResolvedValueOnce(3);
+    prismaMock.programVersion.update.mockClear();
+    const res = await putVersion({ totalSemesters: 6 });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('Grupy rocznikow tej wersji obowiazuja po semestrze 6 (3) — popraw najpierw ich zakres');
+    expect(prismaMock.studentGroup.count).toHaveBeenLastCalledWith({
+      where: { cohort: { programVersionId: 'v1' }, OR: [{ fromSemester: { gt: 6 } }, { toSemester: { gt: 6 } }] },
+    });
+    expect(prismaMock.programVersion.update).not.toHaveBeenCalled();
+  });
+
+  it('projekt: skrocenie bez przedmiotow i grup poza zakresem — zapisane', async () => {
+    prismaMock.programVersion.findUnique.mockResolvedValueOnce(draft);
+    const res = await putVersion({ totalSemesters: 6 });
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('Wersja zapisana');
   });
 });

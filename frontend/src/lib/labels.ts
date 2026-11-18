@@ -6,6 +6,7 @@ import type {
   DayOfWeek,
   DegreeLevel,
   RoomType,
+  SemesterType,
   StudyMode,
 } from '@/types';
 
@@ -34,6 +35,14 @@ export const DEGREE_LEVEL_LABELS: Record<DegreeLevel, string> = {
 };
 
 export const DEGREE_LEVELS = Object.keys(DEGREE_LEVEL_LABELS) as DegreeLevel[];
+
+/** Semestr startu naboru (wersja programu: od ktorego semestru zwykle rusza rocznik). */
+export const SEMESTER_TYPE_LABELS: Record<SemesterType, string> = {
+  WINTER: 'Zimowy',
+  SUMMER: 'Letni',
+};
+
+export const SEMESTER_TYPES = Object.keys(SEMESTER_TYPE_LABELS) as SemesterType[];
 
 export const ASSESSMENT_TYPE_LABELS: Record<AssessmentType, string> = {
   EXAM: 'Egzamin',
