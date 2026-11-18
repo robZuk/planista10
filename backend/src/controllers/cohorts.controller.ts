@@ -1,4 +1,4 @@
-import type { CohortLectureMode, StudentGroup } from '@prisma/client';
+import type { CohortLectureMode, Prisma, StudentGroup } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
@@ -39,6 +39,36 @@ async function findTermByKey(key: string) {
   const term = await prisma.academicTerm.findUnique({ where: { startYear_type: ref } });
   if (!term) throw new AppError(404, 'Semestr nie istnieje');
   return term;
+}
+
+/** Grupa z praca planisty (obsada, umieszczenia, terminy) — blokuje usuniecie grupy i rocznika; zajecia "puste" nie. */
+const groupWithWork = {
+  OR: [{ sections: { some: usedSection } }, { occurrences: { some: {} } }],
+} satisfies Prisma.StudentGroupWhereInput;
+
+/**
+ * Roczniki, ktorych nie mozna usunac, z powodem: grupy z praca planisty albo ze studentami.
+ * Ten sam tekst idzie do UI (wylaczony przycisk z dymkiem) i do odmowy usuniecia.
+ */
+async function cohortDeleteBlockers(cohortIds: string[]): Promise<Map<string, string>> {
+  const blockers = new Map<string, string>();
+  if (cohortIds.length === 0) return blockers;
+  const [withStudents, worked] = await Promise.all([
+    prisma.studentGroup.findMany({
+      where: { cohortId: { in: cohortIds }, members: { some: {} } },
+      select: { cohortId: true },
+      distinct: ['cohortId'],
+    }),
+    prisma.studentGroup.findMany({
+      where: { cohortId: { in: cohortIds }, ...groupWithWork },
+      select: { cohortId: true },
+      distinct: ['cohortId'],
+    }),
+  ]);
+  for (const g of withStudents) blockers.set(g.cohortId, 'Grupy rocznika maja przypisanych studentow');
+  // Obsada i plan wazniejsze niz studenci — to praca, ktorej nie odtworzy sie jednym klikiem.
+  for (const g of worked) blockers.set(g.cohortId, 'Grupy rocznika maja zajecia z obsada albo w planie');
+  return blockers;
 }
 
 // ─── Roczniki ────────────────────────────────────────────────
@@ -86,6 +116,7 @@ export const listTermCohorts = asyncHandler(async (req, res) => {
     where: { termId: term.id },
     select: { id: true, facultyId: true, studyMode: true, name: true, kind: true, status: true },
   });
+  const deleteBlockers = await cohortDeleteBlockers(active.map(({ cohort }) => cohort.id));
 
   const data = active.map(({ cohort, override, semester }) => {
     const activeGroups = cohort.groups.filter(
@@ -105,6 +136,8 @@ export const listTermCohorts = asyncHandler(async (req, res) => {
       availableCalendars: own,
       groupCount: activeGroups.length,
       size: activeGroups.find((g) => g.partitionKey === ROOT)?.size ?? 0,
+      // Powod, dla ktorego rocznika nie mozna usunac (null — mozna).
+      deleteBlocker: deleteBlockers.get(cohort.id) ?? null,
     };
   });
 
@@ -259,13 +292,8 @@ export const deleteCohort = asyncHandler(async (req, res) => {
   const cohort = await requireCohort(String(req.params.id));
   await assertFacultyScope(req, cohort.program.fieldOfStudy.facultyId);
   // Zajecia bez obsady, planu i terminow (np. utworzone samoczynnie po naborze) nie blokuja usuniecia.
-  const used = await prisma.studentGroup.count({
-    where: {
-      cohortId: cohort.id,
-      OR: [{ sections: { some: usedSection } }, { occurrences: { some: {} } }, { members: { some: {} } }],
-    },
-  });
-  if (used > 0) throw new AppError(409, 'Grupy rocznika sa w planie albo maja studentow — nie mozna go usunac');
+  const blocker = (await cohortDeleteBlockers([cohort.id])).get(cohort.id);
+  if (blocker) throw new AppError(409, `${blocker} — nie mozna go usunac`);
   await prisma.$transaction(async (tx) => {
     await tx.classSection.deleteMany({ where: { cohortId: cohort.id, ...bareSection } });
     // Od lisci do korzenia (FK rodzica).
@@ -374,6 +402,24 @@ function assertGroupRange(totalSemesters: number, size: number | undefined, from
   }
 }
 
+/** Kod grupy podzialu (A, A1...): litery i cyfry — z niego liczy sie nazwa grupy (EDST-3-C-A). */
+function normalizeGroupCode(code: string): string {
+  const normalized = code.trim().toUpperCase();
+  if (!/^[A-Z0-9]{1,8}$/.test(normalized)) {
+    throw new AppError(400, 'Kod grupy: litery i cyfry, do 8 znakow (np. A, A1)');
+  }
+  return normalized;
+}
+
+type SiblingRange = { code: string | null; fromSemester: number; toSemester: number | null };
+
+/** Ten sam kod w jednym podziale pod jednym rodzicem nie moze obowiazywac w tych samych semestrach. */
+function codeClash(siblings: SiblingRange[], code: string, from: number, to: number | null): boolean {
+  return siblings.some(
+    (s) => s.code === code && s.fromSemester <= (to ?? 99) && (s.toSemester === null || s.toSemester >= from),
+  );
+}
+
 async function createGroupIn(cohort: Awaited<ReturnType<typeof requireCohort>>, input: NewGroupInput) {
   const parent = await prisma.studentGroup.findUnique({ where: { id: input.parentId } });
   if (!parent || parent.cohortId !== cohort.id) throw new AppError(400, 'Grupa nadrzedna nie nalezy do rocznika');
@@ -396,10 +442,9 @@ async function createGroupIn(cohort: Awaited<ReturnType<typeof requireCohort>>, 
   const to = input.toSemester ?? null;
   assertGroupRange(cohort.programVersion.totalSemesters, input.size ?? 0, from, to);
   const code = input.code?.trim() || nextCodes(1, partitionKey === 'L' && parent.partitionKey === 'C' ? parent.code : null, siblings.map((s) => s.code ?? ''))[0]!;
-  const clash = siblings.some(
-    (s) => s.code === code && s.fromSemester <= (to ?? 99) && (s.toSemester === null || s.toSemester >= from),
-  );
-  if (clash) throw new AppError(409, `Grupa ${partitionKey}-${code} juz istnieje w tym zakresie semestrow`);
+  if (codeClash(siblings, code, from, to)) {
+    throw new AppError(409, `Grupa ${partitionKey}-${code} juz istnieje w tym zakresie semestrow`);
+  }
 
   return prisma.studentGroup.create({
     data: {
@@ -462,14 +507,21 @@ export const updateGroup = asyncHandler(async (req, res) => {
   if (group.partitionKey === ROOT && (from !== 1 || to !== null)) {
     throw new AppError(400, 'Korzen rocznika obowiazuje przez cale studia');
   }
+  // Wlasny kod maja tylko grupy podzialow (C, L...): korzen nie ma kodu, a SPEC bierze skrot specjalnosci.
+  const ownCode = group.partitionKey !== ROOT && group.partitionKey !== SPEC;
+  const code = ownCode && body.code !== undefined ? normalizeGroupCode(body.code) : group.code;
+  if (code && group.parentGroupId && (code !== group.code || from !== group.fromSemester || to !== group.toSemester)) {
+    const siblings = await prisma.studentGroup.findMany({
+      where: { parentGroupId: group.parentGroupId, partitionKey: group.partitionKey, NOT: { id: group.id } },
+      select: { code: true, fromSemester: true, toSemester: true },
+    });
+    if (codeClash(siblings, code, from, to)) {
+      throw new AppError(409, `Grupa ${group.partitionKey}-${code} juz istnieje w tym zakresie semestrow`);
+    }
+  }
   const data = await prisma.studentGroup.update({
     where: { id: group.id },
-    data: {
-      code: group.partitionKey === ROOT || group.partitionKey === SPEC ? undefined : body.code?.trim() || undefined,
-      size: body.size,
-      fromSemester: from,
-      toSemester: to,
-    },
+    data: { code, size: body.size, fromSemester: from, toSemester: to },
   });
   const warning = await plannedOutsideRange(group.id, from, to);
   // Zajecia zmienia tylko zakres semestrow grupy (liczebnosc i kod — nie: klucz zajec to grupa).
@@ -514,14 +566,12 @@ export const deleteGroup = asyncHandler(async (req, res) => {
   const [children, usage, members] = await Promise.all([
     prisma.studentGroup.count({ where: { parentGroupId: group.id } }),
     // Zajecia bez obsady, planu i terminow (np. utworzone samoczynnie po dodaniu grupy) nie blokuja.
-    prisma.studentGroup.count({
-      where: { id: group.id, OR: [{ sections: { some: usedSection } }, { occurrences: { some: {} } }] },
-    }),
+    prisma.studentGroup.count({ where: { id: group.id, ...groupWithWork } }),
     prisma.user.count({ where: { studentGroups: { some: { id: group.id } } } }),
   ]);
   if (children > 0) throw new AppError(409, 'Grupa ma podgrupy — usun je najpierw');
   if (usage > 0) {
-    throw new AppError(409, 'Grupa jest w planie zajec — zamiast usuwac, zakoncz ja na wybranym semestrze');
+    throw new AppError(409, 'Grupa ma zajecia z obsada albo w planie — zamiast usuwac, zakoncz ja na wybranym semestrze');
   }
   if (members > 0) throw new AppError(409, 'Grupa ma przypisanych studentow');
   await prisma.$transaction([

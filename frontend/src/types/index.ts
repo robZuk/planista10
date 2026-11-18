@@ -348,7 +348,8 @@ export interface ProgramVersionSummary {
   clonedFrom: { id: string; label: string } | null;
   createdAt: string;
   updatedAt: string;
-  _count: { entries: number };
+  /** cohorts: roczniki na tej wersji (takiej wersji nie usuwa sie). */
+  _count: { entries: number; cohorts: number };
 }
 
 export interface Program {
@@ -449,6 +450,8 @@ export interface TermCohort extends CohortDto {
   availableCalendars: { id: string; name: string; kind: CalendarKind; status: CalendarStatus }[];
   groupCount: number;
   size: number;
+  /** Powod, dla ktorego rocznika nie mozna usunac (grupy z obsada/planem albo ze studentami); null — mozna. */
+  deleteBlocker: string | null;
 }
 
 export interface IntakeCandidate {
