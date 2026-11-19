@@ -42,7 +42,13 @@ export function StaffRowsEditor({
             className="text-right tabular-nums"
             onChange={(e) => set(index, { hours: e.target.value })}
           />
-          <Button variant="ghost" size="icon" aria-label="Usun" onClick={() => onChange(rows.filter((_, i) => i !== index))}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Usun"
+            title={row.instructorId ? 'Usun z obsady tych zajec — zmiana wejdzie po „Zapisz obsade”' : 'Usun pusty wiersz'}
+            onClick={() => onChange(rows.filter((_, i) => i !== index))}
+          >
             <Trash2 />
           </Button>
         </div>
