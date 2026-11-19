@@ -17,8 +17,8 @@ masz lokalnie, zostają.
 
 Pełna baza testowa (`planista10_pelne`, generator `backend/scripts/pelne-dane`): wydziały WE, WM, WN,
 WZNJ, programy (prawdziwe plany studiów WN i WM, reszta generowana), sale, **fikcyjni prowadzący**,
-roczniki z grupami, obsada i plan semestru zimowego 2026/27 z terminami. Model po migracji
-`20261115210000_drop_cancellations`.
+roczniki z grupami, katedry, obsada i plan semestru zimowego 2026/27 z terminami. Zrzut z 19.11.2026
+z bazy `planista10`, model po migracji `20261117180000_external_busy`.
 
 | Tabela | Wierszy | Co to jest |
 |---|---|---|
@@ -27,9 +27,10 @@ roczniki z grupami, obsada i plan semestru zimowego 2026/27 z terminami. Model p
 | `Instructor` | 238 | prowadzący (fikcyjni) |
 | `Program` | 34 | programy studiów |
 | `Cohort` | 108 | roczniki (996 grup) |
-| `ClassSection` | 4124 | zajęcia semestru (przedmiot × forma × grupa) |
-| `Placement` | 4128 | umieszczenia zajęć w planie |
-| `Occurrence` | 48129 | terminy zimy 2026/27 |
+| `Department` | 21 | katedry |
+| `ClassSection` | 4820 | zajęcia semestru (przedmiot × forma × grupa) |
+| `Placement` | 4130 | umieszczenia zajęć w planie |
+| `Occurrence` | 48103 | terminy zimy 2026/27 |
 | `RefreshToken` | 0 | — |
 
 Zrzut zrobiony `pg_dump --clean --if-exists --no-owner --no-privileges`, więc wgrywa się do
@@ -63,8 +64,7 @@ potem `docker compose exec backend npm run db:seed` (minimalne dane z `backend/p
 
 ## Katedry testowe
 
-Zrzut powstał przed migracją `20261116120000_departments`, więc po wgraniu nie ma katedr
-(prowadzący są bez katedry). Przykładowe katedry i przypisanie fikcyjnych prowadzących wg
+Zrzut ma już katedry (21). Gdyby trzeba je było odtworzyć na starszej bazie — przykładowe katedry i przypisanie fikcyjnych prowadzących wg
 przedmiotu, którego uczą najwięcej, dokłada skrypt — idempotentnie, bez ruszania reszty danych
 (generator `scripts/pelne-dane` woła go sam):
 
