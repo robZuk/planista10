@@ -6,6 +6,7 @@
 # Czysci na KOPII bazy, zeby nie ruszyc zrodla. Uzycie:
 #   bash db/make-dump.sh                    # zrodlo: planista10
 #   bash db/make-dump.sh planista10_pelne   # zrodlo: pelna baza testowa
+#   bash db/make-dump.sh planista10 ~/planista10-serwer.sql.gz   # zrzut poza repo (np. na serwer — scp)
 set -euo pipefail
 
 CONTAINER=planista10-db-1
@@ -13,7 +14,7 @@ BACKEND=planista10-backend-1
 ZRODLO=${1:-planista10}
 KOPIA=planista10_public
 KATALOG="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WYJSCIE="$KATALOG/planista10-dump.sql.gz"
+WYJSCIE=${2:-"$KATALOG/planista10-dump.sql.gz"}
 
 psql_kopia() { docker exec -i "$CONTAINER" psql -U postgres -d "$KOPIA" -v ON_ERROR_STOP=1 "$@"; }
 
