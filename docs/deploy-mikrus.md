@@ -118,7 +118,12 @@ docker compose -f docker-compose.prod.yml logs --tail 50 backend
 ## 10. Subdomena + HTTPS
 **Przydzielony port IPv4:** **[PANEL]** podepnij subdomenę (albo integrację Cloudflare) do portu `WEB_PORT`.
 
-**Tylko IPv6 + Cloudflare** (domena w Cloudflare, np. `tojest.dev`):
+**Darmowa subdomena Mikrusa (od razu, bez konfiguracji):** `https://SERWER-WEB_PORT.mikrus.cloud` (np.
+`https://eve250-8080.mikrus.cloud`) — dowolny port, aplikacja musi słuchać na IPv6 (compose publikuje
+`WEB_PORT` na IPv4 i IPv6). HTTPS zapewnia Mikrus. Opis: https://wiki.mikr.us/darmowa_subdomena_dla_vps/.
+
+**Tylko IPv6 + Cloudflare** (domena w Cloudflare, np. `tojest.dev`; wiki: podpiecie_domeny_przez_cloudflare,
+zmiana_portu_domeny_w_cloudflare):
 1. DNS → rekord `AAAA` `planista10` → adres IPv6 serwera, **Proxied** (pomarańczowa chmurka) — Cloudflare
    przyjmuje ruch IPv4 i IPv6 i łączy się z serwerem po IPv6.
 2. Rules → Origin Rules → reguła „Hostname equals `planista10.tojest.dev`” → *Destination port* = `WEB_PORT`.
