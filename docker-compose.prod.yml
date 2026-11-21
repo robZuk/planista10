@@ -4,7 +4,9 @@
 # Na zewnatrz wystawiony jest TYLKO frontend (WEB_PORT). Sekrety z .env.prod (poza repo).
 # WEB_PORT i DB_PASSWORD z pliku .env obok tego pliku (compose czyta go sam — tez przy deployu z CI);
 # opis: docs/deploy-mikrus.md.
-name: planista
+# Osobna nazwa projektu: kontenery planista10-prod-*, wolumen planista10-prod_pgdata — nie koliduje z dev
+# (projekt planista10) ani ze stara Planista na serwerze (projekt planista).
+name: planista10-prod
 
 services:
   db:

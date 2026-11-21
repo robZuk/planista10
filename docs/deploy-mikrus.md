@@ -1,6 +1,7 @@
 # Deploy na Mikrus 3.5
 
-Runbook wdrożenia Planisty 10 na serwer Mikrus 3.5 (4 GB RAM / 25 GB, LXC). Aplikacja jedzie w trzech
+Runbook wdrożenia Planisty 10 na serwer Mikrus 3.5 (4 GB RAM / 25 GB, LXC). Projekt compose `planista10-prod`
+(kontenery `planista10-prod-*`) — może stać obok innych aplikacji, także starej Planisty (`/srv/planista`). Aplikacja jedzie w trzech
 kontenerach z `docker-compose.prod.yml`: `db` (Postgres 16, baza `planista10`), `backend` (Node, port
 wewnętrzny 4001) i `frontend` (nginx — podaje SPA i przekazuje `/api` oraz `/health` do backendu). Na zewnątrz
 wystawiony jest **tylko** nginx frontu, na porcie `WEB_PORT`.
@@ -29,10 +30,10 @@ docker info | grep -i "Storage Driver"
 > `{"storage-driver":"fuse-overlayfs"}` i `systemctl restart docker`.
 
 ## 3. Klon repo
-Katalog `/srv/planista` — tego samego używa automatyczny deploy (krok 11).
+Katalog `/srv/planista10` — tego samego używa automatyczny deploy (krok 11).
 ```bash
-git clone https://github.com/robZuk/planista10.git /srv/planista
-cd /srv/planista
+git clone https://github.com/robZuk/planista10.git /srv/planista10
+cd /srv/planista10
 ```
 
 ## 4. Sekrety backendu (`.env.prod`)
@@ -54,7 +55,10 @@ DB_PASSWORD=$(openssl rand -hex 24)
 EOF
 chmod 600 .env
 ```
-- `WEB_PORT` — jeden z **przydzielonych portów** Mikrusa **[PANEL]**.
+- `WEB_PORT` — jeden z **przydzielonych portów** Mikrusa **[PANEL]** (IPv4, przekierowanie z NAT). Gdy porty
+  zajmują już inne aplikacje (np. stara Planista na `eve250`), wybierz dowolny wolny port — będzie osiągalny
+  przez **IPv6** serwera (`ip -6 addr`), a światu poda go Cloudflare (krok 10). Wolne porty:
+  `ss -ltn | grep -w PORT`.
 - `DB_PASSWORD` — hasło Postgresa (tylko znaki hex, bo trafia też do `DATABASE_URL`). Baza nie ma portu na
   hoście — dostęp jest tylko z sieci kontenerów. Hasło ustala się przy **pierwszym** starcie bazy (pusty
   wolumen). Późniejsza zmiana w `.env` wymaga też `ALTER USER postgres PASSWORD '…'` w bazie.
@@ -76,11 +80,11 @@ a robocza baza ma prawdziwe nazwiska prowadzących z opublikowanych planów):
 ```bash
 # lokalnie
 bash db/make-dump.sh planista10 ~/planista10-serwer.sql.gz
-scp -P PORT_SSH ~/planista10-serwer.sql.gz root@srvXX.mikr.us:/srv/planista/
+scp -P PORT_SSH ~/planista10-serwer.sql.gz root@srvXX.mikr.us:/srv/planista10/
 ```
 Na serwerze:
 ```bash
-cd /srv/planista
+cd /srv/planista10
 gunzip -c planista10-serwer.sql.gz | docker compose -f docker-compose.prod.yml exec -T db \
   psql -q -U postgres -d planista10 -v ON_ERROR_STOP=1
 docker compose -f docker-compose.prod.yml restart backend    # dogoni migracje nowsze od zrzutu
@@ -112,14 +116,24 @@ docker compose -f docker-compose.prod.yml logs --tail 50 backend
 ```
 
 ## 10. Subdomena + HTTPS
-**[PANEL]** Podepnij subdomenę (albo integrację Cloudflare) do portu `WEB_PORT`. HTTPS załatwia Mikrus /
+**Przydzielony port IPv4:** **[PANEL]** podepnij subdomenę (albo integrację Cloudflare) do portu `WEB_PORT`.
+
+**Tylko IPv6 + Cloudflare** (domena w Cloudflare, np. `tojest.dev`):
+1. DNS → rekord `AAAA` `planista10` → adres IPv6 serwera, **Proxied** (pomarańczowa chmurka) — Cloudflare
+   przyjmuje ruch IPv4 i IPv6 i łączy się z serwerem po IPv6.
+2. Rules → Origin Rules → reguła „Hostname equals `planista10.tojest.dev`” → *Destination port* = `WEB_PORT`.
+3. SSL/TLS: połączenie Cloudflare → serwer idzie po HTTP (tryb *Flexible* albo reguła konfiguracyjna dla tego
+   hosta), bo nginx frontu nie ma certyfikatu.
+4. Test z komputera z IPv6: `curl -6 http://[ADRES_IPV6]:WEB_PORT/health`.
+
+Ogólnie: HTTPS załatwia Mikrus /
 Cloudflare — aplikacja nie potrzebuje certyfikatów. Front woła `/api` relatywnie, więc nigdzie nie trzeba
 wpisywać adresu backendu. Upewnij się, że `CORS_ORIGIN` w `.env.prod` to finalny adres, i po zmianie:
 `docker compose -f docker-compose.prod.yml up -d`.
 
 ## 11. Aktualizacje
 **Automatycznie (CD):** workflow `Deploy` po zielonych testach buduje obrazy i — gdy w repo są sekrety — loguje
-się przez SSH i robi w `/srv/planista`: `git pull --ff-only`, `pull`, `up -d`, `image prune`. Sekrety
+się przez SSH i robi w `/srv/planista10`: `git pull --ff-only`, `pull`, `up -d`, `image prune`. Sekrety
 (Settings → Secrets and variables → Actions):
 
 | Sekret | Wartość |
@@ -133,10 +147,10 @@ Dopóki nie ma `MIKRUS_HOST`, workflow tylko buduje i wypycha obrazy.
 
 **Ręcznie:**
 ```bash
-cd /srv/planista && git pull --ff-only
+cd /srv/planista10 && git pull --ff-only
 docker compose -f docker-compose.prod.yml pull && docker compose -f docker-compose.prod.yml up -d
 ```
-Dane zostają w wolumenie `planista_pgdata`.
+Dane zostają w wolumenie `planista10-prod_pgdata`.
 
 ## 12. Kopia zapasowa bazy
 ```bash

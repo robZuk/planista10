@@ -90,7 +90,7 @@ jobs:
           username: ${{ secrets.MIKRUS_USER }}
           key: ${{ secrets.MIKRUS_SSH_KEY }}
           script: |
-            cd /srv/planista
+            cd /srv/planista10
             git pull --ff-only
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
