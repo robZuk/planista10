@@ -188,7 +188,10 @@ export function PlacementDialog({
         ? updatePlacement(placement!.id, { pattern: 'LIST', numbers: otherZjazdy, fromIndex: null, toIndex: null })
         : deletePlacement(placement!.id),
     onSuccess: (r) => {
-      toast.success(r.message);
+      // Usuniecie z jednego zjazdu to zmiana listy zjazdow — serwer odpowiada jak na zapis
+      // umieszczenia, a planista usunal zajecia z tego zjazdu.
+      const fromZjazd = onlyThisZjazd && !singleZjazd;
+      toast.success(fromZjazd ? r.message.replace(/^Umieszczenie zapisane/, `Zajecia usuniete z tygodnia ${weekOfZjazd(target.zjazd!)}`) : r.message);
       onSaved();
     },
     onError: (e) => (isNotFound(e) ? gone() : toast.error(getErrorMessage(e))),
