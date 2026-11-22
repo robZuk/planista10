@@ -24,7 +24,6 @@ import { fetchFaculties } from '@/api/faculties';
 import { TERMS_QUERY_KEY, useCurrentTerm } from '@/hooks/useTerm';
 import { getErrorMessage } from '@/lib/errors';
 import {
-  CALENDAR_DAY_KIND_LABELS,
   CALENDAR_KIND_LABELS,
   CALENDAR_STATUS_LABELS,
   CALENDAR_STATUSES,
@@ -36,7 +35,7 @@ import { useFacultyFilterStore } from '@/store/facultyStore';
 import type { CalendarStatus, Faculty, StudyMode, TermCalendar } from '@/types';
 import { CalendarEditorDialog, type EditorTarget } from './calendar/CalendarEditorDialog';
 import { NewTermDialog } from './calendar/NewTermDialog';
-import { formatDayKey, formatRange } from './calendar/calendarUtils';
+import { calendarDayLabel, formatDayKey, formatRange } from './calendar/calendarUtils';
 import { statusChangeWarning, usageNote } from './calendar/statusChange';
 import { toDateKey } from '@/lib/scheduleDates';
 
@@ -406,7 +405,7 @@ function CalendarCard({ calendar, editable, canChangeStatus, statusPending, onEd
           <div>
             <span className="text-muted-foreground">Wyjatki dni: </span>
             {calendar.days
-              .map((d) => `${formatDayKey(d.date)} ${d.name ?? CALENDAR_DAY_KIND_LABELS[d.kind].toLowerCase()}`)
+              .map(calendarDayLabel)
               .join(', ')}
           </div>
         )}

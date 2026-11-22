@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CalendarProposal } from '@/types';
-import { addDaysKey, formatDayKey, formatRange, proposalNote, semesterWeekOf } from './calendarUtils';
+import { addDaysKey, calendarDayLabel, formatDayKey, formatRange, proposalNote, semesterWeekOf } from './calendarUtils';
 
 describe('semesterWeekOf — „tydz.” zjazdu', () => {
   it('tydzien semestru z lukami na przerwy (start w czwartek 1.10.2026)', () => {
@@ -53,5 +53,21 @@ describe('proposalNote', () => {
     const note = proposalNote({ source: null, calendar: winter });
     expect(note.description).toContain('przerwa: Przerwa swiateczna');
     expect(note.description).toContain('Dodaj recznie: pozostale przerwy, dni wolne uczelni');
+  });
+});
+
+describe('calendarDayLabel — wyjatki dni w podsumowaniu kalendarza', () => {
+  it('zamiana dni mowi, wg planu ktorego dnia', () => {
+    expect(calendarDayLabel({ date: '2026-11-05', kind: 'FOLLOWS_WEEKDAY', name: null, followsWeekday: 'MONDAY' })).toBe('5.11 wg planu: poniedzialek');
+    expect(calendarDayLabel({ date: '2027-01-04', kind: 'FOLLOWS_WEEKDAY', name: 'Zamiana', followsWeekday: 'WEDNESDAY' })).toBe(
+      '4.01 Zamiana (wg planu: sroda)',
+    );
+  });
+  it('dzien wolny z nazwa i bez nazwy, godziny rektorskie od bloku', () => {
+    expect(calendarDayLabel({ date: '2026-11-02', kind: 'DAY_OFF', name: 'Dzień wolny od zajęć' })).toBe('2.11 Dzień wolny od zajęć');
+    expect(calendarDayLabel({ date: '2026-11-02', kind: 'DAY_OFF', name: null })).toBe('2.11 dzien wolny');
+    expect(calendarDayLabel({ date: '2026-11-12', kind: 'CLOSED_FROM', name: null, closedFromBlockOrder: 5 })).toBe(
+      '12.11 godziny rektorskie od bloku 5',
+    );
   });
 });

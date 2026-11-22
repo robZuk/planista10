@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { CalendarProposal } from '@/types';
+import type { CalendarDay, CalendarProposal } from '@/types';
+import { CALENDAR_DAY_KIND_LABELS, WEEKDAY_LABELS } from '@/lib/labels';
 
 /** "2026-10-09" + n dni — liczone w UTC, wiec zmiana czasu nie przesuwa dnia. */
 export function addDaysKey(key: string, days: number): string {
@@ -12,6 +13,23 @@ export function addDaysKey(key: string, days: number): string {
 export function formatDayKey(key: string, withYear = false): string {
   const [y, m, d] = key.split('-');
   return `${Number(d)}.${m}${withYear ? `.${y}` : ''}`;
+}
+
+/**
+ * Wyjatek dnia w podsumowaniu kalendarza: "5.11 wg planu: poniedzialek", "2.11 Dzien wolny od zajec",
+ * "12.11 godziny rektorskie od bloku 5". Wlasna nazwa dnia ma pierwszenstwo, ale zamiana dni
+ * i godziny rektorskie zawsze mowia, wg ktorego dnia i od ktorego bloku.
+ */
+export function calendarDayLabel(day: Pick<CalendarDay, 'date' | 'kind' | 'name' | 'followsWeekday' | 'closedFromBlockOrder'>): string {
+  const detail =
+    day.kind === 'FOLLOWS_WEEKDAY' && day.followsWeekday
+      ? `wg planu: ${WEEKDAY_LABELS[day.followsWeekday].toLowerCase()}`
+      : day.kind === 'CLOSED_FROM' && day.closedFromBlockOrder
+        ? `godziny rektorskie od bloku ${day.closedFromBlockOrder}`
+        : null;
+  const name = day.name?.trim();
+  const text = name ? (detail ? `${name} (${detail})` : name) : (detail ?? CALENDAR_DAY_KIND_LABELS[day.kind].toLowerCase());
+  return `${formatDayKey(day.date)} ${text}`;
 }
 
 /**
