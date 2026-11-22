@@ -1,0 +1,49 @@
+# Systemy teleinformatyczne, stacjonarne II st. (start letni), plan z naboru 2022/23 L (Senat 147-XVII z 16.09.2022), obowiazuje nabory 2024/25-2026/27
+# zrodlo: 2st_st_ST-RN24-25_RN25-26_RA26-27_s1-3.pdf; sciezki: BiTD = Bezpieczenstwo i transmisja danych, AiPD = Analiza i przetwarzanie danych
+@program STI-S2
+@wersja od naboru 2024/25
+@sumy BTD I: W270 C30 L150 P15 e31 | II: W120 C30 L165 P105 e28 | III: W45 C60 L75 P75 e32
+@sumy APD I: W270 C30 L150 P15 e31 | II: W105 C30 L165 P120 e28 | III: W45 C60 L90 P60 e32
+
+@spec -
+1 | Język angielski | I: L15 e1 | II: L15 e1 | III: L30 e2
+2 | Przedmiot humanistyczny I | I: W15 e1
+3 | Podstawy przedsiębiorczości | I: W15 C15 e2
+4 | Przedmiot humanistyczny II | III: C30 e2
+5 | Matematyka II | II: W30! C30 e4
+6 | Programowalne układy cyfrowe | I: W30 L15 e3 | II: L15 e1
+7 | Diagnostyka i niezawodność | I: W15 C15 e2
+8 | Kompatybilność elektromagnetyczna | II: W15 L15 e2
+9 | Systemy baz danych | I: W15 P15 e2
+10 | Systemy inteligencji obliczeniowej | I: W30! e2
+11 | Infrastruktura sieci teleinformatycznych | I: W15 e1
+12 | Implementacje systemów Internetu Rzeczy | I: W15 L30 e3
+13 | Mikroprocesorowe układy i systemy pomiarowe | I: W15 L15 e2 | II: P15 e1
+14 | Robotyka | I: W15 e1 | II: L15 P15 e2
+15 | Zaawansowane techniki programowania | I: W15 L30 e3
+16 | Wprowadzenie do analizy danych | I: W15 L30 e3
+17 | Fotonika | I: W30! e2 | II: L15 e1
+18 | Sensory IoT | I: W15 e1
+19 | Układy i systemy telemetryczne | I: W15 L15 e2 | II: P15 e1
+20 | Seminarium dyplomowe | III: C30 e2
+36 | Projekt zespołowy | II: P60 e4
+37 | Praca dyplomowa | III: P45 e18
+
+@spec BTD
+21 | Bezpieczeństwo sieci komputerowych | II: W15 L30 e3
+22 | Administracja i utrzymanie usług internetowych | II: W15 L30 e3
+23 | Administracja systemami informatycznymi | II: W15 L15 e2 | III: P15 e1
+24 | Programowanie usług i aplikacji internetowych | II: W15 L15 e2 | III: P15 e1
+25 | Testy bezpieczeństwa systemów informatycznych | II: W15 e1 | III: L30 e2
+26 | Techniki wirtualizacji i konteneryzacji | III: W15 L15 e2
+27 | Przechowywanie i retencja danych | III: W15 e1
+28 | Technologie transmisji danych | III: W15 e1
+
+@spec APD
+29 | Dane przestrzenne | II: W15 L30 e3
+30 | Głębokie uczenie i analiza obrazów | II: W15 L15 P15 e3
+31 | Analityka biznesowa | III: W15 L30 e3
+32 | Eksploracja zasobów internetowych | II: W15 L30 e3
+33 | Inteligentne aplikacje | III: W15 L15 P15 e3
+34 | Sieci społecznościowe | III: W15 L15 e2
+35 | Wizualizacja danych | II: W15 L15 e2

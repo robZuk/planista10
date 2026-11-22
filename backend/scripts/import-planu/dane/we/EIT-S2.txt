@@ -1,0 +1,72 @@
+# Elektronika i telekomunikacja, stacjonarne II st. (start letni), plan od naboru 2025/26 L (Senat xx.xx.2025)
+# zrodlo: 2st_st_EiT_{SE,AiBS,EiAM}-RN25-26_RN25-26_RA26-27_s1-3.pdf (nabory 2025/26, 2026/27)
+@program EIT-S2
+@wersja od naboru 2025/26
+@sumy SE I: W240 C60 L105 P15 e28 | II: W225 L195 P30 e30 | III: W30 C60 L60 P75 e32
+
+@spec -
+1 | Język angielski | I: L15 e1 | II: L15 e1 | III: L30 e2
+2 | Przedmiot humanistyczny I | I: W15 e1
+3 | Podstawy przedsiębiorczości | I: W15 C15 e2
+4 | Przedmiot humanistyczny II | III: C30 e2
+5 | Matematyka II | II: W30! L30 e4
+6 | Metody numeryczne | I: W15 L30 e3
+7 | Metody optymalizacji | I: W15 C15 e2
+8 | Elementy i układy optoelektroniczne | I: W30! C15 L15 e4
+9 | Detektory podczerwieni | II: W15 e1
+10 | Programowalne układy cyfrowe | I: W30 L15 e3 | II: L15 e1
+11 | Diagnostyka i niezawodność | I: W15 C15 e2
+12 | Kompatybilność elektromagnetyczna | II: W15 L15 e2
+13 | Systemy baz danych | I: W15 P15 e2
+14 | Systemy inteligencji obliczeniowej | II: W30! e2
+15 | Infrastruktura sieci teleinformatycznych | I: W15 e1
+16 | Układy mikrofalowe w systemach radiokomunikacyjnych | I: W30! e2 | II: L15 e1
+17 | Modelowanie elementów i układów elektronicznych | I: W15 e1 | II: L15 P15 e2
+18 | Implementacje systemów Internetu Rzeczy | I: W15 L30 e3
+19 | Inteligentne systemy elektroniczne | I: W15 e1
+20 | Seminarium dyplomowe | III: C30 e2
+
+@spec SE
+21 | Praca dyplomowa | III: P45 e18
+22 | Fotonika | II: W30! L15 e3
+23 | Elektroniczne elementy i układy mocy | II: W30 L15 e3 | III: P15 e2
+24 | Systemy fotowoltaiczne | III: W15 L15 e2
+25 | Mikroprocesorowe układy i systemy pomiarowe | II: W15 L15 e2 | III: P15 e2
+26 | Półprzewodnikowe źródła światła | III: W15 L15 e2
+27 | Mikrokomputerowe systemy sterowania | II: W30 L30 P15 e5
+28 | Elektroniczne systemy obróbki dźwięku | II: W15 L15 e2
+29 | Wybrane zagadnienia współczesnej elektroniki | II: W15 e1
+
+@sumy AiBS I: W240 C60 L105 P15 e28 | II: W210 L195 P30 e29 | III: W45 C60 L75 P90 e33
+@spec AiBS
+21 | Praca dyplomowa | III: P45 e18
+22 | Bezpieczeństwo sieci komputerowych | II: W15 L30 e3
+23 | Administracja i utrzymanie usług internetowych | II: W15 L30 e3
+24 | Podstawy kryptografii | II: W15 e1
+25 | Administracja systemami informatycznymi | II: W15 L15 e2 | III: P15 e1
+26 | Testy bezpieczeństwa systemów informatycznych | II: W15 e1 | III: L30 e2
+27 | Przechowywanie i retencja danych | II: W15 e1
+28 | Administrowanie systemami radiokomunikacyjnymi | II: W15 P15 e2
+29 | Techniki wirtualizacji | III: W15 P15 e2
+30 | Prawo i odpowiedzialność zawodowa | III: W15 e1
+31 | Programowanie usług i aplikacji internetowych | II: W15 L15 e2 | III: P15 e1
+32 | Bezpieczeństwo aplikacji internetowych | III: W15 L15 e2
+
+# siatka: III W95 L85 bez "Miernictwa" (drugi wiersz Razem), ECTS 33 z nim — sumy z Miernictwem:
+@sumy EiAM I: W240 C60 L105 P15 e28 | II: W260 L190 P15 e29 | III: W110 C60 L100 P45 e33
+@spec EiAM
+21 | Praca dyplomowa | III: P45 e18
+22 | Maszyny elektryczne | II: W20! L10 e2
+23 | Elektryczne zautomatyzowane napędy okrętowe | III: W20 L15 e2
+24 | Energoelektronika | III: W30 L15 e2
+25 | Siłownie okrętowe i mechanizmy pomocnicze | III: W30! L15 e2
+26 | Chłodnictwo, wentylacja i klimatyzacja okrętowa | III: W15 L10 e1
+27 | Elektroenergetyka okrętowa | II: W20 L15 e2
+28 | Aparaty i urządzenia elektryczne | II: W20 L10 e2
+29 | Technika wysokich napięć | II: W20! L10 e2
+30 | Sterowniki programowalne | II: W15 L10 e1
+31 | Okrętowe urządzenia pokładowe | II: W20 e1
+32 | Eksploatacja okrętowych urządzeń elektrycznych | II: W20 L20 e2
+33 | Podstawy elektrotechniki II | II: W15 e1
+34 | Dowodzenie siłownią okrętową | II: W20 L10 e2
+35 | Miernictwo wielkości nieelektrycznych | III: W15 L15 e2

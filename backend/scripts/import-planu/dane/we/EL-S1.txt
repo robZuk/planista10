@@ -1,0 +1,85 @@
+# Elektrotechnika, stacjonarne I st., nabory 2024/25 i 2025/26 (Senat 265/XVII z 25 IV 2024)
+# zrodlo: 1st_st_EL_EO-RN24-25_RN25-26_RA25-26_s3-6.pdf, 1st_st_EL_AP-RN24-25_RN25-26_RA25-26_s3-6.pdf
+# format: nr | przedmiot | sem: godziny (W/C/L/P/S + liczba, ! = egzamin) eN = ECTS
+@program ET-S1
+@sumy EO I: W250 C105 L75 P15 e30 | II: W216 C135 L105 P15 e30 | III: W210 C135 L135 P45 e30 | IV: W180 C75 L210 P30 e30 | V: W230 C45 L215 P30 e30 | VI: e30 | VII: W128 C30 L90 P75 e30
+
+@spec -
+1 | Wychowanie fizyczne | I: L15 e0 | II: L15 e0 | III: C30 e0 | IV: C30 e0
+2 | Język angielski | II: C45 e3 | III: C45 e3 | IV: C45 e2 | V: C45 e2
+3 | Przedmiot humanistyczny | I: W15 e2
+4 | Umiejętności kierownicze i praca w zespołach | VII: W15 e1
+5 | Własność intelektualna i prawo pracy | I: W15 e1
+6 | Ceremoniał morski | I: W10 e1 | VII: P5 e0
+7 | Analiza matematyczna | I: W45! C45 e6 | II: W15 C15 e2
+8 | Algebra | I: W15 C15 e2
+9 | Fizyka | I: W30! C30 L30 e6
+10 | Informatyka | I: W30 L30 e4
+11 | Inżynieria materiałowa | I: W15 e1 | II: L15 e1
+12 | Geometria i grafika inżynierska | I: W15 P15 e2
+13 | Metody numeryczne | II: W15 P15 e2
+14 | Podstawy elektrotechniki | II: W30! C75 e7 | III: W30 C60 e6 | IV: L30 e2
+15 | Teoria pola elektromagnetycznego | III: W30 P30 e3
+16 | Metrologia | II: W36! L30 e4 | III: L30 e2
+17 | Komputerowe wspomaganie obliczeń inżynierskich | II: W30 e2 | III: L30 e2
+18 | Maszyny elektryczne | III: W45! e2 | IV: L30 e2
+19 | Elektronika i energoelektronika | II: W30 e2 | III: W30! L30 e4 | IV: L30 e2
+20 | Elektroenergetyka | IV: W30! L15 e3
+21 | Technika mikroprocesorowa | II: W30 e2 | III: W15 L30 e2 | IV: P15 e1
+22 | Aparaty i urządzenia elektryczne | IV: W30 L30 e3
+23 | Podstawy automatyki | II: W15 e1 | III: W30 e2 | IV: W30 L30 e4
+24 | Mechanika i mechatronika | II: W15 L15 e2
+25 | Technika wysokich napięć | III: W30 e2 | IV: L15 e1
+26 | Technika cyfrowa | I: W30 C15 e3 | II: L30 e2
+27 | Automatyzacja systemów energetycznych | IV: W30! e2 | V: L15 e1
+28 | Sterowniki programowalne | IV: W30 L30 e4 | V: P15 e1
+29 | Wizualizacja procesów sterowania | V: W15 P15 e1
+30 | Konstrukcja układów elektronicznych | III: L15 P15 e2
+31 | Sieci komputerowe | VII: W20 L15 P10 e2
+32 | Technika iskrobezpieczeństwa | VII: W15 L15 P15 e2
+33 | Budowa i teoria okrętu | I: W15 e1
+34 | Ergonomia i bezpieczeństwo pracy na statku | I: W15 e1
+35 | Układy kondycjonowania energii elektrycznej | VII: W15 L15 e2
+36 | Seminarium dyplomowe | VII: S30 e2
+
+@spec EO
+37 | Elektryczne zautomatyzowane napędy okrętowe | IV: W30! e2 | V: W15 L45 e3
+38 | Elektroenergetyka okrętowa | V: W15 L25 e2
+39 | Urządzenia i układy automatyki | V: W15 L15 e2
+40 | Automatyzacja okrętowych systemów energetycznych | V: W30 e1 | VII: L15 e1
+41 | Okrętowe urządzenia pokładowe | V: W30 e2
+42 | Urządzenia elektronawigacyjne | V: W30! L15 e3
+43 | Urządzenia łączności okrętowej | V: W15 L15 e2
+44 | Eksploatacja okrętowych urządzeń elektrycznych | IV: P15 e1 | V: W20 L25 e3
+45 | Okrętowe systemy kontrolno-pomiarowe | V: W15 L15 e3
+46 | Siłownie okrętowe i mechanizmy pomocnicze | V: W30! L30 e3
+47 | Chłodnictwo, wentylacja i klimatyzacja | VII: W15 L15 e1
+48 | Praktyka warsztatowa mechaniczna | V: L15 e1
+49 | Dowodzenie siłownią okrętową | VII: W30 L15 e2
+50 | Ochrona środowiska morskiego | VII: W18 e1
+51 | Projekt zespołowy | VII: P15 e1
+52 | Praktyka morska | IV: e1 | VI: e30
+53 | Praca dyplomowa | VII: P30 e15
+
+@sumy AP I: W250 C105 L75 P15 e30 | II: W216 C135 L105 P15 e30 | III: W210 C135 L135 P45 e30 | IV: W195 C75 L225 P15 e30 | V: W135 C45 L150 P45 e30 | VI: W90 L150 P75 e30 | VII: W113 C30 L75 P90 e30
+@spec AP
+37 | Energoelektronika | VI: W15 L15 P15 e3
+38 | Napęd elektryczny | IV: W30! e2 | V: L45 e3
+39 | Programowanie komputerów | IV: W15 L15 e2
+40 | Systemy internetu rzeczy | V: W15 L30 e4
+41 | Przetwarzanie i przesyłanie sygnałów | V: W30! L15 e4
+42 | Systemy kontrolno-pomiarowe | V: W15! L30 e4
+43 | Inżynieria sterowania układami przekształtnikowymi | V: W15 P15 e3 | VI: L30 e2
+44 | Przemysł 4.0 | VI: W15 P30 e3
+45 | Komputerowe systemy operacyjne | V: W15 e2 | VI: L30 e1
+46 | Dyskretne układy sterowania | VI: W15! L15 P30 e4
+47 | Mikroprocesorowe układy pomiarowe | VII: W15 L15 P15 e2
+48 | Urządzenia i układy automatyki przemysłowej | V: W15 e2 | VI: L30 e2
+49 | Systemy łączności cyfrowej | VI: W30 L15 e3
+50 | Technika przeciwdziałania zakłóceniom | VII: W15 L15 e2
+51 | Ochrona środowiska | VII: W18 e1
+52 | Siłownie okrętowe | V: W15 L15 e3
+53 | Okrętowe sieci elektroenergetyczne | VI: W15 L15 e2
+54 | Projekt zespołowy | VII: P15 e1
+55 | Praca dyplomowa | VII: P30 e15
+56 | Praktyka | VI: e10

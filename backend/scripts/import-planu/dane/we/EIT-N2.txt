@@ -1,0 +1,56 @@
+# Elektronika i telekomunikacja, niestacjonarne II st. (start zimowy, 4 semestry), nabor 2025/26 Z (Senat xx.xx.2025)
+# zrodlo: 2st_nst_EiT_{SE,SIST}-RN25-26_RA26-27_s1-4.pdf
+@program EIT-N2
+@wersja od naboru 2025/26
+@sumy SE I: W86 C35 L37 e17 | II: W100 C17 L80 P18 e27 | III: W63 C10 L45 P28 e18 | IV: W16 C40 P48 e28
+
+@spec -
+1 | Język angielski | I: C10 e1 | II: C10 e1 | III: C10 e1 | IV: C10 e1
+2 | Przedmiot humanistyczny I | IV: W8 e1
+3 | Podstawy przedsiębiorczości | I: W10 C10 e2
+4 | Przedmiot humanistyczny II | IV: C15 e2
+5 | Matematyka II | I: W15! L22 e4
+6 | Metody numeryczne | I: W8 L15 e3
+7 | Metody optymalizacji | II: W8 C7 e2
+9 | Detektory podczerwieni | II: W8 e1
+11 | Diagnostyka i niezawodność | I: W15 C7 e2
+12 | Kompatybilność elektromagnetyczna | III: W8 L10 e2
+13 | Systemy baz danych | III: W8 P10 e2
+14 | Systemy inteligencji obliczeniowej | III: W15! e2
+15 | Infrastruktura sieci teleinformatycznych | II: W8 e1
+17 | Modelowanie elementów i układów elektronicznych | I: W8 e1 | II: L15 e2
+18 | Implementacje systemów Internetu Rzeczy | III: W8 L15 e3
+19 | Inteligentne systemy elektroniczne | III: W8 e1
+20 | Seminarium dyplomowe | IV: C15 e2
+
+# 8, 10 i 16: te same godziny w obu sciezkach, rozne ECTS — przy sciezkach
+@spec SE
+16 | Układy mikrofalowe w systemach radiokomunikacyjnych | II: W15! e2 | III: P8 e1
+8 | Elementy i układy optoelektroniczne | I: W15! C8 e2 | II: L10 P8 e2
+10 | Programowalne układy cyfrowe | I: W15 e2 | II: L10 e2
+21 | Praca dyplomowa | IV: P30 e18
+22 | Fotonika | II: W15 L10 e3
+23 | Elektroniczne elementy i układy mocy | II: W15 L10 e3 | III: P10 e2
+24 | Systemy fotowoltaiczne | III: W8 L10 e2
+25 | Mikroprocesorowe układy i systemy pomiarowe | III: W8 L10 e2 | IV: P10 e2
+26 | Półprzewodnikowe źródła światła | IV: W8 P8 e2
+27 | Mikrokomputerowe systemy sterowania | II: W15 L15 P10 e5
+28 | Elektroniczne systemy obróbki dźwięku | II: W8 L10 e2
+29 | Wybrane zagadnienia współczesnej elektroniki | II: W8 e1
+
+@sumy SIST I: W86 C35 L37 e19 | II: W71 C17 L50 P16 e23 | III: W79 C10 L55 P18 e20 | IV: W24 C40 P38 e28
+@spec SIST
+16 | Układy mikrofalowe w systemach radiokomunikacyjnych | II: W15! e3 | III: P8 e1
+8 | Elementy i układy optoelektroniczne | I: W15! C8 e3 | II: L10 P8 e2
+10 | Programowalne układy cyfrowe | I: W15 e3 | II: L10 e2
+21 | Praca dyplomowa | IV: P30 e18
+22 | Programowanie usług i aplikacji internetowych | III: W8 L10 e2
+23 | Programowanie rozproszone | III: W8 L10 e2
+24 | Technika rozpraszania widma | II: W8 e2
+25 | Systemy otwarte i rozproszone | II: W8 P8 e2
+26 | Cyfrowe przetwarzanie obrazów | II: W8 L15 e3
+27 | Mikroelektronika | II: W8 e2
+28 | Projektowanie cyfrowych urządzeń radiokomunikacyjnych | IV: W8 P8 e2
+29 | Obróbka i analiza danych | III: W8 L10 e2
+30 | Systemy radiokomunikacyjne nowej generacji | III: W8 e2
+31 | Systemy i sieci bezprzewodowe | IV: W8 e2

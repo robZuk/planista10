@@ -1,0 +1,24 @@
+# Elektrotechnika, stacjonarne I st., nabor 2023/24 (Senat 221/XVII z 29.09.2023) — tylko semestr VII (biezacy)
+# zrodlo: 1st_st_EL_{EO,KSS}-RN23-24_RA26-27_s7.pdf
+@program ET-S1
+@wersja od naboru 2023/24
+@sumy EAO VII: W110 C30 L90 P45 e30
+
+@spec -
+4 | Umiejętności kierownicze i praca w zespołach | VII: W15 e1
+6 | Ceremoniał morski | VII: P5
+29 | Sieci komputerowe | VII: W20 L15 P10 e3
+30 | Technika iskrobezpieczeństwa | VII: W15 L15 e2
+33 | Układy kondycjonowania energii elektrycznej | VII: W15 L15 e2
+34 | Seminarium dyplomowe | VII: C30 e2
+50 | Praca dyplomowa | VII: P30 e15
+
+@spec EAO
+38 | Automatyzacja okrętowych systemów energetycznych | VII: L15 e1
+45 | Chłodnictwo, wentylacja i klimatyzacja | VII: W15 L15 e2
+47 | Dowodzenie siłownią okrętową | VII: W30 L15 e2
+
+# KSS VII: suma W95 C30 L75 P60 e30 (bez Ceremonialu P5 — inaczej niz EO; sumy nie sprawdzam dla KSS)
+@spec KSS
+45 | Mikroprocesorowe układy pomiarowe | VII: W15 L15 P15 e3
+48 | Technika przeciwdziałania zakłóceniom | VII: W15 L15 e2

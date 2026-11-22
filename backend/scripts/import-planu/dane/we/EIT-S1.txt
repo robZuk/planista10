@@ -1,0 +1,99 @@
+# Elektronika i telekomunikacja, stacjonarne I st., nabory 2024/25 i 2025/26 (Senat 267/XVII z 25 IV 2024)
+# zrodlo: 1st_st_EiT_{EP,SEM,SIST}-RN24-25_25-26_RA26-27_s3-6.pdf
+@program EIT-S1
+@sumy EP I: W205 C105 L135 e30 | II: W165 C105 L165 P15 e30 | III: W210 C135 L105 e30 | IV: W165 C120 L150 P45 e30 | V: W150 C60 L165 P30 e30 | VI: W135 C30 L130 P15 e30 | VII: W75 C60 L75 P50 e30
+
+@spec -
+1 | Język angielski | II: C30 e2 | III: C30 e2 | IV: C30 e2 | V: C30 e2 | VI: C30 e2 | VII: C30 e2
+2 | Wychowanie fizyczne | I: L15 e0 | II: L15 e0 | III: C30 e0 | IV: C30 e0
+3 | Własność intelektualna i prawo pracy | I: W15 e1
+4 | Przedmiot humanistyczny | I: W15 e1
+5 | Umiejętności kierownicze i praca w zespołach | VII: W15 e1
+6 | Technologia informacyjna | I: W15 L15 e2
+7 | Ceremoniał morski | I: W10 e1 | VII: P5 e1
+8 | Analiza matematyczna | I: W45! C45 e6 | II: W15! C15 e2
+9 | Algebra | I: W15 C15 e2
+10 | Probabilistyka i procesy losowe | II: W15! C30 e3
+11 | Fizyka | I: W30! C30 L30 e6
+12 | Teoria pola elektromagnetycznego | III: W30 C15 e4 | IV: W15! C15 e2
+13 | Metodyka programowania | I: W15 L30 e4 | II: W15 L30 e4
+14 | Techniki obliczeniowe | II: W15 L30 e3
+15 | Symulacje komputerowe | IV: W15 e1 | V: L30 e2
+16 | Podstawy elektrotechniki | II: W30! C30 e4 | III: W30! C30 L30 e6
+17 | Inżynieria materiałowa | I: W15 L15 e2
+18 | Projektowanie i konstrukcja urządzeń | III: W30 e2 | IV: L15 P15 e2
+19 | Elementy półprzewodnikowe | III: W30! C30 e4 | IV: L30 e2
+20 | Optoelektronika | III: W30! L15 e4
+21 | Układy elektroniczne | IV: W30! C30 e4 | V: W15 C15 e2 | VI: L30 P15 e3
+22 | Technika mikrofalowa | V: W15! C15 e2
+23 | Metrologia | II: W30 e2 | III: L30 e2
+24 | Technika cyfrowa | I: W30! C15 e3 | II: L30 P15 e3
+25 | Technika mikroprocesorowa | III: W30 e2 | IV: L30 P15 e3
+26 | Programowanie aplikacji internetowych | II: W30 L30 e4
+27 | Podstawy przetwarzania sygnałów | III: W30! L30 e4 | IV: P15 e1
+28 | Podstawy telekomunikacji i technika radiowa | IV: W45 C15 e4
+29 | Systemy i sieci telekomunikacyjne | V: W30 e2
+30 | Anteny i propagacja fal | VI: W15! e1 | VII: L15 e1
+31 | Systemy operacyjne | II: W15 L30 e3
+32 | Sieci komputerowe | IV: W30 L30 e4
+33 | Podstawy automatyki | V: W30 L15 e3
+34 | Grafika inżynierska | I: L30 e2
+35 | Technika światłowodowa | VI: W15 L15 e2
+36 | Systemy wbudowane | VII: W15 L30 e3
+37 | Seminarium dyplomowe | VII: S30 e2
+
+@spec EP
+38 | Praca dyplomowa | VII: P30 e15
+39 | Programowalne układy cyfrowe | IV: W15 L30 e3
+40 | Półprzewodnikowe elementy mocy | V: W15 L15 e2
+41 | Układy zasilania urządzeń elektronicznych | VI: W30! L15 e2 | VII: P15 e1
+42 | Systemy kontrolno-pomiarowe | VI: W15 L10 e1
+43 | Systemy komunikacji bezprzewodowej | VII: W15 L15 e1
+44 | Komputery jednoukładowe | V: L30 e2
+45 | Elementy sztucznej inteligencji | V: W15 L15 P15 e4
+46 | Zaawansowane języki programowania | IV: W15 L15 e2
+47 | Inżynieria oprogramowania | VII: W15 L15 e2
+48 | Programowanie aplikacji mobilnych | V: W15 L30 e4
+49 | Robotyka | VI: W15 L30 e2
+50 | Zaawansowane projektowanie układów elektronicznych | V: W15 L30 P15 e5
+51 | Elektronika w zastosowaniach morskich | VII: W15 e1
+52 | Procesory sygnałowe | VI: W30 L15 e2
+53 | Zjawiska termiczne w elementach i układach elektronicznych | VI: W15 L15 e1
+54 | Praktyka | VI: e14
+
+@sumy SEM I: W205 C105 L135 e30 | II: W165 C105 L165 P15 e30 | III: W210 C135 L105 e30 | IV: W195 C120 L105 P45 e30 | V: W228 C60 L150 e30 | VI: W90 C30 L45 P15 e30 | VII: W60 C60 L90 P50 e30
+@spec SEM
+38 | Praca dyplomowa | VII: P30 e15
+39 | Systemy radiokomunikacji morskiej | IV: W30! e2 | V: L30 e2
+40 | Półprzewodnikowe przyrządy mocy | V: W15 L15 e2
+41 | Budowa i teoria okrętu | V: W15 e1
+42 | Ergonomia i bezpieczeństwo pracy na statku | V: W15 e1
+43 | Zasilanie urządzeń elektronicznych | VI: W30 e2 | VII: P15 e1
+44 | Okrętowe systemy kontrolno-pomiarowe | V: W15 L15 e3
+45 | Systemy radiokomunikacji ruchomej | V: W30! L30 e4
+46 | Urządzenia radiokomunikacyjne | VI: W30 e2 | VII: L30 e1
+47 | Przepisy radiokomunikacyjne | IV: W30 e2
+48 | Automatyzacja okrętowych systemów energetycznych | VII: W30 L15 e3
+49 | Morskie systemy elektronawigacyjne | V: W30 L15 e3
+50 | Ochrona środowiska morskiego | V: W18 e1
+51 | Praktyka | IV: e1 | VI: e18
+
+@sumy SIST I: W205 C105 L135 e30 | II: W165 C105 L165 P15 e30 | III: W210 C135 L105 e30 | IV: W180 C120 L150 P45 e30 | V: W240 C75 L105 P15 e30 | VI: W90 C30 L120 P15 e30 | VII: W85 C60 L60 P65 e30
+@spec SIST
+38 | Praca dyplomowa | VII: P30 e15
+39 | Technologie rozległych sieci komputerowych | V: W15 P15 e2
+40 | Projektowanie sieci radiokomunikacyjnych | VII: W15 P15 e2
+41 | Przetwarzanie sygnałów w telekomunikacji | V: W30 e2 | VI: L30 e2
+42 | Filtry cyfrowe i procesory sygnałowe | VI: W30 L15 e3
+43 | Bezpieczeństwo sieci i systemów komputerowych | VII: W15 P15 e1
+44 | Zasilanie urządzeń teleinformatycznych | VI: W30 e2
+45 | Systemy i sieci radiokomunikacji ruchomej | V: W30! e3 | VI: L30 e1
+46 | Programowanie urządzeń mobilnych | V: W15 L30 e3
+47 | Systemy radiokomunikacji satelitarnej | V: W30 e2
+48 | Modulacje cyfrowe i kodowanie | V: W15 C15 e2
+49 | Technika nadawania i odbioru radiowego | V: W15 L30 e3
+50 | Systemy i urządzenia nawigacyjne | VII: W15 e1
+51 | Oprogramowanie systemów pomiarowych | IV: W15 L15 e2
+52 | Morskie systemy komunikacji elektronicznej | IV: W30 L30 e3
+53 | Pomiary radiokomunikacyjne | VII: W10 L15 e1
+54 | Praktyka | VI: e14

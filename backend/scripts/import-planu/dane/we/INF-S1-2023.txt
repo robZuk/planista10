@@ -1,0 +1,22 @@
+# Informatyka, stacjonarne I st., nabor 2023/24 — tylko semestr VII
+# zrodlo: 1st_st_Inf_{AIR,AliM}-RN23-24_RA26-27_s7.pdf
+@program INF-S1
+@wersja od naboru 2023/24
+@sumy AIR VII: W75 C60 L90 P75 e33
+@sumy AIiM VII: W45 C60 L60 P60 e28
+
+@spec -
+3 | Prawo i ochrona własności intelektualnej | VII: W15 e1
+6 | Język angielski | VII: C30 e2
+35 | Algorytmy analizy danych | VII: W15 L30 e3
+42 | Seminarium dyplomowe | VII: C30 e2
+43 | Praca dyplomowa | VII: P30 e15
+54 | Projekt grupowy | VII: P30 e2
+
+@spec AIR
+52 | Systemy i przetwarzanie rozproszone | VII: W15! L30 e3
+53 | Sieci sensorowe | VII: W15 e1
+55 | Programowalne układy scalone | VII: W15 L30 P15 e4
+
+@spec AIiM
+56 | Programowanie równoległe i rozproszone | VII: W15! L30 e3

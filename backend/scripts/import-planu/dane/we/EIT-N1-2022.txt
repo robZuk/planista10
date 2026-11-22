@@ -1,0 +1,40 @@
+# Elektronika i telekomunikacja, niestacjonarne I st., nabory 2022/23 i 2023/24 (Senat 56/XVII z 28.06.2021) — tylko VII-VIII
+# zrodlo: 1st_nst_EiT_{EM,SiST}-RN22-23_RN23-24_RA26-27_s7-8.pdf
+@program EIT-N1
+@wersja od naboru 2022/23
+@sumy EM VII: W80 C15 L83 e30 | VIII: W43 C30 L25 P30 e27
+
+@spec -
+1 | Język angielski | VII: C15 e1 | VIII: C15 e1
+3 | Własność intelektualna i prawo pracy | VII: W10 e1
+4 | Ekonomia i zarządzanie | VIII: W20 e3
+37 | Systemy wbudowane | VII: W8 L15 e3
+38 | Seminarium dyplomowe | VIII: C15 e2
+39 | Praca dyplomowa | VIII: P30 e15
+
+29 | Anteny i propagacja fal | VII: L10 e1
+35 | Ergonomia i bezpieczeństwo pracy | VIII: W8 e1
+
+@spec EM
+42 | Zasilanie urządzeń elektronicznych | VII: L10 e1
+43 | Okrętowe systemy kontrolno-pomiarowe | VII: W8 L10 e2
+44 | Systemy radiokomunikacji ruchomej | VII: W8 L8 e2
+45 | Urządzenia radiokomunikacyjne | VII: W15! e2 | VIII: L15 e2
+46 | Przepisy radiokomunikacyjne | VII: W15 e2
+47 | Automatyzacja okrętowych systemów energetycznych | VIII: W15 L10 e3
+48 | Morskie systemy i urządzenia nawigacyjne | VII: W8 L10 e2
+49 | Urządzenia elektronawigacyjne | VII: W8 L10 e2
+52 | Seminarium problemowe | VII: L10 e11
+
+# SiST: brak wiersza sum w kadrze — bez kontroli
+@spec SiST
+40 | Technologie rozległych sieci komputerowych | VIII: W8 e2
+41 | Projektowanie sieci radiokomunikacyjnych | VII: W8 P8 e2
+44 | Bezpieczeństwo sieci i systemów komputerowych | VII: W8 P8 e2
+45 | Zasilanie urządzeń teleinformatycznych | VII: W8 e1
+46 | Systemy i sieci radiokomunikacji ruchomej | VII: W15! e2 | VIII: L10 e2
+48 | Systemy radiokomunikacji satelitarnej | VII: W8 L10 e2
+51 | Systemy i urządzenia nawigacyjne | VIII: W8 e1
+52 | Oprogramowanie systemów pomiarowych | VII: W8 L10 e2
+54 | Pomiary radiokomunikacyjne | VII: W8 L10 e1
+56 | Seminarium problemowe | VII: L10 e8

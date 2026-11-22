@@ -1,0 +1,55 @@
+# Elektrotechnika, niestacjonarne II st. (start zimowy, 4 semestry), nabor od 2024/25 Z (Senat 266/XVII z 25 IV 2024)
+# zrodlo: 2st_st_EL_{EA,KSS,OZE}-RN26-27_25-26_RA26-27_s1-4.pdf (nabory 2025/26, 2026/27)
+@program ET-N2
+@wersja od naboru 2024/25
+@sumy EA I: W126 C20 L20 P16 e23 | II: W46 C10 L63 P47 e22 | III: W32 C10 L55 P47 e20 | IV: W8 C40 L10 P30 e25
+
+@spec -
+1 | Język angielski | I: C10 e1 | II: C10 e1 | III: C10 e1 | IV: C10 e1
+2 | Przedmiot humanistyczny I | I: W8 e1
+3 | Podstawy przedsiębiorczości | I: W10 C10 e2
+4 | Przedmiot humanistyczny II | IV: C15 e2
+5 | Wybrane zagadnienia teorii obwodów | I: W15! e2 | II: L15 e3
+6 | Elektromechaniczne systemy napędowe | I: W15 e2 | II: L10 P8 e2
+7 | Pomiary wielkości nieelektrycznych | I: W8 P8 e2
+8 | Kompatybilność w układach elektrycznych | III: W8 L10 e2
+9 | Metody sterowania automatycznego | I: W15 e2 | II: L10 P8 e2
+10 | Metody sztucznej inteligencji | I: W8 L10 e2
+11 | Wybrane zagadnienia maszyn elektrycznych | I: W8 e1 | II: L8 e1
+12 | Przekształtnikowe układy napędowe i generacyjne | I: W15! e2 | II: L10 P8 e3
+13 | Mechatronika i robotyka | II: W15! e2 | III: L15 P8 e3
+14 | Metody optymalizacji | I: W8 L10 e2
+15 | Metody przetwarzania sygnałów | I: W8 e2 | II: L10 P15 e3
+16 | Projektowanie i eksploatacja systemów elektroenergetycznych | III: W8! P8 e3
+17 | Zarządzanie projektem | III: W8 L10 e3
+18 | Jakość energii elektrycznej | II: W8 P8 e2
+19 | Energetyka odnawialna i rozproszona | I: W8 P8 e2
+20 | Programowalne układy cyfrowe | IV: W8! L10 e2
+21 | Seminarium dyplomowe | IV: C15 e2
+
+@spec EA
+22 | Modelowanie i symulacja systemów technicznych | II: W15 e2 | III: L10 P8 e2
+23 | Sterowanie optymalne i modalne | III: W8! L10 P8 e4
+24 | Przemysłowe systemy rozproszone | II: W8 e1 | III: P15 e2
+25 | Praca dyplomowa | IV: P30 e18
+
+@sumy KSS I: W126 C20 L20 P16 e23 | II: W23 C10 L63 P70 e23 | III: W47 C10 L35 P39 e19 | IV: W8 C40 L10 P30 e25
+@spec KSS
+22 | Projektowanie aplikacji internetowych | III: W8 P15 e3
+23 | Inżynieria oprogramowania | III: W15! P8 e4
+24 | Mikroprocesorowe układy pomiarowe | II: P15 e2
+25 | Oprogramowanie systemów kontrolno-pomiarowych | II: P8 e2
+26 | Praca dyplomowa | IV: P30 e18
+
+@sumy OZE I: W126 C20 L20 P16 e23 | II: W39 C10 L79 P47 e22 | III: W48 C10 L51 P32 e17 | IV: W32 C40 L18 P30 e28
+@spec OZE
+22 | Elektryczne układy napędowe dla pojazdów i statków | II: W8! L8 e2
+23 | Mobilne systemy zasilania elektrycznych układów napędowych | III: W8 P8 e1
+24 | Systemy fotowoltaiczne | II: W8 L8 e1
+25 | Technika wodorowa | IV: W8 e1
+26 | Elektronika i informatyka w motoryzacji | III: W8 P8 e1
+27 | Eksploatacja systemów energetyki odnawialnej | III: W8! L8 e2
+28 | Akwizycja danych i monitoring w systemach OZE | IV: W8 L8 e1
+29 | Modelowanie systemów elektroenergetycznych w OZE | III: L8 e1
+30 | Hybrydowe układy zasilania elektrycznego i kogeneracja w OZE | IV: W8 e1
+31 | Praca dyplomowa | IV: P30 e18

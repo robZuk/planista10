@@ -1,0 +1,11613 @@
+[
+ {
+  "file": "dane/we/EL-S1.txt",
+  "program": "ET-S1",
+  "version": null,
+  "sums": {
+   "EO": {
+    "1": {
+     "W": 250,
+     "C": 105,
+     "L": 75,
+     "P": 15,
+     "e": 30.0
+    },
+    "2": {
+     "W": 216,
+     "C": 135,
+     "L": 105,
+     "P": 15,
+     "e": 30.0
+    },
+    "3": {
+     "W": 210,
+     "C": 135,
+     "L": 135,
+     "P": 45,
+     "e": 30.0
+    },
+    "4": {
+     "W": 180,
+     "C": 75,
+     "L": 210,
+     "P": 30,
+     "e": 30.0
+    },
+    "5": {
+     "W": 230,
+     "C": 45,
+     "L": 215,
+     "P": 30,
+     "e": 30.0
+    },
+    "6": {
+     "e": 30.0
+    },
+    "7": {
+     "W": 128,
+     "C": 30,
+     "L": 90,
+     "P": 75,
+     "e": 30.0
+    }
+   },
+   "AP": {
+    "1": {
+     "W": 250,
+     "C": 105,
+     "L": 75,
+     "P": 15,
+     "e": 30.0
+    },
+    "2": {
+     "W": 216,
+     "C": 135,
+     "L": 105,
+     "P": 15,
+     "e": 30.0
+    },
+    "3": {
+     "W": 210,
+     "C": 135,
+     "L": 135,
+     "P": 45,
+     "e": 30.0
+    },
+    "4": {
+     "W": 195,
+     "C": 75,
+     "L": 225,
+     "P": 15,
+     "e": 30.0
+    },
+    "5": {
+     "W": 135,
+     "C": 45,
+     "L": 150,
+     "P": 45,
+     "e": 30.0
+    },
+    "6": {
+     "W": 90,
+     "L": 150,
+     "P": 75,
+     "e": 30.0
+    },
+    "7": {
+     "W": 113,
+     "C": 30,
+     "L": 75,
+     "P": 90,
+     "e": 30.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Wychowanie fizyczne",
+    "spec": null,
+    "sems": {
+     "1": {
+      "L": 15,
+      "e": 0.0
+     },
+     "2": {
+      "L": 15,
+      "e": 0.0
+     },
+     "3": {
+      "C": 30,
+      "e": 0.0
+     },
+     "4": {
+      "C": 30,
+      "e": 0.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "2": {
+      "C": 45,
+      "e": 3.0
+     },
+     "3": {
+      "C": 45,
+      "e": 3.0
+     },
+     "4": {
+      "C": 45,
+      "e": 2.0
+     },
+     "5": {
+      "C": 45,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Przedmiot humanistyczny",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Umiejętności kierownicze i praca w zespołach",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Własność intelektualna i prawo pracy",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Ceremoniał morski",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 10,
+      "e": 1.0
+     },
+     "7": {
+      "P": 5,
+      "e": 0.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Analiza matematyczna",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 45,
+      "exam": true,
+      "C": 45,
+      "e": 6.0
+     },
+     "2": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Algebra",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Fizyka",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "C": 30,
+      "L": 30,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Informatyka",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Inżynieria materiałowa",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     },
+     "2": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Geometria i grafika inżynierska",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Metody numeryczne",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Podstawy elektrotechniki",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "exam": true,
+      "C": 75,
+      "e": 7.0
+     },
+     "3": {
+      "W": 30,
+      "C": 60,
+      "e": 6.0
+     },
+     "4": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Teoria pola elektromagnetycznego",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 30,
+      "P": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Metrologia",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 36,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     },
+     "3": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Komputerowe wspomaganie obliczeń inżynierskich",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "e": 2.0
+     },
+     "3": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Maszyny elektryczne",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 45,
+      "exam": true,
+      "e": 2.0
+     },
+     "4": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Elektronika i energoelektronika",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "e": 2.0
+     },
+     "3": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     },
+     "4": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Elektroenergetyka",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 30,
+      "exam": true,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Technika mikroprocesorowa",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "e": 2.0
+     },
+     "3": {
+      "W": 15,
+      "L": 30,
+      "e": 2.0
+     },
+     "4": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Aparaty i urządzenia elektryczne",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 30,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Podstawy automatyki",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 1.0
+     },
+     "3": {
+      "W": 30,
+      "e": 2.0
+     },
+     "4": {
+      "W": 30,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Mechanika i mechatronika",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Technika wysokich napięć",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 30,
+      "e": 2.0
+     },
+     "4": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Technika cyfrowa",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "C": 15,
+      "e": 3.0
+     },
+     "2": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Automatyzacja systemów energetycznych",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 30,
+      "exam": true,
+      "e": 2.0
+     },
+     "5": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Sterowniki programowalne",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 30,
+      "L": 30,
+      "e": 4.0
+     },
+     "5": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Wizualizacja procesów sterowania",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 15,
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Konstrukcja układów elektronicznych",
+    "spec": null,
+    "sems": {
+     "3": {
+      "L": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Sieci komputerowe",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 20,
+      "L": 15,
+      "P": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Technika iskrobezpieczeństwa",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Budowa i teoria okrętu",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "34",
+    "subject": "Ergonomia i bezpieczeństwo pracy na statku",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Układy kondycjonowania energii elektrycznej",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "7": {
+      "S": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Elektryczne zautomatyzowane napędy okrętowe",
+    "spec": "EO",
+    "sems": {
+     "4": {
+      "W": 30,
+      "exam": true,
+      "e": 2.0
+     },
+     "5": {
+      "W": 15,
+      "L": 45,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Elektroenergetyka okrętowa",
+    "spec": "EO",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 25,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Urządzenia i układy automatyki",
+    "spec": "EO",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Automatyzacja okrętowych systemów energetycznych",
+    "spec": "EO",
+    "sems": {
+     "5": {
+      "W": 30,
+      "e": 1.0
+     },
+     "7": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Okrętowe urządzenia pokładowe",
+    "spec": "EO",
+    "sems": {
+     "5": {
+      "W": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Urządzenia elektronawigacyjne",
+    "spec": "EO",
+    "sems": {
+     "5": {
+      "W": 30,
+      "exam": true,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Urządzenia łączności okrętowej",
+    "spec": "EO",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Eksploatacja okrętowych urządzeń elektrycznych",
+    "spec": "EO",
+    "sems": {
+     "4": {
+      "P": 15,
+      "e": 1.0
+     },
+     "5": {
+      "W": 20,
+      "L": 25,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Okrętowe systemy kontrolno-pomiarowe",
+    "spec": "EO",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Siłownie okrętowe i mechanizmy pomocnicze",
+    "spec": "EO",
+    "sems": {
+     "5": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Chłodnictwo, wentylacja i klimatyzacja",
+    "spec": "EO",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Praktyka warsztatowa mechaniczna",
+    "spec": "EO",
+    "sems": {
+     "5": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Dowodzenie siłownią okrętową",
+    "spec": "EO",
+    "sems": {
+     "7": {
+      "W": 30,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Ochrona środowiska morskiego",
+    "spec": "EO",
+    "sems": {
+     "7": {
+      "W": 18,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Projekt zespołowy",
+    "spec": "EO",
+    "sems": {
+     "7": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Praktyka morska",
+    "spec": "EO",
+    "sems": {
+     "4": {
+      "e": 1.0
+     },
+     "6": {
+      "e": 30.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Praca dyplomowa",
+    "spec": "EO",
+    "sems": {
+     "7": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Energoelektronika",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 15,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Napęd elektryczny",
+    "spec": "AP",
+    "sems": {
+     "4": {
+      "W": 30,
+      "exam": true,
+      "e": 2.0
+     },
+     "5": {
+      "L": 45,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Programowanie komputerów",
+    "spec": "AP",
+    "sems": {
+     "4": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Systemy internetu rzeczy",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Przetwarzanie i przesyłanie sygnałów",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 30,
+      "exam": true,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Systemy kontrolno-pomiarowe",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Inżynieria sterowania układami przekształtnikowymi",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "P": 15,
+      "e": 3.0
+     },
+     "6": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Przemysł 4.0",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 15,
+      "P": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Komputerowe systemy operacyjne",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "e": 2.0
+     },
+     "6": {
+      "L": 30,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Dyskretne układy sterowania",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "P": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Mikroprocesorowe układy pomiarowe",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Urządzenia i układy automatyki przemysłowej",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "e": 2.0
+     },
+     "6": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Systemy łączności cyfrowej",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 30,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Technika przeciwdziałania zakłóceniom",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Ochrona środowiska",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 18,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Siłownie okrętowe",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Okrętowe sieci elektroenergetyczne",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Projekt zespołowy",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "55",
+    "subject": "Praca dyplomowa",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "56",
+    "subject": "Praktyka",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "e": 10.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EIT-S1.txt",
+  "program": "EIT-S1",
+  "version": null,
+  "sums": {
+   "EP": {
+    "1": {
+     "W": 205,
+     "C": 105,
+     "L": 135,
+     "e": 30.0
+    },
+    "2": {
+     "W": 165,
+     "C": 105,
+     "L": 165,
+     "P": 15,
+     "e": 30.0
+    },
+    "3": {
+     "W": 210,
+     "C": 135,
+     "L": 105,
+     "e": 30.0
+    },
+    "4": {
+     "W": 165,
+     "C": 120,
+     "L": 150,
+     "P": 45,
+     "e": 30.0
+    },
+    "5": {
+     "W": 150,
+     "C": 60,
+     "L": 165,
+     "P": 30,
+     "e": 30.0
+    },
+    "6": {
+     "W": 135,
+     "C": 30,
+     "L": 130,
+     "P": 15,
+     "e": 30.0
+    },
+    "7": {
+     "W": 75,
+     "C": 60,
+     "L": 75,
+     "P": 50,
+     "e": 30.0
+    }
+   },
+   "SEM": {
+    "1": {
+     "W": 205,
+     "C": 105,
+     "L": 135,
+     "e": 30.0
+    },
+    "2": {
+     "W": 165,
+     "C": 105,
+     "L": 165,
+     "P": 15,
+     "e": 30.0
+    },
+    "3": {
+     "W": 210,
+     "C": 135,
+     "L": 105,
+     "e": 30.0
+    },
+    "4": {
+     "W": 195,
+     "C": 120,
+     "L": 105,
+     "P": 45,
+     "e": 30.0
+    },
+    "5": {
+     "W": 228,
+     "C": 60,
+     "L": 150,
+     "e": 30.0
+    },
+    "6": {
+     "W": 90,
+     "C": 30,
+     "L": 45,
+     "P": 15,
+     "e": 30.0
+    },
+    "7": {
+     "W": 60,
+     "C": 60,
+     "L": 90,
+     "P": 50,
+     "e": 30.0
+    }
+   },
+   "SIST": {
+    "1": {
+     "W": 205,
+     "C": 105,
+     "L": 135,
+     "e": 30.0
+    },
+    "2": {
+     "W": 165,
+     "C": 105,
+     "L": 165,
+     "P": 15,
+     "e": 30.0
+    },
+    "3": {
+     "W": 210,
+     "C": 135,
+     "L": 105,
+     "e": 30.0
+    },
+    "4": {
+     "W": 180,
+     "C": 120,
+     "L": 150,
+     "P": 45,
+     "e": 30.0
+    },
+    "5": {
+     "W": 240,
+     "C": 75,
+     "L": 105,
+     "P": 15,
+     "e": 30.0
+    },
+    "6": {
+     "W": 90,
+     "C": 30,
+     "L": 120,
+     "P": 15,
+     "e": 30.0
+    },
+    "7": {
+     "W": 85,
+     "C": 60,
+     "L": 60,
+     "P": 65,
+     "e": 30.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "2": {
+      "C": 30,
+      "e": 2.0
+     },
+     "3": {
+      "C": 30,
+      "e": 2.0
+     },
+     "4": {
+      "C": 30,
+      "e": 2.0
+     },
+     "5": {
+      "C": 30,
+      "e": 2.0
+     },
+     "6": {
+      "C": 30,
+      "e": 2.0
+     },
+     "7": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Wychowanie fizyczne",
+    "spec": null,
+    "sems": {
+     "1": {
+      "L": 15,
+      "e": 0.0
+     },
+     "2": {
+      "L": 15,
+      "e": 0.0
+     },
+     "3": {
+      "C": 30,
+      "e": 0.0
+     },
+     "4": {
+      "C": 30,
+      "e": 0.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Własność intelektualna i prawo pracy",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Przedmiot humanistyczny",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Umiejętności kierownicze i praca w zespołach",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Technologia informacyjna",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Ceremoniał morski",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 10,
+      "e": 1.0
+     },
+     "7": {
+      "P": 5,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Analiza matematyczna",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 45,
+      "exam": true,
+      "C": 45,
+      "e": 6.0
+     },
+     "2": {
+      "W": 15,
+      "exam": true,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Algebra",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Probabilistyka i procesy losowe",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "C": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Fizyka",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "C": 30,
+      "L": 30,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Teoria pola elektromagnetycznego",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 30,
+      "C": 15,
+      "e": 4.0
+     },
+     "4": {
+      "W": 15,
+      "exam": true,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Metodyka programowania",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 30,
+      "e": 4.0
+     },
+     "2": {
+      "W": 15,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Techniki obliczeniowe",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Symulacje komputerowe",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 15,
+      "e": 1.0
+     },
+     "5": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Podstawy elektrotechniki",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "exam": true,
+      "C": 30,
+      "e": 4.0
+     },
+     "3": {
+      "W": 30,
+      "exam": true,
+      "C": 30,
+      "L": 30,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Inżynieria materiałowa",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Projektowanie i konstrukcja urządzeń",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 30,
+      "e": 2.0
+     },
+     "4": {
+      "L": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Elementy półprzewodnikowe",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 30,
+      "exam": true,
+      "C": 30,
+      "e": 4.0
+     },
+     "4": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Optoelektronika",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 30,
+      "exam": true,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Układy elektroniczne",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 30,
+      "exam": true,
+      "C": 30,
+      "e": 4.0
+     },
+     "5": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     },
+     "6": {
+      "L": 30,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Technika mikrofalowa",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 15,
+      "exam": true,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Metrologia",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "e": 2.0
+     },
+     "3": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Technika cyfrowa",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "C": 15,
+      "e": 3.0
+     },
+     "2": {
+      "L": 30,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Technika mikroprocesorowa",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 30,
+      "e": 2.0
+     },
+     "4": {
+      "L": 30,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Programowanie aplikacji internetowych",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Podstawy przetwarzania sygnałów",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     },
+     "4": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Podstawy telekomunikacji i technika radiowa",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 45,
+      "C": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Systemy i sieci telekomunikacyjne",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Anteny i propagacja fal",
+    "spec": null,
+    "sems": {
+     "6": {
+      "W": 15,
+      "exam": true,
+      "e": 1.0
+     },
+     "7": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Systemy operacyjne",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Sieci komputerowe",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 30,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Podstawy automatyki",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 30,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "34",
+    "subject": "Grafika inżynierska",
+    "spec": null,
+    "sems": {
+     "1": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Technika światłowodowa",
+    "spec": null,
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Systemy wbudowane",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "7": {
+      "S": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Praca dyplomowa",
+    "spec": "EP",
+    "sems": {
+     "7": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Programowalne układy cyfrowe",
+    "spec": "EP",
+    "sems": {
+     "4": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Półprzewodnikowe elementy mocy",
+    "spec": "EP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Układy zasilania urządzeń elektronicznych",
+    "spec": "EP",
+    "sems": {
+     "6": {
+      "W": 30,
+      "exam": true,
+      "L": 15,
+      "e": 2.0
+     },
+     "7": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Systemy kontrolno-pomiarowe",
+    "spec": "EP",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Systemy komunikacji bezprzewodowej",
+    "spec": "EP",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Komputery jednoukładowe",
+    "spec": "EP",
+    "sems": {
+     "5": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Elementy sztucznej inteligencji",
+    "spec": "EP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "P": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Zaawansowane języki programowania",
+    "spec": "EP",
+    "sems": {
+     "4": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Inżynieria oprogramowania",
+    "spec": "EP",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Programowanie aplikacji mobilnych",
+    "spec": "EP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Robotyka",
+    "spec": "EP",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Zaawansowane projektowanie układów elektronicznych",
+    "spec": "EP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 30,
+      "P": 15,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Elektronika w zastosowaniach morskich",
+    "spec": "EP",
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Procesory sygnałowe",
+    "spec": "EP",
+    "sems": {
+     "6": {
+      "W": 30,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Zjawiska termiczne w elementach i układach elektronicznych",
+    "spec": "EP",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Praktyka",
+    "spec": "EP",
+    "sems": {
+     "6": {
+      "e": 14.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Praca dyplomowa",
+    "spec": "SEM",
+    "sems": {
+     "7": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Systemy radiokomunikacji morskiej",
+    "spec": "SEM",
+    "sems": {
+     "4": {
+      "W": 30,
+      "exam": true,
+      "e": 2.0
+     },
+     "5": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Półprzewodnikowe przyrządy mocy",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Budowa i teoria okrętu",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Ergonomia i bezpieczeństwo pracy na statku",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Zasilanie urządzeń elektronicznych",
+    "spec": "SEM",
+    "sems": {
+     "6": {
+      "W": 30,
+      "e": 2.0
+     },
+     "7": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Okrętowe systemy kontrolno-pomiarowe",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Systemy radiokomunikacji ruchomej",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Urządzenia radiokomunikacyjne",
+    "spec": "SEM",
+    "sems": {
+     "6": {
+      "W": 30,
+      "e": 2.0
+     },
+     "7": {
+      "L": 30,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Przepisy radiokomunikacyjne",
+    "spec": "SEM",
+    "sems": {
+     "4": {
+      "W": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Automatyzacja okrętowych systemów energetycznych",
+    "spec": "SEM",
+    "sems": {
+     "7": {
+      "W": 30,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Morskie systemy elektronawigacyjne",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 30,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Ochrona środowiska morskiego",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 18,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Praktyka",
+    "spec": "SEM",
+    "sems": {
+     "4": {
+      "e": 1.0
+     },
+     "6": {
+      "e": 18.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Praca dyplomowa",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Technologie rozległych sieci komputerowych",
+    "spec": "SIST",
+    "sems": {
+     "5": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Projektowanie sieci radiokomunikacyjnych",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Przetwarzanie sygnałów w telekomunikacji",
+    "spec": "SIST",
+    "sems": {
+     "5": {
+      "W": 30,
+      "e": 2.0
+     },
+     "6": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Filtry cyfrowe i procesory sygnałowe",
+    "spec": "SIST",
+    "sems": {
+     "6": {
+      "W": 30,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Bezpieczeństwo sieci i systemów komputerowych",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 15,
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Zasilanie urządzeń teleinformatycznych",
+    "spec": "SIST",
+    "sems": {
+     "6": {
+      "W": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Systemy i sieci radiokomunikacji ruchomej",
+    "spec": "SIST",
+    "sems": {
+     "5": {
+      "W": 30,
+      "exam": true,
+      "e": 3.0
+     },
+     "6": {
+      "L": 30,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Programowanie urządzeń mobilnych",
+    "spec": "SIST",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Systemy radiokomunikacji satelitarnej",
+    "spec": "SIST",
+    "sems": {
+     "5": {
+      "W": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Modulacje cyfrowe i kodowanie",
+    "spec": "SIST",
+    "sems": {
+     "5": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Technika nadawania i odbioru radiowego",
+    "spec": "SIST",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Systemy i urządzenia nawigacyjne",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Oprogramowanie systemów pomiarowych",
+    "spec": "SIST",
+    "sems": {
+     "4": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Morskie systemy komunikacji elektronicznej",
+    "spec": "SIST",
+    "sems": {
+     "4": {
+      "W": 30,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Pomiary radiokomunikacyjne",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 10,
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Praktyka",
+    "spec": "SIST",
+    "sems": {
+     "6": {
+      "e": 14.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/INF-S1-2024.txt",
+  "program": "INF-S1",
+  "version": "od naboru 2024/25",
+  "sums": {
+   "AIR": {
+    "1": {
+     "W": 210,
+     "C": 105,
+     "L": 150,
+     "e": 30.0
+    },
+    "2": {
+     "W": 195,
+     "C": 75,
+     "L": 150,
+     "P": 30,
+     "e": 30.0
+    },
+    "3": {
+     "W": 225,
+     "C": 75,
+     "L": 165,
+     "P": 15,
+     "e": 30.0
+    },
+    "4": {
+     "W": 165,
+     "C": 75,
+     "L": 225,
+     "P": 15,
+     "e": 30.0
+    },
+    "5": {
+     "W": 240,
+     "C": 30,
+     "L": 165,
+     "P": 15,
+     "e": 30.0
+    },
+    "6": {
+     "W": 135,
+     "C": 60,
+     "L": 90,
+     "P": 60,
+     "e": 30.0
+    },
+    "7": {
+     "W": 60,
+     "C": 30,
+     "L": 120,
+     "P": 75,
+     "e": 30.0
+    }
+   },
+   "AIiM": {
+    "1": {
+     "W": 210,
+     "C": 105,
+     "L": 150,
+     "e": 30.0
+    },
+    "2": {
+     "W": 195,
+     "C": 75,
+     "L": 150,
+     "P": 30,
+     "e": 30.0
+    },
+    "3": {
+     "W": 225,
+     "C": 75,
+     "L": 165,
+     "P": 15,
+     "e": 30.0
+    },
+    "4": {
+     "W": 180,
+     "C": 75,
+     "L": 225,
+     "e": 30.0
+    },
+    "5": {
+     "W": 225,
+     "C": 30,
+     "L": 165,
+     "P": 45,
+     "e": 30.0
+    },
+    "6": {
+     "W": 135,
+     "C": 60,
+     "L": 120,
+     "P": 60,
+     "e": 30.0
+    },
+    "7": {
+     "W": 45,
+     "C": 30,
+     "L": 90,
+     "P": 75,
+     "e": 30.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Przedmiot humanistyczny I",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Przedmiot humanistyczny II",
+    "spec": null,
+    "sems": {
+     "6": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Prawo i ochrona własności intelektualnej",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Analiza matematyczna",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 45,
+      "exam": true,
+      "C": 45,
+      "e": 6.0
+     },
+     "2": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Algebra",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Probabilistyka i procesy losowe",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Fizyka",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "C": 30,
+      "L": 30,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "2": {
+      "C": 30,
+      "e": 2.0
+     },
+     "3": {
+      "C": 30,
+      "e": 2.0
+     },
+     "4": {
+      "C": 30,
+      "e": 2.0
+     },
+     "5": {
+      "C": 30,
+      "e": 2.0
+     },
+     "6": {
+      "C": 30,
+      "e": 2.0
+     },
+     "7": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Narzędzia informatyki",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Podstawy programowania",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "L": 45,
+      "e": 5.0
+     },
+     "2": {
+      "P": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Wychowanie fizyczne",
+    "spec": null,
+    "sems": {
+     "1": {
+      "L": 15,
+      "e": 0.0
+     },
+     "2": {
+      "L": 15,
+      "e": 0.0
+     },
+     "3": {
+      "C": 30,
+      "e": 0.0
+     },
+     "4": {
+      "C": 30,
+      "e": 0.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Wprowadzenie do algorytmiki",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Podstawy metrologii",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Podstawy elektroniki",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "C": 15,
+      "e": 3.0
+     },
+     "3": {
+      "W": 30,
+      "C": 15,
+      "e": 3.0
+     },
+     "4": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Algorytmy i struktury danych",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "exam": true,
+      "L": 45,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Architektura systemów komputerowych",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Biznes elektroniczny",
+    "spec": null,
+    "sems": {
+     "6": {
+      "W": 30,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Technika cyfrowa",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "C": 15,
+      "e": 3.0
+     },
+     "2": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Systemy operacyjne",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Konstrukcja urządzeń",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Automatyka i robotyka",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Technologie internetowe",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Technologie mobilne",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 30,
+      "e": 2.0
+     },
+     "4": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Programowanie niskopoziomowe",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Paradygmaty programowania",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Programowanie obiektowe",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Przetwarzanie sygnałów",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 30,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Grafika komputerowa i techniki multimedialne",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 30,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Metody i narzędzia sztucznej inteligencji",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 15,
+      "exam": true,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Sieci komputerowe",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Teoria informacji",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 30,
+      "C": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Systemy wbudowane",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Wprowadzenie do baz danych",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 30,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "34",
+    "subject": "Podstawy kryptografii",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Techniki wirtualizacji",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Podstawy podejmowania decyzji",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Algorytmy analizy danych",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Inżynieria oprogramowania",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Bezpieczeństwo danych i systemów informatycznych",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Analiza i projektowanie systemów informatycznych",
+    "spec": null,
+    "sems": {
+     "6": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Zarządzanie zasobami informatycznymi",
+    "spec": null,
+    "sems": {
+     "6": {
+      "W": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Metody optymalizacji",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Systemy CAD/CAM",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "7": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Praca dyplomowa",
+    "spec": "AIR",
+    "sems": {
+     "7": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Nowoczesne języki i technologie programistyczne",
+    "spec": "AIR",
+    "sems": {
+     "5": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "P": 15,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Komputerowe systemy sterowania",
+    "spec": "AIR",
+    "sems": {
+     "6": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Systemy transmisji sygnałów",
+    "spec": "AIR",
+    "sems": {
+     "5": {
+      "W": 30,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Diagnostyka i niezawodność systemów wbudowanych",
+    "spec": "AIR",
+    "sems": {
+     "5": {
+      "W": 30,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Interfejsy komunikacyjne",
+    "spec": "AIR",
+    "sems": {
+     "5": {
+      "W": 30,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Sieciowe systemy operacyjne",
+    "spec": "AIR",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 30,
+      "P": 15,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Systemy pomiarowo-kontrolne",
+    "spec": "AIR",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Sterowniki programowalne",
+    "spec": "AIR",
+    "sems": {
+     "4": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "P": 15,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Systemy i przetwarzanie rozproszone",
+    "spec": "AIR",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "55",
+    "subject": "Sieci sensorowe",
+    "spec": "AIR",
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "56",
+    "subject": "Projekt grupowy",
+    "spec": "AIR",
+    "sems": {
+     "6": {
+      "P": 30,
+      "e": 2.0
+     },
+     "7": {
+      "P": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "57",
+    "subject": "Programowalne układy scalone",
+    "spec": "AIR",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 30,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "58",
+    "subject": "Praktyka zawodowa",
+    "spec": "AIR",
+    "sems": {
+     "6": {
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Praca dyplomowa",
+    "spec": "AIiM",
+    "sems": {
+     "7": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Programowanie aplikacji webowych",
+    "spec": "AIiM",
+    "sems": {
+     "5": {
+      "W": 30,
+      "L": 30,
+      "P": 15,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Projektowanie serwisów internetowych",
+    "spec": "AIiM",
+    "sems": {
+     "5": {
+      "W": 30,
+      "L": 30,
+      "P": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Architektura urządzeń mobilnych",
+    "spec": "AIiM",
+    "sems": {
+     "5": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Języki znaczników i skryptowe",
+    "spec": "AIiM",
+    "sems": {
+     "4": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Inteligencja obliczeniowa",
+    "spec": "AIiM",
+    "sems": {
+     "5": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Zarządzanie projektami informatycznymi",
+    "spec": "AIiM",
+    "sems": {
+     "4": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Zaawansowane technologie baz danych",
+    "spec": "AIiM",
+    "sems": {
+     "6": {
+      "W": 15,
+      "exam": true,
+      "L": 30,
+      "P": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Programowanie urządzeń mobilnych",
+    "spec": "AIiM",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Programowanie interfejsów graficznych",
+    "spec": "AIiM",
+    "sems": {
+     "7": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "55",
+    "subject": "Technologie chmury obliczeniowej",
+    "spec": "AIiM",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "56",
+    "subject": "Inteligentne aplikacje",
+    "spec": "AIiM",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "57",
+    "subject": "Projekt grupowy",
+    "spec": "AIiM",
+    "sems": {
+     "6": {
+      "P": 30,
+      "e": 2.0
+     },
+     "7": {
+      "P": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "58",
+    "subject": "Programowanie równoległe i rozproszone",
+    "spec": "AIiM",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "59",
+    "subject": "Praktyka zawodowa",
+    "spec": "AIiM",
+    "sems": {
+     "6": {
+      "e": 6.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EL-S2.txt",
+  "program": "ET-S2",
+  "version": "od naboru 2024/25",
+  "sums": {
+   "EA": {
+    "1": {
+     "W": 285,
+     "C": 15,
+     "L": 150,
+     "P": 30,
+     "e": 32.0
+    },
+    "2": {
+     "W": 105,
+     "C": 15,
+     "L": 210,
+     "P": 150,
+     "e": 31.0
+    },
+    "3": {
+     "W": 30,
+     "C": 45,
+     "L": 15,
+     "P": 90,
+     "e": 27.0
+    }
+   },
+   "KSS": {
+    "1": {
+     "W": 285,
+     "C": 15,
+     "L": 150,
+     "P": 30,
+     "e": 32.0
+    },
+    "2": {
+     "W": 75,
+     "C": 15,
+     "L": 180,
+     "P": 205,
+     "e": 31.0
+    },
+    "3": {
+     "W": 45,
+     "C": 45,
+     "P": 90,
+     "e": 27.0
+    }
+   },
+   "OZE": {
+    "1": {
+     "W": 285,
+     "C": 15,
+     "L": 150,
+     "P": 30,
+     "e": 32.0
+    },
+    "2": {
+     "W": 120,
+     "C": 15,
+     "L": 210,
+     "P": 135,
+     "e": 30.0
+    },
+    "3": {
+     "W": 75,
+     "C": 45,
+     "L": 45,
+     "P": 60,
+     "e": 28.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "1": {
+      "L": 30,
+      "e": 2.0
+     },
+     "2": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Przedmiot humanistyczny I",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Podstawy przedsiębiorczości",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Przedmiot humanistyczny II",
+    "spec": null,
+    "sems": {
+     "3": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Wybrane zagadnienia teorii obwodów",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "L": 45,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Elektromechaniczne systemy napędowe",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "L": 15,
+      "P": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Pomiary wielkości nieelektrycznych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Kompatybilność w układach elektrycznych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     },
+     "2": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Metody sterowania automatycznego",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "e": 2.0
+     },
+     "2": {
+      "L": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Metody sztucznej inteligencji",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Wybrane zagadnienia maszyn elektrycznych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     },
+     "2": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Przekształtnikowe układy napędowe i generacyjne",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "L": 15,
+      "e": 3.0
+     },
+     "2": {
+      "P": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Mechatronika i robotyka",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "e": 2.0
+     },
+     "2": {
+      "L": 45,
+      "P": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Metody optymalizacji",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Metody przetwarzania sygnałów",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "e": 2.0
+     },
+     "2": {
+      "L": 15,
+      "P": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Projektowanie i eksploatacja systemów elektroenergetycznych",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Zarządzanie projektem",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Jakość energii elektrycznej",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Energetyka odnawialna i rozproszona",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Programowalne układy cyfrowe",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "2": {
+      "C": 15,
+      "e": 1.0
+     },
+     "3": {
+      "C": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Modelowanie i symulacja systemów technicznych",
+    "spec": "EA",
+    "sems": {
+     "2": {
+      "W": 30,
+      "L": 30,
+      "P": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Sterowanie optymalne i modalne",
+    "spec": "EA",
+    "sems": {
+     "3": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "P": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Przemysłowe systemy rozproszone",
+    "spec": "EA",
+    "sems": {
+     "2": {
+      "W": 15,
+      "P": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Praca dyplomowa",
+    "spec": "EA",
+    "sems": {
+     "3": {
+      "P": 45,
+      "e": 18.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Projektowanie aplikacji internetowych",
+    "spec": "KSS",
+    "sems": {
+     "2": {
+      "W": 15,
+      "P": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Inżynieria oprogramowania",
+    "spec": "KSS",
+    "sems": {
+     "3": {
+      "W": 30,
+      "exam": true,
+      "P": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Mikroprocesorowe układy pomiarowe",
+    "spec": "KSS",
+    "sems": {
+     "2": {
+      "P": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Oprogramowanie systemów kontrolno-pomiarowych",
+    "spec": "KSS",
+    "sems": {
+     "2": {
+      "P": 40,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Praca dyplomowa",
+    "spec": "KSS",
+    "sems": {
+     "3": {
+      "P": 45,
+      "e": 18.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Elektryczne układy napędowe dla pojazdów i statków",
+    "spec": "OZE",
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Mobilne systemy zasilania elektrycznych układów napędowych",
+    "spec": "OZE",
+    "sems": {
+     "2": {
+      "W": 15,
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Systemy fotowoltaiczne",
+    "spec": "OZE",
+    "sems": {
+     "3": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Technika wodorowa",
+    "spec": "OZE",
+    "sems": {
+     "3": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Elektronika i informatyka w motoryzacji",
+    "spec": "OZE",
+    "sems": {
+     "2": {
+      "W": 15,
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Eksploatacja systemów OZE",
+    "spec": "OZE",
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Akwizycja danych i monitoring w systemach OZE",
+    "spec": "OZE",
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Modelowanie systemów elektroenergetycznych w OZE",
+    "spec": "OZE",
+    "sems": {
+     "3": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Hybrydowe układy zasilania elektrycznego i kogeneracja w OZE",
+    "spec": "OZE",
+    "sems": {
+     "3": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Praca dyplomowa",
+    "spec": "OZE",
+    "sems": {
+     "3": {
+      "P": 45,
+      "e": 18.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EIT-S2.txt",
+  "program": "EIT-S2",
+  "version": "od naboru 2025/26",
+  "sums": {
+   "SE": {
+    "1": {
+     "W": 240,
+     "C": 60,
+     "L": 105,
+     "P": 15,
+     "e": 28.0
+    },
+    "2": {
+     "W": 225,
+     "L": 195,
+     "P": 30,
+     "e": 30.0
+    },
+    "3": {
+     "W": 30,
+     "C": 60,
+     "L": 60,
+     "P": 75,
+     "e": 32.0
+    }
+   },
+   "AiBS": {
+    "1": {
+     "W": 240,
+     "C": 60,
+     "L": 105,
+     "P": 15,
+     "e": 28.0
+    },
+    "2": {
+     "W": 210,
+     "L": 195,
+     "P": 30,
+     "e": 29.0
+    },
+    "3": {
+     "W": 45,
+     "C": 60,
+     "L": 75,
+     "P": 90,
+     "e": 33.0
+    }
+   },
+   "EiAM": {
+    "1": {
+     "W": 240,
+     "C": 60,
+     "L": 105,
+     "P": 15,
+     "e": 28.0
+    },
+    "2": {
+     "W": 260,
+     "L": 190,
+     "P": 15,
+     "e": 29.0
+    },
+    "3": {
+     "W": 110,
+     "C": 60,
+     "L": 100,
+     "P": 45,
+     "e": 33.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "1": {
+      "L": 15,
+      "e": 1.0
+     },
+     "2": {
+      "L": 15,
+      "e": 1.0
+     },
+     "3": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Przedmiot humanistyczny I",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Podstawy przedsiębiorczości",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Przedmiot humanistyczny II",
+    "spec": null,
+    "sems": {
+     "3": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Matematyka II",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "exam": true,
+      "L": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Metody numeryczne",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Metody optymalizacji",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Elementy i układy optoelektroniczne",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "C": 15,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Detektory podczerwieni",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Programowalne układy cyfrowe",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "L": 15,
+      "e": 3.0
+     },
+     "2": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Diagnostyka i niezawodność",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Kompatybilność elektromagnetyczna",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Systemy baz danych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Systemy inteligencji obliczeniowej",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "exam": true,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Infrastruktura sieci teleinformatycznych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Układy mikrofalowe w systemach radiokomunikacyjnych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "e": 2.0
+     },
+     "2": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Modelowanie elementów i układów elektronicznych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     },
+     "2": {
+      "L": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Implementacje systemów Internetu Rzeczy",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Inteligentne systemy elektroniczne",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "3": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Praca dyplomowa",
+    "spec": "SE",
+    "sems": {
+     "3": {
+      "P": 45,
+      "e": 18.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Fotonika",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 30,
+      "exam": true,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Elektroniczne elementy i układy mocy",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 30,
+      "L": 15,
+      "e": 3.0
+     },
+     "3": {
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Systemy fotowoltaiczne",
+    "spec": "SE",
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Mikroprocesorowe układy i systemy pomiarowe",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     },
+     "3": {
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Półprzewodnikowe źródła światła",
+    "spec": "SE",
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Mikrokomputerowe systemy sterowania",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 30,
+      "L": 30,
+      "P": 15,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Elektroniczne systemy obróbki dźwięku",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Wybrane zagadnienia współczesnej elektroniki",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Praca dyplomowa",
+    "spec": "AiBS",
+    "sems": {
+     "3": {
+      "P": 45,
+      "e": 18.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Bezpieczeństwo sieci komputerowych",
+    "spec": "AiBS",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Administracja i utrzymanie usług internetowych",
+    "spec": "AiBS",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Podstawy kryptografii",
+    "spec": "AiBS",
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Administracja systemami informatycznymi",
+    "spec": "AiBS",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     },
+     "3": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Testy bezpieczeństwa systemów informatycznych",
+    "spec": "AiBS",
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 1.0
+     },
+     "3": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Przechowywanie i retencja danych",
+    "spec": "AiBS",
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Administrowanie systemami radiokomunikacyjnymi",
+    "spec": "AiBS",
+    "sems": {
+     "2": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Techniki wirtualizacji",
+    "spec": "AiBS",
+    "sems": {
+     "3": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Prawo i odpowiedzialność zawodowa",
+    "spec": "AiBS",
+    "sems": {
+     "3": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Programowanie usług i aplikacji internetowych",
+    "spec": "AiBS",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     },
+     "3": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Bezpieczeństwo aplikacji internetowych",
+    "spec": "AiBS",
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Praca dyplomowa",
+    "spec": "EiAM",
+    "sems": {
+     "3": {
+      "P": 45,
+      "e": 18.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Maszyny elektryczne",
+    "spec": "EiAM",
+    "sems": {
+     "2": {
+      "W": 20,
+      "exam": true,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Elektryczne zautomatyzowane napędy okrętowe",
+    "spec": "EiAM",
+    "sems": {
+     "3": {
+      "W": 20,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Energoelektronika",
+    "spec": "EiAM",
+    "sems": {
+     "3": {
+      "W": 30,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Siłownie okrętowe i mechanizmy pomocnicze",
+    "spec": "EiAM",
+    "sems": {
+     "3": {
+      "W": 30,
+      "exam": true,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Chłodnictwo, wentylacja i klimatyzacja okrętowa",
+    "spec": "EiAM",
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Elektroenergetyka okrętowa",
+    "spec": "EiAM",
+    "sems": {
+     "2": {
+      "W": 20,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Aparaty i urządzenia elektryczne",
+    "spec": "EiAM",
+    "sems": {
+     "2": {
+      "W": 20,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Technika wysokich napięć",
+    "spec": "EiAM",
+    "sems": {
+     "2": {
+      "W": 20,
+      "exam": true,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Sterowniki programowalne",
+    "spec": "EiAM",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Okrętowe urządzenia pokładowe",
+    "spec": "EiAM",
+    "sems": {
+     "2": {
+      "W": 20,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Eksploatacja okrętowych urządzeń elektrycznych",
+    "spec": "EiAM",
+    "sems": {
+     "2": {
+      "W": 20,
+      "L": 20,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Podstawy elektrotechniki II",
+    "spec": "EiAM",
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "34",
+    "subject": "Dowodzenie siłownią okrętową",
+    "spec": "EiAM",
+    "sems": {
+     "2": {
+      "W": 20,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Miernictwo wielkości nieelektrycznych",
+    "spec": "EiAM",
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/ST-S2.txt",
+  "program": "STI-S2",
+  "version": "od naboru 2024/25",
+  "sums": {
+   "BTD": {
+    "1": {
+     "W": 270,
+     "C": 30,
+     "L": 150,
+     "P": 15,
+     "e": 31.0
+    },
+    "2": {
+     "W": 120,
+     "C": 30,
+     "L": 165,
+     "P": 105,
+     "e": 28.0
+    },
+    "3": {
+     "W": 45,
+     "C": 60,
+     "L": 75,
+     "P": 75,
+     "e": 32.0
+    }
+   },
+   "APD": {
+    "1": {
+     "W": 270,
+     "C": 30,
+     "L": 150,
+     "P": 15,
+     "e": 31.0
+    },
+    "2": {
+     "W": 105,
+     "C": 30,
+     "L": 165,
+     "P": 120,
+     "e": 28.0
+    },
+    "3": {
+     "W": 45,
+     "C": 60,
+     "L": 90,
+     "P": 60,
+     "e": 32.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "1": {
+      "L": 15,
+      "e": 1.0
+     },
+     "2": {
+      "L": 15,
+      "e": 1.0
+     },
+     "3": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Przedmiot humanistyczny I",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Podstawy przedsiębiorczości",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Przedmiot humanistyczny II",
+    "spec": null,
+    "sems": {
+     "3": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Matematyka II",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 30,
+      "exam": true,
+      "C": 30,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Programowalne układy cyfrowe",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "L": 15,
+      "e": 3.0
+     },
+     "2": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Diagnostyka i niezawodność",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Kompatybilność elektromagnetyczna",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Systemy baz danych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Systemy inteligencji obliczeniowej",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Infrastruktura sieci teleinformatycznych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Implementacje systemów Internetu Rzeczy",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Mikroprocesorowe układy i systemy pomiarowe",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     },
+     "2": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Robotyka",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     },
+     "2": {
+      "L": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Zaawansowane techniki programowania",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Wprowadzenie do analizy danych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Fotonika",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 30,
+      "exam": true,
+      "e": 2.0
+     },
+     "2": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Sensory IoT",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Układy i systemy telemetryczne",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     },
+     "2": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "3": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Projekt zespołowy",
+    "spec": null,
+    "sems": {
+     "2": {
+      "P": 60,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Praca dyplomowa",
+    "spec": null,
+    "sems": {
+     "3": {
+      "P": 45,
+      "e": 18.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Bezpieczeństwo sieci komputerowych",
+    "spec": "BTD",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Administracja i utrzymanie usług internetowych",
+    "spec": "BTD",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Administracja systemami informatycznymi",
+    "spec": "BTD",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     },
+     "3": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Programowanie usług i aplikacji internetowych",
+    "spec": "BTD",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     },
+     "3": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Testy bezpieczeństwa systemów informatycznych",
+    "spec": "BTD",
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 1.0
+     },
+     "3": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Techniki wirtualizacji i konteneryzacji",
+    "spec": "BTD",
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Przechowywanie i retencja danych",
+    "spec": "BTD",
+    "sems": {
+     "3": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Technologie transmisji danych",
+    "spec": "BTD",
+    "sems": {
+     "3": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Dane przestrzenne",
+    "spec": "APD",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Głębokie uczenie i analiza obrazów",
+    "spec": "APD",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Analityka biznesowa",
+    "spec": "APD",
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Eksploracja zasobów internetowych",
+    "spec": "APD",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Inteligentne aplikacje",
+    "spec": "APD",
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "34",
+    "subject": "Sieci społecznościowe",
+    "spec": "APD",
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Wizualizacja danych",
+    "spec": "APD",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EL-N1-2024.txt",
+  "program": "ET-N1",
+  "version": "od naboru 2024/25",
+  "sums": {
+   "EA": {
+    "1": {
+     "W": 129,
+     "C": 62,
+     "L": 30,
+     "P": 8,
+     "e": 30.0
+    },
+    "2": {
+     "W": 113,
+     "C": 64,
+     "L": 50,
+     "P": 8,
+     "e": 30.0
+    },
+    "3": {
+     "W": 103,
+     "C": 48,
+     "L": 55,
+     "P": 23,
+     "e": 30.0
+    },
+    "4": {
+     "W": 71,
+     "C": 18,
+     "L": 95,
+     "P": 8,
+     "e": 24.0
+    },
+    "5": {
+     "W": 84,
+     "C": 18,
+     "L": 75,
+     "P": 32,
+     "e": 24.0
+    },
+    "6": {
+     "W": 49,
+     "C": 22,
+     "L": 87,
+     "P": 8,
+     "e": 24.0
+    },
+    "7": {
+     "W": 50,
+     "C": 22,
+     "L": 65,
+     "P": 8,
+     "e": 24.0
+    },
+    "8": {
+     "W": 25,
+     "C": 15,
+     "P": 53,
+     "e": 24.0
+    }
+   },
+   "AP": {
+    "1": {
+     "W": 129,
+     "C": 62,
+     "L": 30,
+     "P": 8,
+     "e": 30.0
+    },
+    "2": {
+     "W": 113,
+     "C": 64,
+     "L": 50,
+     "P": 8,
+     "e": 30.0
+    },
+    "3": {
+     "W": 103,
+     "C": 48,
+     "L": 55,
+     "P": 23,
+     "e": 30.0
+    },
+    "4": {
+     "W": 63,
+     "C": 18,
+     "L": 95,
+     "P": 8,
+     "e": 24.0
+    },
+    "5": {
+     "W": 72,
+     "C": 18,
+     "L": 85,
+     "P": 24,
+     "e": 24.0
+    },
+    "6": {
+     "W": 49,
+     "C": 22,
+     "L": 77,
+     "P": 8,
+     "e": 24.0
+    },
+    "7": {
+     "W": 70,
+     "C": 22,
+     "L": 71,
+     "P": 16,
+     "e": 24.0
+    },
+    "8": {
+     "W": 26,
+     "C": 15,
+     "L": 25,
+     "P": 45,
+     "e": 24.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "2": {
+      "C": 28,
+      "e": 3.0
+     },
+     "3": {
+      "C": 28,
+      "e": 3.0
+     },
+     "4": {
+      "C": 18,
+      "e": 1.0
+     },
+     "5": {
+      "C": 18,
+      "e": 1.0
+     },
+     "6": {
+      "C": 22,
+      "e": 1.0
+     },
+     "7": {
+      "C": 22,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Przedmiot humanistyczny I",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Ekonomia i zarządzanie",
+    "spec": null,
+    "sems": {
+     "8": {
+      "W": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Własność intelektualna i prawo pracy",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Ceremoniał morski",
+    "spec": null,
+    "sems": {
+     "1": {
+      "C": 5,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Analiza matematyczna",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 20,
+      "exam": true,
+      "C": 24,
+      "e": 6.0
+     },
+     "2": {
+      "W": 12,
+      "C": 14,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Algebra",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 10,
+      "C": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Fizyka",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "exam": true,
+      "C": 15,
+      "L": 15,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Informatyka",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Inżynieria materiałowa",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "e": 1.0
+     },
+     "2": {
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Geometria i grafika inżynierska",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Metody numeryczne",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Podstawy elektrotechniki",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "C": 22,
+      "e": 7.0
+     },
+     "3": {
+      "W": 15,
+      "C": 20,
+      "e": 6.0
+     },
+     "4": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Teoria pola elektromagnetycznego",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Metrologia",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 4.0
+     },
+     "3": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Komputerowe wspomaganie obliczeń inżynierskich",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 10,
+      "e": 2.0
+     },
+     "3": {
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Maszyny elektryczne",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 20,
+      "exam": true,
+      "e": 2.0
+     },
+     "4": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Elektronika i energoelektronika",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 2.0
+     },
+     "3": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 4.0
+     },
+     "4": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Elektroenergetyka",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 15,
+      "exam": true,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Technika mikroprocesorowa",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 2.0
+     },
+     "3": {
+      "W": 8,
+      "L": 15,
+      "e": 2.0
+     },
+     "4": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Aparaty i urządzenia elektryczne",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Podstawy automatyki",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 1.0
+     },
+     "3": {
+      "W": 15,
+      "e": 2.0
+     },
+     "4": {
+      "W": 8,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Mechanika i mechatronika",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Technika wysokich napięć",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "e": 2.0
+     },
+     "4": {
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Technika cyfrowa",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 8,
+      "e": 3.0
+     },
+     "2": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Automatyzacja systemów energetycznych",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "5": {
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Sterowniki programowalne",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 15,
+      "L": 15,
+      "e": 4.0
+     },
+     "5": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Wizualizacja procesów sterowania",
+    "spec": null,
+    "sems": {
+     "6": {
+      "W": 8,
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Konstrukcja układów elektronicznych",
+    "spec": null,
+    "sems": {
+     "3": {
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Sieci komputerowe",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Technika iskrobezpieczeństwa",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Budowa i teoria okrętu",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Ergonomia i bezpieczeństwo pracy na statku",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "34",
+    "subject": "Układy kondycjonowania energii elektrycznej",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "8": {
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Elektryczne zautomatyzowane napędy okrętowe",
+    "spec": "EA",
+    "sems": {
+     "5": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "6": {
+      "W": 8,
+      "L": 22,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Elektroenergetyka okrętowa",
+    "spec": "EA",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Urządzenia i układy automatyki",
+    "spec": "EA",
+    "sems": {
+     "4": {
+      "W": 10,
+      "e": 1.0
+     },
+     "5": {
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Automatyzacja okrętowych systemów energetycznych",
+    "spec": "EA",
+    "sems": {
+     "6": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Okrętowe urządzenia pokładowe",
+    "spec": "EA",
+    "sems": {
+     "5": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Urządzenia elektronawigacyjne",
+    "spec": "EA",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Urządzenia łączności okrętowej",
+    "spec": "EA",
+    "sems": {
+     "6": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Eksploatacja okrętowych urządzeń elektrycznych",
+    "spec": "EA",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 15,
+      "P": 8,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Okrętowe systemy kontrolno-pomiarowe",
+    "spec": "EA",
+    "sems": {
+     "6": {
+      "W": 10,
+      "exam": true,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Siłownie okrętowe i mechanizmy pomocnicze",
+    "spec": "EA",
+    "sems": {
+     "7": {
+      "W": 10,
+      "exam": true,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Chłodnictwo, wentylacja i klimatyzacja",
+    "spec": "EA",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Ochrona środowiska morskiego",
+    "spec": "EA",
+    "sems": {
+     "7": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Dokumentacja techniczna w elektrotechnice",
+    "spec": "EA",
+    "sems": {
+     "4": {
+      "W": 8,
+      "e": 1.0
+     },
+     "5": {
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Energoelektronika w OZE",
+    "spec": "EA",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 15,
+      "e": 4.0
+     },
+     "8": {
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Sieci i systemy elektroenergetyczne",
+    "spec": "EA",
+    "sems": {
+     "8": {
+      "W": 15,
+      "P": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Modelowanie maszyn elektrycznych",
+    "spec": "EA",
+    "sems": {
+     "6": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Pracownia problemowa E",
+    "spec": "EA",
+    "sems": {
+     "6": {
+      "L": 15,
+      "e": 10.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Seminarium problemowe E",
+    "spec": "EA",
+    "sems": {
+     "7": {
+      "L": 10,
+      "e": 10.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Praca dyplomowa",
+    "spec": "EA",
+    "sems": {
+     "8": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Energoelektronika",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Napęd elektryczny",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "6": {
+      "L": 22,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Programowanie komputerów",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Systemy internetu rzeczy",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 10,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Przetwarzanie i przesyłanie sygnałów",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 15,
+      "exam": true,
+      "L": 10,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Systemy kontrolno-pomiarowe",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 10,
+      "exam": true,
+      "e": 2.0
+     },
+     "7": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Inżynieria sterowania układami przekształtnikowymi",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 8,
+      "L": 15,
+      "e": 4.0
+     },
+     "7": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Przemysł 4.0",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 2.0
+     },
+     "8": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Komputerowe systemy operacyjne",
+    "spec": "AP",
+    "sems": {
+     "8": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Dyskretne układy sterowania",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 8,
+      "exam": true,
+      "L": 10,
+      "P": 8,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Mikroprocesorowe układy pomiarowe",
+    "spec": "AP",
+    "sems": {
+     "8": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Urządzenia i układy automatyki przemysłowej",
+    "spec": "AP",
+    "sems": {
+     "4": {
+      "W": 10,
+      "e": 2.0
+     },
+     "5": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Systemy łączności cyfrowej",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Technika przeciwdziałania zakłóceniom",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Ochrona środowiska",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Siłownie okrętowe",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 8,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Okrętowe sieci elektroenergetyczne",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 8,
+      "exam": true,
+      "L": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Pracownia problemowa AP",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "L": 15,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Seminarium problemowe AP",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "L": 10,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "55",
+    "subject": "Praca dyplomowa",
+    "spec": "AP",
+    "sems": {
+     "8": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EL-N1-2025.txt",
+  "program": "ET-N1",
+  "version": "od naboru 2025/26",
+  "sums": {
+   "EA": {
+    "1": {
+     "W": 137,
+     "C": 57,
+     "L": 30,
+     "P": 8,
+     "e": 30.0
+    },
+    "2": {
+     "W": 113,
+     "C": 64,
+     "L": 50,
+     "P": 8,
+     "e": 30.0
+    },
+    "3": {
+     "W": 108,
+     "C": 48,
+     "L": 55,
+     "P": 23,
+     "e": 30.0
+    },
+    "4": {
+     "W": 76,
+     "C": 18,
+     "L": 95,
+     "P": 8,
+     "e": 24.0
+    },
+    "5": {
+     "W": 89,
+     "C": 18,
+     "L": 75,
+     "P": 32,
+     "e": 24.0
+    },
+    "6": {
+     "W": 57,
+     "C": 22,
+     "L": 82,
+     "P": 8,
+     "e": 24.0
+    },
+    "7": {
+     "W": 41,
+     "L": 50,
+     "P": 15,
+     "e": 24.0
+    },
+    "8": {
+     "W": 26,
+     "C": 37,
+     "L": 20,
+     "P": 16,
+     "e": 24.0
+    }
+   },
+   "AP": {
+    "1": {
+     "W": 137,
+     "C": 57,
+     "L": 30,
+     "P": 8,
+     "e": 30.0
+    },
+    "2": {
+     "W": 113,
+     "C": 64,
+     "L": 50,
+     "P": 8,
+     "e": 30.0
+    },
+    "3": {
+     "W": 108,
+     "C": 48,
+     "L": 55,
+     "P": 23,
+     "e": 30.0
+    },
+    "4": {
+     "W": 68,
+     "C": 18,
+     "L": 95,
+     "P": 8,
+     "e": 24.0
+    },
+    "5": {
+     "W": 77,
+     "C": 18,
+     "L": 85,
+     "P": 24,
+     "e": 24.0
+    },
+    "6": {
+     "W": 57,
+     "C": 22,
+     "L": 80,
+     "P": 8,
+     "e": 24.0
+    },
+    "7": {
+     "W": 62,
+     "L": 73,
+     "P": 8,
+     "e": 24.0
+    },
+    "8": {
+     "W": 26,
+     "C": 37,
+     "L": 20,
+     "P": 23,
+     "e": 24.0
+    }
+   },
+   "ETO": {
+    "1": {
+     "W": 137,
+     "C": 57,
+     "L": 30,
+     "P": 8,
+     "e": 30.0
+    },
+    "2": {
+     "W": 113,
+     "C": 64,
+     "L": 50,
+     "P": 8,
+     "e": 30.0
+    },
+    "3": {
+     "W": 108,
+     "C": 48,
+     "L": 55,
+     "P": 23,
+     "e": 30.0
+    },
+    "4": {
+     "W": 68,
+     "C": 18,
+     "L": 95,
+     "P": 8,
+     "e": 23.0
+    },
+    "5": {
+     "W": 128,
+     "C": 18,
+     "L": 70,
+     "P": 16,
+     "e": 21.0
+    },
+    "6": {
+     "W": 136,
+     "C": 22,
+     "L": 90,
+     "P": 8,
+     "e": 21.0
+    },
+    "7": {
+     "e": 30.0
+    },
+    "8": {
+     "W": 96,
+     "C": 37,
+     "L": 28,
+     "P": 8,
+     "e": 25.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "2": {
+      "C": 28,
+      "e": 3.0
+     },
+     "3": {
+      "C": 28,
+      "e": 3.0
+     },
+     "4": {
+      "C": 18,
+      "e": 1.0
+     },
+     "5": {
+      "C": 18,
+      "e": 1.0
+     },
+     "6": {
+      "C": 22,
+      "e": 1.0
+     },
+     "8": {
+      "C": 22,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Przedmiot humanistyczny I",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Ekonomia i zarządzanie",
+    "spec": null,
+    "sems": {
+     "8": {
+      "W": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Własność intelektualna i prawo pracy",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Ceremoniał morski",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 5,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Analiza matematyczna",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 20,
+      "exam": true,
+      "C": 24,
+      "e": 6.0
+     },
+     "2": {
+      "W": 12,
+      "C": 14,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Algebra",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 10,
+      "C": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Fizyka",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "exam": true,
+      "C": 15,
+      "L": 15,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Informatyka",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Inżynieria materiałowa",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "e": 1.0
+     },
+     "2": {
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Geometria i grafika inżynierska",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Metody numeryczne",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Podstawy elektrotechniki",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "C": 22,
+      "e": 7.0
+     },
+     "3": {
+      "W": 15,
+      "C": 20,
+      "e": 6.0
+     },
+     "4": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Teoria pola elektromagnetycznego",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Metrologia",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 4.0
+     },
+     "3": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Komputerowe wspomaganie obliczeń inżynierskich",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 10,
+      "e": 2.0
+     },
+     "3": {
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Maszyny elektryczne",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 20,
+      "exam": true,
+      "e": 2.0
+     },
+     "4": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Elektronika i energoelektronika",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 2.0
+     },
+     "3": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 4.0
+     },
+     "4": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Elektroenergetyka",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 15,
+      "exam": true,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Technika mikroprocesorowa",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 2.0
+     },
+     "3": {
+      "W": 8,
+      "L": 15,
+      "e": 2.0
+     },
+     "4": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Aparaty i urządzenia elektryczne",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 20,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Podstawy automatyki",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 1.0
+     },
+     "3": {
+      "W": 15,
+      "e": 2.0
+     },
+     "4": {
+      "W": 8,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Mechanika i mechatronika",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Technika wysokich napięć",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 20,
+      "e": 2.0
+     },
+     "4": {
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Technika cyfrowa",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 8,
+      "e": 3.0
+     },
+     "2": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Automatyzacja systemów energetycznych",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "5": {
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Sterowniki programowalne",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 20,
+      "L": 15,
+      "e": 4.0
+     },
+     "5": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Wizualizacja procesów sterowania",
+    "spec": null,
+    "sems": {
+     "6": {
+      "W": 8,
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Konstrukcja układów elektronicznych",
+    "spec": null,
+    "sems": {
+     "3": {
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Sieci komputerowe",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Technika iskrobezpieczeństwa",
+    "spec": null,
+    "sems": {
+     "8": {
+      "W": 8,
+      "L": 10,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Budowa i teoria okrętu",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Ergonomia i bezpieczeństwo pracy na statku",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "34",
+    "subject": "Układy kondycjonowania energii elektrycznej",
+    "spec": null,
+    "sems": {
+     "6": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "8": {
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Elektryczne zautomatyzowane napędy okrętowe",
+    "spec": "EA",
+    "sems": {
+     "5": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "6": {
+      "W": 8,
+      "L": 22,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Elektroenergetyka okrętowa",
+    "spec": "EA",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Urządzenia i układy automatyki",
+    "spec": "EA",
+    "sems": {
+     "4": {
+      "W": 10,
+      "e": 1.0
+     },
+     "5": {
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Automatyzacja okrętowych systemów energetycznych",
+    "spec": "EA",
+    "sems": {
+     "6": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Okrętowe urządzenia pokładowe",
+    "spec": "EA",
+    "sems": {
+     "5": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Urządzenia elektronawigacyjne",
+    "spec": "EA",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Urządzenia łączności okrętowej",
+    "spec": "EA",
+    "sems": {
+     "6": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Eksploatacja okrętowych urządzeń elektrycznych",
+    "spec": "EA",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 15,
+      "P": 8,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Okrętowe systemy kontrolno-pomiarowe",
+    "spec": "EA",
+    "sems": {
+     "6": {
+      "W": 10,
+      "exam": true,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Siłownie okrętowe i mechanizmy pomocnicze",
+    "spec": "EA",
+    "sems": {
+     "7": {
+      "W": 10,
+      "exam": true,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Chłodnictwo, wentylacja i klimatyzacja",
+    "spec": "EA",
+    "sems": {
+     "8": {
+      "W": 8,
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Ochrona środowiska morskiego",
+    "spec": "EA",
+    "sems": {
+     "7": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Dokumentacja techniczna w elektrotechnice",
+    "spec": "EA",
+    "sems": {
+     "4": {
+      "W": 8,
+      "e": 1.0
+     },
+     "5": {
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Energoelektronika w OZE",
+    "spec": "EA",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 15,
+      "e": 4.0
+     },
+     "8": {
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Sieci i systemy elektroenergetyczne",
+    "spec": "EA",
+    "sems": {
+     "7": {
+      "W": 15,
+      "P": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Modelowanie maszyn elektrycznych",
+    "spec": "EA",
+    "sems": {
+     "7": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Pracownia problemowa E",
+    "spec": "EA",
+    "sems": {
+     "6": {
+      "L": 15,
+      "e": 10.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Seminarium problemowe E",
+    "spec": "EA",
+    "sems": {
+     "7": {
+      "L": 10,
+      "e": 10.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Praca dyplomowa",
+    "spec": "EA",
+    "sems": {
+     "8": {
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Energoelektronika",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Napęd elektryczny",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "6": {
+      "L": 22,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Programowanie komputerów",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Systemy internetu rzeczy",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 10,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Przetwarzanie i przesyłanie sygnałów",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 15,
+      "exam": true,
+      "L": 10,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Systemy kontrolno-pomiarowe",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 10,
+      "exam": true,
+      "e": 2.0
+     },
+     "7": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Inżynieria sterowania układami przekształtnikowymi",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 8,
+      "L": 15,
+      "e": 4.0
+     },
+     "7": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Przemysł 4.0",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 2.0
+     },
+     "8": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Komputerowe systemy operacyjne",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Dyskretne układy sterowania",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 8,
+      "exam": true,
+      "L": 10,
+      "P": 8,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Mikroprocesorowe układy pomiarowe",
+    "spec": "AP",
+    "sems": {
+     "8": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Urządzenia i układy automatyki przemysłowej",
+    "spec": "AP",
+    "sems": {
+     "4": {
+      "W": 10,
+      "e": 2.0
+     },
+     "5": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Systemy łączności cyfrowej",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Technika przeciwdziałania zakłóceniom",
+    "spec": "AP",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Ochrona środowiska",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Siłownie okrętowe",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 8,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Okrętowe sieci elektroenergetyczne",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "W": 8,
+      "exam": true,
+      "L": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Pracownia problemowa AP",
+    "spec": "AP",
+    "sems": {
+     "6": {
+      "L": 15,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Seminarium problemowe AP",
+    "spec": "AP",
+    "sems": {
+     "7": {
+      "L": 10,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "55",
+    "subject": "Praca dyplomowa",
+    "spec": "AP",
+    "sems": {
+     "8": {
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Elektryczne zautomatyzowane napędy okrętowe",
+    "spec": "ETO",
+    "sems": {
+     "5": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "6": {
+      "W": 8,
+      "L": 22,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Elektroenergetyka okrętowa",
+    "spec": "ETO",
+    "sems": {
+     "5": {
+      "W": 20,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Automatyzacja okrętowych systemów energetycznych",
+    "spec": "ETO",
+    "sems": {
+     "6": {
+      "W": 30,
+      "exam": true,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Okrętowe urządzenia pokładowe",
+    "spec": "ETO",
+    "sems": {
+     "5": {
+      "W": 20,
+      "exam": true,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Urządzenia elektronawigacyjne",
+    "spec": "ETO",
+    "sems": {
+     "5": {
+      "W": 25,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Urządzenia łączności okrętowej",
+    "spec": "ETO",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Eksploatacja okrętowych urządzeń elektrycznych",
+    "spec": "ETO",
+    "sems": {
+     "5": {
+      "W": 20,
+      "L": 20,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Okrętowe systemy kontrolno-pomiarowe",
+    "spec": "ETO",
+    "sems": {
+     "6": {
+      "W": 15,
+      "exam": true,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Siłownie okrętowe i mechanizmy pomocnicze",
+    "spec": "ETO",
+    "sems": {
+     "6": {
+      "W": 30,
+      "exam": true,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Chłodnictwo, wentylacja i klimatyzacja",
+    "spec": "ETO",
+    "sems": {
+     "8": {
+      "W": 15,
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Ochrona środowiska morskiego",
+    "spec": "ETO",
+    "sems": {
+     "8": {
+      "W": 18,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Inżynieria materiałowa II",
+    "spec": "ETO",
+    "sems": {
+     "4": {
+      "W": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Sieci komputerowe II",
+    "spec": "ETO",
+    "sems": {
+     "6": {
+      "W": 12,
+      "L": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Umiejętności kierownicze i praca w zespołach",
+    "spec": "ETO",
+    "sems": {
+     "6": {
+      "W": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Dowodzenie siłownią okrętową",
+    "spec": "ETO",
+    "sems": {
+     "8": {
+      "W": 15,
+      "L": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Praktyka morska",
+    "spec": "ETO",
+    "sems": {
+     "7": {
+      "e": 30.0
+     },
+     "8": {
+      "W": 30
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Praca dyplomowa",
+    "spec": "ETO",
+    "sems": {
+     "8": {
+      "e": 15.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EIT-N1.txt",
+  "program": "EIT-N1",
+  "version": "od naboru 2024/25",
+  "sums": {
+   "EP": {
+    "1": {
+     "W": 105,
+     "C": 57,
+     "L": 65,
+     "e": 30.0
+    },
+    "2": {
+     "W": 89,
+     "C": 62,
+     "L": 75,
+     "P": 8,
+     "e": 30.0
+    },
+    "3": {
+     "W": 105,
+     "C": 56,
+     "L": 55,
+     "e": 30.0
+    },
+    "4": {
+     "W": 91,
+     "C": 56,
+     "L": 50,
+     "P": 24,
+     "e": 24.0
+    },
+    "5": {
+     "W": 78,
+     "C": 26,
+     "L": 80,
+     "e": 24.0
+    },
+    "6": {
+     "W": 54,
+     "C": 26,
+     "L": 55,
+     "P": 31,
+     "e": 24.0
+    },
+    "7": {
+     "W": 40,
+     "C": 15,
+     "L": 90,
+     "P": 26,
+     "e": 24.0
+    },
+    "8": {
+     "W": 39,
+     "C": 30,
+     "L": 20,
+     "P": 38,
+     "e": 24.0
+    }
+   },
+   "SEM": {
+    "1": {
+     "W": 105,
+     "C": 57,
+     "L": 65,
+     "e": 30.0
+    },
+    "2": {
+     "W": 89,
+     "C": 62,
+     "L": 75,
+     "P": 8,
+     "e": 30.0
+    },
+    "3": {
+     "W": 105,
+     "C": 56,
+     "L": 55,
+     "e": 30.0
+    },
+    "4": {
+     "W": 91,
+     "C": 56,
+     "L": 50,
+     "P": 24,
+     "e": 24.0
+    },
+    "5": {
+     "W": 116,
+     "C": 26,
+     "L": 50,
+     "e": 24.0
+    },
+    "6": {
+     "W": 23,
+     "C": 26,
+     "L": 40,
+     "P": 28,
+     "e": 24.0
+    },
+    "7": {
+     "W": 54,
+     "C": 15,
+     "L": 65,
+     "P": 18,
+     "e": 24.0
+    },
+    "8": {
+     "W": 30,
+     "C": 30,
+     "L": 10,
+     "P": 38,
+     "e": 24.0
+    }
+   },
+   "SIST": {
+    "1": {
+     "W": 105,
+     "C": 57,
+     "L": 65,
+     "e": 30.0
+    },
+    "2": {
+     "W": 89,
+     "C": 62,
+     "L": 75,
+     "P": 8,
+     "e": 30.0
+    },
+    "3": {
+     "W": 105,
+     "C": 56,
+     "L": 55,
+     "e": 30.0
+    },
+    "4": {
+     "W": 91,
+     "C": 56,
+     "L": 50,
+     "P": 24,
+     "e": 24.0
+    },
+    "5": {
+     "W": 107,
+     "C": 34,
+     "L": 55,
+     "e": 24.0
+    },
+    "6": {
+     "W": 31,
+     "C": 26,
+     "L": 65,
+     "P": 23,
+     "e": 24.0
+    },
+    "7": {
+     "W": 79,
+     "C": 15,
+     "L": 50,
+     "P": 26,
+     "e": 24.0
+    },
+    "8": {
+     "W": 23,
+     "C": 30,
+     "L": 15,
+     "P": 38,
+     "e": 24.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "2": {
+      "C": 18,
+      "e": 2.0
+     },
+     "3": {
+      "C": 18,
+      "e": 2.0
+     },
+     "4": {
+      "C": 18,
+      "e": 2.0
+     },
+     "5": {
+      "C": 18,
+      "e": 2.0
+     },
+     "6": {
+      "C": 18,
+      "e": 2.0
+     },
+     "7": {
+      "C": 15,
+      "e": 1.0
+     },
+     "8": {
+      "C": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Przedmiot humanistyczny",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Własność intelektualna i prawo pracy",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Ekonomia i zarządzanie",
+    "spec": null,
+    "sems": {
+     "8": {
+      "W": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Technologia informacyjna",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Ceremoniał morski",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 5,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Analiza matematyczna",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 20,
+      "exam": true,
+      "C": 24,
+      "e": 6.0
+     },
+     "2": {
+      "W": 12,
+      "C": 14,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Algebra",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 10,
+      "C": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Probabilistyka i procesy losowe",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 8,
+      "exam": true,
+      "C": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Fizyka",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "exam": true,
+      "C": 15,
+      "L": 15,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Teoria pola elektromagnetycznego",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "C": 8,
+      "e": 4.0
+     },
+     "4": {
+      "W": 8,
+      "exam": true,
+      "C": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Metodyka programowania",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "L": 15,
+      "e": 4.0
+     },
+     "2": {
+      "W": 8,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Techniki obliczeniowe",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Symulacje komputerowe",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 8,
+      "e": 1.0
+     },
+     "5": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Podstawy elektrotechniki",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "C": 15,
+      "e": 4.0
+     },
+     "3": {
+      "W": 15,
+      "exam": true,
+      "C": 15,
+      "L": 15,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Inżynieria materiałowa",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Projektowanie i konstrukcja urządzeń",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "e": 2.0
+     },
+     "4": {
+      "L": 10,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Elementy półprzewodnikowe",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "exam": true,
+      "C": 15,
+      "e": 4.0
+     },
+     "4": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Optoelektronika",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 10,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Układy elektroniczne",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 15,
+      "exam": true,
+      "C": 15,
+      "e": 4.0
+     },
+     "5": {
+      "W": 8,
+      "C": 8,
+      "e": 2.0
+     },
+     "6": {
+      "L": 15,
+      "P": 8,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Technika mikrofalowa",
+    "spec": null,
+    "sems": {
+     "6": {
+      "W": 8,
+      "exam": true,
+      "C": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Metrologia",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 2.0
+     },
+     "3": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Technika cyfrowa",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 8,
+      "e": 3.0
+     },
+     "2": {
+      "L": 15,
+      "P": 8,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Technika mikroprocesorowa",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "e": 2.0
+     },
+     "4": {
+      "L": 15,
+      "P": 8,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Programowanie aplikacji internetowych",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Podstawy przetwarzania sygnałów",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "L": 15,
+      "e": 4.0
+     },
+     "4": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Podstawy telekomunikacji i technika radiowa",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 45,
+      "C": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Systemy i sieci telekomunikacyjne",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Anteny i propagacja fal",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 8,
+      "exam": true,
+      "e": 1.0
+     },
+     "6": {
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Systemy operacyjne",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Sieci komputerowe",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Podstawy automatyki",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 15,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Grafika inżynierska",
+    "spec": null,
+    "sems": {
+     "1": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "34",
+    "subject": "Technika światłowodowa",
+    "spec": null,
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Systemy wbudowane",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "8": {
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Praca dyplomowa",
+    "spec": "EP",
+    "sems": {
+     "8": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Programowalne układy cyfrowe",
+    "spec": "EP",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Półprzewodnikowe elementy mocy",
+    "spec": "EP",
+    "sems": {
+     "6": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Układy zasilania urządzeń elektronicznych",
+    "spec": "EP",
+    "sems": {
+     "6": {
+      "W": 15,
+      "e": 2.0
+     },
+     "7": {
+      "L": 10,
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Systemy kontrolno-pomiarowe",
+    "spec": "EP",
+    "sems": {
+     "8": {
+      "W": 8,
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Systemy komunikacji bezprzewodowej",
+    "spec": "EP",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Komputery jednoukładowe",
+    "spec": "EP",
+    "sems": {
+     "7": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Elementy sztucznej inteligencji",
+    "spec": "EP",
+    "sems": {
+     "6": {
+      "W": 8,
+      "L": 10,
+      "P": 8,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Zaawansowane języki programowania",
+    "spec": "EP",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Inżynieria oprogramowania",
+    "spec": "EP",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Programowanie aplikacji mobilnych",
+    "spec": "EP",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Robotyka",
+    "spec": "EP",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Zaawansowane projektowanie układów elektronicznych",
+    "spec": "EP",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 15,
+      "P": 8,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Elektronika w zastosowaniach morskich",
+    "spec": "EP",
+    "sems": {
+     "8": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Procesory sygnałowe",
+    "spec": "EP",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Zjawiska termiczne w elementach i układach elektronicznych",
+    "spec": "EP",
+    "sems": {
+     "8": {
+      "W": 8,
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Pracownia problemowa EP",
+    "spec": "EP",
+    "sems": {
+     "6": {
+      "P": 15,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Projekt zespołowy EP",
+    "spec": "EP",
+    "sems": {
+     "7": {
+      "P": 10,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "55",
+    "subject": "Seminarium problemowe EP",
+    "spec": "EP",
+    "sems": {
+     "8": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Praca dyplomowa",
+    "spec": "SEM",
+    "sems": {
+     "8": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Systemy radiokomunikacji morskiej",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 15,
+      "e": 2.0
+     },
+     "6": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Półprzewodnikowe przyrządy mocy",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Budowa i teoria okrętu",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Ergonomia i bezpieczeństwo pracy na statku",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Zasilanie urządzeń elektronicznych",
+    "spec": "SEM",
+    "sems": {
+     "6": {
+      "W": 15,
+      "e": 2.0
+     },
+     "7": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Okrętowe systemy kontrolno-pomiarowe",
+    "spec": "SEM",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Systemy radiokomunikacji ruchomej",
+    "spec": "SEM",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Urządzenia radiokomunikacyjne",
+    "spec": "SEM",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Przepisy radiokomunikacyjne",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Automatyzacja okrętowych systemów energetycznych",
+    "spec": "SEM",
+    "sems": {
+     "8": {
+      "W": 15,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Morskie systemy elektronawigacyjne",
+    "spec": "SEM",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Ochrona środowiska morskiego",
+    "spec": "SEM",
+    "sems": {
+     "5": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Pracownia problemowa SEM",
+    "spec": "SEM",
+    "sems": {
+     "6": {
+      "P": 20,
+      "e": 12.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Projekt zespołowy SEM",
+    "spec": "SEM",
+    "sems": {
+     "7": {
+      "P": 10,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Seminarium problemowe SEM",
+    "spec": "SEM",
+    "sems": {
+     "8": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Praca dyplomowa",
+    "spec": "SIST",
+    "sems": {
+     "8": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Technologie rozległych sieci komputerowych",
+    "spec": "SIST",
+    "sems": {
+     "8": {
+      "W": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Projektowanie sieci radiokomunikacyjnych",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Przetwarzanie sygnałów w telekomunikacji",
+    "spec": "SIST",
+    "sems": {
+     "5": {
+      "W": 15,
+      "e": 2.0
+     },
+     "6": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Filtry cyfrowe i procesory sygnałowe",
+    "spec": "SIST",
+    "sems": {
+     "6": {
+      "W": 15,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Bezpieczeństwo sieci i systemów komputerowych",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Zasilanie urządzeń teleinformatycznych",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Systemy i sieci radiokomunikacji ruchomej",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 3.0
+     },
+     "8": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Programowanie urządzeń mobilnych",
+    "spec": "SIST",
+    "sems": {
+     "6": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Systemy radiokomunikacji satelitarnej",
+    "spec": "SIST",
+    "sems": {
+     "5": {
+      "W": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Modulacje cyfrowe i kodowanie",
+    "spec": "SIST",
+    "sems": {
+     "5": {
+      "W": 8,
+      "C": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Technika nadawania i odbioru radiowego",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Systemy i urządzenia nawigacyjne",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Oprogramowanie systemów pomiarowych",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Morskie systemy komunikacji elektronicznej",
+    "spec": "SIST",
+    "sems": {
+     "5": {
+      "W": 15,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Pomiary radiokomunikacyjne",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Pracownia problemowa SiST",
+    "spec": "SIST",
+    "sems": {
+     "6": {
+      "P": 15,
+      "e": 8.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Projekt zespołowy SiST",
+    "spec": "SIST",
+    "sems": {
+     "7": {
+      "P": 10,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "55",
+    "subject": "Seminarium problemowe SiST",
+    "spec": "SIST",
+    "sems": {
+     "8": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EL-N2.txt",
+  "program": "ET-N2",
+  "version": "od naboru 2024/25",
+  "sums": {
+   "EA": {
+    "1": {
+     "W": 126,
+     "C": 20,
+     "L": 20,
+     "P": 16,
+     "e": 23.0
+    },
+    "2": {
+     "W": 46,
+     "C": 10,
+     "L": 63,
+     "P": 47,
+     "e": 22.0
+    },
+    "3": {
+     "W": 32,
+     "C": 10,
+     "L": 55,
+     "P": 47,
+     "e": 20.0
+    },
+    "4": {
+     "W": 8,
+     "C": 40,
+     "L": 10,
+     "P": 30,
+     "e": 25.0
+    }
+   },
+   "KSS": {
+    "1": {
+     "W": 126,
+     "C": 20,
+     "L": 20,
+     "P": 16,
+     "e": 23.0
+    },
+    "2": {
+     "W": 23,
+     "C": 10,
+     "L": 63,
+     "P": 70,
+     "e": 23.0
+    },
+    "3": {
+     "W": 47,
+     "C": 10,
+     "L": 35,
+     "P": 39,
+     "e": 19.0
+    },
+    "4": {
+     "W": 8,
+     "C": 40,
+     "L": 10,
+     "P": 30,
+     "e": 25.0
+    }
+   },
+   "OZE": {
+    "1": {
+     "W": 126,
+     "C": 20,
+     "L": 20,
+     "P": 16,
+     "e": 23.0
+    },
+    "2": {
+     "W": 39,
+     "C": 10,
+     "L": 79,
+     "P": 47,
+     "e": 22.0
+    },
+    "3": {
+     "W": 48,
+     "C": 10,
+     "L": 51,
+     "P": 32,
+     "e": 17.0
+    },
+    "4": {
+     "W": 32,
+     "C": 40,
+     "L": 18,
+     "P": 30,
+     "e": 28.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "1": {
+      "C": 10,
+      "e": 1.0
+     },
+     "2": {
+      "C": 10,
+      "e": 1.0
+     },
+     "3": {
+      "C": 10,
+      "e": 1.0
+     },
+     "4": {
+      "C": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Przedmiot humanistyczny I",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Podstawy przedsiębiorczości",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 10,
+      "C": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Przedmiot humanistyczny II",
+    "spec": null,
+    "sems": {
+     "4": {
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Wybrane zagadnienia teorii obwodów",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "2": {
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Elektromechaniczne systemy napędowe",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 2.0
+     },
+     "2": {
+      "L": 10,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Pomiary wielkości nieelektrycznych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Kompatybilność w układach elektrycznych",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Metody sterowania automatycznego",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 2.0
+     },
+     "2": {
+      "L": 10,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Metody sztucznej inteligencji",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Wybrane zagadnienia maszyn elektrycznych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "e": 1.0
+     },
+     "2": {
+      "L": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Przekształtnikowe układy napędowe i generacyjne",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "2": {
+      "L": 10,
+      "P": 8,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Mechatronika i robotyka",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "3": {
+      "L": 15,
+      "P": 8,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Metody optymalizacji",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Metody przetwarzania sygnałów",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "e": 2.0
+     },
+     "2": {
+      "L": 10,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Projektowanie i eksploatacja systemów elektroenergetycznych",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 8,
+      "exam": true,
+      "P": 8,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Zarządzanie projektem",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 8,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Jakość energii elektrycznej",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Energetyka odnawialna i rozproszona",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Programowalne układy cyfrowe",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 8,
+      "exam": true,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "4": {
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Modelowanie i symulacja systemów technicznych",
+    "spec": "EA",
+    "sems": {
+     "2": {
+      "W": 15,
+      "e": 2.0
+     },
+     "3": {
+      "L": 10,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Sterowanie optymalne i modalne",
+    "spec": "EA",
+    "sems": {
+     "3": {
+      "W": 8,
+      "exam": true,
+      "L": 10,
+      "P": 8,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Przemysłowe systemy rozproszone",
+    "spec": "EA",
+    "sems": {
+     "2": {
+      "W": 8,
+      "e": 1.0
+     },
+     "3": {
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Praca dyplomowa",
+    "spec": "EA",
+    "sems": {
+     "4": {
+      "P": 30,
+      "e": 18.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Projektowanie aplikacji internetowych",
+    "spec": "KSS",
+    "sems": {
+     "3": {
+      "W": 8,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Inżynieria oprogramowania",
+    "spec": "KSS",
+    "sems": {
+     "3": {
+      "W": 15,
+      "exam": true,
+      "P": 8,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Mikroprocesorowe układy pomiarowe",
+    "spec": "KSS",
+    "sems": {
+     "2": {
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Oprogramowanie systemów kontrolno-pomiarowych",
+    "spec": "KSS",
+    "sems": {
+     "2": {
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Praca dyplomowa",
+    "spec": "KSS",
+    "sems": {
+     "4": {
+      "P": 30,
+      "e": 18.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Elektryczne układy napędowe dla pojazdów i statków",
+    "spec": "OZE",
+    "sems": {
+     "2": {
+      "W": 8,
+      "exam": true,
+      "L": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Mobilne systemy zasilania elektrycznych układów napędowych",
+    "spec": "OZE",
+    "sems": {
+     "3": {
+      "W": 8,
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Systemy fotowoltaiczne",
+    "spec": "OZE",
+    "sems": {
+     "2": {
+      "W": 8,
+      "L": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Technika wodorowa",
+    "spec": "OZE",
+    "sems": {
+     "4": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Elektronika i informatyka w motoryzacji",
+    "spec": "OZE",
+    "sems": {
+     "3": {
+      "W": 8,
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Eksploatacja systemów energetyki odnawialnej",
+    "spec": "OZE",
+    "sems": {
+     "3": {
+      "W": 8,
+      "exam": true,
+      "L": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Akwizycja danych i monitoring w systemach OZE",
+    "spec": "OZE",
+    "sems": {
+     "4": {
+      "W": 8,
+      "L": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Modelowanie systemów elektroenergetycznych w OZE",
+    "spec": "OZE",
+    "sems": {
+     "3": {
+      "L": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Hybrydowe układy zasilania elektrycznego i kogeneracja w OZE",
+    "spec": "OZE",
+    "sems": {
+     "4": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Praca dyplomowa",
+    "spec": "OZE",
+    "sems": {
+     "4": {
+      "P": 30,
+      "e": 18.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EIT-N2.txt",
+  "program": "EIT-N2",
+  "version": "od naboru 2025/26",
+  "sums": {
+   "SE": {
+    "1": {
+     "W": 86,
+     "C": 35,
+     "L": 37,
+     "e": 17.0
+    },
+    "2": {
+     "W": 100,
+     "C": 17,
+     "L": 80,
+     "P": 18,
+     "e": 27.0
+    },
+    "3": {
+     "W": 63,
+     "C": 10,
+     "L": 45,
+     "P": 28,
+     "e": 18.0
+    },
+    "4": {
+     "W": 16,
+     "C": 40,
+     "P": 48,
+     "e": 28.0
+    }
+   },
+   "SIST": {
+    "1": {
+     "W": 86,
+     "C": 35,
+     "L": 37,
+     "e": 19.0
+    },
+    "2": {
+     "W": 71,
+     "C": 17,
+     "L": 50,
+     "P": 16,
+     "e": 23.0
+    },
+    "3": {
+     "W": 79,
+     "C": 10,
+     "L": 55,
+     "P": 18,
+     "e": 20.0
+    },
+    "4": {
+     "W": 24,
+     "C": 40,
+     "P": 38,
+     "e": 28.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "1": {
+      "C": 10,
+      "e": 1.0
+     },
+     "2": {
+      "C": 10,
+      "e": 1.0
+     },
+     "3": {
+      "C": 10,
+      "e": 1.0
+     },
+     "4": {
+      "C": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Przedmiot humanistyczny I",
+    "spec": null,
+    "sems": {
+     "4": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Podstawy przedsiębiorczości",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 10,
+      "C": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Przedmiot humanistyczny II",
+    "spec": null,
+    "sems": {
+     "4": {
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Matematyka II",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "exam": true,
+      "L": 22,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Metody numeryczne",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Metody optymalizacji",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 8,
+      "C": 7,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Detektory podczerwieni",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Diagnostyka i niezawodność",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 15,
+      "C": 7,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Kompatybilność elektromagnetyczna",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Systemy baz danych",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 8,
+      "P": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Systemy inteligencji obliczeniowej",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Infrastruktura sieci teleinformatycznych",
+    "spec": null,
+    "sems": {
+     "2": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Modelowanie elementów i układów elektronicznych",
+    "spec": null,
+    "sems": {
+     "1": {
+      "W": 8,
+      "e": 1.0
+     },
+     "2": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Implementacje systemów Internetu Rzeczy",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Inteligentne systemy elektroniczne",
+    "spec": null,
+    "sems": {
+     "3": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "4": {
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Układy mikrofalowe w systemach radiokomunikacyjnych",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "3": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Elementy i układy optoelektroniczne",
+    "spec": "SE",
+    "sems": {
+     "1": {
+      "W": 15,
+      "exam": true,
+      "C": 8,
+      "e": 2.0
+     },
+     "2": {
+      "L": 10,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Programowalne układy cyfrowe",
+    "spec": "SE",
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 2.0
+     },
+     "2": {
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Praca dyplomowa",
+    "spec": "SE",
+    "sems": {
+     "4": {
+      "P": 30,
+      "e": 18.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Fotonika",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Elektroniczne elementy i układy mocy",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 10,
+      "e": 3.0
+     },
+     "3": {
+      "P": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Systemy fotowoltaiczne",
+    "spec": "SE",
+    "sems": {
+     "3": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Mikroprocesorowe układy i systemy pomiarowe",
+    "spec": "SE",
+    "sems": {
+     "3": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     },
+     "4": {
+      "P": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Półprzewodnikowe źródła światła",
+    "spec": "SE",
+    "sems": {
+     "4": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Mikrokomputerowe systemy sterowania",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 15,
+      "L": 15,
+      "P": 10,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Elektroniczne systemy obróbki dźwięku",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Wybrane zagadnienia współczesnej elektroniki",
+    "spec": "SE",
+    "sems": {
+     "2": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Układy mikrofalowe w systemach radiokomunikacyjnych",
+    "spec": "SIST",
+    "sems": {
+     "2": {
+      "W": 15,
+      "exam": true,
+      "e": 3.0
+     },
+     "3": {
+      "P": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Elementy i układy optoelektroniczne",
+    "spec": "SIST",
+    "sems": {
+     "1": {
+      "W": 15,
+      "exam": true,
+      "C": 8,
+      "e": 3.0
+     },
+     "2": {
+      "L": 10,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Programowalne układy cyfrowe",
+    "spec": "SIST",
+    "sems": {
+     "1": {
+      "W": 15,
+      "e": 3.0
+     },
+     "2": {
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Praca dyplomowa",
+    "spec": "SIST",
+    "sems": {
+     "4": {
+      "P": 30,
+      "e": 18.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Programowanie usług i aplikacji internetowych",
+    "spec": "SIST",
+    "sems": {
+     "3": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Programowanie rozproszone",
+    "spec": "SIST",
+    "sems": {
+     "3": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Technika rozpraszania widma",
+    "spec": "SIST",
+    "sems": {
+     "2": {
+      "W": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Systemy otwarte i rozproszone",
+    "spec": "SIST",
+    "sems": {
+     "2": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Cyfrowe przetwarzanie obrazów",
+    "spec": "SIST",
+    "sems": {
+     "2": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Mikroelektronika",
+    "spec": "SIST",
+    "sems": {
+     "2": {
+      "W": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Projektowanie cyfrowych urządzeń radiokomunikacyjnych",
+    "spec": "SIST",
+    "sems": {
+     "4": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Obróbka i analiza danych",
+    "spec": "SIST",
+    "sems": {
+     "3": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Systemy radiokomunikacyjne nowej generacji",
+    "spec": "SIST",
+    "sems": {
+     "3": {
+      "W": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Systemy i sieci bezprzewodowe",
+    "spec": "SIST",
+    "sems": {
+     "4": {
+      "W": 8,
+      "e": 2.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EL-S1-2023.txt",
+  "program": "ET-S1",
+  "version": "od naboru 2023/24",
+  "sums": {
+   "EAO": {
+    "7": {
+     "W": 110,
+     "C": 30,
+     "L": 90,
+     "P": 45,
+     "e": 30.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "4",
+    "subject": "Umiejętności kierownicze i praca w zespołach",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Ceremoniał morski",
+    "spec": null,
+    "sems": {
+     "7": {
+      "P": 5
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Sieci komputerowe",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 20,
+      "L": 15,
+      "P": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Technika iskrobezpieczeństwa",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Układy kondycjonowania energii elektrycznej",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "34",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "7": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Praca dyplomowa",
+    "spec": null,
+    "sems": {
+     "7": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Automatyzacja okrętowych systemów energetycznych",
+    "spec": "EAO",
+    "sems": {
+     "7": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Chłodnictwo, wentylacja i klimatyzacja",
+    "spec": "EAO",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Dowodzenie siłownią okrętową",
+    "spec": "EAO",
+    "sems": {
+     "7": {
+      "W": 30,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Mikroprocesorowe układy pomiarowe",
+    "spec": "KSS",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "P": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Technika przeciwdziałania zakłóceniom",
+    "spec": "KSS",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EIT-S1-2023.txt",
+  "program": "EIT-S1",
+  "version": "od naboru 2023/24",
+  "sums": {
+   "EM": {
+    "7": {
+     "W": 45,
+     "C": 60,
+     "L": 105,
+     "P": 50,
+     "e": 30.0
+    }
+   },
+   "SiST": {
+    "7": {
+     "W": 70,
+     "C": 60,
+     "L": 45,
+     "P": 80,
+     "e": 29.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "7": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Własność intelektualna i prawo pracy",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "7": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Praca dyplomowa",
+    "spec": null,
+    "sems": {
+     "7": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Ceremoniał morski",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "P": 5
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Anteny i propagacja fal",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Systemy wbudowane",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Zasilanie urządzeń elektronicznych",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "P": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Systemy radiokomunikacji ruchomej",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Urządzenia radiokomunikacyjne",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "L": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Automatyzacja okrętowych systemów energetycznych",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Ceremoniał morski",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "P": 5
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Anteny i propagacja fal",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Systemy wbudowane",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "L": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Projektowanie sieci radiokomunikacyjnych",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Bezpieczeństwo sieci i systemów komputerowych",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "W": 15,
+      "P": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Systemy i urządzenia nawigacyjne",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "56",
+    "subject": "Pomiary radiokomunikacyjne",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "W": 10,
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/INF-S1-2023.txt",
+  "program": "INF-S1",
+  "version": "od naboru 2023/24",
+  "sums": {
+   "AIR": {
+    "7": {
+     "W": 75,
+     "C": 60,
+     "L": 90,
+     "P": 75,
+     "e": 33.0
+    }
+   },
+   "AIiM": {
+    "7": {
+     "W": 45,
+     "C": 60,
+     "L": 60,
+     "P": 60,
+     "e": 28.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "3",
+    "subject": "Prawo i ochrona własności intelektualnej",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "7": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Algorytmy analizy danych",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "7": {
+      "C": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Praca dyplomowa",
+    "spec": null,
+    "sems": {
+     "7": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Projekt grupowy",
+    "spec": null,
+    "sems": {
+     "7": {
+      "P": 30,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Systemy i przetwarzanie rozproszone",
+    "spec": "AIR",
+    "sems": {
+     "7": {
+      "W": 15,
+      "exam": true,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Sieci sensorowe",
+    "spec": "AIR",
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "55",
+    "subject": "Programowalne układy scalone",
+    "spec": "AIR",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 30,
+      "P": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "56",
+    "subject": "Programowanie równoległe i rozproszone",
+    "spec": "AIiM",
+    "sems": {
+     "7": {
+      "W": 15,
+      "exam": true,
+      "L": 30,
+      "e": 3.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EL-N1-2022.txt",
+  "program": "ET-N1",
+  "version": "od naboru 2022/23",
+  "sums": {
+   "EAO": {
+    "7": {
+     "W": 72,
+     "C": 15,
+     "L": 55,
+     "e": 30.0
+    },
+    "8": {
+     "W": 38,
+     "C": 30,
+     "P": 30,
+     "e": 23.0
+    }
+   },
+   "KSS": {
+    "7": {
+     "W": 88,
+     "C": 15,
+     "L": 101,
+     "e": 28.0
+    },
+    "8": {
+     "W": 38,
+     "C": 30,
+     "L": 10,
+     "P": 30,
+     "e": 25.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "7": {
+      "C": 15,
+      "e": 1.0
+     },
+     "8": {
+      "C": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Przedmiot humanistyczny I",
+    "spec": null,
+    "sems": {
+     "8": {
+      "W": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Ekonomia i zarządzanie",
+    "spec": null,
+    "sems": {
+     "8": {
+      "W": 20,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Własność intelektualna i prawo pracy",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Technika iskrobezpieczeństwa",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Budowa i teoria okrętu",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Układy kondycjonowania energii elektrycznej",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "8": {
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Praca dyplomowa",
+    "spec": null,
+    "sems": {
+     "8": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Siłownie okrętowe i mechanizmy pomocnicze",
+    "spec": "EAO",
+    "sems": {
+     "7": {
+      "W": 30,
+      "exam": true,
+      "L": 15,
+      "e": 6.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Chłodnictwo, wentylacja i klimatyzacja",
+    "spec": "EAO",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Ochrona środowiska morskiego",
+    "spec": "EAO",
+    "sems": {
+     "8": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Seminarium problemowe",
+    "spec": "EAO",
+    "sems": {
+     "7": {
+      "L": 10,
+      "e": 14.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Systemy kontrolno-pomiarowe",
+    "spec": "KSS",
+    "sems": {
+     "7": {
+      "L": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Komputerowe sieci przemysłowe",
+    "spec": "KSS",
+    "sems": {
+     "7": {
+      "W": 15,
+      "exam": true,
+      "L": 15,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Komputerowe systemy operacyjne",
+    "spec": "KSS",
+    "sems": {
+     "7": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Mikroprocesorowe układy pomiarowe",
+    "spec": "KSS",
+    "sems": {
+     "8": {
+      "W": 8,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Systemy łączności cyfrowej",
+    "spec": "KSS",
+    "sems": {
+     "7": {
+      "W": 15,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Ochrona środowiska",
+    "spec": "KSS",
+    "sems": {
+     "7": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "50",
+    "subject": "Siłownie okrętowe",
+    "spec": "KSS",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Okrętowe sieci elektroenergetyczne",
+    "spec": "KSS",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "53",
+    "subject": "Seminarium problemowe",
+    "spec": "KSS",
+    "sems": {
+     "7": {
+      "L": 10,
+      "e": 5.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "file": "dane/we/EIT-N1-2022.txt",
+  "program": "EIT-N1",
+  "version": "od naboru 2022/23",
+  "sums": {
+   "EM": {
+    "7": {
+     "W": 80,
+     "C": 15,
+     "L": 83,
+     "e": 30.0
+    },
+    "8": {
+     "W": 43,
+     "C": 30,
+     "L": 25,
+     "P": 30,
+     "e": 27.0
+    }
+   }
+  },
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski",
+    "spec": null,
+    "sems": {
+     "7": {
+      "C": 15,
+      "e": 1.0
+     },
+     "8": {
+      "C": 15,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Własność intelektualna i prawo pracy",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Ekonomia i zarządzanie",
+    "spec": null,
+    "sems": {
+     "8": {
+      "W": 20,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Systemy wbudowane",
+    "spec": null,
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 15,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "38",
+    "subject": "Seminarium dyplomowe",
+    "spec": null,
+    "sems": {
+     "8": {
+      "C": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "39",
+    "subject": "Praca dyplomowa",
+    "spec": null,
+    "sems": {
+     "8": {
+      "P": 30,
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Anteny i propagacja fal",
+    "spec": null,
+    "sems": {
+     "7": {
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Ergonomia i bezpieczeństwo pracy",
+    "spec": null,
+    "sems": {
+     "8": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "42",
+    "subject": "Zasilanie urządzeń elektronicznych",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "43",
+    "subject": "Okrętowe systemy kontrolno-pomiarowe",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Systemy radiokomunikacji ruchomej",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Urządzenia radiokomunikacyjne",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "8": {
+      "L": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Przepisy radiokomunikacyjne",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "W": 15,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "47",
+    "subject": "Automatyzacja okrętowych systemów energetycznych",
+    "spec": "EM",
+    "sems": {
+     "8": {
+      "W": 15,
+      "L": 10,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Morskie systemy i urządzenia nawigacyjne",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "49",
+    "subject": "Urządzenia elektronawigacyjne",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Seminarium problemowe",
+    "spec": "EM",
+    "sems": {
+     "7": {
+      "L": 10,
+      "e": 11.0
+     }
+    }
+   },
+   {
+    "nr": "40",
+    "subject": "Technologie rozległych sieci komputerowych",
+    "spec": "SiST",
+    "sems": {
+     "8": {
+      "W": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "41",
+    "subject": "Projektowanie sieci radiokomunikacyjnych",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "44",
+    "subject": "Bezpieczeństwo sieci i systemów komputerowych",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "P": 8,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "45",
+    "subject": "Zasilanie urządzeń teleinformatycznych",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "46",
+    "subject": "Systemy i sieci radiokomunikacji ruchomej",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "W": 15,
+      "exam": true,
+      "e": 2.0
+     },
+     "8": {
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "48",
+    "subject": "Systemy radiokomunikacji satelitarnej",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "51",
+    "subject": "Systemy i urządzenia nawigacyjne",
+    "spec": "SiST",
+    "sems": {
+     "8": {
+      "W": 8,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "52",
+    "subject": "Oprogramowanie systemów pomiarowych",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "54",
+    "subject": "Pomiary radiokomunikacyjne",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "W": 8,
+      "L": 10,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "56",
+    "subject": "Seminarium problemowe",
+    "spec": "SiST",
+    "sems": {
+     "7": {
+      "L": 10,
+      "e": 8.0
+     }
+    }
+   }
+  ]
+ }
+]
