@@ -1,20 +1,23 @@
 /**
- * Po imporcie planu WE: duplikaty umieszczen (ten sam wyklad w arkuszach dwoch specjalnosci) precz,
+ * Po imporcie planu wydzialu (domyslnie WE; inny: drugi argument, np. WN): duplikaty umieszczen (ten sam wyklad w arkuszach dwoch specjalnosci) precz,
  * umieszczenia roznych zajec w tej samej sali, czasie i rytmie u tego samego prowadzacego = zajecia
  * laczone (wspolny jointKey — nie koliduja ze soba). Potem terminy kalendarzy WE od nowa.
- *   npx tsx scripts/import-planu/we-plan-laczone.ts [--apply]
+ *   npx tsx scripts/import-planu/plan-laczone.ts [WYDZIAL] [--apply]
+ * Laczone sa tez zajecia tego samego przedmiotu, formy i rocznika w tej samej sali i czasie (np. WF kilku grup
+ * w hali, laboratorium dwoch grup razem) — nawet przy roznych prowadzacych.
  */
 import { prisma } from '../../src/lib/prisma';
 import { changeCalendarStatus } from '../../src/services/autoPlan';
 
 const apply = process.argv.includes('--apply');
+const faculty = process.argv.slice(2).find((a) => !a.startsWith('--')) ?? 'WE';
 
 async function main() {
-  const we = await prisma.faculty.findUniqueOrThrow({ where: { shortName: 'WE' } });
+  const we = await prisma.faculty.findUniqueOrThrow({ where: { shortName: faculty } });
   const zima = await prisma.academicTerm.findFirstOrThrow({ where: { startYear: 2026, type: 'WINTER' } });
   await prisma.$transaction(
     async (tx) => {
-      const pls = await tx.placement.findMany({ where: { facultyId: we.id, termId: zima.id }, orderBy: { createdAt: 'asc' } });
+      const pls = await tx.placement.findMany({ where: { facultyId: we.id, termId: zima.id }, orderBy: { createdAt: 'asc' }, include: { section: { select: { programEntryId: true, classType: true, cohortId: true } } } });
       const slot = (p: (typeof pls)[number]) => [p.dayOfWeek, p.startOrder, p.endOrder, p.cycle, p.pattern, p.numbers.join(','), p.fromIndex, p.toIndex].join('|');
       const seen = new Set<string>();
       const dups: string[] = [];
@@ -48,13 +51,32 @@ async function main() {
         const k = `${slot(p)}|${p.roomId}|${p.instructorId}`;
         groups.set(k, [...(groups.get(k) ?? []), p.id]);
       }
+      // ten sam przedmiot, forma i rocznik w tej samej sali i czasie (rozni prowadzacy) — dolacz do jednej grupy
+      const byKey = new Map<string, string>();
+      for (const [k, ids] of groups) for (const id of ids) byKey.set(id, k);
+      const subj = new Map<string, string[]>();
+      for (const p of rest) {
+        if (!p.roomId) continue;
+        const k = `${slot(p)}|${p.roomId}|${p.section.programEntryId}|${p.section.classType}|${p.section.cohortId}`;
+        subj.set(k, [...(subj.get(k) ?? []), p.id]);
+      }
+      for (const ids of subj.values()) {
+        const keys = [...new Set(ids.map((id) => byKey.get(id)!))];
+        if (keys.length < 2) continue;
+        const target = keys[0]!;
+        for (const k of keys.slice(1)) {
+          groups.set(target, [...groups.get(target)!, ...groups.get(k)!]);
+          for (const id of groups.get(k)!) byKey.set(id, target);
+          groups.delete(k);
+        }
+      }
       let joint = 0;
       let n = 0;
       for (const ids of groups.values()) {
         const secs = new Set(rest.filter((p) => ids.includes(p.id)).map((p) => p.sectionId));
         if (secs.size < 2) continue;
         n++;
-        await tx.placement.updateMany({ where: { id: { in: ids } }, data: { jointKey: `we-${String(n).padStart(4, '0')}` } });
+        await tx.placement.updateMany({ where: { id: { in: ids } }, data: { jointKey: `${faculty.toLowerCase()}-${String(n).padStart(4, '0')}` } });
         joint += ids.length;
       }
       console.log(`duplikaty usuniete: ${dups.length}; zajecia laczone: ${n} kluczy, ${joint} umieszczen`);

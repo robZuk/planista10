@@ -3,7 +3,7 @@ import { prisma } from '../../src/lib/prisma';
 import { generate } from '../../src/services/plan';
 
 async function main() {
-  const we = await prisma.faculty.findUniqueOrThrow({ where: { shortName: 'WE' } });
+  const we = await prisma.faculty.findUniqueOrThrow({ where: { shortName: process.argv[2] ?? 'WE' } });
   const zima = await prisma.academicTerm.findFirstOrThrow({ where: { startYear: 2026, type: 'WINTER' } });
   const r = await generate(zima, { facultyId: we.id, fromDate: null, dryRun: true });
   const key = (c: { section: string; reason: string; with: string }) => `${c.reason} | ${c.section} | ${c.with}`;
