@@ -1,4 +1,4 @@
-import type { ClassType, RoomOccupancyEntry } from '@/types';
+import type { ClassType, OccupancyEntry } from '@/types';
 import { CLASS_COLORS } from '@/lib/scheduleDisplay';
 
 /** Paski w tabeli tygodnia — pelne kolory form (te same odcienie co kafelki planu). */
@@ -11,14 +11,14 @@ const BAR_COLORS: Record<ClassType, string> = {
 };
 
 /** Kolizja na czerwono (widac ja z daleka), zajetosc zewnetrzna szara, zajecia — kolor formy. */
-export function barClass(e: Pick<RoomOccupancyEntry, 'kind' | 'classType' | 'conflict'>): string {
+export function barClass(e: Pick<OccupancyEntry, 'kind' | 'classType' | 'conflict'>): string {
   if (e.conflict) return 'bg-red-600';
   if (e.kind === 'EXTERNAL' || !e.classType) return 'bg-slate-500';
   return BAR_COLORS[e.classType];
 }
 
 /** Kafelek osi dnia: kolory formy jak w planie; termin reczny z przerywana ramka; zewnetrzna szara. */
-export function tileClass(e: Pick<RoomOccupancyEntry, 'kind' | 'classType' | 'conflict'>): string {
+export function tileClass(e: Pick<OccupancyEntry, 'kind' | 'classType' | 'conflict'>): string {
   const base =
     e.kind === 'EXTERNAL' || !e.classType
       ? 'border-dashed bg-slate-100 border-slate-400 text-slate-800 dark:bg-slate-900 dark:border-slate-500 dark:text-slate-100'

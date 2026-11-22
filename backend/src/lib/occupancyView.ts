@@ -4,58 +4,70 @@ import { semesterWeekOf } from './teachingCalendar';
 import { minutesOverlap } from './timeGrid';
 
 /**
- * Zajetosc sal (strona „Zajetosc sal”) — czyste funkcje bez bazy. Sloty przychodza z tej samej
- * zajetosci semestru, na ktorej licza sie kolizje (services/plan → termOccupancy): plan wszystkich
- * wydzialow rozpisany na daty kalendarzy rocznikow, terminy reczne i zajetosci zewnetrzne.
+ * Widoki zajetosci — strony „Zajetosc sal” i „Zajetosc prowadzacych”. Czyste funkcje bez bazy. Sloty
+ * przychodza z tej samej zajetosci semestru, na ktorej licza sie kolizje (services/plan → termOccupancy):
+ * plan wszystkich wydzialow rozpisany na daty kalendarzy rocznikow, terminy reczne i zajetosci zewnetrzne.
+ * Widok sal i widok prowadzacych roznia sie tylko zasobem: po nim ida wiersze i po nim liczymy kolizje.
  */
 
-export type RoomEntryKind = 'CLASS' | 'MANUAL' | 'EXTERNAL';
+export type OccupancyEntryKind = 'CLASS' | 'MANUAL' | 'EXTERNAL';
+
+/** Zasob widoku: sala albo prowadzacy. */
+export type OccupancyResource = 'room' | 'instructor';
 
 /** Grupa zajec: "MBM-S1 s1 · MBM-1-C-A", jej rocznik i wydzial rocznika (link do planu rocznika). */
-export interface RoomGroup {
+export interface OccupancyGroup {
   label: string;
   cohortId: string;
   facultyId: string;
 }
 
-/** Zajety slot sali z opisem (jedna grupa — zajecia laczone scala buildRoomEntries). */
-export interface RoomSlot {
-  roomId: string;
+/** Zajety slot z opisem (jedna grupa — zajecia laczone scala buildOccupancyEntries). */
+export interface OccupancySlot {
   date: IsoDate;
   startMinute: number;
   endMinute: number;
   jointKey: string | null;
+  /** null — bez sali: zajecia online albo zajetosc zewnetrzna samego prowadzacego. */
+  roomId: string | null;
+  /** "101 (Budynek C)"; null — bez sali. */
+  room: string | null;
   instructorId: string | null;
-  kind: RoomEntryKind;
+  /** "dr inz. Jan Kowalski"; null — NN albo zajetosc zewnetrzna samej sali. */
+  instructor: string | null;
+  kind: OccupancyEntryKind;
   /** Nazwa przedmiotu; przy zajetosci zewnetrznej — kto zglosil. */
   title: string;
   classType: string | null;
   /** null — zajetosc zewnetrzna. */
-  group: RoomGroup | null;
+  group: OccupancyGroup | null;
   facultyId: string | null;
-  /** "dr inz. Jan Kowalski"; null — NN albo zajetosc sali bez prowadzacego. */
-  instructor: string | null;
   note: string | null;
 }
 
-/** Pozycja widoku: jedne zajecia w sali (zajecia laczone — raz, z lista grup). */
-export interface RoomEntry {
+/** Pozycja widoku: jedne zajecia sali albo prowadzacego (zajecia laczone — raz, z lista grup). */
+export interface OccupancyEntry {
   id: string;
-  roomId: string;
+  roomId: string | null;
+  room: string | null;
+  instructorId: string | null;
+  instructor: string | null;
   date: IsoDate;
   startMinute: number;
   endMinute: number;
-  kind: RoomEntryKind;
+  kind: OccupancyEntryKind;
   title: string;
   classType: string | null;
   /** Grupy zajec — kilka przy zajeciach laczonych; puste przy zajetosci zewnetrznej. */
-  groups: RoomGroup[];
+  groups: OccupancyGroup[];
   facultyIds: string[];
-  instructor: string | null;
   note: string | null;
   /** Zajecia laczone kilku grup (wspolny klucz). */
   joint: boolean;
-  /** W tym czasie sale zajmuje tez cos innego — kolizja do wyjasnienia (np. wpis zajetosci zewnetrznej). */
+  /**
+   * W tym czasie zasob widoku (sale albo prowadzacego) zajmuje tez cos innego — kolizja do wyjasnienia
+   * (np. wpis zajetosci zewnetrznej dopisany po ulozeniu planu).
+   */
   conflict: boolean;
 }
 
@@ -69,27 +81,39 @@ export interface TermWeek {
 const unique = (values: (string | null)[]): string[] =>
   [...new Set(values.filter((v): v is string => !!v))].sort((a, b) => a.localeCompare(b, 'pl'));
 
-const uniqueGroups = (groups: RoomGroup[]): RoomGroup[] =>
+const uniqueGroups = (groups: OccupancyGroup[]): OccupancyGroup[] =>
   [...new Map(groups.map((g) => [`${g.cohortId}|${g.label}`, g])).values()].sort((a, b) => a.label.localeCompare(b.label, 'pl'));
 
+export const resourceIdOf = (s: Pick<OccupancySlot, 'roomId' | 'instructorId'>, resource: OccupancyResource): string | null =>
+  resource === 'room' ? s.roomId : s.instructorId;
+
 /**
- * Sloty -> pozycje widoku: zajecia laczone (ten sam klucz, czas, sala i prowadzacy) raz z lista
- * grup, kolizje oznaczone (sale w tym samym czasie zajmuje cos jeszcze), kolejnosc: sala, dzien,
- * godzina. Id pozycji to jej miejsce na liscie — te same dane daja te same id.
+ * Sloty -> pozycje widoku zasobu: tylko sloty z tym zasobem (widok sal bez zajec online, widok
+ * prowadzacych bez NN), zajecia laczone (ten sam klucz, czas, sala i prowadzacy) raz z lista grup,
+ * kolizje oznaczone (zasob w tym samym czasie zajmuje cos jeszcze), kolejnosc: zasob, dzien, godzina.
+ * Zajecia o wspolnym kluczu, ktore sie nie scalaja (inny prowadzacy albo NN w jednej z grup, inna sala,
+ * przesuniety czas), zostaja kolizja — choc sprawdzanie kolizji planu je przepuszcza, widok pokazuje
+ * niespojnosc zajec laczonych. Id pozycji to jej miejsce na liscie — te same dane daja te same id.
  */
-export function buildRoomEntries(slots: RoomSlot[]): RoomEntry[] {
-  const sorted = [...slots].sort(
-    (a, b) =>
-      a.roomId.localeCompare(b.roomId) ||
-      a.date.localeCompare(b.date) ||
-      a.startMinute - b.startMinute ||
-      a.endMinute - b.endMinute ||
-      a.title.localeCompare(b.title, 'pl') ||
-      (a.group?.label ?? '').localeCompare(b.group?.label ?? '', 'pl'),
-  );
-  type Draft = Omit<RoomEntry, 'id' | 'conflict'> & { jointKey: string | null; instructorId: string | null };
+export function buildOccupancyEntries(slots: OccupancySlot[], resource: OccupancyResource): OccupancyEntry[] {
+  const keyOf = (s: Pick<OccupancySlot, 'roomId' | 'instructorId'>) => resourceIdOf(s, resource) ?? '';
+  const sorted = slots
+    .filter((s) => resourceIdOf(s, resource) !== null)
+    .sort(
+      (a, b) =>
+        keyOf(a).localeCompare(keyOf(b)) ||
+        a.date.localeCompare(b.date) ||
+        a.startMinute - b.startMinute ||
+        a.endMinute - b.endMinute ||
+        a.title.localeCompare(b.title, 'pl') ||
+        (a.group?.label ?? '').localeCompare(b.group?.label ?? '', 'pl'),
+    );
+  type Draft = Omit<OccupancyEntry, 'id' | 'conflict'> & { jointKey: string | null };
   const drafts: Draft[] = sorted.map((s) => ({
     roomId: s.roomId,
+    room: s.room,
+    instructorId: s.instructorId,
+    instructor: s.instructor,
     date: s.date,
     startMinute: s.startMinute,
     endMinute: s.endMinute,
@@ -98,11 +122,9 @@ export function buildRoomEntries(slots: RoomSlot[]): RoomEntry[] {
     classType: s.classType,
     groups: s.group ? [s.group] : [],
     facultyIds: unique([s.facultyId]),
-    instructor: s.instructor,
     note: s.note,
     joint: false,
     jointKey: s.jointKey,
-    instructorId: s.instructorId,
   }));
   const merged = mergeJoint(drafts, (d) => d, (first, rest) => ({
     ...first,
@@ -112,29 +134,14 @@ export function buildRoomEntries(slots: RoomSlot[]): RoomEntry[] {
   }));
 
   // Id = pozycja na posortowanej liscie (krotkie: tydzien uczelni to ok. 2 tys. pozycji).
-  const entries: RoomEntry[] = merged.map((d, i) => ({
-    id: String(i),
-    roomId: d.roomId,
-    date: d.date,
-    startMinute: d.startMinute,
-    endMinute: d.endMinute,
-    kind: d.kind,
-    title: d.title,
-    classType: d.classType,
-    groups: d.groups,
-    facultyIds: d.facultyIds,
-    instructor: d.instructor,
-    note: d.note,
-    joint: d.joint,
-    conflict: false,
-  }));
+  const entries: OccupancyEntry[] = merged.map(({ jointKey: _jointKey, ...d }, i) => ({ id: String(i), ...d, conflict: false }));
 
-  // Kolizje: w obrebie sali i dnia (lista jest posortowana, wiec porownujemy tylko sasiadow w czasie).
+  // Kolizje: w obrebie zasobu i dnia (lista jest posortowana, wiec porownujemy tylko sasiadow w czasie).
   for (let i = 0; i < entries.length; i++) {
     const a = entries[i]!;
     for (let j = i + 1; j < entries.length; j++) {
       const b = entries[j]!;
-      if (b.roomId !== a.roomId || b.date !== a.date || b.startMinute >= a.endMinute) break;
+      if (keyOf(b) !== keyOf(a) || b.date !== a.date || b.startMinute >= a.endMinute) break;
       if (minutesOverlap(a.startMinute, a.endMinute, b.startMinute, b.endMinute)) {
         a.conflict = true;
         b.conflict = true;

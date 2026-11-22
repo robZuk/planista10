@@ -12,6 +12,7 @@ import ObsadaPage from '@/pages/ObsadaPage';
 import PlanPage from '@/pages/PlanPage';
 import ExternalBusyPage from '@/pages/ExternalBusyPage';
 import RoomOccupancyPage from '@/pages/RoomOccupancyPage';
+import InstructorOccupancyPage from '@/pages/InstructorOccupancyPage';
 import TermSetupPage from '@/pages/TermSetupPage';
 import MyPlanPage from '@/pages/MyPlanPage';
 import TermCalendarPage from '@/pages/TermCalendarPage';
@@ -31,6 +32,7 @@ const PAGES: Record<string, ComponentType> = {
   '/plan': PlanPage,
   '/external-busy': ExternalBusyPage,
   '/room-occupancy': RoomOccupancyPage,
+  '/instructor-occupancy': InstructorOccupancyPage,
   '/setup': TermSetupPage,
   '/my-plan': MyPlanPage,
   '/calendar': TermCalendarPage,

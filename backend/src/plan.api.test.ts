@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 
 // Testy HTTP planu — Prisma mockowana: uprawnienia, walidacja wejscia, terminy reczne.
@@ -38,9 +38,11 @@ vi.mock('./services/plan', async (importOriginal) => ({
   refreshPlanningTerms: refreshMock,
 }));
 
-// Zajetosc sal — logika w services/roomOccupancy.test; tu tylko uprawnienia i parametr tygodnia.
-const roomOccupancyMock = vi.hoisted(() => vi.fn().mockResolvedValue({ weeks: [], week: null, days: [], holidays: [], entries: [] }));
-vi.mock('./services/roomOccupancy', () => ({ roomOccupancy: roomOccupancyMock }));
+// Zajetosc sal i prowadzacych — logika w services/occupancyView.test; tu tylko uprawnienia i parametr tygodnia.
+const emptyOccupancy = { weeks: [], week: null, days: [], holidays: [], entries: [] };
+const roomOccupancyMock = vi.hoisted(() => vi.fn());
+const instructorOccupancyMock = vi.hoisted(() => vi.fn());
+vi.mock('./services/occupancyView', () => ({ roomOccupancy: roomOccupancyMock, instructorOccupancy: instructorOccupancyMock }));
 
 import { createApp } from './index';
 import { signAccessToken } from './lib/jwt';
@@ -69,30 +71,37 @@ beforeAll(() => {
   student = signAccessToken({ sub: 'u-st', role: 'STUDENT' });
 });
 
-describe('API — zajetosc sal', () => {
-  it('prowadzacy i student nie ogladaja zajetosci sal -> 403', async () => {
+// Obie strony zajetosci: te same uprawnienia (tylko planisci) i ten sam parametr tygodnia.
+describe.each([
+  { what: 'sal', path: 'room-occupancy', mock: roomOccupancyMock },
+  { what: 'prowadzacych', path: 'instructor-occupancy', mock: instructorOccupancyMock },
+])('API — zajetosc $what', ({ path, mock }) => {
+  beforeEach(() => {
+    mock.mockReset();
+    mock.mockResolvedValue(emptyOccupancy);
+  });
+
+  it('prowadzacy i student nie ogladaja zajetosci -> 403', async () => {
     const instructor = signAccessToken({ sub: 'u-i', role: 'INSTRUCTOR' });
-    roomOccupancyMock.mockClear();
     for (const token of [instructor, student]) {
-      const res = await request(app).get('/api/terms/2026-L/room-occupancy').set('Authorization', `Bearer ${token}`);
+      const res = await request(app).get(`/api/terms/2026-L/${path}`).set('Authorization', `Bearer ${token}`);
       expect(res.status).toBe(403);
     }
-    expect(roomOccupancyMock).not.toHaveBeenCalled();
+    expect(mock).not.toHaveBeenCalled();
   });
 
   it('planista: tydzien z parametru albo domyslny; bledna data -> 400', async () => {
-    roomOccupancyMock.mockClear();
-    const ok = await request(app).get('/api/terms/2026-L/room-occupancy?week=2026-03-11').set('Authorization', `Bearer ${dean}`);
+    const ok = await request(app).get(`/api/terms/2026-L/${path}?week=2026-03-11`).set('Authorization', `Bearer ${dean}`);
     expect(ok.status).toBe(200);
-    expect(ok.body.data).toEqual({ weeks: [], week: null, days: [], holidays: [], entries: [] });
-    expect(roomOccupancyMock).toHaveBeenLastCalledWith(expect.objectContaining({ id: 't1' }), '2026-03-11');
+    expect(ok.body.data).toEqual(emptyOccupancy);
+    expect(mock).toHaveBeenLastCalledWith(expect.objectContaining({ id: 't1' }), '2026-03-11');
 
-    await request(app).get('/api/terms/2026-L/room-occupancy').set('Authorization', `Bearer ${dean}`);
-    expect(roomOccupancyMock).toHaveBeenLastCalledWith(expect.objectContaining({ id: 't1' }), null);
+    await request(app).get(`/api/terms/2026-L/${path}`).set('Authorization', `Bearer ${dean}`);
+    expect(mock).toHaveBeenLastCalledWith(expect.objectContaining({ id: 't1' }), null);
 
-    const bad = await request(app).get('/api/terms/2026-L/room-occupancy?week=2026-02-30').set('Authorization', `Bearer ${dean}`);
+    const bad = await request(app).get(`/api/terms/2026-L/${path}?week=2026-02-30`).set('Authorization', `Bearer ${dean}`);
     expect(bad.status).toBe(400);
-    expect(roomOccupancyMock).toHaveBeenCalledTimes(2);
+    expect(mock).toHaveBeenCalledTimes(2);
   });
 });
 

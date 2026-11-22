@@ -896,27 +896,35 @@ export interface MyPlanRow {
   note: string | null;
 }
 
-/** Zajetosc sali (strona „Zajetosc sal”): zajecia z planu, termin reczny albo zajetosc zewnetrzna. */
-export type RoomEntryKind = 'CLASS' | 'MANUAL' | 'EXTERNAL';
+/** Pozycja zajetosci (strony „Zajetosc sal” i „Zajetosc prowadzacych”): zajecia z planu, termin reczny albo zajetosc zewnetrzna. */
+export type OccupancyEntryKind = 'CLASS' | 'MANUAL' | 'EXTERNAL';
 
-/** Jedne zajecia w sali na konkretnej dacie — zajecia laczone raz, z lista grup. */
-export interface RoomOccupancyEntry {
+/** Zasob widoku zajetosci: po nim ida wiersze i po nim licza sie kolizje. */
+export type OccupancyResource = 'room' | 'instructor';
+
+/** Jedne zajecia sali albo prowadzacego na konkretnej dacie — zajecia laczone raz, z lista grup. */
+export interface OccupancyEntry {
   id: string;
-  roomId: string;
+  /** null — bez sali (zajecia online, zajetosc zewnetrzna samego prowadzacego); w widoku sal zawsze jest. */
+  roomId: string | null;
+  /** "101 (Budynek C)"; null — bez sali. */
+  room: string | null;
+  /** null — NN albo zajetosc zewnetrzna samej sali; w widoku prowadzacych zawsze jest. */
+  instructorId: string | null;
+  instructor: string | null;
   date: string;
   startMinute: number;
   endMinute: number;
-  kind: RoomEntryKind;
+  kind: OccupancyEntryKind;
   /** Przedmiot; przy zajetosci zewnetrznej — kto zglosil. */
   title: string;
   classType: ClassType | null;
   /** Grupy ("MBM-S1 s1 · MBM-1-C-A") z rocznikiem i jego wydzialem — kilka przy zajeciach laczonych; puste przy zajetosci zewnetrznej. */
   groups: { label: string; cohortId: string; facultyId: string }[];
   facultyIds: string[];
-  instructor: string | null;
   note: string | null;
   joint: boolean;
-  /** Sale w tym czasie zajmuje cos jeszcze — kolizja do wyjasnienia. */
+  /** Zasob widoku (sale albo prowadzacego) w tym czasie zajmuje cos jeszcze — kolizja do wyjasnienia. */
   conflict: boolean;
 }
 
@@ -926,11 +934,11 @@ export interface TermWeek {
   number: number;
 }
 
-export interface RoomOccupancy {
+export interface Occupancy {
   weeks: TermWeek[];
   /** Poniedzialek pokazanego tygodnia; null — semestr bez kalendarzy. */
   week: string | null;
   days: string[];
   holidays: { date: string; name: string }[];
-  entries: RoomOccupancyEntry[];
+  entries: OccupancyEntry[];
 }

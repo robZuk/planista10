@@ -2,19 +2,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AcademicTerm } from '@prisma/client';
 import type { BusySlot } from '../lib/materializer';
 
-// Zajetosc sal w tygodniu — Prisma i wspolna zajetosc semestru (occupancyWithScope) mockowane:
-// wybor tygodnia, tylko sloty z sala w tym tygodniu, opis zajec, terminow recznych i zajetosci zewnetrznych.
+// Zajetosc sal i prowadzacych w tygodniu — Prisma i wspolna zajetosc semestru (occupancyWithScope) mockowane:
+// wybor tygodnia, tylko sloty z zasobem widoku w tym tygodniu, opis zajec, terminow recznych i zajetosci zewnetrznych.
 const prismaMock = vi.hoisted(() => ({
   termCalendar: { findMany: vi.fn() },
   externalBusy: { findMany: vi.fn() },
   classSection: { findMany: vi.fn() },
   instructor: { findMany: vi.fn() },
+  room: { findMany: vi.fn() },
 }));
 vi.mock('../lib/prisma', () => ({ prisma: prismaMock }));
 const occupancyMock = vi.hoisted(() => vi.fn());
 vi.mock('./plan', () => ({ occupancyWithScope: occupancyMock }));
 
-import { roomOccupancy } from './roomOccupancy';
+import { instructorOccupancy, roomOccupancy } from './occupancyView';
 
 const d = (iso: string) => new Date(`${iso}T00:00:00Z`);
 const term = { id: 't-2026Z', startYear: 2026, type: 'WINTER' } as AcademicTerm;
@@ -50,6 +51,7 @@ beforeEach(() => {
     { id: 's1', cohortId: 'c1', groupId: 'g1', classType: 'EXERCISE', facultyId: 'wm', programEntry: { subject: { name: 'Mechanika' } } },
   ]);
   prismaMock.instructor.findMany.mockResolvedValue([{ id: 'i1', title: 'dr inz.', firstName: 'Jan', lastName: 'Nowak' }]);
+  prismaMock.room.findMany.mockResolvedValue([{ id: 'r1', number: '101', building: { name: 'Budynek C' } }]);
 });
 
 describe('roomOccupancy', () => {
@@ -76,6 +78,7 @@ describe('roomOccupancy', () => {
         groups: [{ label: 'MBM-S1 s1 · MBM-1-C-A', cohortId: 'c1', facultyId: 'wm' }],
         facultyIds: ['wm'],
         instructor: 'dr inz. Jan Nowak',
+        room: '101 (Budynek C)',
         conflict: false,
       }),
     ]);
@@ -108,5 +111,37 @@ describe('roomOccupancy', () => {
     occupancyMock.mockResolvedValue({ scope, busy: [] });
     const view = await roomOccupancy(term, '2026-11-11');
     expect(view.holidays).toEqual([{ date: '2026-11-11', name: expect.stringContaining('Niepodleg') }]);
+  });
+});
+
+describe('instructorOccupancy', () => {
+  it('sloty z prowadzacym w tygodniu: zajecia online zostaja, NN i nastepny tydzien odpadaja; sala w opisie', async () => {
+    occupancyMock.mockResolvedValue({
+      scope,
+      busy: [
+        busy({}),
+        busy({ roomId: null, startMinute: 600, endMinute: 690 }), // online — prowadzacy zajety, sala nie
+        busy({ instructorId: null, startMinute: 720, endMinute: 810 }), // NN
+        busy({ date: '2026-11-25' }),
+      ],
+    });
+    const view = await instructorOccupancy(term, '2026-11-18');
+    expect(view.week).toBe('2026-11-16');
+    expect(view.entries.map((e) => [e.instructorId, e.instructor, e.startMinute, e.room, e.conflict])).toEqual([
+      ['i1', 'dr inz. Jan Nowak', 480, '101 (Budynek C)', false],
+      ['i1', 'dr inz. Jan Nowak', 600, null, false],
+    ]);
+  });
+
+  it('zajetosc zewnetrzna prowadzacego (bez sali) — kolizja z jego zajeciami', async () => {
+    occupancyMock.mockResolvedValue({
+      scope,
+      busy: [busy({}), busy({ roomId: null, groupId: null, startMinute: 540, endMinute: 600, origin: { kind: 'EXTERNAL', externalBusyId: 'e1' } })],
+    });
+    const view = await instructorOccupancy(term, '2026-11-18');
+    expect(view.entries.map((e) => [e.kind, e.title, e.room, e.conflict])).toEqual([
+      ['CLASS', 'Mechanika', '101 (Budynek C)', true],
+      ['EXTERNAL', 'WE – dziekanat', null, true],
+    ]);
   });
 });

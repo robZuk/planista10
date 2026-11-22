@@ -90,7 +90,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   na trasach zapisu middleware `planLocked`), `autoPlan` (samoczynne zmiany pod blokadą planu:
   zajęcia po zapisie naboru, grup, wersji programu i kalendarza — synchronizacja w trybie
   `additive`; terminy kalendarza w przygotowaniu po zmianie jego dat; publikacja z przeliczeniem terminów),
-  `roomOccupancy` (zajętość sal w tygodniu — cała uczelnia, z tej samej zajętości co kolizje: `plan.occupancyWithScope`)
+  `occupancyView` (zajętość sal i prowadzących w tygodniu — cała uczelnia, z tej samej zajętości co kolizje: `plan.occupancyWithScope`)
 - `src/lib/*` — czyste funkcje domeny (bez bazy, testowane jednostkowo):
   - `prisma.ts` — **singleton PrismaClient**; nigdy nie rób `new PrismaClient()`, importuj `prisma` stąd
   - `isoDate.ts` — daty jako tekst `YYYY-MM-DD` (arytmetyka w UTC)
@@ -109,7 +109,7 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `occurrenceDiff.ts` — diff „Generuj terminy”: terminy z wzorca zachowują id (aktualizacja w miejscu)
   - `occurrenceSlot.ts` — ocena nowego miejsca terminu (blokada poza semestrem, ostrzeżenia do potwierdzenia)
   - `externalBusy.ts` — zajętości zewnętrzne (zajęcia innych wydziałów ze zgłoszeń): sloty bez grupy do kolizji, walidacja, kolizje wpisu z planem
-  - `roomOccupancy.ts` — zajętość sal: pozycje sali (zajęcia łączone raz, kolizje oznaczone), tygodnie semestru do przeglądania
+  - `occupancyView.ts` — zajętość sal i prowadzących: pozycje zasobu (zajęcia łączone raz, kolizje oznaczone w obrębie sali albo prowadzącego), tygodnie semestru do przeglądania
   - `planPrint.ts` — druk planu prowadzącego i sali: model stron (kolumny dni/dat, kafelki w minutach), tory zajęć równoległych, rytm, nazwa pliku; `planPdf.ts` — rysowanie PDF (pdfkit, A4 poziomo, czcionki z `pdfFonts.ts` — DejaVu z polskimi znakami)
   - `planSheet.ts` — arkusz planu dla studentów (układ arkuszy WM): kolumny z liści drzewa grup, dzień × bloki, scalanie poziome, ramki zajęć nie co tydzień, skróty nazw przedmiotów i kolory; `planSheetPdf.ts` — rysowanie arkusza
 - `src/middleware/authenticate.ts` — weryfikacja JWT; role w enumie `Role`
@@ -180,12 +180,16 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   strona „Zajętości zewnętrzne”): prowadzący i/lub sala, minuty i konkretne daty ze zgłoszeń
   mailowych. Liczą się tylko do kolizji (dokłada je `termOccupancy`; `BusySlot.groupId = null`), nie
   są zajęciami ani obciążeniem. Wpis kolidujący z ułożonym planem się zapisuje — lista pokazuje kolizje.
-- **Zajętość sal** (strona „Zajętość sal”, `GET /api/terms/:key/room-occupancy?week=`, `services/roomOccupancy`) —
-  tylko do wglądu, dla planistów: cała uczelnia (sale są wspólne) na konkretnych datach tygodnia, z tej samej
-  zajętości co kolizje (`termOccupancy`: wzorzec jak „Generuj terminy”, także przed generowaniem; terminy ręczne;
-  zajętości zewnętrzne; `BusySlot.origin` mówi, skąd slot). Tydzień: sala × dni z paskami i zajętymi godzinami;
-  dzień: oś godzin, szczegóły zajęć, sale wolne w podanych godzinach. Zajęcia łączone raz; nakładające się
-  w sali pozycje oznaczone jako kolizja.
+- **Zajętość sal i prowadzących** (strony „Zajętość sal” i „Zajętość prowadzących”,
+  `GET /api/terms/:key/room-occupancy?week=` i `…/instructor-occupancy?week=`, `services/occupancyView`) —
+  tylko do wglądu, dla planistów: cała uczelnia (sale i prowadzący są wspólni) na konkretnych datach tygodnia,
+  z tej samej zajętości co kolizje (`termOccupancy`: wzorzec jak „Generuj terminy”, także przed generowaniem;
+  terminy ręczne; zajętości zewnętrzne; `BusySlot.origin` mówi, skąd slot). Oba widoki różnią się tylko zasobem
+  (`lib/occupancyView`, komponenty we `frontend/src/pages/occupancy`): sale — bez zajęć online, prowadzący — z
+  online, bez NN. Tydzień: zasób × dni z paskami i zajętymi godzinami; dzień: oś godzin, szczegóły zajęć, sale
+  albo prowadzący wolni w podanych godzinach (prowadzący: filtr wydziału, katedry, nazwiska). Zajęcia łączone raz;
+  nakładające się pozycje tej samej sali / tego samego prowadzącego oznaczone jako kolizja — także zajęcia
+  o wspólnym kluczu, które się nie scalają (inny prowadzący, NN), choć kontrola kolizji planu je przepuszcza.
 - **Druk planu (PDF)** — `GET /api/terms/:key/plan/pdf` (`services/planPrint`).
   **Rocznik = arkusz dla studentów w układzie arkuszy WM** (`~/Desktop/plany`: sd_r1–r4, week; `lib/planSheet`):
   stacjonarne — A4 pionowo, rok studiów i stopień ze wszystkimi kierunkami wydziału obok siebie (te same tryb,

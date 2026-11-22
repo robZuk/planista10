@@ -76,7 +76,7 @@ export interface BusySlot {
   groupId: string | null;
   jointKey: string | null;
   label: string;
-  /** Skad zajetosc — czyta ja widok „Zajetosc sal” (services/roomOccupancy); kolizje czytaja tylko label. */
+  /** Skad zajetosc — czytaja ja widoki „Zajetosc sal” i „Zajetosc prowadzacych” (services/occupancyView); kolizje czytaja tylko label. */
   origin?: BusyOrigin;
 }
 

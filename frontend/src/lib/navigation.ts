@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Table2,
   UserCheck,
+  UserRoundSearch,
   Users,
   type LucideIcon,
 } from 'lucide-react';
@@ -115,6 +116,14 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: DoorOpen,
         roles: ['ADMIN', 'DEAN_OFFICE'],
         keywords: ['sale', 'wolne sale', 'wolna sala', 'zajete sale', 'wykorzystanie sal', 'budynki', 'kolizje sal'],
+        termScoped: true,
+      },
+      {
+        to: '/instructor-occupancy',
+        label: 'Zajetosc prowadzacych',
+        icon: UserRoundSearch,
+        roles: ['ADMIN', 'DEAN_OFFICE'],
+        keywords: ['prowadzacy', 'wolny prowadzacy', 'zajety prowadzacy', 'kolizje prowadzacych', 'katedry', 'godziny w tygodniu'],
         termScoped: true,
       },
     ],
