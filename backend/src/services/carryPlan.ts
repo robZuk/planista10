@@ -8,6 +8,8 @@ import { calendarFor, checkPlacement, type PlacementInput } from './plan';
 import { conflictShort } from '../lib/conflictMessage';
 import { TeachingCalendar } from '../lib/teachingCalendar';
 import { plural } from '../lib/plural';
+import type { BusySlot } from '../lib/materializer';
+import { CLASS_LETTER } from '../lib/planPrint';
 import { toCalendarInput } from './termCalendars';
 
 /**
@@ -43,6 +45,11 @@ export async function carryPlan(
 ): Promise<CarryPlanReport> {
   const report: CarryPlanReport = { created: [], conflicts: [], unmatched: [], skipped: 0, sources: [] };
   const contexts = await activeCohorts(term, opts.facultyId, opts.cohortIds);
+  // Podglad niczego nie zapisuje, a zapis tworzy umieszczenia po kolei i kazde kolejne widzi poprzednie.
+  // Zeby podglad mowil to samo co zapis, zajetosc "utworzonych" umieszczen zbieramy tutaj — z limitem
+  // godzin zajec (jak terminy liczone z wzorca), wiec zajete sa tylko daty, ktore faktycznie powstana.
+  const simulated: BusySlot[] = [];
+  const hoursLeft = new Map<string, number>();
 
   for (const ctx of contexts) {
     const label = cohortLabel(ctx.cohort);
@@ -129,9 +136,11 @@ export async function carryPlan(
           numbers: cycle === p.cycle ? p.numbers : [],
           fromIndex: cycle === p.cycle ? p.fromIndex : null,
           toIndex: cycle === p.cycle ? p.toIndex : null,
-          jointKey: null,
+          // Zajecia laczone zostaja laczone: partnerzy przeniesieni w tej (albo pozniejszej) operacji
+          // dziela sale i prowadzacego bez kolizji, a kontrola "ten sam czas" pilnuje spojnosci.
+          jointKey: p.jointKey,
         };
-        const check = await checkPlacement(term, input);
+        const check = await checkPlacement(term, input, undefined, opts.dryRun ? simulated : []);
         const sourceLabel = termLabel(p.term);
         if (check.errors.length > 0 || check.conflicts.length > 0) {
           report.conflicts.push({
@@ -157,6 +166,13 @@ export async function carryPlan(
         });
         if (!opts.dryRun) {
           await prisma.placement.create({ data: { ...input, termId: term.id, facultyId: t.facultyId } });
+        } else {
+          const length = input.endOrder - input.startOrder + 1;
+          const left = hoursLeft.get(t.id) ?? t.hours;
+          const taken = Math.max(0, Math.min(check.slots.length, Math.ceil(left / length)));
+          hoursLeft.set(t.id, left - taken * length);
+          const slotLabel = `${label}: ${row.subject} (${CLASS_LETTER[t.classType] ?? t.classType}) ${row.group}`;
+          simulated.push(...check.slots.slice(0, taken).map((slot) => ({ ...slot, label: slotLabel })));
         }
       }
     }

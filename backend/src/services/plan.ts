@@ -474,9 +474,20 @@ export interface PlacementCheck {
   errors: string[];
   conflicts: { date: IsoDate; reason: string; with: string }[];
   dates: number;
+  /** Zajetosc, ktora to umieszczenie wnosi na kazdej dacie rytmu (bez etykiety) — do symulacji podgladow. */
+  slots: BusySlot[];
 }
 
-export async function checkPlacement(term: AcademicTerm, input: PlacementInput, excludeId?: string): Promise<PlacementCheck> {
+/**
+ * @param extraBusy zajetosc spoza bazy — np. umieszczenia, ktore podglad "Przenies plan" utworzylby
+ *   wczesniej w tej samej operacji (zapis tworzy je po kolei, wiec kolejne widza poprzednie).
+ */
+export async function checkPlacement(
+  term: AcademicTerm,
+  input: PlacementInput,
+  excludeId?: string,
+  extraBusy: BusySlot[] = [],
+): Promise<PlacementCheck> {
   const errors: string[] = [];
   const section = await prisma.classSection.findUnique({
     where: { id: input.sectionId },
@@ -523,7 +534,10 @@ export async function checkPlacement(term: AcademicTerm, input: PlacementInput, 
 
   const conflicts: PlacementCheck['conflicts'] = [];
   if (errors.length === 0 && time) {
-    const busy = await placementBusy(term, { cohortId: section.cohortId, roomId: input.roomId, instructorId: input.instructorId }, excludeId);
+    const busy = [
+      ...(await placementBusy(term, { cohortId: section.cohortId, roomId: input.roomId, instructorId: input.instructorId }, excludeId)),
+      ...extraBusy,
+    ];
     const overlap = await groupOverlapFn();
     const byDate = new Map<string, BusySlot[]>();
     for (const b of busy) byDate.set(b.date, [...(byDate.get(b.date) ?? []), b]);
@@ -536,7 +550,19 @@ export async function checkPlacement(term: AcademicTerm, input: PlacementInput, 
       if (conflict) conflicts.push({ date: d.date, ...conflict });
     }
   }
-  return { errors, conflicts, dates: dates.length };
+  const slots: BusySlot[] = time
+    ? dates.map((d) => ({
+        date: d.date,
+        startMinute: time.startMinute,
+        endMinute: time.endMinute,
+        roomId: input.roomId,
+        instructorId: input.instructorId,
+        groupId: section.groupId,
+        jointKey: input.jointKey,
+        label: '',
+      }))
+    : [];
+  return { errors, conflicts, dates: dates.length, slots };
 }
 
 /**
