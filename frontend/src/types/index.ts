@@ -643,6 +643,8 @@ export interface WorkloadPerson {
   id: string;
   name: string;
   department: { id: string; name: string; label: string } | null;
+  /** Wydzial osoby (za katedra); null — jednostka miedzywydzialowa (SJO) albo bez wydzialu. */
+  facultyId: string | null;
   /** Godziny na wybranym wydziale: razem, stacjonarne i niestacjonarne. */
   here: number;
   fullTime: number;

@@ -41,6 +41,8 @@ export function inMode(person: WorkloadPerson, mode: ModeFilter): WorkloadPerson
 export interface DepartmentBlock {
   /** null = prowadzacy bez katedry. */
   id: string | null;
+  /** Katedra wydzialu widoku (osoby z tego wydzialu); false — inne jednostki prowadzace tu zajecia. */
+  own: boolean;
   label: string;
   name: string | null;
   people: WorkloadPerson[];
@@ -57,6 +59,7 @@ function emptyPerson(instructor: Instructor): WorkloadPerson {
     department: instructor.department
       ? { id: instructor.department.id, name: instructor.department.name, label: departmentLabel(instructor.department) }
       : null,
+    facultyId: instructor.facultyId ?? null,
     here: 0,
     fullTime: 0,
     partTime: 0,
@@ -68,11 +71,13 @@ function emptyPerson(instructor: Instructor): WorkloadPerson {
 /**
  * Obciazenia w ukladzie arkusza katedry: katedra → osoby (od najwiekszego obciazenia), sumy
  * katedry jak "suma kontrolna" w arkuszu. Po wybraniu katedry dochodza jej czlonkowie bez
- * godzin w widoku (z listy prowadzacych). Katedry alfabetycznie, "Bez katedry" na koncu.
+ * godzin w widoku (z listy prowadzacych). Z wydzialem widoku (`facultyId`) najpierw katedry
+ * wydzialu, potem inne jednostki (katedry innych wydzialow, SJO); w kazdej czesci katedry
+ * alfabetycznie, "Bez katedry" na koncu.
  */
 export function workloadBlocks(
   people: WorkloadPerson[],
-  opts: { department: string; mode: ModeFilter; search: string; members?: Instructor[] },
+  opts: { department: string; mode: ModeFilter; search: string; members?: Instructor[]; facultyId?: string | null },
 ): DepartmentBlock[] {
   const inScope = (departmentId: string | null) =>
     opts.department === ALL_DEPARTMENTS ||
@@ -94,11 +99,14 @@ export function workloadBlocks(
 
   const blocks = new Map<string, DepartmentBlock>();
   for (const person of found) {
-    const key = person.department?.id ?? '';
+    // Bez wydzialu widoku (cala uczelnia) wszystko jest "swoje" — jedna lista jak dotad.
+    const own = !opts.facultyId || person.facultyId === opts.facultyId;
+    const key = `${own ? 'own' : 'other'}|${person.department?.id ?? ''}`;
     let block = blocks.get(key);
     if (!block) {
       block = {
         id: person.department?.id ?? null,
+        own,
         label: person.department?.label ?? 'Bez katedry',
         name: person.department?.name ?? null,
         people: [],
@@ -116,5 +124,7 @@ export function workloadBlocks(
   for (const block of blocks.values()) {
     block.people.sort((a, b) => b.here - a.here || a.name.localeCompare(b.name, 'pl'));
   }
-  return [...blocks.values()].sort((a, b) => (!a.id !== !b.id ? (a.id ? -1 : 1) : a.label.localeCompare(b.label, 'pl')));
+  return [...blocks.values()].sort(
+    (a, b) => Number(b.own) - Number(a.own) || (!a.id !== !b.id ? (a.id ? -1 : 1) : a.label.localeCompare(b.label, 'pl')),
+  );
 }

@@ -86,10 +86,11 @@ export interface DepartmentOptionGroup {
 }
 
 /**
- * Katedry w wyborze na stronach wydzialu (Obsada): najpierw katedry tego wydzialu, jednostki
- * miedzywydzialowe (SJO) i katedry, ktore juz maja tu zajecia; reszta uczelni osobno na koncu —
- * potrzebna rzadko (osoba z katedry innego wydzialu, ktorej dopisuje sie zajecia), wiec nie
- * miesza sie z wlasnymi. Bez wybranego wydzialu (cala uczelnia) — jedna lista.
+ * Katedry w wyborze na stronach wydzialu (Obsada) — tak jak podzial Obciazen: katedry wydzialu,
+ * inne jednostki pracujace dla wydzialu (katedry innych wydzialow z zajeciami albo zleceniami tutaj
+ * i jednostki miedzywydzialowe, np. SJO), na koncu pozostale katedry uczelni — potrzebne rzadko
+ * (dopisanie zajec osobie z katedry, ktora jeszcze nic tu nie ma). Bez wybranego wydzialu
+ * (cala uczelnia) — jedna lista.
  */
 export function departmentSelectGroups(
   departments: Department[],
@@ -97,9 +98,11 @@ export function departmentSelectGroups(
 ): DepartmentOptionGroup[] {
   const sorted = [...departments].sort(compareDepartments);
   if (!opts.facultyId) return [{ label: 'Katedry', departments: sorted }];
-  const near = (d: Department) => d.facultyId === opts.facultyId || d.facultyId === null || opts.usedIds.has(d.id);
+  const own = (d: Department) => d.facultyId === opts.facultyId;
+  const working = (d: Department) => !own(d) && (d.facultyId === null || opts.usedIds.has(d.id));
   return [
-    { label: 'Ten wydzial i katedry z zajeciami na nim', departments: sorted.filter(near) },
-    { label: 'Inne wydzialy', departments: sorted.filter((d) => !near(d)) },
+    { label: 'Katedry wydzialu', departments: sorted.filter(own) },
+    { label: 'Inne jednostki pracujace dla wydzialu', departments: sorted.filter(working) },
+    { label: 'Pozostale katedry uczelni', departments: sorted.filter((d) => !own(d) && !working(d)) },
   ].filter((g) => g.departments.length > 0);
 }

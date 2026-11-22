@@ -100,12 +100,13 @@ describe('membershipChanges', () => {
 });
 
 describe('departmentSelectGroups', () => {
-  it('wlasny wydzial, miedzywydzialowe i katedry z zajeciami na gorze; reszta osobno', () => {
+  it('katedry wydzialu, inne jednostki pracujace dla wydzialu (z zajeciami tutaj, SJO), reszta uczelni', () => {
     const KAE = dept('KAE', WE);
     const groups = departmentSelectGroups([KEO, KAE, KPT, SJO], { facultyId: WM.id, usedIds: new Set([KEO.id]) });
     expect(groups.map((g) => [g.label, g.departments.map(departmentLabel)])).toEqual([
-      ['Ten wydzial i katedry z zajeciami na nim', ['KEO-WE', 'KPT-WM', 'SJO']],
-      ['Inne wydzialy', ['KAE-WE']],
+      ['Katedry wydzialu', ['KPT-WM']],
+      ['Inne jednostki pracujace dla wydzialu', ['KEO-WE', 'SJO']],
+      ['Pozostale katedry uczelni', ['KAE-WE']],
     ]);
   });
 

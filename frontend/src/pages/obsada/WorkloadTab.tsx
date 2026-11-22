@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, ChevronRight, ListFilter, Pencil, Plus, Search, UserPlus, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -79,9 +79,9 @@ export default function WorkloadTab({
   const [editing, setEditing] = useState<{ person: Person; key?: string } | null>(null);
   const [picking, setPicking] = useState(false);
 
-  // W filtrze wszystkie katedry z prowadzacymi — takze te, ktorych nikt nie ma jeszcze godzin.
   // W filtrze wszystkie katedry z prowadzacymi (takze bez godzin tutaj — do dopisania zajec z arkusza
-  // katedry innego wydzialu), ale wlasny wydzial i katedry z zajeciami tutaj na gorze.
+  // katedry innego wydzialu), w czesciach jak lista: katedry wydzialu, inne jednostki z zajeciami
+  // tutaj, pozostale katedry uczelni.
   const departmentGroups = useMemo(() => {
     const byId = new Map<string, Department>();
     for (const i of instructors ?? []) if (i.department) byId.set(i.department.id, i.department);
@@ -89,9 +89,15 @@ export default function WorkloadTab({
     return departmentSelectGroups([...byId.values()], { facultyId: viewFacultyId, usedIds: used });
   }, [instructors, workload, viewFacultyId]);
   const blocks = useMemo(
-    () => workloadBlocks(workload ?? [], { department, mode, search, members: instructors }),
-    [workload, department, mode, search, instructors],
+    () => workloadBlocks(workload ?? [], { department, mode, search, members: instructors, facultyId: viewFacultyId }),
+    [workload, department, mode, search, instructors, viewFacultyId],
   );
+  // Z wydzialem widoku: czesc "Katedry wydzialu" i "Inne jednostki" (katedry innych wydzialow, SJO)
+  // z sumami — kto z zewnatrz prowadzi zajecia wydzialu. Cala uczelnia — jedna lista bez naglowkow.
+  const partTotals = (own: boolean) => {
+    const list = blocks.filter((b) => b.own === own);
+    return { people: list.reduce((n, b) => n + b.people.length, 0), hours: list.reduce((n, b) => n + b.hours, 0) };
+  };
   const shownPeople = blocks.reduce((sum, b) => sum + b.people.length, 0);
   const shownHours = blocks.reduce((sum, b) => sum + b.hours, 0);
   const groupOfSection = useMemo(() => new Map(groups.flatMap((g) => g.sections.map((s) => [s.id, g.key] as const))), [groups]);
@@ -157,100 +163,117 @@ export default function WorkloadTab({
         </Empty>
       )}
 
-      {blocks.map((block) => (
-        <section key={block.id ?? 'none'} className="overflow-hidden rounded-lg border">
-          <header className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/40 px-3 py-2">
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <Badge variant={block.id ? 'secondary' : 'outline'}>{block.label}</Badge>
-              {block.name && <span className="text-sm font-medium">{block.name}</span>}
-              <span className="text-sm text-muted-foreground">· {plural(block.people.length, 'osoba', 'osoby', 'osob')}</span>
+      {blocks.map((block, index) => (
+        <Fragment key={`${block.own ? 'own' : 'other'}|${block.id ?? 'none'}`}>
+          {viewFacultyId && (index === 0 || blocks[index - 1]!.own !== block.own) && (
+            <div className={`flex flex-wrap items-baseline justify-between gap-2 ${index > 0 ? 'pt-2' : ''}`}>
+              <h3 className="text-sm font-semibold">
+                {block.own ? 'Katedry wydzialu' : 'Inne jednostki'}
+                {!block.own && (
+                  <span className="ml-2 font-normal text-muted-foreground">
+                    katedry innych wydzialow i jednostki miedzywydzialowe z zajeciami na tym wydziale
+                  </span>
+                )}
+              </h3>
+              <span className="text-sm text-muted-foreground tabular-nums">
+                {plural(partTotals(block.own).people, 'osoba', 'osoby', 'osob')} · {partTotals(block.own).hours} h
+              </span>
             </div>
-            <HoursSplit person={{ here: block.hours, fullTime: block.fullTime, partTime: block.partTime }} mode={mode} />
-          </header>
-          <ul className="divide-y">
-            {block.people.map((p) => {
-              const open = expanded.has(p.id);
-              const person = { id: p.id, name: p.name };
-              return (
-                <li key={p.id}>
-                  <div className="flex items-center gap-2 px-2 py-1">
-                    <button
-                      type="button"
-                      onClick={() => toggle(p.id)}
-                      aria-expanded={open}
-                      className="flex min-w-0 flex-1 items-center gap-1.5 rounded px-1 py-1 text-left text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                    >
-                      {open ? <ChevronDown className="size-4 shrink-0" /> : <ChevronRight className="size-4 shrink-0" />}
-                      <span className="truncate">{p.name}</span>
-                    </button>
-                    <span className="text-sm">
-                      <HoursSplit person={p} mode={mode} />
-                    </span>
-                    {mode === 'all' && p.total > p.here && (
-                      <span className="hidden text-xs whitespace-nowrap text-muted-foreground sm:inline" title="Godziny w calej uczelni — z zajeciami na innych wydzialach">
-                        uczelnia {p.total} h
+          )}
+          <section className="overflow-hidden rounded-lg border">
+            <header className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/40 px-3 py-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <Badge variant={block.id ? 'secondary' : 'outline'}>{block.label}</Badge>
+                {block.name && <span className="text-sm font-medium">{block.name}</span>}
+                <span className="text-sm text-muted-foreground">· {plural(block.people.length, 'osoba', 'osoby', 'osob')}</span>
+              </div>
+              <HoursSplit person={{ here: block.hours, fullTime: block.fullTime, partTime: block.partTime }} mode={mode} />
+            </header>
+            <ul className="divide-y">
+              {block.people.map((p) => {
+                const open = expanded.has(p.id);
+                const person = { id: p.id, name: p.name };
+                return (
+                  <li key={p.id}>
+                    <div className="flex items-center gap-2 px-2 py-1">
+                      <button
+                        type="button"
+                        onClick={() => toggle(p.id)}
+                        aria-expanded={open}
+                        className="flex min-w-0 flex-1 items-center gap-1.5 rounded px-1 py-1 text-left text-sm hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {open ? <ChevronDown className="size-4 shrink-0" /> : <ChevronRight className="size-4 shrink-0" />}
+                        <span className="truncate">{p.name}</span>
+                      </button>
+                      <span className="text-sm">
+                        <HoursSplit person={p} mode={mode} />
                       </span>
-                    )}
-                    {canEdit && (
-                      <Button variant="ghost" size="icon" className="size-8" title="Dodaj zajecia" aria-label={`Dodaj zajecia: ${p.name}`} onClick={() => setEditing({ person })}>
-                        <Plus />
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      title="Pokaz zajecia tej osoby w zakladce Zajecia"
-                      aria-label={`Pokaz w Zajeciach: ${p.name}`}
-                      onClick={() => onShowSections(person)}
-                    >
-                      <ListFilter />
-                    </Button>
-                  </div>
-                  {open && (
-                    <ul className="space-y-1 pr-3 pb-2 pl-9 text-sm">
-                      {p.items.length === 0 && (
-                        <li className="text-muted-foreground">
-                          Bez zajec {mode === 'all' ? 'w tym semestrze' : 'w tym trybie'} — dopisz je przyciskiem „+”.
-                        </li>
+                      {mode === 'all' && p.total > p.here && (
+                        <span className="hidden text-xs whitespace-nowrap text-muted-foreground sm:inline" title="Godziny w calej uczelni — z zajeciami na innych wydzialach">
+                          uczelnia {p.total} h
+                        </span>
                       )}
-                      {p.items.map((item) => (
-                        <li key={item.key} className="flex flex-wrap items-center gap-x-2">
-                          <span>{item.subject.name}</span>
-                          <span className="text-muted-foreground">
-                            {CLASS_FULL_LABELS[item.classType].toLowerCase()} · {item.cohort.code} s{item.cohort.semester}
-                          </span>
-                          <span className="tabular-nums">{itemSize(item)}</span>
-                          <span className="text-xs text-muted-foreground">({item.groups.map((g) => g.name).join(', ')})</span>
-                          {itemJointWith(item).length > 0 && (
-                            <Badge
-                              variant="outline"
-                              title="Zajecia laczone w planie (wspolny klucz) — to te same godziny osoby, wiec licza sie raz"
-                            >
-                              laczone z {itemJointWith(item).join(', ')}
-                            </Badge>
-                          )}
-                          {canEdit && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-7"
-                              title="Zmien grupy i godziny"
-                              aria-label={`Zmien: ${item.subject.name}`}
-                              onClick={() => setEditing({ person, key: groupOfSection.get(item.groups[0]!.sectionId) })}
-                            >
-                              <Pencil />
-                            </Button>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+                      {canEdit && (
+                        <Button variant="ghost" size="icon" className="size-8" title="Dodaj zajecia" aria-label={`Dodaj zajecia: ${p.name}`} onClick={() => setEditing({ person })}>
+                          <Plus />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        title="Pokaz zajecia tej osoby w zakladce Zajecia"
+                        aria-label={`Pokaz w Zajeciach: ${p.name}`}
+                        onClick={() => onShowSections(person)}
+                      >
+                        <ListFilter />
+                      </Button>
+                    </div>
+                    {open && (
+                      <ul className="space-y-1 pr-3 pb-2 pl-9 text-sm">
+                        {p.items.length === 0 && (
+                          <li className="text-muted-foreground">
+                            Bez zajec {mode === 'all' ? 'w tym semestrze' : 'w tym trybie'} — dopisz je przyciskiem „+”.
+                          </li>
+                        )}
+                        {p.items.map((item) => (
+                          <li key={item.key} className="flex flex-wrap items-center gap-x-2">
+                            <span>{item.subject.name}</span>
+                            <span className="text-muted-foreground">
+                              {CLASS_FULL_LABELS[item.classType].toLowerCase()} · {item.cohort.code} s{item.cohort.semester}
+                            </span>
+                            <span className="tabular-nums">{itemSize(item)}</span>
+                            <span className="text-xs text-muted-foreground">({item.groups.map((g) => g.name).join(', ')})</span>
+                            {itemJointWith(item).length > 0 && (
+                              <Badge
+                                variant="outline"
+                                title="Zajecia laczone w planie (wspolny klucz) — to te same godziny osoby, wiec licza sie raz"
+                              >
+                                laczone z {itemJointWith(item).join(', ')}
+                              </Badge>
+                            )}
+                            {canEdit && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-7"
+                                title="Zmien grupy i godziny"
+                                aria-label={`Zmien: ${item.subject.name}`}
+                                onClick={() => setEditing({ person, key: groupOfSection.get(item.groups[0]!.sectionId) })}
+                              >
+                                <Pencil />
+                              </Button>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        </Fragment>
       ))}
 
       {picking && (
