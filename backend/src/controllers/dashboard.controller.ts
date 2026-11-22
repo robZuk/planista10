@@ -38,6 +38,9 @@ export const getStats = asyncHandler(async (req, res) => {
   const scope = user ? await occurrenceScope(user) : null;
   // Kafelki dziekanatu: tylko jego wydzial. Konto bez wydzialu nie widzi niczego.
   const dean = user?.role === 'DEAN_OFFICE';
+  // Konta (liczby wg rol, ostatnio dodani z e-mailami) widzi tylko administrator — panel pokazuje je
+  // tylko jemu, a odpowiedz API nie moze ich oddawac studentom ani prowadzacym.
+  const admin = user?.role === 'ADMIN';
   const fid = dean ? (user!.facultyId ?? '__none__') : null;
   const faculty = fid ? await prisma.faculty.findUnique({ where: { id: fid }, select: { name: true, shortName: true } }) : null;
 
@@ -56,7 +59,7 @@ export const getStats = asyncHandler(async (req, res) => {
     calendarCount,
     weekRows,
   ] = await Promise.all([
-    prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
+    admin ? prisma.user.groupBy({ by: ['role'], _count: { _all: true } }) : Promise.resolve([]),
     prisma.instructor.count({ where: fid ? { facultyId: fid } : {} }),
     prisma.studentGroup.count({ where: fid ? { cohort: { program: { fieldOfStudy: { facultyId: fid } } } } : {} }),
     prisma.user.count({
@@ -66,11 +69,13 @@ export const getStats = asyncHandler(async (req, res) => {
     prisma.building.count({ where: fid ? { facultyId: fid } : {} }),
     prisma.placement.count({ where: fid ? { facultyId: fid } : {} }),
     prisma.occurrence.count({ where: fid ? { facultyId: fid } : {} }),
-    prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
-    }),
+    admin
+      ? prisma.user.findMany({
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+          select: { id: true, name: true, email: true, role: true, createdAt: true },
+        })
+      : Promise.resolve([]),
     prisma.faculty.count(),
     prisma.subject.count(),
     prisma.termCalendar.count(),
