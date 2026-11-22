@@ -5,6 +5,7 @@ import { holidaysInRange } from '../lib/holidays';
 import { formatMinutes } from '../lib/timeGrid';
 import { upcomingDaysOff, type CalendarDayOff } from '../lib/daysOff';
 import { occurrenceScope, publishedCohortKeys } from '../services/visibility';
+import { activeCohorts } from '../services/sections';
 
 const occurrenceInclude = {
   room: { select: { number: true, building: { select: { name: true } } } },
@@ -84,8 +85,9 @@ export const getStats = asyncHandler(async (req, res) => {
 
   // Student i prowadzacy: tylko roczniki z opublikowanym (albo archiwalnym) wlasnym kalendarzem.
   const visible = scope?.publishedOnly ? await publishedCohortKeys(weekRows.map((o) => ({ termId: o.termId, cohortId: o.section.cohortId }))) : null;
-  const week = weekRows
-    .filter((o) => !visible || visible.has(`${o.termId}|${o.section.cohortId}`))
+  const shownRows = weekRows.filter((o) => !visible || visible.has(`${o.termId}|${o.section.cohortId}`));
+  const groupName = await groupNamesOf(shownRows);
+  const week = shownRows
     .map((o) => ({
       id: o.id,
       classType: o.section.classType,
@@ -94,7 +96,8 @@ export const getStats = asyncHandler(async (req, res) => {
       instructor: o.instructor,
       studentGroup: {
         id: o.group.id,
-        name: `${o.section.cohort.program.code} ${o.group.partitionKey === 'ROOT' ? 'caly rocznik' : `${o.group.partitionKey}-${o.group.code ?? ''}`}`,
+        // Nazwa grupy liczona na semestr rocznika (jak w Ukladaniu planu i "Moim planie").
+        name: `${o.section.cohort.program.code} ${groupName(o.termId, o.section.cohortId, o.group.id) ?? (o.group.partitionKey === 'ROOT' ? 'caly rocznik' : `${o.group.partitionKey}-${o.group.code ?? ''}`)}`,
       },
       curriculumEntry: { subject: o.section.programEntry.subject },
       // Godziny z terminu (rozne wydzialy moga miec rozne siatki godzin).
@@ -166,3 +169,24 @@ export const getStats = asyncHandler(async (req, res) => {
     },
   });
 });
+
+/**
+ * Nazwy grup terminow tygodnia — liczone na semestr rocznika (lib/groupTree.displayName przez
+ * activeCohorts), osobno dla kazdego semestru, z ktorego pochodza terminy. Grupa spoza kontekstu
+ * (rocznik poza zakresem programu) -> null, wtedy zostaje oznaczenie z klucza podzialu.
+ */
+async function groupNamesOf(rows: { termId: string; section: { cohortId: string } }[]) {
+  const byTerm = new Map<string, Set<string>>();
+  for (const r of rows) byTerm.set(r.termId, (byTerm.get(r.termId) ?? new Set<string>()).add(r.section.cohortId));
+  const names = new Map<string, (groupId: string) => string>();
+  if (byTerm.size > 0) {
+    const terms = await prisma.academicTerm.findMany({ where: { id: { in: [...byTerm.keys()] } } });
+    for (const term of terms) {
+      for (const ctx of await activeCohorts(term, null, [...(byTerm.get(term.id) ?? [])])) names.set(`${term.id}|${ctx.cohort.id}`, ctx.nameOf);
+    }
+  }
+  return (termId: string, cohortId: string, groupId: string): string | null => {
+    const name = names.get(`${termId}|${cohortId}`)?.(groupId);
+    return name && name !== '?' ? name : null;
+  };
+}
