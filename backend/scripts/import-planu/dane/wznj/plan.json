@@ -53715,7 +53715,10 @@
       "F112"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 0
+     },
      "cols": [
       12,
       12
@@ -53745,7 +53748,10 @@
       "B301"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 1
+     },
      "cols": [
       18,
       19
@@ -55052,7 +55058,9 @@
       "F112"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 1
+     },
      "cols": [
       2,
       4
@@ -55238,7 +55246,9 @@
       "F112"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 1
+     },
      "cols": [
       9,
       10
@@ -55597,7 +55607,9 @@
       "F112"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 1
+     },
      "cols": [
       7,
       8
@@ -55808,7 +55820,9 @@
       "F110"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 1
+     },
      "cols": [
       11,
       13
@@ -56038,7 +56052,9 @@
       "F112"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 1
+     },
      "cols": [
       5,
       6
@@ -56542,7 +56558,9 @@
       "B314"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 2
+     },
      "cols": [
       6,
       9
@@ -56692,7 +56710,10 @@
       "B213"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 0
+     },
      "cols": [
       10,
       11
@@ -56722,7 +56743,10 @@
       "B313"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 1
+     },
      "cols": [
       10,
       11
@@ -56752,7 +56776,10 @@
       "B313"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 0
+     },
      "cols": [
       12,
       13
@@ -56782,7 +56809,10 @@
       "B213"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 1
+     },
      "cols": [
       12,
       13
@@ -57164,7 +57194,9 @@
       "B213"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 1
+     },
      "cols": [
       10,
       11
@@ -57224,7 +57256,9 @@
       "C33a"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 1
+     },
      "cols": [
       12,
       13
@@ -58099,7 +58133,9 @@
       "B421"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 1
+     },
      "cols": [
       4,
       5
@@ -58189,7 +58225,9 @@
       "B421"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 1
+     },
      "cols": [
       2,
       3
@@ -59640,7 +59678,9 @@
       "B411"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 2
+     },
      "cols": [
       2,
       4
@@ -61620,7 +61660,10 @@
       "B314"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 0
+     },
      "cols": [
       8,
       10
@@ -61650,7 +61693,10 @@
       "B212"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 1
+     },
      "cols": [
       8,
       10
@@ -62230,7 +62276,9 @@
       "B21"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "half": 1
+     },
      "cols": [
       14,
       17
@@ -63852,7 +63900,10 @@
       "B40"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 0
+     },
      "cols": [
       2,
       9
@@ -63880,7 +63931,10 @@
       "B33a"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 1
+     },
      "cols": [
       10,
       17
@@ -63908,7 +63962,10 @@
       "B40"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 0
+     },
      "cols": [
       2,
       9
@@ -63936,7 +63993,10 @@
       "B45a"
      ],
      "firstDate": null,
-     "rhythm": {},
+     "rhythm": {
+      "alt": true,
+      "altOrder": 1
+     },
      "cols": [
       10,
       17
