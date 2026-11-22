@@ -1,0 +1,30 @@
+# Elektronika i telekomunikacja, stacjonarne I st., nabor 2023/24 (Senat 222/XVII z 29.09.2023) — tylko semestr VII
+# zrodlo: 1st_st_EiT_{EM,SiST}-RN23-24_RA26-27_s7.pdf
+@program EIT-S1
+@wersja od naboru 2023/24
+@sumy EM VII: W45 C60 L105 P50 e30
+
+@spec -
+1 | Język angielski | VII: C30 e2
+3 | Własność intelektualna i prawo pracy | VII: W15 e1
+40 | Seminarium dyplomowe | VII: C30 e2
+41 | Praca dyplomowa | VII: P30 e15
+
+@spec EM
+7 | Ceremoniał morski | VII: P5
+30 | Anteny i propagacja fal | VII: L15 e1
+39 | Systemy wbudowane | VII: W15 L30 e3
+44 | Zasilanie urządzeń elektronicznych | VII: P15 e1
+46 | Systemy radiokomunikacji ruchomej | VII: W15 L15 e2
+47 | Urządzenia radiokomunikacyjne | VII: L30 e2
+49 | Automatyzacja okrętowych systemów energetycznych | VII: L15 e1
+
+@sumy SiST VII: W70 C60 L45 P80 e29
+@spec SiST
+7 | Ceremoniał morski | VII: P5
+30 | Anteny i propagacja fal | VII: L15 e1
+39 | Systemy wbudowane | VII: L15 P15 e2
+43 | Projektowanie sieci radiokomunikacyjnych | VII: W15 P15 e2
+46 | Bezpieczeństwo sieci i systemów komputerowych | VII: W15 P15 e2
+53 | Systemy i urządzenia nawigacyjne | VII: W15 e1
+56 | Pomiary radiokomunikacyjne | VII: W10 L15 e1

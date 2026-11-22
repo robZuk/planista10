@@ -1,0 +1,450 @@
+{
+ "dr A. Kamedulska": {
+  "firstName": "Agnieszka",
+  "lastName": "Kamedulska",
+  "title": "dr",
+  "email": "a.kamedulska@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki"
+ },
+ "dr Agnieszka Kamedulska": {
+  "firstName": "Agnieszka",
+  "lastName": "Kamedulska",
+  "title": "dr",
+  "email": "a.kamedulska@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki"
+ },
+ "dr B. Kamedulski": {
+  "firstName": "Bartosz",
+  "lastName": "Kamedulski",
+  "title": "dr",
+  "email": "b.kamedulski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki"
+ },
+ "dr Bronisław Sułkowski": {
+  "firstName": "Bronisław",
+  "lastName": "Sulkowski",
+  "title": "dr",
+  "email": "b.sulkowski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki"
+ },
+ "dr T. Owczarek": {
+  "firstName": "Tomasz",
+  "lastName": "Owczarek",
+  "title": "dr",
+  "email": "t.owczarek@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki"
+ },
+ "dr T. Owczarek (od 18:00)": {
+  "firstName": "Tomasz",
+  "lastName": "Owczarek",
+  "title": "dr",
+  "email": "t.owczarek@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki"
+ },
+ "dr Tomasz Owczarek": {
+  "firstName": "Tomasz",
+  "lastName": "Owczarek",
+  "title": "dr",
+  "email": "t.owczarek@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki"
+ },
+ "dr hab. Ewa Ratajczak-Ropel": {
+  "firstName": "Ewa",
+  "lastName": "Ratajczak-Ropel",
+  "title": "dr hab.",
+  "email": "e.ratajczak-ropel@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "dr hab. Ewa Ratajczak-Ropel, prof. UMG": {
+  "firstName": "Ewa",
+  "lastName": "Ratajczak-Ropel",
+  "title": "dr hab.",
+  "email": "e.ratajczak-ropel@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "dr hab. T. Dzido": {
+  "firstName": "Tomasz",
+  "lastName": "Dzido",
+  "title": "dr hab.",
+  "email": "t.dzido@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki"
+ },
+ "dr hab. Tomasz Dzido, prof. UMG": {
+  "firstName": "Tomasz",
+  "lastName": "Dzido",
+  "title": "dr hab.",
+  "email": "t.dzido@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki"
+ },
+ "dr hab. inż. A. Lazarowska, prof. UMG": {
+  "firstName": "Agnieszka",
+  "lastName": "Lazarowska",
+  "title": "dr hab. inż.",
+  "email": "a.lazarowska@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Systemów Autonomicznych"
+ },
+ "dr hab. inż. Agnieszka Rybowska": {
+  "firstName": "Agnieszka",
+  "lastName": "Rybowska",
+  "title": "dr hab. inż.",
+  "email": "a.rybowska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "dr hab. inż. M. Majewski": {
+  "firstName": "Maciej",
+  "lastName": "Majewski",
+  "title": "dr hab. inż.",
+  "email": "m.majewski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "dr hab. inż. Maciej Majewski, prof. UMG": {
+  "firstName": "Maciej",
+  "lastName": "Majewski",
+  "title": "dr hab. inż.",
+  "email": "m.majewski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "dr inż. A. Skakovski": {
+  "firstName": "Aleksander",
+  "lastName": "Skakovski",
+  "title": "dr inż.",
+  "email": "a.skakovski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki"
+ },
+ "dr inż. A. Zacniewski": {
+  "firstName": "Artur",
+  "lastName": "Zacniewski",
+  "title": "dr inż.",
+  "email": "a.zacniewski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "dr inż. Aleksander Skakovski": {
+  "firstName": "Aleksander",
+  "lastName": "Skakovski",
+  "title": "dr inż.",
+  "email": "a.skakovski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki"
+ },
+ "dr inż. Arkadiusz Mirakowski": {
+  "firstName": "Arkadiusz",
+  "lastName": "Mirakowski",
+  "title": "dr inż.",
+  "email": "a.mirakowski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "dr inż. Artur Zacniewski": {
+  "firstName": "Artur",
+  "lastName": "Zacniewski",
+  "title": "dr inż.",
+  "email": "a.zacniewski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "dr inż. K. Falkowski": {
+  "firstName": "Karol",
+  "lastName": "Falkowski",
+  "title": "dr inż.",
+  "email": "k.falkowski@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Fizyki"
+ },
+ "dr inż. Karol Falkowski": {
+  "firstName": "Karol",
+  "lastName": "Falkowski",
+  "title": "dr inż.",
+  "email": "k.falkowski@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Fizyki"
+ },
+ "dr inż. M. Forkiewicz": {
+  "firstName": "Marcin",
+  "lastName": "Forkiewicz",
+  "title": "dr inż.",
+  "email": "m.forkiewicz@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "dr inż. M. Rybczak": {
+  "firstName": "Monika",
+  "lastName": "Rybczak",
+  "title": "dr inż.",
+  "email": "m.rybczak@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Systemów Autonomicznych"
+ },
+ "dr inż. M. Łącki": {
+  "firstName": "Mirosław",
+  "lastName": "Łącki",
+  "title": "dr inż.",
+  "email": "m.lacki@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Systemów Autonomicznych"
+ },
+ "dr inż. Marcin Forkiewicz": {
+  "firstName": "Marcin",
+  "lastName": "Forkiewicz",
+  "title": "dr inż.",
+  "email": "m.forkiewicz@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "dr inż. Mirosław Łącki": {
+  "firstName": "Mirosław",
+  "lastName": "Łącki",
+  "title": "dr inż.",
+  "email": "m.lacki@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Systemów Autonomicznych"
+ },
+ "dr inż. N. Żak": {
+  "firstName": "Natalia",
+  "lastName": "Żak",
+  "title": "dr inż.",
+  "email": "n.zak@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "dr inż. Natalia Żak": {
+  "firstName": "Natalia",
+  "lastName": "Żak",
+  "title": "dr inż.",
+  "email": "n.zak@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "dr inż. P. Ratuszniak": {
+  "firstName": "Piotr",
+  "lastName": "Ratuszniak",
+  "title": "dr inż.",
+  "email": "p.ratuszniak@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Systemów Autonomicznych"
+ },
+ "dr inż. Piotr Dryja": {
+  "firstName": "Piotr",
+  "lastName": "Dryja",
+  "title": "dr inż.",
+  "email": "p.dryja@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki"
+ },
+ "dr inż. Piotr Ratuszniak": {
+  "firstName": "Piotr",
+  "lastName": "Ratuszniak",
+  "title": "dr inż.",
+  "email": "p.ratuszniak@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Systemów Autonomicznych"
+ },
+ "dr inż. S. Witkowski": {
+  "firstName": "Stanisław",
+  "lastName": "Witkowski",
+  "title": "dr inż.",
+  "email": "s.witkowski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "dr inż. Stanisław Lindner": {
+  "firstName": "Stanisław",
+  "lastName": "Lindner",
+  "title": "dr inż",
+  "email": "s.lindner@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej"
+ },
+ "dr inż. Stanisław Witkowski": {
+  "firstName": "Stanisław",
+  "lastName": "Witkowski",
+  "title": "dr inż.",
+  "email": "s.witkowski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "dr inż. Tomasz Winnicki": {
+  "firstName": "Tomasz",
+  "lastName": "Winnicki",
+  "title": "dr inż.",
+  "email": "t.winnicki@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "dr inż. Ł. Apiecionek": {
+  "firstName": "Łukasz",
+  "lastName": "Apiecionek",
+  "title": "dr inż.",
+  "email": "l.apiecionek@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "dr inż. Łukasz Apiecionek": {
+  "firstName": "Łukasz",
+  "lastName": "Apiecionek",
+  "title": "dr inż.",
+  "email": "l.apiecionek@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "inż. Marcin Kończyk": {
+  "firstName": "Marcin",
+  "lastName": "Kończyk",
+  "title": "inż.",
+  "email": "m.konczyk@plan-wi.invalid",
+  "unit": null
+ },
+ "inż. Mateusz Rosiński": {
+  "firstName": "Mateusz",
+  "lastName": "Rosiński",
+  "title": "inż.",
+  "email": "m.rosinski@plan-wi.invalid",
+  "unit": null
+ },
+ "mgr A. Dumańska": {
+  "firstName": "Anna",
+  "lastName": "Dumańska",
+  "title": "mgr",
+  "email": "a.dumanska@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych"
+ },
+ "mgr Anna Dumańska": {
+  "firstName": "Anna",
+  "lastName": "Dumańska",
+  "title": "mgr",
+  "email": "a.dumanska@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych"
+ },
+ "mgr Diana Galińska": {
+  "firstName": "Diana",
+  "lastName": "Galińska",
+  "title": "mgr",
+  "email": "d.galinska@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych"
+ },
+ "mgr Katarzyna Gromadzka-Duszak": {
+  "firstName": "Katarzyna",
+  "lastName": "Gromadzka-Duszak",
+  "title": "mgr",
+  "email": "k.gromadzka@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych"
+ },
+ "mgr M. Domachowska-Fic": {
+  "firstName": "Malina",
+  "lastName": "Domachowska-Fic",
+  "title": "mgr",
+  "email": "m.fic@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych"
+ },
+ "mgr Maciej Godek": {
+  "firstName": "Maciej",
+  "lastName": "Godek",
+  "title": "mgr",
+  "email": "m.godek@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "mgr Malina Domachowska-Fic": {
+  "firstName": "Malina",
+  "lastName": "Domachowska-Fic",
+  "title": "mgr",
+  "email": "m.fic@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych"
+ },
+ "mgr Michał Palczewski": {
+  "firstName": "Michał",
+  "lastName": "Palczewski",
+  "title": "mgr",
+  "email": "m.palczewski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki"
+ },
+ "mgr P. Milewski": {
+  "firstName": "Piotr",
+  "lastName": "Milewski",
+  "title": "mgr",
+  "email": "p.milewski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "mgr P. Szyman": {
+  "firstName": "Paweł",
+  "lastName": "Szyman",
+  "title": "mgr",
+  "email": "p.szyman@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "mgr Paweł Szyman": {
+  "firstName": "Paweł",
+  "lastName": "Szyman",
+  "title": "mgr",
+  "email": "p.szyman@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "mgr Piotr Milewski": {
+  "firstName": "Piotr",
+  "lastName": "Milewski",
+  "title": "mgr",
+  "email": "p.milewski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "mgr inż. J. Łosiński": {
+  "firstName": "Juliusz",
+  "lastName": "Łosiński",
+  "title": "mgr inż.",
+  "email": "j.losinski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "mgr inż. Krystian Kozakiewicz": {
+  "firstName": "Krystian",
+  "lastName": "Kozakiewicz",
+  "title": "mgr inż.",
+  "email": "k.kozakiewicz@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Systemów Autonomicznych"
+ },
+ "mgr inż. M. Dampc": {
+  "firstName": "Mateusz",
+  "lastName": "Dampc",
+  "title": "mgr inż.",
+  "email": "m.dampc@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "mgr inż. Maciej Godek": {
+  "firstName": "Maciej",
+  "lastName": "Godek",
+  "title": "mgr",
+  "email": "m.godek@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "mgr inż. Mateusz Dampc": {
+  "firstName": "Mateusz",
+  "lastName": "Dampc",
+  "title": "mgr inż.",
+  "email": "m.dampc@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "mgr inż. Mateusz Miler": {
+  "firstName": "Mateusz",
+  "lastName": "Miler",
+  "title": "mgr inż.",
+  "email": "m.miler@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "mgr inż. Veronika Hordieieva": {
+  "firstName": "Veronika",
+  "lastName": "Hordieieva",
+  "title": "mgr inż.",
+  "email": "v.hordieieva@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki"
+ },
+ "mgr. P. Wolski": {
+  "firstName": "Paweł",
+  "lastName": "Wolski",
+  "title": "mgr",
+  "email": "p.wolski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki"
+ },
+ "prof. dr hab. inż. I. Czarnowski": {
+  "firstName": "Ireneusz",
+  "lastName": "Czarnowski",
+  "title": "prof. dr hab. inż.",
+  "email": "i.czarnowski@umg.edu.pl",
+  "unit": "Wydział Informatyki / Dziekan WI"
+ },
+ "prof. dr hab. inż. J. Lisowski": {
+  "firstName": "Józef",
+  "lastName": "Lisowski",
+  "title": "prof. dr hab. inż.",
+  "email": "j.lisowski@umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Systemów Autonomicznych"
+ },
+ "prof. dr hab. inż. Józef Lisowski": {
+  "firstName": "Józef",
+  "lastName": "Lisowski",
+  "title": "prof. dr hab. inż.",
+  "email": "j.lisowski@umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Systemów Autonomicznych"
+ },
+ "prof. dr hab. inż. Krzysztof Górecki": {
+  "firstName": "Krzysztof",
+  "lastName": "Górecki",
+  "title": "prof. dr hab. inż.",
+  "email": "k.gorecki@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki"
+ }
+}

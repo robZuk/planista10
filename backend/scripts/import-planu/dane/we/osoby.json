@@ -1,0 +1,1083 @@
+{
+ "dr Abotaleb": {
+  "lastName": "Abotaleb",
+  "firstName": "Mostafa",
+  "title": "mgr inż.",
+  "email": "m.abotaleb@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "dr Bargieł": {
+  "lastName": "Bargieł",
+  "firstName": "Kamil",
+  "title": "dr inż.",
+  "email": "k.bargiel@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroniki Morskiej",
+  "match": "jedna"
+ },
+ "dr Bisewski": {
+  "lastName": "Bisewski",
+  "firstName": "Damian",
+  "title": "dr inż.",
+  "email": "d.bisewski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroniki Morskiej",
+  "match": "jedna"
+ },
+ "dr Budnarowska": {
+  "lastName": "Budnarowska",
+  "firstName": "Magdalena",
+  "title": "dr inż.",
+  "email": "m.budnarowska@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki",
+  "match": "jedna"
+ },
+ "dr Ciszewski": {
+  "lastName": "Ciszewski",
+  "firstName": "Tomasz",
+  "title": "dr inż.",
+  "email": "t.ciszewski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "dr Citko": {
+  "lastName": "Citko",
+  "firstName": "Wiesław",
+  "title": "dr inż.",
+  "email": "w.citko@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "dr Dudojć": {
+  "lastName": "Dudojć",
+  "firstName": "Bolesław",
+  "title": "dr inż. of. elektr. okręt.",
+  "email": "keo@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "dr Dąbrowski": {
+  "lastName": "Dąbrowski",
+  "firstName": "Jacek",
+  "title": "dr inż.",
+  "email": "j.dabrowski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroniki Morskiej",
+  "match": "jedna"
+ },
+ "dr Górniak": {
+  "lastName": "Górniak",
+  "firstName": "Mariusz",
+  "title": "dr inż.",
+  "email": "m.gorniak@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "dr Hajduk": {
+  "lastName": "Hajduk",
+  "firstName": "Tomasz",
+  "title": "dr inż.",
+  "email": "t.hajduk@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Siłowni Okrętowych",
+  "match": "wybrana z 2"
+ },
+ "dr Hallmann": {
+  "lastName": "Hallmann",
+  "firstName": "Damian",
+  "title": "dr inż.",
+  "email": "d.hallmann@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "dr Kaczorek": {
+  "lastName": "Kaczorek",
+  "firstName": "Piotr",
+  "title": "dr inż.",
+  "email": "p.kaczorek@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "dr Kamiński": {
+  "lastName": "Kamiński",
+  "firstName": "Krzysztof",
+  "title": "dr inż.",
+  "email": "k.kaminski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "wybrana z 2"
+ },
+ "dr Kasprowicz": {
+  "lastName": "Kasprowicz",
+  "firstName": "Andrzej",
+  "title": "dr inż.",
+  "email": "a.kasprowicz@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "dr Korcz": {
+  "lastName": "Korcz",
+  "firstName": "Karol",
+  "title": "dr inż. oficer radioelektronik",
+  "email": "k.korcz@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "dr Kostyszyn": {
+  "lastName": "Kostyszyn",
+  "firstName": "Roman",
+  "title": "dr inż.",
+  "email": "r.kostyszyn@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "dr Krac": {
+  "lastName": "Krac",
+  "firstName": "Ewa",
+  "title": "dr inż.",
+  "email": "e.krac@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki",
+  "match": "jedna"
+ },
+ "dr Krakowski": {
+  "lastName": "Krakowski",
+  "firstName": "Rafał",
+  "title": "dr inż.",
+  "email": "r.krakowski@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Siłowni Okrętowych",
+  "match": "jedna"
+ },
+ "dr Kwiatuszewska": {
+  "lastName": "Kwiatuszewska-Sarnecka",
+  "firstName": "Bożena",
+  "title": "dr",
+  "email": "b.sarnecka@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki",
+  "match": "jedna"
+ },
+ "dr Kwiatuszewska-Sarnecka": {
+  "lastName": "Kwiatuszewska-Sarnecka",
+  "firstName": "Bożena",
+  "title": "dr",
+  "email": "b.sarnecka@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki",
+  "match": "jedna"
+ },
+ "dr Lindner": {
+  "lastName": "Lindner",
+  "firstName": "Stanisław",
+  "title": "dr inż",
+  "email": "s.lindner@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "dr Listewnik": {
+  "lastName": "Listewnik",
+  "firstName": "Karol",
+  "title": "dr inż.",
+  "email": "k.listewnik@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "dr Miller": {
+  "lastName": "Miller",
+  "firstName": "Anna",
+  "title": "dr inż.",
+  "email": "a.miller@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "dr Molenda": {
+  "lastName": "Molenda",
+  "firstName": "Justyna",
+  "title": "dr inż.",
+  "email": "j.molenda@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Materiałów Okrętowych i Technologii Remontów",
+  "match": "jedna"
+ },
+ "dr Muc": {
+  "lastName": "Muc",
+  "firstName": "Adam",
+  "title": "dr inż.",
+  "email": "prod.ksztalcenie@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "dr Nowak": {
+  "lastName": "Nowak",
+  "firstName": "Tomasz",
+  "title": "dr inż.",
+  "email": "t.nowak@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "wybrana z 4"
+ },
+ "dr Ogrodnik": {
+  "lastName": "Ogrodnik",
+  "firstName": "Monika",
+  "title": "mgr",
+  "email": "m.ogrodnik@au.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Nauki / Wydawnictwo UMG",
+  "match": "jedna"
+ },
+ "dr Patrzyk": {
+  "lastName": "Patrzyk",
+  "firstName": "Joanna",
+  "title": "dr inż.",
+  "email": "j.patrzyk@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroniki Morskiej",
+  "match": "jedna"
+ },
+ "dr Pałczyńska": {
+  "lastName": "Pałczyńska",
+  "firstName": "Beata",
+  "title": "dr inż.",
+  "email": "b.palczynska@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "dr Pepliński": {
+  "lastName": "Pepliński",
+  "firstName": "Marcin",
+  "title": "dr inż.",
+  "email": "m.peplinski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "dr Piechowski": {
+  "lastName": "Piechowski",
+  "firstName": "Leszek",
+  "title": "dr inż.",
+  "email": "l.piechowski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "dr Piłat": {
+  "lastName": "Piłat",
+  "firstName": "Andrzej",
+  "title": "dr inż.",
+  "email": "prod.student@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "dr Posobkiewicz": {
+  "lastName": "Posobkiewicz",
+  "firstName": "Krzysztof",
+  "title": "dr inż.",
+  "email": "k.posobkiewicz@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki",
+  "match": "jedna"
+ },
+ "dr Rabczuk": {
+  "lastName": "Rabczuk",
+  "firstName": "Dorota",
+  "title": "dr inż.",
+  "email": "d.rabczuk@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "wybrana z 2"
+ },
+ "dr Rak": {
+  "lastName": "Rak",
+  "firstName": "Andrzej",
+  "title": "dr inż.",
+  "email": "a.rak@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "dr Seghir": {
+  "lastName": "Seghir",
+  "firstName": "",
+  "title": "dr",
+  "email": null,
+  "unit": null,
+  "match": "brak"
+ },
+ "dr Spodarczyk": {
+  "lastName": "Spodarczyk",
+  "firstName": "Edyta",
+  "title": "dr",
+  "email": "e.spodarczyk@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii",
+  "match": "jedna"
+ },
+ "dr Strzelecka": {
+  "lastName": "Strzelecka",
+  "firstName": "Natalia",
+  "title": "dr inż.",
+  "email": "n.strzelecka@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "dr Studański": {
+  "lastName": "Studański",
+  "firstName": "Ryszard",
+  "title": "dr inż.",
+  "email": "r.studanski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki",
+  "match": "jedna"
+ },
+ "dr Stupak": {
+  "lastName": "Stupak",
+  "firstName": "Tadeusz",
+  "title": "dr hab. inż.",
+  "email": "t.stupak@wn.umg.edu.pl",
+  "unit": "Wydział Nawigacyjny / Katedra Nawigacji",
+  "match": "jedna"
+ },
+ "dr Sulkowski": {
+  "lastName": "Sulkowski",
+  "firstName": "Bronisław",
+  "title": "dr",
+  "email": "b.sulkowski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki",
+  "match": "jedna"
+ },
+ "dr Wieczorek": {
+  "lastName": "Wieczorek",
+  "firstName": "Agnieszka",
+  "title": "dr inż.",
+  "email": "a.wieczorek@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Siłowni Okrętowych",
+  "match": "jedna"
+ },
+ "dr Winnicki": {
+  "lastName": "Winnicki",
+  "firstName": "Tomasz",
+  "title": "dr inż.",
+  "email": "t.winnicki@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii",
+  "match": "jedna"
+ },
+ "dr Wysocki": {
+  "lastName": "Wysocki",
+  "firstName": "Jacek",
+  "title": "dr inż. st.of.mech.okręt.",
+  "email": "j.wysocki@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Siłowni Okrętowych",
+  "match": "wybrana z 2"
+ },
+ "dr Zacniewski": {
+  "lastName": "Zacniewski",
+  "firstName": "Artur",
+  "title": "dr inż.",
+  "email": "a.zacniewski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów",
+  "match": "jedna"
+ },
+ "dr Zakrzewska": {
+  "lastName": "Zakrzewska",
+  "firstName": "Renata",
+  "title": "dr",
+  "email": "r.zakrzewska@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki",
+  "match": "jedna"
+ },
+ "dr Łuksz": {
+  "lastName": "Łuksza",
+  "firstName": "Andrzej",
+  "title": "dr inż.",
+  "email": "a.luksza@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "wybrana z 2"
+ },
+ "dr Łuksza": {
+  "lastName": "Łuksza",
+  "firstName": "Andrzej",
+  "title": "dr inż.",
+  "email": "a.luksza@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "dr Żurek": {
+  "lastName": "Żurek",
+  "firstName": "Jerzy",
+  "title": "dr inż.",
+  "email": "j.zurek@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "drKasprowi": {
+  "lastName": "Kasprowicz",
+  "firstName": "Andrzej",
+  "title": "dr inż.",
+  "email": "a.kasprowicz@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "drKo": null,
+ "drMuc": {
+  "lastName": "Muc",
+  "firstName": "Adam",
+  "title": "dr inż.",
+  "email": "prod.ksztalcenie@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "drNo": {
+  "lastName": "Nowak",
+  "firstName": "Tomasz",
+  "title": "dr inż.",
+  "email": "t.nowak@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "wybrana z 4"
+ },
+ "drNow": {
+  "lastName": "Nowak",
+  "firstName": "Tomasz",
+  "title": "dr inż.",
+  "email": "t.nowak@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "wybrana z 4"
+ },
+ "drNowak": {
+  "lastName": "Nowak",
+  "firstName": "Tomasz",
+  "title": "dr inż.",
+  "email": "t.nowak@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "wybrana z 4"
+ },
+ "drPałczyńska": {
+  "lastName": "Pałczyńska",
+  "firstName": "Beata",
+  "title": "dr inż.",
+  "email": "b.palczynska@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "drRak": {
+  "lastName": "Rak",
+  "firstName": "Andrzej",
+  "title": "dr inż.",
+  "email": "a.rak@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "drSe": {
+  "lastName": "Seghir",
+  "firstName": "",
+  "title": "dr",
+  "email": null,
+  "unit": null,
+  "match": "brak"
+ },
+ "drSegh": {
+  "lastName": "Seghir",
+  "firstName": "",
+  "title": "dr",
+  "email": null,
+  "unit": null,
+  "match": "brak"
+ },
+ "drSeghir": {
+  "lastName": "Seghir",
+  "firstName": "",
+  "title": "dr",
+  "email": null,
+  "unit": null,
+  "match": "brak"
+ },
+ "drStrzelec": {
+  "lastName": "Strzelecka",
+  "firstName": "Natalia",
+  "title": "dr inż.",
+  "email": "n.strzelecka@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "mgr Alfuth": {
+  "lastName": "Alfuth",
+  "firstName": "Łukasz",
+  "title": "mgr inż.",
+  "email": "l.alfuth@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "mgr Behrendt": {
+  "lastName": "Behrendt",
+  "firstName": "Zbigniew",
+  "title": "mgr inż.",
+  "email": "z.behrendt@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "mgr Budziło": {
+  "lastName": "Budziłowicz",
+  "firstName": "Andrzej",
+  "title": "mgr inż.",
+  "email": "a.budzilowicz@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "wybrana z 2"
+ },
+ "mgr Budziłowicz": {
+  "lastName": "Budziłowicz",
+  "firstName": "Andrzej",
+  "title": "mgr inż.",
+  "email": "a.budzilowicz@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "mgr Dampc": {
+  "lastName": "Dampc",
+  "firstName": "Mateusz",
+  "title": "mgr inż.",
+  "email": "m.dampc@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji",
+  "match": "jedna"
+ },
+ "mgr Domachowska": {
+  "lastName": "Domachowska-Fic",
+  "firstName": "Malina",
+  "title": "mgr",
+  "email": "m.fic@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych",
+  "match": "jedna"
+ },
+ "mgr Dumańska": {
+  "lastName": "Dumańska",
+  "firstName": "Anna",
+  "title": "mgr",
+  "email": "a.dumanska@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych",
+  "match": "jedna"
+ },
+ "mgr Falkowski": {
+  "lastName": "Falkowski",
+  "firstName": "Filip",
+  "title": "mgr inż.",
+  "email": "f.falkowski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "wybrana z 2"
+ },
+ "mgr Gromadzka": {
+  "lastName": "Gromadzka-Duszak",
+  "firstName": "Katarzyna",
+  "title": "mgr",
+  "email": "k.gromadzka@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych",
+  "match": "jedna"
+ },
+ "mgr Gromadzka-Duszak": {
+  "lastName": "Gromadzka-Duszak",
+  "firstName": "Katarzyna",
+  "title": "mgr",
+  "email": "k.gromadzka@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych",
+  "match": "jedna"
+ },
+ "mgr Hordieieva": {
+  "lastName": "Hordieieva",
+  "firstName": "Veronika",
+  "title": "mgr inż.",
+  "email": "v.hordieieva@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki",
+  "match": "jedna"
+ },
+ "mgr Jakubczak": {
+  "lastName": "Jakubczak-Sapała",
+  "firstName": "Magdalena",
+  "title": "mgr",
+  "email": "m.jakubczak@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych",
+  "match": "jedna"
+ },
+ "mgr Januszewski": {
+  "lastName": "Januszewski",
+  "firstName": "Andrzej",
+  "title": "mgr inż.",
+  "email": "a.januszewski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "mgr Jażdżewski": {
+  "lastName": "Jażdżewski",
+  "firstName": "Witold",
+  "title": "mgr inż.",
+  "email": "w.jazdzewski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "mgr Kaczerski": {
+  "lastName": "Kaczerski",
+  "firstName": "",
+  "title": "mgr",
+  "email": null,
+  "unit": null,
+  "match": "brak"
+ },
+ "mgr Koznowski": {
+  "lastName": "Koznowski",
+  "firstName": "Wojciech",
+  "title": "mgr inż.",
+  "email": "w.koznowski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "mgr Kołakowska": {
+  "lastName": "Kołakowska",
+  "firstName": "Alicja",
+  "title": "mgr",
+  "email": "a.kolakowska@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych",
+  "match": "jedna"
+ },
+ "mgr Kryzel": {
+  "lastName": "Kryzel",
+  "firstName": "Anna",
+  "title": "mgr",
+  "email": "a.kryzel@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki",
+  "match": "jedna"
+ },
+ "mgr Kwella": {
+  "lastName": "Kwella",
+  "firstName": "Krzysztof",
+  "title": "mgr inż.",
+  "email": "k.kwella@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "mgr Malewska-Szymichowska": {
+  "lastName": "Malewska-Szymichowska",
+  "firstName": "Anna",
+  "title": "mgr",
+  "email": "a.malewska@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych",
+  "match": "jedna"
+ },
+ "mgr Marut": {
+  "lastName": "Marut",
+  "firstName": "Tomasz",
+  "title": "mgr inż.",
+  "email": "t.marut@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Siłowni Okrętowych",
+  "match": "jedna"
+ },
+ "mgr Miler": {
+  "lastName": "Miler",
+  "firstName": "Mateusz",
+  "title": "mgr inż.",
+  "email": "m.miler@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji",
+  "match": "jedna"
+ },
+ "mgr Milewski": {
+  "lastName": "Milewski",
+  "firstName": "Piotr",
+  "title": "mgr",
+  "email": "p.milewski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów",
+  "match": "jedna"
+ },
+ "mgr Popowniak": {
+  "lastName": "Popowniak",
+  "firstName": "Natalia",
+  "title": "mgr inż.",
+  "email": "n.popowniak@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "mgr Rabczuk": {
+  "lastName": "Rabczuk",
+  "firstName": "Wojciech",
+  "title": "mgr inż.",
+  "email": "w.rabczuk@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "wybrana z 2"
+ },
+ "mgr Sikora": {
+  "lastName": "Sikora",
+  "firstName": "Piotr",
+  "title": "mgr inż.",
+  "email": "p.sikora@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "mgr Szyman": {
+  "lastName": "Szyman",
+  "firstName": "Paweł",
+  "title": "mgr",
+  "email": "p.szyman@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji",
+  "match": "jedna"
+ },
+ "mgr Trzebiatowski": {
+  "lastName": "Trzebiatowski",
+  "firstName": "Adam",
+  "title": "mgr inż.",
+  "email": "a.trzebiatowski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "mgr Urbanowicz": {
+  "lastName": "Urbanowicz",
+  "firstName": "Andrzej",
+  "title": "mgr inż.",
+  "email": "a.urbanowicz@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki",
+  "match": "jedna"
+ },
+ "mgr Waraksa": {
+  "lastName": "Waraksa",
+  "firstName": "Marcin",
+  "title": "mgr inż.",
+  "email": "m.waraksa@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "mgr Winiarski": {
+  "lastName": "Winiarski",
+  "firstName": "",
+  "title": "mgr",
+  "email": null,
+  "unit": null,
+  "match": "brak"
+ },
+ "mgr Wnorowski": {
+  "lastName": "Wnorowski",
+  "firstName": "Jakub",
+  "title": "mgr inż.",
+  "email": "j.wnorowski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "mgr Wolski": {
+  "lastName": "Wolski",
+  "firstName": "Paweł",
+  "title": "mgr",
+  "email": "p.wolski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki",
+  "match": "jedna"
+ },
+ "mgr Wójcik": {
+  "lastName": "Wójcik",
+  "firstName": "Jacek",
+  "title": "mgr inż.",
+  "email": "j.wojcik@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "wybrana z 4"
+ },
+ "mgr Łatwis": {
+  "lastName": "Łatwis",
+  "firstName": "Łukasz",
+  "title": "mgr inż.",
+  "email": "l.latwis@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki",
+  "match": "jedna"
+ },
+ "mgr Łosiński": {
+  "lastName": "Łosiński",
+  "firstName": "Juliusz",
+  "title": "mgr inż.",
+  "email": "j.losinski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji",
+  "match": "jedna"
+ },
+ "mgr Świtalski": {
+  "lastName": "Świtalski",
+  "firstName": "Emilian",
+  "title": "mgr inż.",
+  "email": "e.switalski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki",
+  "match": "jedna"
+ },
+ "mgrAlf": {
+  "lastName": "Alfuth",
+  "firstName": "Łukasz",
+  "title": "mgr inż.",
+  "email": "l.alfuth@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "mgrJanuszewski": {
+  "lastName": "Januszewski",
+  "firstName": "Andrzej",
+  "title": "mgr inż.",
+  "email": "a.januszewski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "prof. Barbucha": {
+  "lastName": "Barbucha",
+  "firstName": "Dariusz",
+  "title": "dr hab.",
+  "email": "pror.n@umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki",
+  "match": "jedna"
+ },
+ "prof. Bogalecka": {
+  "lastName": "Bogalecka",
+  "firstName": "Magdalena",
+  "title": "dr hab.",
+  "email": "m.bogalecka@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Jakości Produktów Przemysłowych i Chemii",
+  "match": "jedna"
+ },
+ "prof. Borys": {
+  "lastName": "Borys",
+  "firstName": "Andrzej",
+  "title": "dr hab. inż.",
+  "email": "wektm@am.gdynia.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "prof. Charchalis": {
+  "lastName": "Charchalis",
+  "firstName": "Adam",
+  "title": "prof. dr hab.inż.",
+  "email": "a.charchalis@wm.am.gdynia.pl",
+  "unit": "Wydział Mechaniczny / Katedra Materiałów Okrętowych i Technologii Remontów",
+  "match": "jedna"
+ },
+ "prof. Detka": {
+  "lastName": "Detka",
+  "firstName": "Kalina",
+  "title": "dr hab. inż.",
+  "email": "prod.nauka@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki",
+  "match": "jedna"
+ },
+ "prof. Dudojć": {
+  "lastName": "Dudojć",
+  "firstName": "Bolesław",
+  "title": "dr inż. of. elektr. okręt.",
+  "email": "keo@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "prof. Dzido": {
+  "lastName": "Dzido",
+  "firstName": "Tomasz",
+  "title": "dr hab.",
+  "email": "t.dzido@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki",
+  "match": "jedna"
+ },
+ "prof. Giernalczyk": {
+  "lastName": "Giernalczyk",
+  "firstName": "Mariusz",
+  "title": "dr inż. st.of.mech.okręt.",
+  "email": "m.giernalczyk@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Siłowni Okrętowych",
+  "match": "jedna"
+ },
+ "prof. Gierusz": {
+  "lastName": "Gierusz",
+  "firstName": "Witold",
+  "title": "dr hab. inż.",
+  "email": "w.gierusz@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "prof. Gnaciński": {
+  "lastName": "Gnaciński",
+  "firstName": "Piotr",
+  "title": "prof. dr hab. inż.",
+  "email": "p.gnacinski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "prof. Górecki": {
+  "lastName": "Górecki",
+  "firstName": "Krzysztof",
+  "title": "prof. dr hab. inż.",
+  "email": "k.gorecki@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki",
+  "match": "wybrana z 2"
+ },
+ "prof. Herdzik": {
+  "lastName": "Herdzik",
+  "firstName": "Jerzy",
+  "title": "dr hab.inż. st.of.mech.okręt.",
+  "email": "j.herdzik@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Siłowni Okrętowych",
+  "match": "wybrana z 2"
+ },
+ "prof. Iwaszkiewicz": {
+  "lastName": "Iwaszkiewicz",
+  "firstName": "Jan",
+  "title": "dr hab.inż.",
+  "email": "j.iwaszkiewicz@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "prof. Jankowski": {
+  "lastName": "Jankowski",
+  "firstName": "Piotr",
+  "title": "dr hab. inż.",
+  "email": "p.jankowski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Dziekan WE",
+  "match": "jedna"
+ },
+ "prof. Kitliński": {
+  "lastName": "Kitliński",
+  "firstName": "Marek",
+  "title": "dr hab. inż.",
+  "email": "m.kitlinski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroniki Morskiej",
+  "match": "jedna"
+ },
+ "prof. Korcz": {
+  "lastName": "Korcz",
+  "firstName": "Karol",
+  "title": "dr inż. oficer radioelektronik",
+  "email": "k.korcz@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "prof. Maśnicki": {
+  "lastName": "Maśnicki",
+  "firstName": "Romuald",
+  "title": "dr hab. inż.",
+  "email": "r.masnicki@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "prof. Mindykowski": {
+  "lastName": "Mindykowski",
+  "firstName": "Janusz",
+  "title": "prof.dr hab.inż.",
+  "email": "keo@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "prof. Mizeraczyk": {
+  "lastName": "Mizeraczyk",
+  "firstName": "Jerzy",
+  "title": "prof. dr hab. inż.",
+  "email": "j.mizeraczyk@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki",
+  "match": "jedna"
+ },
+ "prof. Mysiak": {
+  "lastName": "Mysiak",
+  "firstName": "Piotr",
+  "title": "dr hab inż.",
+  "email": "p.mysiak@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "prof. Otremba": {
+  "lastName": "Otremba",
+  "firstName": "Zbigniew",
+  "title": "dr hab.",
+  "email": "z.otremba@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Fizyki",
+  "match": "jedna"
+ },
+ "prof. Ptak": {
+  "lastName": "Ptak",
+  "firstName": "Przemysław",
+  "title": "dr hab. inż.",
+  "email": "p.ptak@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Energoelektroniki",
+  "match": "jedna"
+ },
+ "prof. Ratajczak-Ropel": {
+  "lastName": "Ratajczak-Ropel",
+  "firstName": "Ewa",
+  "title": "dr hab.",
+  "email": "e.ratajczak-ropel@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów",
+  "match": "jedna"
+ },
+ "prof. Rybarczyk": {
+  "lastName": "Rybarczyk",
+  "firstName": "Agnieszka",
+  "title": "dr hab. inż.",
+  "email": "a.rybarczyk@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "prof. Sieńko": {
+  "lastName": "Sieńko",
+  "firstName": "Wiesław",
+  "title": "dr hab. inż.",
+  "email": "w.sienko@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "prof. Stateczny": {
+  "lastName": "Stateczny",
+  "firstName": "Andrzej",
+  "title": "prof. dr hab. inż.",
+  "email": "a.stateczny@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Systemów Autonomicznych",
+  "match": "jedna"
+ },
+ "prof. Strzelecki": {
+  "lastName": "Strzelecki",
+  "firstName": "Ryszard",
+  "title": "prof. dr hab. inż.",
+  "email": "r.strzelecki@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "prof. Stupak": {
+  "lastName": "Stupak",
+  "firstName": "Tadeusz",
+  "title": "dr hab. inż.",
+  "email": "t.stupak@wn.umg.edu.pl",
+  "unit": "Wydział Nawigacyjny / Katedra Nawigacji",
+  "match": "jedna"
+ },
+ "prof. Tarasiuk": {
+  "lastName": "Tarasiuk",
+  "firstName": "Tomasz",
+  "title": "prof. dr hab. inż.",
+  "email": "pror.w@umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "prof. Tomera": {
+  "lastName": "Tomera",
+  "firstName": "Mirosław",
+  "title": "dr hab. inż.",
+  "email": "m.tomera@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Automatyki Okrętowej i Przemysłowej",
+  "match": "jedna"
+ },
+ "prof. Zarębski": {
+  "lastName": "Zarębski",
+  "firstName": "Janusz",
+  "title": "prof. dr hab. inż.",
+  "email": "j.zarebski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroniki Morskiej",
+  "match": "jedna"
+ },
+ "prof. Łebkowski": {
+  "lastName": "Łebkowski",
+  "firstName": "Andrzej",
+  "title": "dr hab. inż.",
+  "email": "a.lebkowski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra OZE i Elektromobilności",
+  "match": "jedna"
+ },
+ "prof.Borys": {
+  "lastName": "Borys",
+  "firstName": "Andrzej",
+  "title": "dr hab. inż.",
+  "email": "wektm@am.gdynia.pl",
+  "unit": "Wydział Elektryczny / Zakład Telekomunikacji Morskiej",
+  "match": "jedna"
+ },
+ "prof.Dudojć": {
+  "lastName": "Dudojć",
+  "firstName": "Bolesław",
+  "title": "dr inż. of. elektr. okręt.",
+  "email": "keo@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Katedra Elektroenergetyki Okrętowej",
+  "match": "jedna"
+ },
+ "prof.Giernalc": {
+  "lastName": "Giernalczyk",
+  "firstName": "Mariusz",
+  "title": "dr inż. st.of.mech.okręt.",
+  "email": "m.giernalczyk@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Siłowni Okrętowych",
+  "match": "wybrana z 2"
+ },
+ "prof.Jank": {
+  "lastName": "Jankowski",
+  "firstName": "Piotr",
+  "title": "dr hab. inż.",
+  "email": "p.jankowski@we.umg.edu.pl",
+  "unit": "Wydział Elektryczny / Dziekan WE",
+  "match": "jedna"
+ }
+}

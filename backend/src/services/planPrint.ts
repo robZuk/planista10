@@ -2,11 +2,11 @@ import type { AcademicTerm, Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { mondayOf, toIsoDate, type IsoDate } from '../lib/isoDate';
-import { isActiveIn, pathFromRoot, ROOT, SPEC } from '../lib/groupTree';
+import { ROOT } from '../lib/groupTree';
 import { materialize } from '../lib/materializer';
 import { termLabel } from '../lib/terms';
 import { semesterWeekOf } from '../lib/teachingCalendar';
-import type { WeekdayName } from '../lib/timeGrid';
+import { toMinutes, type WeekdayName } from '../lib/timeGrid';
 import {
   dateColumns,
   datesBetween,
@@ -19,18 +19,34 @@ import {
   type PrintEntry,
   type PrintPage,
 } from '../lib/planPrint';
+import {
+  DAY_SHEET,
+  DAY_SHORT,
+  frameNotes,
+  layoutDay,
+  roman,
+  rowLabel,
+  sheetColumns,
+  sheetDate,
+  trimRows,
+  updatedStamp,
+  type SheetDay,
+  type SheetDocument,
+  type SheetItem,
+  type SheetRow,
+} from '../lib/planSheet';
 import { loadScope, type Scope } from './plan';
-import { cohortLabel } from './cohorts';
+import { studyYearOf } from './cohorts';
 import type { CohortContext } from './sections';
 
 /**
- * Druk planu (PDF) rocznika (strony na grupy wykladowe albo wybrana grupa), prowadzacego albo sali.
+ * Druk planu (PDF).
  *
- * - Kalendarz tygodniowy (studia stacjonarne): jedna strona — plan tygodnia z wzorca
- *   (umieszczenia z rytmem: co tydzien, parzyste, od–do tygodnia).
- * - Kalendarz zjazdow (niestacjonarne): strona na zjazd z datami — to, co dalo by „Generuj
- *   terminy” z obecnego wzorca (materializer: limit godzin, przeniesienia) plus terminy reczne.
- *   Prowadzacy i sala maja zajecia z roznych kalendarzy, wiec ich strony ida po tygodniach.
+ * - Rocznik — arkusz dla studentow w ukladzie arkuszy WM (lib/planSheet, lib/planSheetPdf):
+ *   stacjonarne — plan tygodnia z wzorca (umieszczenia), niestacjonarne — dni zjazdow z datami:
+ *   to, co dalo by „Generuj terminy” z obecnego wzorca (materializer) plus terminy reczne.
+ * - Prowadzacy i sala — plan na osi czasu (lib/planPrint, lib/planPdf): plan tygodnia stacjonarnych
+ *   i strony po tygodniach z datami (zajecia z roznych kalendarzy).
  * Plan pokazuje stan wzorca, takze gdy terminow jeszcze nie wygenerowano.
  */
 
@@ -207,9 +223,12 @@ function weekPages(heading: string, dated: DateSlot[], describe: (s: DateSlot) =
     });
 }
 
-export async function planPrint(term: AcademicTerm, subject: PrintSubject): Promise<PrintDocument> {
+/** Wydruk: arkusz dla studentow (rocznik) albo plan na osi czasu (prowadzacy, sala). */
+export type PlanPrint = { kind: 'sheet'; document: SheetDocument } | { kind: 'timeline'; document: PrintDocument };
+
+export async function planPrint(term: AcademicTerm, subject: PrintSubject): Promise<PlanPrint> {
   const termName = termLabel(term);
-  if (subject.kind === 'cohort') return cohortPrint(term, termName, subject.cohortId, subject.groupId ?? null);
+  if (subject.kind === 'cohort') return { kind: 'sheet', document: await sheetPrint(term, termName, subject.cohortId, subject.groupId ?? null) };
 
   const isRoom = subject.kind === 'room';
   const touch: Prisma.PlacementWhereInput = isRoom
@@ -248,99 +267,172 @@ export async function planPrint(term: AcademicTerm, subject: PrintSubject): Prom
   }
   pages.push(...weekPages(heading, dates, describe, (range) => `Studia niestacjonarne — zajęcia ${range}`));
   if (pages.length === 0) pages.push({ heading, subheading: '', columns: [], entries: [], emptyText: 'Brak zajęć w tym semestrze.' });
-  return { title: `${heading} — plan zajęć ${termName}`, termLabel: termName, pages };
+  return { kind: 'timeline', document: { title: `${heading} — plan zajęć ${termName}`, termLabel: termName, pages } };
 }
 
-/** Grupa jest przodkiem drugiej, potomkiem albo ta sama (sciezki od korzenia — jedna przedrostkiem drugiej). */
-function sameLine(a: string, b: string, ctx: CohortContext): boolean {
-  const pa = pathFromRoot(a, ctx.index).map((g) => g.id);
-  const pb = pathFromRoot(b, ctx.index).map((g) => g.id);
-  const n = Math.min(pa.length, pb.length);
-  return pa.slice(0, n).every((id, i) => id === pb[i]);
-}
+/** Liczebnosc rocznika (grupa ROOT) — kolejnosc rocznikow na arkuszu: najwieksze z lewej. */
+const cohortSize = (ctx: CohortContext) => ctx.cohort.groups.find((g) => g.partitionKey === ROOT)?.size ?? 0;
 
 /**
- * Grupy, dla ktorych drukujemy osobne strony: najglebsze grupy wykladowe (rocznik albo
- * specjalnosci) aktywne w semestrze — plan wywieszany dla studentow. Cwiczenia i laboratoria
- * grup podrzednych stoja obok siebie w torach. Wybrana grupa — tylko ona.
+ * Arkusz planu dla studentow (uklad arkuszy WM — lib/planSheet): roczniki wydzialu w tym samym
+ * trybie i stopniu; stacjonarne — tylko ten sam semestr programu (arkusz "1 rok - I sem."),
+ * niestacjonarne — wszystkie lata razem, wiersze na kazdy dzien zjazdow. Rocznik wybrany jest na
+ * arkuszu zawsze, pozostale — gdy maja cos w planie. Filtr grupy: tylko ten rocznik i kolumny grupy.
  */
-function printUnits(ctx: CohortContext, groupId: string | null): string[] {
-  if (groupId) return [groupId];
-  const lecture = [...ctx.index.values()].filter((g) => isActiveIn(g, ctx.semester) && (g.partitionKey === ROOT || g.partitionKey === SPEC));
-  const deepest = lecture.filter((g) => !lecture.some((o) => o.id !== g.id && sameLine(o.id, g.id, ctx) && pathFromRoot(o.id, ctx.index).length > pathFromRoot(g.id, ctx.index).length));
-  return deepest.map((g) => g.id).sort((a, b) => ctx.nameOf(a).localeCompare(ctx.nameOf(b)));
-}
+async function sheetPrint(term: AcademicTerm, termName: string, cohortId: string, groupId: string | null): Promise<SheetDocument> {
+  const cohort = await prisma.cohort.findUnique({ where: { id: cohortId }, include: { program: { include: { fieldOfStudy: true } } } });
+  if (!cohort) throw new AppError(404, 'Rocznik nie znaleziony');
+  const program = cohort.program;
+  const mode = program.studyMode;
+  const fullTime = mode === 'FULL_TIME';
+  const scope = await loadScope(term, program.fieldOfStudy.facultyId);
+  const selected = scope.contexts.find((c) => c.cohort.id === cohortId);
+  if (!selected) throw new AppError(404, 'Rocznik nie ma zajec w tym semestrze');
+  if (!scope.calendars.has(cohortId)) throw new AppError(409, 'Rocznik nie ma kalendarza w tym semestrze');
+  if (groupId && !selected.index.has(groupId)) throw new AppError(400, 'Grupa nie nalezy do rocznika');
+  const grids = scope.grids.get(cohortId)!;
 
-async function cohortPrint(term: AcademicTerm, termName: string, cohortId: string, groupId: string | null): Promise<PrintDocument> {
-  const collected = await collect(term, { cohortId });
-  // Rocznik bez zajec nie trafil do zakresu zbieranych zajec — wczytujemy go wprost.
-  const scope = collected.scope.contexts.length > 0 ? collected.scope : await loadScope(term, null, [cohortId]);
-  const ctx = scope.contexts[0];
-  if (!ctx) throw new AppError(404, 'Rocznik nie ma zajec w tym semestrze');
-  const calendar = scope.calendars.get(cohortId);
-  if (!calendar) throw new AppError(409, 'Rocznik nie ma kalendarza w tym semestrze');
-  if (groupId && !ctx.index.has(groupId)) throw new AppError(400, 'Grupa nie nalezy do rocznika');
+  const candidates = groupId
+    ? [selected]
+    : scope.contexts.filter(
+        (c) =>
+          scope.calendars.has(c.cohort.id) &&
+          c.cohort.program.studyMode === mode &&
+          c.cohort.program.degreeLevel === program.degreeLevel &&
+          (!fullTime || c.semester === selected.semester),
+      );
+  const { weekly, dated } = await collect(term, { cohortId: { in: candidates.map((c) => c.cohort.id) } });
+  const slots: Slot[] = [...weekly, ...dated];
+  const planned = new Set(slots.map((s) => s.ctx.cohort.id));
+  const cohorts = candidates
+    .filter((c) => c.cohort.id === cohortId || planned.has(c.cohort.id))
+    .sort(
+      (a, b) =>
+        (fullTime ? 0 : a.semester - b.semester) ||
+        cohortSize(b) - cohortSize(a) ||
+        a.cohort.program.fieldOfStudy.shortName.localeCompare(b.cohort.program.fieldOfStudy.shortName),
+    );
+  const onSheet = new Set(cohorts.map((c) => c.cohort.id));
 
-  const program = ctx.cohort.program;
-  const mode = program.studyMode === 'PART_TIME' ? 'studia niestacjonarne' : 'studia stacjonarne';
-  const about = `${program.fieldOfStudy.name}, ${mode} — ${cohortLabel(ctx.cohort)}`;
-  const base = `${program.code} · semestr ${ctx.semester}`;
-  const names = await namesOf([...collected.weekly, ...collected.dated]);
-  const describe = (s: Slot): Line[] => [names.room(s.roomId), joinLines(groupOf(s), names.instructor(s.instructorId))];
-  const units = printUnits(ctx, groupId);
-  const pages: PrintPage[] = [];
-
-  for (const unit of units) {
-    // Plan grupy: jej zajecia, grup nadrzednych (wyklad rocznika) i jej podgrup (cwiczenia, laboratoria).
-    const inUnit = (s: Slot) => sameLine(s.section.groupId, unit, ctx);
-    const week = collected.weekly.filter(inUnit);
-    const dates = collected.dated.filter(inUnit);
-    const unitRoot = ctx.index.get(unit)?.partitionKey === ROOT;
-    const heading = unitRoot && !groupId ? base : `${base} · ${ctx.nameOf(unit)}`;
-
-    if (calendar.kind !== 'ZJAZD') {
-      if (week.length === 0 && units.length > 1) continue;
-      const days = scope.grids.get(cohortId)?.days.map((d) => d.day) ?? [];
-      pages.push({
-        heading,
-        subheading: `${about}. Plan tygodnia ${fullDate(toIsoDate(calendar.startDate))}–${fullDate(toIsoDate(calendar.endDate))} — zajęcia co tydzień, chyba że opisano inaczej; dni wolne wg kalendarza roku akademickiego.`,
-        columns: weekdayColumns([...days, ...week.map((s) => s.day)]),
-        entries: week.map((s) => toEntry(s, s.day, [...describe(s), s.pattern])),
-        emptyText: 'Brak ułożonych zajęć.',
-      });
-      continue;
-    }
-
-    // Zjazdy: strona na zjazd; kolumny — dni zjazdu, w ktore wydzial ma zajecia tego trybu.
-    const modeDays = new Set<string>(scope.grids.get(cohortId)?.days.map((d) => d.day) ?? []);
-    const teaching = scope.teaching.get(cohortId);
-    const start = toIsoDate(calendar.startDate);
-    const zjazdPages = [...calendar.zjazdy]
-      .sort((a, b) => a.number - b.number)
-      .map((z) => {
-        const from = toIsoDate(z.startDate);
-        const to = toIsoDate(z.endDate);
-        const slots = dates.filter((s) => s.date >= from && s.date <= to);
-        const days = datesBetween(from, to).filter((d) => modeDays.size === 0 || modeDays.has(weekdayName(d)) || slots.some((s) => s.date === d));
-        return {
-          heading,
-          subheading: `${about}. Zjazd tydz. ${semesterWeekOf(from, start)}: ${shortDate(from)}–${fullDate(to)}`,
-          // Swieto, przerwa albo dzien wolny w zjezdzie — opis w kolumnie (pusta kolumna wygladalaby na blad).
-          columns: dateColumns(days).map((c) => {
-            const info = teaching?.dayInfo(c.key);
-            const off = info && !info.teaching && ['HOLIDAY', 'BREAK', 'DAY_OFF'].includes(info.reason ?? '');
-            return off && !slots.some((s) => s.date === c.key) ? { ...c, closed: info.label ?? 'bez zajęć' } : c;
-          }),
-          entries: slots.map((s) => toEntry(s, s.date, describe(s))),
-        };
-      })
-      .filter((p) => p.entries.length > 0);
-    pages.push(...zjazdPages);
-    // Terminy poza zjazdami (np. termin reczny w innym dniu) — po tygodniach na koncu grupy.
-    const outside = dates.filter((s) => !calendar.zjazdy.some((z) => s.date >= toIsoDate(z.startDate) && s.date <= toIsoDate(z.endDate)));
-    pages.push(...weekPages(heading, outside, describe, (range) => `${about}. Zajęcia poza zjazdami: ${range}`));
+  // Kilka programow jednego kierunku na arkuszu (MIBM-S1 i ESO-S1 to oba "MiBM") — program, ktorego
+  // kod nie jest skrotem kierunku, podpisujemy przedrostkiem kodu ("ESO").
+  const programsOf = new Map<string, Set<string>>();
+  for (const c of cohorts) {
+    const short = c.cohort.program.fieldOfStudy.shortName;
+    programsOf.set(short, (programsOf.get(short) ?? new Set()).add(c.cohort.program.id));
   }
-  if (pages.length === 0) pages.push({ heading: base, subheading: about, columns: [], entries: [], emptyText: 'Brak ułożonych zajęć.' });
-  const title = `${base}${groupId ? ` · ${ctx.nameOf(groupId)}` : ''} — plan zajęć ${termName}`;
-  return { title, termLabel: termName, pages };
+  const shortName = (c: CohortContext) => {
+    const field = c.cohort.program.fieldOfStudy.shortName;
+    const prefix = c.cohort.program.code.split('-')[0] ?? field;
+    return (programsOf.get(field)?.size ?? 0) > 1 && prefix.toLowerCase() !== field.toLowerCase() ? prefix : field;
+  };
+
+  const columns = sheetColumns(
+    cohorts.map((c) => {
+      const field = c.cohort.program.fieldOfStudy;
+      return {
+        id: c.cohort.id,
+        band: fullTime ? shortName(c) : `${studyYearOf(c.semester)} rok/${c.semester} sem.`,
+        fieldShort: shortName(c),
+        semester: c.semester,
+        index: c.index,
+        specShort: (id: string | null | undefined) => field.specializations.find((s) => s.id === id)?.shortName ?? null,
+        onlyGroupId: groupId,
+      };
+    }),
+    mode,
+  );
+
+  // Sala sam numer (on-line — bez sali), prowadzacy samo nazwisko (NN — puste).
+  const mine = slots.filter((s) => onSheet.has(s.ctx.cohort.id));
+  const roomIds = [...new Set(mine.flatMap((s) => (s.roomId ? [s.roomId] : [])))];
+  const personIds = [...new Set(mine.flatMap((s) => (s.instructorId ? [s.instructorId] : [])))];
+  const [rooms, people] = await Promise.all([
+    prisma.room.findMany({ where: { id: { in: roomIds } }, select: { id: true, number: true } }),
+    prisma.instructor.findMany({ where: { id: { in: personIds } }, select: { id: true, lastName: true } }),
+  ]);
+  const roomOf = new Map(rooms.map((r) => [r.id, r.number]));
+  const personOf = new Map(people.map((p) => [p.id, p.lastName]));
+  const toItem = (s: Slot, pattern: string): SheetItem => ({
+    id: s.id,
+    cohortId: s.ctx.cohort.id,
+    groupId: s.section.groupId,
+    startMinute: s.startMinute,
+    endMinute: s.endMinute,
+    subject: s.section.programEntry.subject.name,
+    classType: s.section.classType,
+    room: s.roomId ? (roomOf.get(s.roomId) ?? '?') : '',
+    person: s.instructorId ? (personOf.get(s.instructorId) ?? '') : '',
+    pattern,
+  });
+
+  // Wiersze dnia: bloki siatki obowiazujacej w tym dniu, w oknie godzin dnia zajec.
+  const window = new Map(grids.days.map((d) => [d.day, d]));
+  const rowsOf = (day: WeekdayName): SheetRow[] => {
+    const w = window.get(day);
+    const from = w?.from ? toMinutes(w.from) : 0;
+    const to = w?.to ? toMinutes(w.to) : 24 * 60;
+    return grids
+      .forDay(day)
+      .time.blocks.map((b) => ({ startMinute: toMinutes(b.startTime), endMinute: toMinutes(b.endTime) }))
+      .filter((b) => b.startMinute >= from && b.endMinute <= to)
+      .map((b) => ({ ...b, label: rowLabel(b.startMinute, mode) }));
+  };
+
+  const days: SheetDay[] = [];
+  if (fullTime) {
+    const items = weekly.filter((s) => onSheet.has(s.ctx.cohort.id)).map((s) => ({ day: s.day, item: toItem(s, s.pattern) }));
+    const fallback = items.length > 0
+      ? { from: Math.min(...items.map((i) => i.item.startMinute)), to: Math.max(...items.map((i) => i.item.endMinute)) }
+      : undefined;
+    const weekdays = weekdayColumns([...grids.days.map((d) => d.day), ...items.map((i) => i.day)]).map((c) => c.key as WeekdayName);
+    for (const day of weekdays) {
+      const dayItems = items.filter((i) => i.day === day).map((i) => i.item);
+      const rows = trimRows(rowsOf(day), dayItems, fallback);
+      days.push({ key: day, label: DAY_SHORT[day] ?? day, rows, greyIdle: false, layout: layoutDay(columns, rows, dayItems) });
+    }
+  } else {
+    const items = dated.filter((s) => onSheet.has(s.ctx.cohort.id)).map((s) => ({ date: s.date, item: toItem(s, '') }));
+    const modeDays = new Set<string>(grids.days.map((d) => d.day));
+    const dates = new Set<IsoDate>(items.map((i) => i.date));
+    for (const c of cohorts) {
+      for (const z of scope.calendars.get(c.cohort.id)?.zjazdy ?? []) {
+        for (const d of datesBetween(toIsoDate(z.startDate), toIsoDate(z.endDate))) if (modeDays.has(weekdayName(d))) dates.add(d);
+      }
+    }
+    const start = toIsoDate(scope.calendars.get(cohortId)!.startDate);
+    for (const date of [...dates].sort()) {
+      const dayItems = items.filter((i) => i.date === date).map((i) => i.item);
+      const infos = cohorts.map((c) => scope.teaching.get(c.cohort.id)?.dayInfo(date));
+      const closed = dayItems.length === 0 && !infos.some((i) => i?.teaching) ? (infos.find((i) => i?.label)?.label ?? 'bez zajęć') : undefined;
+      const rows = closed ? [] : rowsOf(weekdayName(date));
+      days.push({
+        key: date,
+        label: DAY_SHEET[weekdayName(date)] ?? date,
+        sublabel: sheetDate(date),
+        week: `tydz: ${semesterWeekOf(date, start)}`,
+        rows,
+        closed,
+        greyIdle: true,
+        layout: layoutDay(columns, rows, dayItems),
+      });
+    }
+  }
+
+  const degree = program.degreeLevel === 'MASTER' ? 2 : 1;
+  const base = fullTime
+    ? `${studyYearOf(selected.semester)} rok - ${roman(selected.semester)} sem. - studia ${degree} stopnia - stacjonarne`
+    : `Studia ${degree} stopnia - niestacjonarne`;
+  const title = groupId ? `${base} - ${program.code} ${selected.nameOf(groupId)}` : base;
+  const changed = mine.flatMap((s) => s.section.placements.map((p) => p.updatedAt.getTime()));
+  return {
+    title,
+    updated: updatedStamp(changed.length > 0 ? new Date(Math.max(...changed)) : new Date()),
+    termLabel: termName,
+    mode,
+    headLabels: fullTime ? ['specjalność', 'grupa'] : ['rok', 'grupa'],
+    columns,
+    days,
+    notes: frameNotes(columns, days),
+  };
 }

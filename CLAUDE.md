@@ -108,7 +108,8 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   - `occurrenceDiff.ts` — diff „Generuj terminy”: terminy z wzorca zachowują id (aktualizacja w miejscu)
   - `occurrenceSlot.ts` — ocena nowego miejsca terminu (blokada poza semestrem, ostrzeżenia do potwierdzenia)
   - `externalBusy.ts` — zajętości zewnętrzne (zajęcia innych wydziałów ze zgłoszeń): sloty bez grupy do kolizji, walidacja, kolizje wpisu z planem
-  - `planPrint.ts` — druk planu: model stron (kolumny dni/dat, kafelki w minutach), tory zajęć równoległych, rytm, nazwa pliku; `planPdf.ts` — rysowanie PDF (pdfkit, A4 poziomo, czcionka DejaVu z polskimi znakami)
+  - `planPrint.ts` — druk planu prowadzącego i sali: model stron (kolumny dni/dat, kafelki w minutach), tory zajęć równoległych, rytm, nazwa pliku; `planPdf.ts` — rysowanie PDF (pdfkit, A4 poziomo, czcionki z `pdfFonts.ts` — DejaVu z polskimi znakami)
+  - `planSheet.ts` — arkusz planu dla studentów (układ arkuszy WM): kolumny z liści drzewa grup, dzień × bloki, scalanie poziome, ramki zajęć nie co tydzień, skróty nazw przedmiotów i kolory; `planSheetPdf.ts` — rysowanie arkusza
 - `src/middleware/authenticate.ts` — weryfikacja JWT; role w enumie `Role`
 - `prisma/schema.prisma` — źródło prawdy o modelu danych (opis: `docs/model-danych.md`)
 
@@ -177,13 +178,19 @@ Weryfikacja zmian UI wciąż idzie przez uruchomienie aplikacji (skill `/verify`
   strona „Zajętości zewnętrzne”): prowadzący i/lub sala, minuty i konkretne daty ze zgłoszeń
   mailowych. Liczą się tylko do kolizji (dokłada je `termOccupancy`; `BusySlot.groupId = null`), nie
   są zajęciami ani obciążeniem. Wpis kolidujący z ułożonym planem się zapisuje — lista pokazuje kolizje.
-- **Druk planu (PDF)** — `GET /api/terms/:key/plan/pdf` (`services/planPrint`): rocznik (strona na każdą
-  grupę wykładową — rocznik albo specjalność — z jej ćwiczeniami i laboratoriami; albo wybrana grupa),
-  prowadzący, sala. Stacjonarne: plan tygodnia z wzorca (rytm przy zajęciach, gdy nie co tydzień);
-  niestacjonarne: strona na zjazd z datami — to, co dałoby „Generuj terminy” z obecnego wzorca
-  (materializer) + terminy ręczne, święta i dni wolne opisane w kolumnie; prowadzący i sala — strony po tygodniach. W wąskim kafelku sala bez budynku i prowadzący z inicjałem (bez tytułu). Przyciski: Układanie
-  planu (rocznik / filtr grupy), Prowadzący, Budynki i sale (semestr ostatnio używany) — otwierają
-  podgląd w oknie aplikacji (`PlanPdfDialog`), z którego plik się pobiera albo drukuje.
+- **Druk planu (PDF)** — `GET /api/terms/:key/plan/pdf` (`services/planPrint`).
+  **Rocznik = arkusz dla studentów w układzie arkuszy WM** (`~/Desktop/plany`: sd_r1–r4, week; `lib/planSheet`):
+  stacjonarne — A4 pionowo, rok studiów i stopień ze wszystkimi kierunkami wydziału obok siebie (te same tryb,
+  stopień i semestr programu), wiersze dzień × blok, komórka „skrót przedmiotu forma / sala / nazwisko”, kolor wg
+  przedmiotu, zajęcia nie co tydzień w czerwonej ramce z przekątnymi + przypis z rytmem; niestacjonarne — A4
+  poziomo, wszystkie lata stopnia, wiersze na każdy dzień zjazdów („tydz: N”, data) z tym, co dałoby „Generuj
+  terminy” (materializer) + terminy ręczne, kolumna bez zajęć w dniu szara. Inne roczniki trafiają na arkusz, gdy
+  mają coś w planie; filtr grupy — tylko wybrany rocznik i kolumny grupy. Skróty nazw liczone przy rysowaniu
+  (bez numeracji „I, II”, potem „Podst.Konst.Masz.”, „Pod.Kon.Masz.”). Prowadzący i sala — plan na osi czasu
+  (`lib/planPrint`): stacjonarne tydzień z wzorca, niestacjonarne strony po tygodniach; w wąskim kafelku sala bez
+  budynku i prowadzący z inicjałem. Przyciski: Układanie planu (rocznik / filtr grupy), Prowadzący, Budynki i sale
+  (semestr ostatnio używany) — otwierają podgląd w oknie aplikacji (`PlanPdfDialog`), z którego plik się pobiera
+  albo drukuje.
 - **Nie ma odwołań ani odrobień** — ani na studiach stacjonarnych, ani na niestacjonarnych
   (migracje `20261115200000_drop_makeups` i `20261115210000_drop_cancellations`: bez strony
   „Odrobienia”, `makeupOfId`, `Occurrence.status` i `PlacementException.action`). Zajęcia, które

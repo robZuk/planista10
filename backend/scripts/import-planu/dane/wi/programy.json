@@ -1,0 +1,2328 @@
+[
+ {
+  "program": "INF-WI-S1",
+  "semesters": 7,
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Wychowanie fizyczne I, II, III, IV",
+    "spec": null,
+    "katedra": "SWFiS",
+    "sems": {
+     "1": {
+      "C": 15.0,
+      "e": 0.0
+     },
+     "2": {
+      "C": 15.0,
+      "e": 0.0
+     },
+     "3": {
+      "C": 30.0,
+      "e": 0.0
+     },
+     "4": {
+      "C": 30.0,
+      "e": 0.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Język angielski I, II, III, IV, V",
+    "spec": null,
+    "katedra": "SJO",
+    "sems": {
+     "1": {
+      "C": 45.0,
+      "e": 3.0
+     },
+     "2": {
+      "C": 45.0,
+      "e": 3.0
+     },
+     "3": {
+      "C": 45.0,
+      "e": 3.0
+     },
+     "4": {
+      "C": 45.0,
+      "e": 3.0
+     },
+     "5": {
+      "C": 30.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Matematyka I",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "1": {
+      "W": 30.0,
+      "C": 30.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Fizyka",
+    "spec": null,
+    "katedra": "KF/WM",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "C": 15.0,
+      "L": 15.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Technologie informacyjne",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Wprowadzenie do programowania",
+    "spec": null,
+    "katedra": "ZPI",
+    "sems": {
+     "1": {
+      "W": 30.0,
+      "L": 30.0,
+      "P": 15.0,
+      "e": 6.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Technika cyfrowa",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "1": {
+      "W": 30.0,
+      "L": 30.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Sieci komputerowe",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "L": 30.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Bezpieczeństwo i higiena pracy",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Matematyka II",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "2": {
+      "W": 15.0,
+      "C": 30.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Matematyka dyskretna",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "2": {
+      "W": 15.0,
+      "C": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Systemy operacyjne",
+    "spec": null,
+    "katedra": "WE",
+    "sems": {
+     "2": {
+      "W": 15.0,
+      "L": 30.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Algorytmy i struktury danych",
+    "spec": null,
+    "katedra": "ZPI",
+    "sems": {
+     "2": {
+      "W": 30.0,
+      "L": 45.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Bazy danych",
+    "spec": null,
+    "katedra": "ZPI",
+    "sems": {
+     "2": {
+      "W": 30.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Automatyka i robotyka",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "2": {
+      "W": 15.0,
+      "P": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Systemy wbudowane I",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "2": {
+      "W": 30.0,
+      "L": 30.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Paradygmaty programowania",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "2": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Statystyka",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "3": {
+      "W": 30.0,
+      "C": 30.0,
+      "L": 15.0,
+      "e": 6.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Programowanie obiektowe",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "3": {
+      "W": 30.0,
+      "L": 30.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Technologie mobilne",
+    "spec": null,
+    "katedra": "WE",
+    "sems": {
+     "3": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Podstawy sztucznej inteligencji",
+    "spec": null,
+    "katedra": "ZPI",
+    "sems": {
+     "3": {
+      "W": 15.0,
+      "L": 30.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Metody optymalizacji",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "3": {
+      "W": 15.0,
+      "P": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Technologie internetowe",
+    "spec": null,
+    "katedra": "ZISiSI",
+    "sems": {
+     "3": {
+      "W": 30.0,
+      "L": 30.0,
+      "P": 15.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Grafika komputerowa i wizualizacja danych",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "3": {
+      "W": 15.0,
+      "L": 30.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Analiza i projektowanie systemów informatycznych",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "4": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Uczenie maszynowe",
+    "spec": null,
+    "katedra": "ZISiSI",
+    "sems": {
+     "4": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Zarządzanie dla informatyków",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "4": {
+      "W": 15.0,
+      "C": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Prawo w gospodarce elektronicznej",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Inżynieria oprogramowania",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Sztuczne sieci neuronowe",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Proseminarium",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Wirtualizacja",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "6": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Cyberbezpieczeństwo",
+    "spec": null,
+    "katedra": "ZISiSI",
+    "sems": {
+     "6": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "34",
+    "subject": "Podstawy biznesu elektronicznego",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "6": {
+      "W": 15.0,
+      "C": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Seminarium dyplomowe I",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "6": {
+      "C": 15.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Seminarium dyplomowe II",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "7": {
+      "C": 15.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "37",
+    "subject": "Praca dyplomowa",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "7": {
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "1",
+    "subject": "Aplikacje mobilne",
+    "spec": "IA",
+    "katedra": "ZPI",
+    "sems": {
+     "4": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 30.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Zaawansowane technologie baz danych",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "4": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Aplikacje webowe",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "4": {
+      "W": 15.0,
+      "L": 30.0,
+      "P": 30.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Bezpieczeństwo systemów informacyjnych",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "4": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Testowanie oprogramowania",
+    "spec": "IA",
+    "katedra": "ZIS",
+    "sems": {
+     "4": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Programowanie w środowisku Big Data",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Programowanie równoległe i rozproszone",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Projektowanie UX",
+    "spec": "IA",
+    "katedra": "ZIS",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Zwinne metodyki zarządzania projektami informatycznymi",
+    "spec": "IA",
+    "katedra": "ZIS",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Techniki multimedialne",
+    "spec": "IA",
+    "katedra": "ZIS",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Podstawy podejmowania decyzji",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Projekt zespołowy IA I",
+    "spec": "IA",
+    "katedra": "WI",
+    "sems": {
+     "5": {
+      "P": 30.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Inteligencja obliczeniowa",
+    "spec": "IA",
+    "katedra": "ZPI",
+    "sems": {
+     "6": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Technologie chmur obliczeniowych",
+    "spec": "IA",
+    "katedra": "WE",
+    "sems": {
+     "6": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Projekt zespołowy IA II",
+    "spec": "IA",
+    "katedra": "WI",
+    "sems": {
+     "6": {
+      "P": 30.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Praktyka zawodowa IA",
+    "spec": "IA",
+    "katedra": "WI",
+    "sems": {
+     "6": {
+      "e": 15.0
+     },
+     "7": {
+      "e": 17.0
+     }
+    }
+   },
+   {
+    "nr": "1",
+    "subject": "Internet rzeczy",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "4": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Technologia Digital Twin",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "4": {
+      "W": 15.0,
+      "P": 30.0,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Systemy autonomiczne",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "4": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 30.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Systemy wbudowane II",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "4": {
+      "W": 30.0,
+      "P": 30.0,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Programowanie urządzeń mobilnych",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 30.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Programowanie niskopoziomowe",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "L": 30.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Rozproszone sieci przemysłowe",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "P": 30.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Zarządzanie projektami informatycznymi",
+    "spec": "PSA",
+    "katedra": "ZIS",
+    "sems": {
+     "5": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Projektowanie systemów obliczeniowych",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "5": {
+      "W": 30.0,
+      "P": 30.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Projekt zespołowy PSA I",
+    "spec": "PSA",
+    "katedra": "WI",
+    "sems": {
+     "5": {
+      "P": 30.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Bezpieczeństwo systemów wbudowanych",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "6": {
+      "W": 15.0,
+      "P": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Przemysł 4.0",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "6": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 30.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Projekt zespołowy PSA II",
+    "spec": "PSA",
+    "katedra": "WI",
+    "sems": {
+     "6": {
+      "P": 30.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Praktyka zawodowa PSA",
+    "spec": "PSA",
+    "katedra": "WI",
+    "sems": {
+     "6": {
+      "e": 15.0
+     },
+     "7": {
+      "e": 17.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "program": "INF-WI-N1",
+  "semesters": 7,
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język angielski I, II, III, IV, V",
+    "spec": null,
+    "katedra": "SJO",
+    "sems": {
+     "1": {
+      "C": 27.0,
+      "e": 3.0
+     },
+     "2": {
+      "C": 27.0,
+      "e": 3.0
+     },
+     "3": {
+      "C": 27.0,
+      "e": 3.0
+     },
+     "4": {
+      "C": 27.0,
+      "e": 3.0
+     },
+     "5": {
+      "C": 18.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Matematyka I",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "1": {
+      "W": 18.0,
+      "C": 18.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Fizyka",
+    "spec": null,
+    "katedra": "KF/WM",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "C": 9.0,
+      "L": 9.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Technologie informacyjne",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Wprowadzenie do programowania",
+    "spec": null,
+    "katedra": "ZPI",
+    "sems": {
+     "1": {
+      "W": 18.0,
+      "L": 18.0,
+      "P": 9.0,
+      "e": 6.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Technika cyfrowa",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "1": {
+      "W": 18.0,
+      "L": 18.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Sieci komputerowe",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "L": 18.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Bezpieczeństwo i higiena pracy",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Matematyka II",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "2": {
+      "W": 9.0,
+      "C": 18.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Matematyka dyskretna",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "2": {
+      "W": 9.0,
+      "C": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Systemy operacyjne",
+    "spec": null,
+    "katedra": "WE",
+    "sems": {
+     "2": {
+      "W": 9.0,
+      "L": 18.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Algorytmy i struktury danych",
+    "spec": null,
+    "katedra": "ZPI",
+    "sems": {
+     "2": {
+      "W": 18.0,
+      "L": 27.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Bazy danych",
+    "spec": null,
+    "katedra": "ZPI",
+    "sems": {
+     "2": {
+      "W": 18.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Automatyka i robotyka",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "2": {
+      "W": 9.0,
+      "P": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Systemy wbudowane I",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "2": {
+      "W": 18.0,
+      "L": 18.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Paradygmaty programowania",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "2": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Statystyka",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "3": {
+      "W": 18.0,
+      "C": 18.0,
+      "L": 9.0,
+      "e": 6.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Programowanie obiektowe",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "3": {
+      "W": 18.0,
+      "L": 18.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "19",
+    "subject": "Technologie mobilne",
+    "spec": null,
+    "katedra": "WE",
+    "sems": {
+     "3": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "20",
+    "subject": "Podstawy sztucznej inteligencji",
+    "spec": null,
+    "katedra": "ZPI",
+    "sems": {
+     "3": {
+      "W": 9.0,
+      "L": 18.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "21",
+    "subject": "Metody optymalizacji",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "3": {
+      "W": 9.0,
+      "P": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "22",
+    "subject": "Technologie internetowe",
+    "spec": null,
+    "katedra": "ZISiSI",
+    "sems": {
+     "3": {
+      "W": 18.0,
+      "L": 18.0,
+      "P": 9.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "23",
+    "subject": "Grafika komputerowa i wizualizacja danych",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "3": {
+      "W": 9.0,
+      "L": 18.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "24",
+    "subject": "Analiza i projektowanie systemów informatycznych",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "4": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "25",
+    "subject": "Uczenie maszynowe",
+    "spec": null,
+    "katedra": "ZISiSI",
+    "sems": {
+     "4": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "26",
+    "subject": "Zarządzanie dla informatyków",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "4": {
+      "W": 9.0,
+      "C": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "27",
+    "subject": "Prawo w gospodarce elektronicznej",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "28",
+    "subject": "Inżynieria oprogramowania",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "29",
+    "subject": "Sztuczne sieci neuronowe",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "30",
+    "subject": "Proseminarium",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "31",
+    "subject": "Wirtualizacja",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "6": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "32",
+    "subject": "Cyberbezpieczeństwo",
+    "spec": null,
+    "katedra": "ZISiSI",
+    "sems": {
+     "6": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "33",
+    "subject": "Podstawy biznesu elektronicznego",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "6": {
+      "W": 9.0,
+      "C": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "34",
+    "subject": "Seminarium dyplomowe I",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "6": {
+      "C": 9.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "35",
+    "subject": "Seminarium dyplomowe II",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "7": {
+      "C": 9.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "36",
+    "subject": "Praca dyplomowa",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "7": {
+      "e": 15.0
+     }
+    }
+   },
+   {
+    "nr": "1",
+    "subject": "Aplikacje mobilne",
+    "spec": "IA",
+    "katedra": "ZPI",
+    "sems": {
+     "4": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 18.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Zaawansowane technologie baz danych",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "4": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Aplikacje webowe",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "4": {
+      "W": 9.0,
+      "L": 18.0,
+      "P": 18.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Bezpieczeństwo systemów informacyjnych",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "4": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Testowanie oprogramowania",
+    "spec": "IA",
+    "katedra": "ZIS",
+    "sems": {
+     "4": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Programowanie w środowisku Big Data",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Programowanie równoległe i rozproszone",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Projektowanie UX",
+    "spec": "IA",
+    "katedra": "ZIS",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Zwinne metodyki zarządzania projektami informatycznymi",
+    "spec": "IA",
+    "katedra": "ZIS",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Techniki multimedialne",
+    "spec": "IA",
+    "katedra": "ZIS",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Podstawy podejmowania decyzji",
+    "spec": "IA",
+    "katedra": "ZISiSI",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Projekt zespołowy IA I",
+    "spec": "IA",
+    "katedra": "WI",
+    "sems": {
+     "5": {
+      "P": 18.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Inteligencja obliczeniowa",
+    "spec": "IA",
+    "katedra": "ZPI",
+    "sems": {
+     "6": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Technologie chmur obliczeniowych",
+    "spec": "IA",
+    "katedra": "WE",
+    "sems": {
+     "6": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Projekt zespołowy IA II",
+    "spec": "IA",
+    "katedra": "WI",
+    "sems": {
+     "6": {
+      "P": 18.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Praktyka zawodowa IA",
+    "spec": "IA",
+    "katedra": "WI",
+    "sems": {
+     "6": {
+      "e": 15.0
+     },
+     "7": {
+      "e": 17.0
+     }
+    }
+   },
+   {
+    "nr": "1",
+    "subject": "Internet rzeczy",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "4": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Technologia Digital Twin",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "4": {
+      "W": 9.0,
+      "P": 18.0,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Systemy autonomiczne",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "4": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 18.0,
+      "e": 5.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Systemy wbudowane II",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "4": {
+      "W": 18.0,
+      "P": 18.0,
+      "e": 5.0
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Programowanie urządzeń mobilnych",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 18.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Programowanie niskopoziomowe",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "L": 18.0,
+      "e": 4.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Rozproszone sieci przemysłowe",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "P": 18.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "Zarządzanie projektami informatycznymi",
+    "spec": "PSA",
+    "katedra": "ZIS",
+    "sems": {
+     "5": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Projektowanie systemów obliczeniowych",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "5": {
+      "W": 18.0,
+      "P": 18.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Projekt zespołowy PSA I",
+    "spec": "PSA",
+    "katedra": "WI",
+    "sems": {
+     "5": {
+      "P": 18.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Bezpieczeństwo systemów wbudowanych",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "6": {
+      "W": 9.0,
+      "P": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Przemysł 4.0",
+    "spec": "PSA",
+    "katedra": "ZSA",
+    "sems": {
+     "6": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 18.0,
+      "e": 4.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Projekt zespołowy PSA II",
+    "spec": "PSA",
+    "katedra": "WI",
+    "sems": {
+     "6": {
+      "P": 18.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Praktyka zawodowa PSA",
+    "spec": "PSA",
+    "katedra": "WI",
+    "sems": {
+     "6": {
+      "e": 15.0
+     },
+     "7": {
+      "e": 17.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "program": "INF-WI-S2",
+  "semesters": 3,
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język obcy I",
+    "spec": null,
+    "katedra": "SJO",
+    "sems": {
+     "1": {
+      "C": 30.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Metodyka badań naukowych",
+    "spec": null,
+    "katedra": "WE",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Teoria i logika zbiorów rozmytych i przybliżonych",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "C": 15.0,
+      "e": 2.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Metody numeryczne i metody optymalizacji",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "L": 30.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Modelowanie i prognozowanie",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Programowanie systemów robotycznych",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Sieci neuronowe i głębokie uczenie",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "MLOps i inżynieria systemów",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Cyberbezpieczeństwo i kryptografia",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "L": 15.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Uczenie nadzorowane",
+    "spec": null,
+    "katedra": "ZISiSI",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Uczenie ze wzmocnieniem",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "L": 15.0,
+      "P": 15.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Społeczne aspekty sztucznej inteligencji",
+    "spec": null,
+    "katedra": "WZNJ",
+    "sems": {
+     "1": {
+      "C": 15.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Innowacje i przedsiębiorczość",
+    "spec": null,
+    "katedra": "WZNJ",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Obliczenia i algorytmy kwantowe",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "1": {
+      "W": 15.0,
+      "C": 15.0,
+      "e": 2.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Język obcy II",
+    "spec": null,
+    "katedra": "SJO",
+    "sems": {
+     "2": {
+      "C": 30.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Seminarium magisterskie I",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "2": {
+      "C": 18.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Seminarium magisterskie II",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "3": {
+      "C": 18.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Praca magisterska",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "3": {
+      "e": 20.0
+     }
+    }
+   }
+  ]
+ },
+ {
+  "program": "INF-WI-N2",
+  "semesters": 3,
+  "entries": [
+   {
+    "nr": "1",
+    "subject": "Język obcy I",
+    "spec": null,
+    "katedra": "SJO",
+    "sems": {
+     "1": {
+      "C": 18.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "2",
+    "subject": "Metodyka badań naukowych",
+    "spec": null,
+    "katedra": "WE",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "3",
+    "subject": "Teoria i logika zbiorów rozmytych i przybliżonych",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "C": 9.0,
+      "e": 2.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "4",
+    "subject": "Metody numeryczne i metody optymalizacji",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "L": 18.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "5",
+    "subject": "Modelowanie i prognozowanie",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "6",
+    "subject": "Programowanie systemów robotycznych",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "7",
+    "subject": "Sieci neuronowe i głębokie uczenie",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "8",
+    "subject": "MLOps i inżynieria systemów",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "9",
+    "subject": "Cyberbezpieczeństwo i kryptografia",
+    "spec": null,
+    "katedra": "ZSA",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "L": 9.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "10",
+    "subject": "Uczenie nadzorowane",
+    "spec": null,
+    "katedra": "ZISiSI",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 3.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "11",
+    "subject": "Uczenie ze wzmocnieniem",
+    "spec": null,
+    "katedra": "ZIS",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "L": 9.0,
+      "P": 9.0,
+      "e": 3.0
+     }
+    }
+   },
+   {
+    "nr": "12",
+    "subject": "Społeczne aspekty sztucznej inteligencji",
+    "spec": null,
+    "katedra": "WZNJ",
+    "sems": {
+     "1": {
+      "C": 9.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "13",
+    "subject": "Innowacje i przedsiębiorczość",
+    "spec": null,
+    "katedra": "WZNJ",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "14",
+    "subject": "Obliczenia i algorytmy kwantowe",
+    "spec": null,
+    "katedra": "ZM",
+    "sems": {
+     "1": {
+      "W": 9.0,
+      "C": 9.0,
+      "e": 2.0,
+      "exam": true
+     }
+    }
+   },
+   {
+    "nr": "15",
+    "subject": "Język obcy II",
+    "spec": null,
+    "katedra": "SJO",
+    "sems": {
+     "2": {
+      "C": 18.0,
+      "e": 2.0
+     }
+    }
+   },
+   {
+    "nr": "16",
+    "subject": "Seminarium magisterskie I",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "2": {
+      "C": 10.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "17",
+    "subject": "Seminarium magisterskie II",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "3": {
+      "C": 10.0,
+      "e": 1.0
+     }
+    }
+   },
+   {
+    "nr": "18",
+    "subject": "Praca magisterska",
+    "spec": null,
+    "katedra": "WI",
+    "sems": {
+     "3": {
+      "e": 20.0
+     }
+    }
+   }
+  ]
+ }
+]

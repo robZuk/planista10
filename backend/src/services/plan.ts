@@ -11,7 +11,7 @@ import { gridFor, loadGrids, pickGrid, type FacultyGrids } from './timeGrids';
 /** Bloki obowiazujace w danym dniu tygodnia (siatka dnia albo podstawowa) — dla materializera. */
 const gridOfDay = (grids: FacultyGrids) => (day: WeekdayName) => grids.forDay(day).time;
 import {
-  findConflict,
+  conflictReasons,
   materialize,
   type BusySlot,
   type MatException,
@@ -474,9 +474,20 @@ export interface PlacementCheck {
   errors: string[];
   conflicts: { date: IsoDate; reason: string; with: string }[];
   dates: number;
+  /** Zajetosc, ktora to umieszczenie wnosi na kazdej dacie rytmu (bez etykiety) — do symulacji podgladow. */
+  slots: BusySlot[];
 }
 
-export async function checkPlacement(term: AcademicTerm, input: PlacementInput, excludeId?: string): Promise<PlacementCheck> {
+/**
+ * @param extraBusy zajetosc spoza bazy — np. umieszczenia, ktore podglad "Przenies plan" utworzylby
+ *   wczesniej w tej samej operacji (zapis tworzy je po kolei, wiec kolejne widza poprzednie).
+ */
+export async function checkPlacement(
+  term: AcademicTerm,
+  input: PlacementInput,
+  excludeId?: string,
+  extraBusy: BusySlot[] = [],
+): Promise<PlacementCheck> {
   const errors: string[] = [];
   const section = await prisma.classSection.findUnique({
     where: { id: input.sectionId },
@@ -523,20 +534,38 @@ export async function checkPlacement(term: AcademicTerm, input: PlacementInput, 
 
   const conflicts: PlacementCheck['conflicts'] = [];
   if (errors.length === 0 && time) {
-    const busy = await placementBusy(term, { cohortId: section.cohortId, roomId: input.roomId, instructorId: input.instructorId }, excludeId);
+    const busy = [
+      ...(await placementBusy(term, { cohortId: section.cohortId, roomId: input.roomId, instructorId: input.instructorId }, excludeId)),
+      ...extraBusy,
+    ];
     const overlap = await groupOverlapFn();
     const byDate = new Map<string, BusySlot[]>();
     for (const b of busy) byDate.set(b.date, [...(byDate.get(b.date) ?? []), b]);
     for (const d of dates) {
-      const conflict = findConflict(
-        { date: d.date, ...time, roomId: input.roomId, instructorId: input.instructorId, groupId: section.groupId, jointKey: input.jointKey },
-        byDate.get(d.date) ?? [],
-        overlap,
-      );
-      if (conflict) conflicts.push({ date: d.date, ...conflict });
+      // Wszystkie powody z tymi samymi zajeciami naraz ("ROOM+GROUP") — inaczej planista zmienia sale
+      // i dopiero wtedy slyszy, ze grupa tez ma wtedy zajecia.
+      const slot = { date: d.date, ...time, roomId: input.roomId, instructorId: input.instructorId, groupId: section.groupId, jointKey: input.jointKey };
+      for (const b of byDate.get(d.date) ?? []) {
+        const reasons = conflictReasons(slot, b, overlap);
+        if (reasons.length === 0) continue;
+        conflicts.push({ date: d.date, reason: reasons.join('+'), with: b.label });
+        break;
+      }
     }
   }
-  return { errors, conflicts, dates: dates.length };
+  const slots: BusySlot[] = time
+    ? dates.map((d) => ({
+        date: d.date,
+        startMinute: time.startMinute,
+        endMinute: time.endMinute,
+        roomId: input.roomId,
+        instructorId: input.instructorId,
+        groupId: section.groupId,
+        jointKey: input.jointKey,
+        label: '',
+      }))
+    : [];
+  return { errors, conflicts, dates: dates.length, slots };
 }
 
 /**

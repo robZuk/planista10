@@ -5,6 +5,8 @@ import { holidaysInRange } from '../lib/holidays';
 import { formatMinutes } from '../lib/timeGrid';
 import { upcomingDaysOff, type CalendarDayOff } from '../lib/daysOff';
 import { occurrenceScope, publishedCohortKeys } from '../services/visibility';
+import { activeCohorts } from '../services/sections';
+import { joinUnique, mergeJoint } from '../lib/jointMerge';
 
 const occurrenceInclude = {
   room: { select: { number: true, building: { select: { name: true } } } },
@@ -37,6 +39,9 @@ export const getStats = asyncHandler(async (req, res) => {
   const scope = user ? await occurrenceScope(user) : null;
   // Kafelki dziekanatu: tylko jego wydzial. Konto bez wydzialu nie widzi niczego.
   const dean = user?.role === 'DEAN_OFFICE';
+  // Konta (liczby wg rol, ostatnio dodani z e-mailami) widzi tylko administrator — panel pokazuje je
+  // tylko jemu, a odpowiedz API nie moze ich oddawac studentom ani prowadzacym.
+  const admin = user?.role === 'ADMIN';
   const fid = dean ? (user!.facultyId ?? '__none__') : null;
   const faculty = fid ? await prisma.faculty.findUnique({ where: { id: fid }, select: { name: true, shortName: true } }) : null;
 
@@ -55,7 +60,7 @@ export const getStats = asyncHandler(async (req, res) => {
     calendarCount,
     weekRows,
   ] = await Promise.all([
-    prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
+    admin ? prisma.user.groupBy({ by: ['role'], _count: { _all: true } }) : Promise.resolve([]),
     prisma.instructor.count({ where: fid ? { facultyId: fid } : {} }),
     prisma.studentGroup.count({ where: fid ? { cohort: { program: { fieldOfStudy: { facultyId: fid } } } } : {} }),
     prisma.user.count({
@@ -65,11 +70,13 @@ export const getStats = asyncHandler(async (req, res) => {
     prisma.building.count({ where: fid ? { facultyId: fid } : {} }),
     prisma.placement.count({ where: fid ? { facultyId: fid } : {} }),
     prisma.occurrence.count({ where: fid ? { facultyId: fid } : {} }),
-    prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
-    }),
+    admin
+      ? prisma.user.findMany({
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+          select: { id: true, name: true, email: true, role: true, createdAt: true },
+        })
+      : Promise.resolve([]),
     prisma.faculty.count(),
     prisma.subject.count(),
     prisma.termCalendar.count(),
@@ -84,8 +91,9 @@ export const getStats = asyncHandler(async (req, res) => {
 
   // Student i prowadzacy: tylko roczniki z opublikowanym (albo archiwalnym) wlasnym kalendarzem.
   const visible = scope?.publishedOnly ? await publishedCohortKeys(weekRows.map((o) => ({ termId: o.termId, cohortId: o.section.cohortId }))) : null;
-  const week = weekRows
-    .filter((o) => !visible || visible.has(`${o.termId}|${o.section.cohortId}`))
+  const shownRows = weekRows.filter((o) => !visible || visible.has(`${o.termId}|${o.section.cohortId}`));
+  const groupName = await groupNamesOf(shownRows);
+  const mapped = shownRows
     .map((o) => ({
       id: o.id,
       classType: o.section.classType,
@@ -94,13 +102,21 @@ export const getStats = asyncHandler(async (req, res) => {
       instructor: o.instructor,
       studentGroup: {
         id: o.group.id,
-        name: `${o.section.cohort.program.code} ${o.group.partitionKey === 'ROOT' ? 'caly rocznik' : `${o.group.partitionKey}-${o.group.code ?? ''}`}`,
+        // Nazwa grupy liczona na semestr rocznika (jak w Ukladaniu planu i "Moim planie").
+        name: `${o.section.cohort.program.code} ${groupName(o.termId, o.section.cohortId, o.group.id) ?? (o.group.partitionKey === 'ROOT' ? 'caly rocznik' : `${o.group.partitionKey}-${o.group.code ?? ''}`)}`,
       },
       curriculumEntry: { subject: o.section.programEntry.subject },
       // Godziny z terminu (rozne wydzialy moga miec rozne siatki godzin).
       startBlock: { order: o.startOrder, startTime: formatMinutes(o.startMinute) },
       endBlock: { order: o.endOrder, endTime: formatMinutes(o.endMinute) },
+      slot: { date: o.date.toISOString().slice(0, 10), startMinute: o.startMinute, endMinute: o.endMinute, jointKey: o.jointKey, roomId: o.roomId, instructorId: o.instructorId },
     }));
+  // Zajecia laczone liczone raz (jak Obciazenia): jedna pozycja z grupami po przecinku.
+  const week = mergeJoint(
+    mapped,
+    (e) => e.slot,
+    (first, rest) => ({ ...first, studentGroup: { ...first.studentGroup, name: joinUnique([first.studentGroup.name, ...rest.map((r) => r.studentGroup.name)]) } }),
+  ).map(({ slot: _slot, ...entry }) => entry);
 
   // Najblizsze dni wolne (karta planisty): swieta i przerwy/dni wolne kalendarzy w zakresie roli.
   const horizon = addDays(today, 60);
@@ -166,3 +182,24 @@ export const getStats = asyncHandler(async (req, res) => {
     },
   });
 });
+
+/**
+ * Nazwy grup terminow tygodnia — liczone na semestr rocznika (lib/groupTree.displayName przez
+ * activeCohorts), osobno dla kazdego semestru, z ktorego pochodza terminy. Grupa spoza kontekstu
+ * (rocznik poza zakresem programu) -> null, wtedy zostaje oznaczenie z klucza podzialu.
+ */
+async function groupNamesOf(rows: { termId: string; section: { cohortId: string } }[]) {
+  const byTerm = new Map<string, Set<string>>();
+  for (const r of rows) byTerm.set(r.termId, (byTerm.get(r.termId) ?? new Set<string>()).add(r.section.cohortId));
+  const names = new Map<string, (groupId: string) => string>();
+  if (byTerm.size > 0) {
+    const terms = await prisma.academicTerm.findMany({ where: { id: { in: [...byTerm.keys()] } } });
+    for (const term of terms) {
+      for (const ctx of await activeCohorts(term, null, [...(byTerm.get(term.id) ?? [])])) names.set(`${term.id}|${ctx.cohort.id}`, ctx.nameOf);
+    }
+  }
+  return (termId: string, cohortId: string, groupId: string): string | null => {
+    const name = names.get(`${termId}|${cohortId}`)?.(groupId);
+    return name && name !== '?' ? name : null;
+  };
+}

@@ -1,0 +1,85 @@
+# Informatyka, stacjonarne I st., nabor 2024/25 (Senat 268/XVII z 25 IV 2024)
+# zrodlo: 1st_st_Inf_{AIR,AIiM}-RN24-25_RA26-27_s5-6.pdf
+@program INF-S1
+@wersja od naboru 2024/25
+@sumy AIR I: W210 C105 L150 e30 | II: W195 C75 L150 P30 e30 | III: W225 C75 L165 P15 e30 | IV: W165 C75 L225 P15 e30 | V: W240 C30 L165 P15 e30 | VI: W135 C60 L90 P60 e30 | VII: W60 C30 L120 P75 e30
+
+@spec -
+1 | Przedmiot humanistyczny I | II: W30 e2
+2 | Przedmiot humanistyczny II | VI: C30 e2
+3 | Prawo i ochrona własności intelektualnej | I: W15 e1
+4 | Analiza matematyczna | I: W45! C45 e6 | II: W15 C15 e2
+5 | Algebra | I: W15 C15 e2
+6 | Probabilistyka i procesy losowe | II: W15 C15 e2
+7 | Fizyka | I: W30! C30 L30 e6
+8 | Język angielski | II: C30 e2 | III: C30 e2 | IV: C30 e2 | V: C30 e2 | VI: C30 e2 | VII: C30 e2
+9 | Narzędzia informatyki | I: W15 L30 e3
+10 | Podstawy programowania | I: W30 L45 e5 | II: P30 e2
+11 | Wychowanie fizyczne | I: L15 e0 | II: L15 e0 | III: C30 e0 | IV: C30 e0
+12 | Wprowadzenie do algorytmiki | I: W30! L30 e4
+13 | Podstawy metrologii | II: W15 L15 e2
+14 | Podstawy elektroniki | II: W30 C15 e3 | III: W30 C15 e3 | IV: L30 e2
+15 | Algorytmy i struktury danych | II: W30! L45 e6
+16 | Architektura systemów komputerowych | II: W30 L15 e3
+17 | Biznes elektroniczny | VI: W30 e1
+18 | Technika cyfrowa | I: W30 C15 e3 | II: L30 e2
+19 | Systemy operacyjne | II: W30! L30 e4
+20 | Konstrukcja urządzeń | III: W15 L15 P15 e3
+21 | Automatyka i robotyka | III: W15 L15 e2
+22 | Technologie internetowe | III: W15! L15 e2
+23 | Technologie mobilne | III: W30 e2 | IV: L30 e2
+24 | Programowanie niskopoziomowe | III: W15 L15 e2
+25 | Paradygmaty programowania | III: W15 L15 e2
+26 | Programowanie obiektowe | III: W30! L30 e4
+27 | Przetwarzanie sygnałów | III: W30 L30 e4
+28 | Grafika komputerowa i techniki multimedialne | V: W30 L30 e4
+29 | Metody i narzędzia sztucznej inteligencji | IV: W15! L30 e3
+30 | Sieci komputerowe | IV: W30! L30 e4
+31 | Teoria informacji | IV: W30 C15 e3
+32 | Systemy wbudowane | IV: W15 L30 e3
+33 | Wprowadzenie do baz danych | IV: W30 L30 e4
+34 | Podstawy kryptografii | V: W15 e1
+35 | Techniki wirtualizacji | V: W15 L15 e2
+36 | Podstawy podejmowania decyzji | IV: W15 L15 e2
+37 | Algorytmy analizy danych | VII: W15 L30 e3
+38 | Inżynieria oprogramowania | V: W30 e2
+39 | Bezpieczeństwo danych i systemów informatycznych | V: W30! L30 e4
+40 | Analiza i projektowanie systemów informatycznych | VI: W15! L15 P15 e3
+41 | Zarządzanie zasobami informatycznymi | VI: W30 e2
+42 | Metody optymalizacji | III: W15 L15 e2
+43 | Systemy CAD/CAM | III: W15 L15 e2
+44 | Seminarium dyplomowe | VII: L30 e2
+
+@spec AIR
+45 | Praca dyplomowa | VII: P30 e15
+46 | Nowoczesne języki i technologie programistyczne | V: W30! L30 P15 e5
+47 | Komputerowe systemy sterowania | VI: W30! L30 e5
+48 | Systemy transmisji sygnałów | V: W30 L30 e4
+49 | Diagnostyka i niezawodność systemów wbudowanych | V: W30 L15 e3
+50 | Interfejsy komunikacyjne | V: W30 L15 e3
+51 | Sieciowe systemy operacyjne | VI: W15 L30 P15 e5
+52 | Systemy pomiarowo-kontrolne | VI: W15 L15 e2
+53 | Sterowniki programowalne | IV: W30! L30 P15 e5
+54 | Systemy i przetwarzanie rozproszone | VII: W15 L30 e2
+55 | Sieci sensorowe | VII: W15 e1
+56 | Projekt grupowy | VI: P30 e2 | VII: P30 e2
+57 | Programowalne układy scalone | VII: W15 L30 P15 e3
+58 | Praktyka zawodowa | VI: e6
+
+@sumy AIiM I: W210 C105 L150 e30 | II: W195 C75 L150 P30 e30 | III: W225 C75 L165 P15 e30 | IV: W180 C75 L225 e30 | V: W225 C30 L165 P45 e30 | VI: W135 C60 L120 P60 e30 | VII: W45 C30 L90 P75 e30
+@spec AIiM
+45 | Praca dyplomowa | VII: P30 e15
+46 | Programowanie aplikacji webowych | V: W30 L30 P15 e5
+47 | Projektowanie serwisów internetowych | V: W30 L30 P15 e4
+48 | Architektura urządzeń mobilnych | V: W15 P15 e2
+49 | Języki znaczników i skryptowe | IV: W30! L30 e4
+50 | Inteligencja obliczeniowa | V: W30! L30 e4
+51 | Zarządzanie projektami informatycznymi | IV: W15 e1
+52 | Zaawansowane technologie baz danych | VI: W15! L30 P15 e4
+53 | Programowanie urządzeń mobilnych | VI: W15 L30 e3
+54 | Programowanie interfejsów graficznych | VII: W15 P15 e2
+55 | Technologie chmury obliczeniowej | VI: W15 L30 e3
+56 | Inteligentne aplikacje | VI: W15 L15 e2
+57 | Projekt grupowy | VI: P30 e2 | VII: P30 e2
+58 | Programowanie równoległe i rozproszone | VII: W15 L30 e4
+59 | Praktyka zawodowa | VI: e6

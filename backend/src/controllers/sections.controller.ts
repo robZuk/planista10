@@ -297,6 +297,7 @@ export const workload = asyncHandler(async (req, res) => {
       title: true,
       firstName: true,
       lastName: true,
+      facultyId: true,
       department: { select: { id: true, name: true, shortName: true, faculty: { select: { shortName: true } } } },
     },
   });
@@ -309,6 +310,8 @@ export const workload = asyncHandler(async (req, res) => {
         id: instructorId,
         name: instructorName(instructor),
         department: department ? { id: department.id, name: department.name, label: departmentLabel(department) } : null,
+        // Wydzial osoby (idzie za katedra) — Obciazenia dziela katedry wydzialu i inne jednostki.
+        facultyId: instructor?.facultyId ?? null,
         ...person,
       };
     }),

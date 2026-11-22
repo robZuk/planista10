@@ -75,3 +75,15 @@ describe('pojedyncza i krotka', () => {
     );
   });
 });
+
+describe('kilka powodow z tymi samymi zajeciami', () => {
+  it('laczy powody w jedno zdanie i daje podpowiedz o zajeciach laczonych', async () => {
+    const { conflictReasonText, conflictMessage } = await import('./conflictMessage');
+    expect(conflictReasonText('ROOM+GROUP')).toBe('Sala zajeta i grupa ma wtedy zajecia');
+    expect(conflictReasonText('ROOM+INSTRUCTOR+GROUP')).toBe('Sala zajeta, prowadzacy ma wtedy zajecia i grupa ma wtedy zajecia');
+    expect(conflictReasonText('GROUP')).toBe('Grupa ma wtedy zajecia');
+    const msg = conflictMessage([{ date: '2027-02-22', reason: 'ROOM+GROUP', with: 'X' }]);
+    expect(msg).toContain('• Sala zajeta i grupa ma wtedy zajecia — X');
+    expect(msg).toContain('zajecia laczone');
+  });
+});

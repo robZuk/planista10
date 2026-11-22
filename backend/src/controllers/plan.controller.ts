@@ -13,6 +13,7 @@ import { activeCohorts } from '../services/sections';
 import { conflictMessage } from '../lib/conflictMessage';
 import { pdfFileName } from '../lib/planPrint';
 import { renderPlanPdf } from '../lib/planPdf';
+import { renderSheetPdf } from '../lib/planSheetPdf';
 import { planPrint, type PrintSubject } from '../services/planPrint';
 import {
   assertPlanEditable,
@@ -108,7 +109,7 @@ export const getPlan = asyncHandler(async (req, res) => {
 });
 
 /**
- * Druk planu (PDF, A4 poziomo): rocznik (opcjonalnie grupa), prowadzacy albo sala —
+ * Druk planu (PDF): rocznik (arkusz dla studentow, opcjonalnie grupa), prowadzacy albo sala —
  * dokladnie jeden z parametrow cohortId / instructorId / roomId.
  */
 export const getPlanPdf = asyncHandler(async (req, res) => {
@@ -123,10 +124,10 @@ export const getPlanPdf = asyncHandler(async (req, res) => {
     : instructorId
       ? { kind: 'instructor', instructorId }
       : { kind: 'room', roomId: roomId! };
-  const document = await planPrint(term, subject);
-  const pdf = await renderPlanPdf(document);
-  const fileName = pdfFileName([document.title.split(' — ')[0] ?? 'plan', `${term.startYear}-${term.type === 'SUMMER' ? 'L' : 'Z'}`]);
-  req.log.info({ subject: subject.kind, pages: document.pages.length, bytes: pdf.length }, 'wydruk planu');
+  const print = await planPrint(term, subject);
+  const pdf = print.kind === 'sheet' ? await renderSheetPdf(print.document) : await renderPlanPdf(print.document);
+  const fileName = pdfFileName([print.document.title.split(' — ')[0] ?? 'plan', `${term.startYear}-${term.type === 'SUMMER' ? 'L' : 'Z'}`]);
+  req.log.info({ subject: subject.kind, layout: print.kind, bytes: pdf.length }, 'wydruk planu');
   res
     .type('application/pdf')
     .set('Content-Disposition', `attachment; filename="${fileName}"`)

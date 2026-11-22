@@ -24,9 +24,16 @@ const REASON_TEXT: Record<string, string> = {
   GRID: 'Poza siatka godzin',
 };
 
-/** Nazwa powodu kolizji dla czlowieka (nieznany kod — bez zmian). */
+/**
+ * Nazwa powodu kolizji dla czlowieka (nieznany kod — bez zmian). Kilka powodow z tymi samymi
+ * zajeciami ("ROOM+GROUP") -> "Sala zajeta i grupa ma wtedy zajecia".
+ */
 export function conflictReasonText(reason: string): string {
-  return REASON_TEXT[reason] ?? reason;
+  const texts = reason.split('+').map((r, i) => {
+    const text = REASON_TEXT[r] ?? r;
+    return i === 0 ? text : text.charAt(0).toLowerCase() + text.slice(1);
+  });
+  return texts.length <= 1 ? (texts[0] ?? reason) : `${texts.slice(0, -1).join(', ')} i ${texts.at(-1)}`;
 }
 
 /** "2026-10-04" -> "4.10" — rok wynika z semestru. */
@@ -90,7 +97,7 @@ export function conflictMessage(conflicts: ConflictLike[], maxGroups = 3): strin
   // Prowadzacy albo sala zajeta przez inne zajecia to czesto zamierzony wspolny wyklad kilku
   // kierunkow — wtedy wystarczy ten sam klucz w obu umieszczeniach (zajecia laczone).
   // Zajetosc zewnetrzna (zajecia innego wydzialu) nie jest wspolnym wykladem — bez podpowiedzi.
-  if (groups.some((g) => (g.reason === 'INSTRUCTOR' || g.reason === 'ROOM') && !g.with.startsWith(EXTERNAL_PREFIX))) {
+  if (groups.some((g) => /(^|\+)(INSTRUCTOR|ROOM)(\+|$)/.test(g.reason) && !g.with.startsWith(EXTERNAL_PREFIX))) {
     lines.push(JOINT_HINT);
   }
   return lines.join('\n');

@@ -82,6 +82,19 @@ const COLUMN_LABELS = {
   department: 'Katedra',
 };
 
+const inFaculty = (i: Instructor, faculty: string) =>
+  faculty === 'all' || (faculty === NO_FACULTY ? !i.facultyId : i.facultyId === faculty);
+
+/**
+ * Katedry do filtra: te, ktore maja prowadzacych na liscie w wybranym wydziale (dane z listy
+ * prowadzacych) — po wybraniu wydzialu bez katedr innych wydzialow.
+ */
+function departmentsOf(instructors: Instructor[] | undefined, faculty: string): Department[] {
+  const byId = new Map<string, Department>();
+  for (const i of instructors ?? []) if (i.department && inFaculty(i, faculty)) byId.set(i.department.id, i.department);
+  return [...byId.values()].sort(compareDepartments);
+}
+
 export default function InstructorsPage() {
   const queryClient = useQueryClient();
   const role = useAuthStore((s) => s.user?.role);
@@ -105,19 +118,22 @@ export default function InstructorsPage() {
   const { data: departments } = useQuery({ queryKey: ['departments'], queryFn: fetchDepartments, enabled: canEdit });
   const departmentOptions = useMemo(() => [...(departments ?? [])].sort(compareDepartments), [departments]);
 
-  // Filtr katedr pokazuje katedry, ktore maja prowadzacych na liscie (dane z listy prowadzacych).
-  const departmentsInUse = useMemo(() => {
-    const byId = new Map<string, Department>();
-    for (const i of instructors ?? []) if (i.department) byId.set(i.department.id, i.department);
-    return [...byId.values()].sort(compareDepartments);
-  }, [instructors]);
+  const departmentsInUse = useMemo(() => departmentsOf(instructors, facultyFilter), [instructors, facultyFilter]);
+
+  const changeFaculty = (faculty: string) => {
+    setFacultyFilter(faculty);
+    // Katedra spoza nowego wydzialu dawalaby pusta liste — wracamy do wszystkich katedr.
+    if (departmentFilter !== 'all' && departmentFilter !== NO_DEPARTMENT && !departmentsOf(instructors, faculty).some((d) => d.id === departmentFilter)) {
+      setDepartmentFilter('all');
+    }
+  };
 
   // Filtry wydzialu i katedry dzialaja obok globalnej szukajki DataTable, wiec zawezamy dane wejsciowe.
   const visible = useMemo(
     () =>
       instructors?.filter(
         (i) =>
-          (facultyFilter === 'all' || (facultyFilter === NO_FACULTY ? !i.facultyId : i.facultyId === facultyFilter)) &&
+          inFaculty(i, facultyFilter) &&
           (departmentFilter === 'all' ||
             (departmentFilter === NO_DEPARTMENT ? !i.departmentId : i.departmentId === departmentFilter)),
       ),
@@ -293,7 +309,7 @@ export default function InstructorsPage() {
         columnLabels={COLUMN_LABELS}
         toolbar={
           <>
-            <Select value={facultyFilter} onValueChange={setFacultyFilter}>
+            <Select value={facultyFilter} onValueChange={changeFaculty}>
               <SelectTrigger className="w-48" aria-label="Wydzial">
                 <SelectValue placeholder="Wydzial" />
               </SelectTrigger>

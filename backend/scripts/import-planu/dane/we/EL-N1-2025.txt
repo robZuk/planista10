@@ -1,0 +1,108 @@
+# Elektrotechnika, niestacjonarne I st., nabor 2025/26 Z — sciezka EO = Elektroautomatyka (w bazie EA)
+# zrodlo: 1st_nst_EL_EO-RN25-26_RA26-27_s3-4.pdf; AP i ETO z plikow RN25-26
+@program ET-N1
+@wersja od naboru 2025/26
+@sumy EA I: W137 C57 L30 P8 e30 | II: W113 C64 L50 P8 e30 | III: W108 C48 L55 P23 e30 | IV: W76 C18 L95 P8 e24 | V: W89 C18 L75 P32 e24 | VI: W57 C22 L82 P8 e24 | VII: W41 L50 P15 e24 | VIII: W26 C37 L20 P16 e24
+
+@spec -
+1 | Język angielski | II: C28 e3 | III: C28 e3 | IV: C18 e1 | V: C18 e1 | VI: C22 e1 | VIII: C22 e1
+2 | Przedmiot humanistyczny I | I: W8 e2
+3 | Ekonomia i zarządzanie | VIII: W10 e1
+4 | Własność intelektualna i prawo pracy | I: W8 e1
+5 | Ceremoniał morski | I: W5 e1
+6 | Analiza matematyczna | I: W20! C24 e6 | II: W12 C14 e2
+7 | Algebra | I: W10 C10 e2
+8 | Fizyka | I: W15! C15 L15 e6
+9 | Informatyka | I: W15 L15 e4
+10 | Inżynieria materiałowa | I: W8 e1 | II: L10 e1
+11 | Geometria i grafika inżynierska | I: W8 P8 e2
+12 | Metody numeryczne | II: W8 P8 e2
+13 | Podstawy elektrotechniki | II: W15! C22 e7 | III: W15 C20 e6 | IV: L15 e2
+14 | Teoria pola elektromagnetycznego | III: W15 P15 e3
+15 | Metrologia | II: W15! L15 e4 | III: L15 e2
+16 | Komputerowe wspomaganie obliczeń inżynierskich | II: W10 e2 | III: L10 e2
+17 | Maszyny elektryczne | III: W20! e2 | IV: L15 e2
+18 | Elektronika i energoelektronika | II: W15 e2 | III: W15! L15 e4 | IV: L15 e2
+19 | Elektroenergetyka | IV: W15! L10 e3
+20 | Technika mikroprocesorowa | II: W15 e2 | III: W8 L15 e2 | IV: P8 e1
+21 | Aparaty i urządzenia elektryczne | V: W20 L15 e3
+22 | Podstawy automatyki | II: W15 e1 | III: W15 e2 | IV: W8 L15 e4
+23 | Mechanika i mechatronika | II: W8 L10 e2
+24 | Technika wysokich napięć | III: W20 e2 | IV: L10 e1
+25 | Technika cyfrowa | I: W15 C8 e3 | II: L15 e2
+26 | Automatyzacja systemów energetycznych | IV: W15! e2 | V: L10 e1
+27 | Sterowniki programowalne | IV: W20 L15 e4 | V: P8 e1
+28 | Wizualizacja procesów sterowania | VI: W8 P8 e1
+29 | Konstrukcja układów elektronicznych | III: P8 e2
+30 | Sieci komputerowe | V: W8 P8 e2
+31 | Technika iskrobezpieczeństwa | VIII: W8 L10 P8 e2
+32 | Budowa i teoria okrętu | I: W10 e1
+33 | Ergonomia i bezpieczeństwo pracy na statku | I: W15 e1
+34 | Układy kondycjonowania energii elektrycznej | VI: W8 L10 e2
+35 | Seminarium dyplomowe | VIII: C15 e2
+
+@spec EA
+36 | Elektryczne zautomatyzowane napędy okrętowe | V: W15! e2 | VI: W8 L22 e3
+37 | Elektroenergetyka okrętowa | V: W8 L15 e2
+38 | Urządzenia i układy automatyki | IV: W10 e1 | V: L10 e1
+39 | Automatyzacja okrętowych systemów energetycznych | VI: W15! L15 e2
+40 | Okrętowe urządzenia pokładowe | V: W15! e2
+41 | Urządzenia elektronawigacyjne | V: W15 L10 e3
+42 | Urządzenia łączności okrętowej | VI: W8 L10 e2
+43 | Eksploatacja okrętowych urządzeń elektrycznych | V: W8 L15 P8 e4
+44 | Okrętowe systemy kontrolno-pomiarowe | VI: W10! L10 e3
+45 | Siłownie okrętowe i mechanizmy pomocnicze | VII: W10! L10 e3
+46 | Chłodnictwo, wentylacja i klimatyzacja | VIII: W8 L10 e1
+47 | Ochrona środowiska morskiego | VII: W8 e1
+48 | Dokumentacja techniczna w elektrotechnice | IV: W8 e1 | V: P8 e2
+49 | Energoelektronika w OZE | VII: W8 L15 e4 | VIII: P8 e2
+50 | Sieci i systemy elektroenergetyczne | VII: W15 P15 e4
+51 | Modelowanie maszyn elektrycznych | VII: L15 e2
+52 | Pracownia problemowa E | VI: L15 e10
+53 | Seminarium problemowe E | VII: L10 e10
+54 | Praca dyplomowa | VIII: e15
+
+@sumy AP I: W137 C57 L30 P8 e30 | II: W113 C64 L50 P8 e30 | III: W108 C48 L55 P23 e30 | IV: W68 C18 L95 P8 e24 | V: W77 C18 L85 P24 e24 | VI: W57 C22 L80 P8 e24 | VII: W62 L73 P8 e24 | VIII: W26 C37 L20 P23 e24
+@spec AP
+36 | Energoelektronika | VII: W8 L15 e3
+37 | Napęd elektryczny | V: W15! e2 | VI: L22 e3
+38 | Programowanie komputerów | V: W8 L10 e2
+39 | Systemy internetu rzeczy | V: W10 L15 e4
+40 | Przetwarzanie i przesyłanie sygnałów | VI: W15! L10 e4
+41 | Systemy kontrolno-pomiarowe | VI: W10! e2 | VII: L15 e2
+42 | Inżynieria sterowania układami przekształtnikowymi | VI: W8 L15 e4 | VII: P8 e1
+43 | Przemysł 4.0 | VII: W15 e2 | VIII: P15 e1
+44 | Komputerowe systemy operacyjne | VII: W8 L15 e3
+45 | Dyskretne układy sterowania | V: W8! L10 P8 e4
+46 | Mikroprocesorowe układy pomiarowe | VIII: W8 L10 e2
+47 | Urządzenia i układy automatyki przemysłowej | IV: W10 e2 | V: L15 e2
+48 | Systemy łączności cyfrowej | VII: W15 L10 e3
+49 | Technika przeciwdziałania zakłóceniom | V: W8 L10 e2
+50 | Ochrona środowiska | VII: W8 e1
+51 | Siłownie okrętowe | VII: W8 L8 e3
+52 | Okrętowe sieci elektroenergetyczne | VI: W8! L8 e2
+53 | Pracownia problemowa AP | VI: L15 e5
+54 | Seminarium problemowe AP | VII: L10 e6
+55 | Praca dyplomowa | VIII: e15
+
+# ETO = Elektroautomatyka okretowa (STCW); czesc wspolna identyczna z EA/AP; VII semestr = praktyka morska
+# Praktyka morska ma w siatce W30 w VIII (godziny "na papierze") — import pomija godziny praktyk
+@sumy ETO I: W137 C57 L30 P8 e30 | II: W113 C64 L50 P8 e30 | III: W108 C48 L55 P23 e30 | IV: W68 C18 L95 P8 e23 | V: W128 C18 L70 P16 e21 | VI: W136 C22 L90 P8 e21 | VII: e30 | VIII: W96 C37 L28 P8 e25
+@spec ETO
+36 | Elektryczne zautomatyzowane napędy okrętowe | V: W15! e2 | VI: W8 L22 e3
+37 | Elektroenergetyka okrętowa | V: W20 L15 e2
+38 | Automatyzacja okrętowych systemów energetycznych | VI: W30! L15 e2
+39 | Okrętowe urządzenia pokładowe | V: W20! e2
+40 | Urządzenia elektronawigacyjne | V: W25 L10 e3
+41 | Urządzenia łączności okrętowej | VI: W15 L10 e2
+42 | Eksploatacja okrętowych urządzeń elektrycznych | V: W20 L20 e4
+43 | Okrętowe systemy kontrolno-pomiarowe | VI: W15! L10 e3
+44 | Siłownie okrętowe i mechanizmy pomocnicze | VI: W30! L15 e3
+45 | Chłodnictwo, wentylacja i klimatyzacja | VIII: W15 L10 e1
+46 | Ochrona środowiska morskiego | VIII: W18 e1
+47 | Inżynieria materiałowa II | IV: W10 e1
+48 | Sieci komputerowe II | VI: W12 L8 e2
+49 | Umiejętności kierownicze i praca w zespołach | VI: W10 e2
+50 | Dowodzenie siłownią okrętową | VIII: W15 L8 e2
+51 | Praktyka morska | VII: e30 | VIII: W30
+52 | Praca dyplomowa | VIII: e15

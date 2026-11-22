@@ -1,0 +1,825 @@
+{
+ "Abramowicz-Gerigk|Teresa": {
+  "lastName": "Abramowicz-Gerigk",
+  "firstName": "Teresa",
+  "title": "dr hab. inż.",
+  "email": "t.gerigk@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Bazychowska|Sylwia": {
+  "lastName": "Bazychowska",
+  "firstName": "Sylwia",
+  "title": "mgr inż.",
+  "email": "s.bazychowska@wm.umg.edu.pl",
+  "unit": [
+   "Wydział Mechaniczny",
+   "Katedra Materiałów Okrętowych i Technologii Remontów"
+  ]
+ },
+ "Boniewicz-Szmyt|Katarzyna": {
+  "lastName": "Boniewicz-Szmyt",
+  "firstName": "Katarzyna",
+  "title": "dr",
+  "email": "k.boniewicz@wm.umg.edu.pl",
+  "unit": [
+   "Wydział Mechaniczny",
+   "Katedra Fizyki"
+  ]
+ },
+ "Ceynowa|Weronika": {
+  "lastName": "Ceynowa",
+  "firstName": "Weronika",
+  "title": "mgr",
+  "email": null,
+  "unit": []
+ },
+ "Cichocki|Rafał": {
+  "lastName": "Cichocki",
+  "firstName": "Rafał",
+  "title": "mgr inż.",
+  "email": "r.cichocki@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Cydejko|Jarosław": {
+  "lastName": "Cydejko",
+  "firstName": "Jarosław",
+  "title": "dr inż. kpt.ż.w.",
+  "email": "j.cydejko@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Cygańska|Daria": {
+  "lastName": "Cygańska",
+  "firstName": "Daria",
+  "title": "mgr inż.",
+  "email": "d.cyganska@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Daniszewska|Małgorzata": {
+  "lastName": "Daniszewska",
+  "firstName": "Małgorzata",
+  "title": "mgr",
+  "email": "m.daniszewska@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Denc|Maciej": {
+  "lastName": "Denc",
+  "firstName": "Maciej",
+  "title": "mgr",
+  "email": "m.denc@sjo.umg.edu.pl",
+  "unit": [
+   "Pion Prorektora ds. Studenckich i Kształcenia",
+   "Studium Języków Obcych"
+  ]
+ },
+ "Dudzik|Krzysztof": {
+  "lastName": "Dudzik",
+  "firstName": "Krzysztof",
+  "title": "dr hab. inż.",
+  "email": "k.dudzik@wm.umg.edu.pl",
+  "unit": [
+   "Wydział Mechaniczny",
+   "Katedra Materiałów Okrętowych i Technologii Remontów"
+  ]
+ },
+ "Dul|Paulina": {
+  "lastName": "Dul",
+  "firstName": "Paulina",
+  "title": "mgr",
+  "email": "p.dul@wi.umg.edu.pl",
+  "unit": [
+   "Wydział Informatyki",
+   "Zakład Matematyki"
+  ]
+ },
+ "Dyrcz|Czesław": {
+  "lastName": "Dyrcz",
+  "firstName": "Czesław",
+  "title": "kontradmirał w st. spocz. dr inż.",
+  "email": null,
+  "unit": []
+ },
+ "Dziula|Dorian": {
+  "lastName": "Dziula",
+  "firstName": "Dorian",
+  "title": "mgr",
+  "email": null,
+  "unit": []
+ },
+ "Dziula|Kordian": {
+  "lastName": "Dziula",
+  "firstName": "Kordian",
+  "title": "mgr",
+  "email": null,
+  "unit": []
+ },
+ "Dziula|Przemysław": {
+  "lastName": "Dziula",
+  "firstName": "Przemysław",
+  "title": "dr inż.",
+  "email": "p.dziula@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Felski|Andrzej": {
+  "lastName": "Felski",
+  "firstName": "Andrzej",
+  "title": "prof. dr hab. inż.",
+  "email": null,
+  "unit": []
+ },
+ "Formela|Kamil": {
+  "lastName": "Formela",
+  "firstName": "Kamil",
+  "title": "dr inż.",
+  "email": "k.formela@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Foryś|Bożena": {
+  "lastName": "Foryś",
+  "firstName": "Bożena",
+  "title": "mgr",
+  "email": "b.forys@sjo.umg.edu.pl",
+  "unit": [
+   "Pion Prorektora ds. Studenckich i Kształcenia",
+   "Studium Języków Obcych"
+  ]
+ },
+ "Furman|Tomasz": {
+  "lastName": "Furman",
+  "firstName": "Tomasz",
+  "title": null,
+  "email": null,
+  "unit": []
+ },
+ "Gil|Mateusz": {
+  "lastName": "Gil",
+  "firstName": "Mateusz",
+  "title": "dr inż.",
+  "email": "m.gil@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Gronostajska|Dominika": {
+  "lastName": "Gronostajska",
+  "firstName": "Dominika",
+  "title": "mgr inż.",
+  "email": "d.gronostajska@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Guze|Sambor": {
+  "lastName": "Guze",
+  "firstName": "Sambor",
+  "title": "dr hab.",
+  "email": "s.guze@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Zakład Modelowania i Metod Matematycznych w Transporcie"
+  ]
+ },
+ "Heimowska|Aleksandra": {
+  "lastName": "Heimowska",
+  "firstName": "Aleksandra",
+  "title": "dr inż.",
+  "email": "a.heimowska@wznj.umg.edu.pl",
+  "unit": [
+   "Wydział Zarządzania i Nauk o Jakości",
+   "Katedra Jakości Produktów Przemysłowych i Chemii"
+  ]
+ },
+ "Hejmlich|Andrzej": {
+  "lastName": "Hejmlich",
+  "firstName": "Andrzej",
+  "title": "dr inż. kpt. ż. w.",
+  "email": "a.hejmlich@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Jachowski|Jacek": {
+  "lastName": "Jachowski",
+  "firstName": "Jacek",
+  "title": "dr inż.",
+  "email": "j.jachowski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Jellonek|Dariusz": {
+  "lastName": "Jellonek",
+  "firstName": "Dariusz",
+  "title": null,
+  "email": null,
+  "unit": []
+ },
+ "Jellonnek|Dariusz": {
+  "lastName": "Jellonek",
+  "firstName": "Dariusz",
+  "title": "mgr inż. kpt. ż.w.",
+  "email": null,
+  "unit": []
+ },
+ "Jeżewski|Janusz": {
+  "lastName": "Jeżewski",
+  "firstName": "Janusz",
+  "title": "dr inż. kpt. ż.w.",
+  "email": "j.jezewski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Kaizer|Adam": {
+  "lastName": "Kaizer",
+  "firstName": "Adam",
+  "title": "dr inż.",
+  "email": "a.kaizer@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Karczewski|Remigiusz": {
+  "lastName": "Karczewski",
+  "firstName": "Remigiusz",
+  "title": "mgr inż.",
+  "email": "r.karczewski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Kerbrat|Agnieszka": {
+  "lastName": "Kerbrat",
+  "firstName": "Agnieszka",
+  "title": "mgr inż.",
+  "email": "a.kerbrat@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Kiełbratowska-Ogilvy|Jolanta": {
+  "lastName": "Kiełbratowska-Ogilvy",
+  "firstName": "Jolanta",
+  "title": "mgr",
+  "email": "j.kielbratowska@sjo.umg.edu.pl",
+  "unit": [
+   "Pion Prorektora ds. Studenckich i Kształcenia",
+   "Studium Języków Obcych"
+  ]
+ },
+ "Korcz|Karol": {
+  "lastName": "Korcz",
+  "firstName": "Karol",
+  "title": "dr inż. oficer radioelektronik",
+  "email": "k.korcz@we.umg.edu.pl",
+  "unit": [
+   "Wydział Elektryczny",
+   "Zakład Telekomunikacji Morskiej"
+  ]
+ },
+ "Kozakiewicz|Krystian": {
+  "lastName": "Kozakiewicz",
+  "firstName": "Krystian",
+  "title": "mgr inż.",
+  "email": "k.kozakiewicz@wi.umg.edu.pl",
+  "unit": [
+   "Wydział Informatyki",
+   "Zakład Systemów Autonomicznych"
+  ]
+ },
+ "Kołakowski|Paweł": {
+  "lastName": "Kołakowski",
+  "firstName": "Paweł",
+  "title": "mgr inż. kpt. ż.w.",
+  "email": "p.kolakowski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Krajewska|Paulina": {
+  "lastName": "Krajewska",
+  "firstName": "Paulina",
+  "title": "mgr inż.",
+  "email": "p.krajewska@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Krasowska|Katarzyna": {
+  "lastName": "Krasowska",
+  "firstName": "Katarzyna",
+  "title": "dr inż.",
+  "email": "prodziekan3@wznj.umg.edu.pl",
+  "unit": [
+   "Wydział Zarządzania i Nauk o Jakości",
+   "Katedra Jakości Produktów Przemysłowych i Chemii"
+  ]
+ },
+ "Lewiński|Tomasz": {
+  "lastName": "Lewiński",
+  "firstName": "Tomasz",
+  "title": null,
+  "email": null,
+  "unit": []
+ },
+ "Lisowski|Józef": {
+  "lastName": "Lisowski",
+  "firstName": "Józef",
+  "title": "prof. dr hab. inż.",
+  "email": "j.lisowski@umg.edu.pl",
+  "unit": [
+   "Wydział Informatyki",
+   "Zakład Systemów Autonomicznych"
+  ]
+ },
+ "Mateusz|Torbicki": {
+  "lastName": "Torbicki",
+  "firstName": "Mateusz",
+  "title": "dr inż.",
+  "email": "m.torbicki@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Zakład Modelowania i Metod Matematycznych w Transporcie"
+  ]
+ },
+ "Milczek|Beata": {
+  "lastName": "Milczek",
+  "firstName": "Beata",
+  "title": "dr",
+  "email": "b.milczek@wi.umg.edu.pl",
+  "unit": [
+   "Wydział Informatyki",
+   "Zakład Matematyki"
+  ]
+ },
+ "Mrozowski|Piotr": {
+  "lastName": "Mrozowski",
+  "firstName": "Piotr",
+  "title": "mgr inż. kpt. ż. w.",
+  "email": "p.mrozowski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Neumann|Tomasz": {
+  "lastName": "Neumann",
+  "firstName": "Tomasz",
+  "title": "dr hab. inż.",
+  "email": "t.neumann@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Nowakowski|Mirosław": {
+  "lastName": "Nowakowski",
+  "firstName": "Mirosław",
+  "title": "dr inż.",
+  "email": "m.nowakowski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Olszewski|Karol": {
+  "lastName": "Olszewski",
+  "firstName": "Karol",
+  "title": "mgr inż.",
+  "email": "k.olszewski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Centrum  Szkoleniowo - Treningowe"
+  ]
+ },
+ "Ożoga|Bartosz": {
+  "lastName": "Ożoga",
+  "firstName": "Bartosz",
+  "title": "mgr inż. kpt. ż. w.",
+  "email": null,
+  "unit": []
+ },
+ "Palmowski|Tadeusz": {
+  "lastName": "Palmowski",
+  "firstName": "Tadeusz",
+  "title": "prof. dr hab.",
+  "email": null,
+  "unit": []
+ },
+ "Panasiuk|Katarzyna": {
+  "lastName": "Panasiuk",
+  "firstName": "Katarzyna",
+  "title": "dr inż.",
+  "email": "k.panasiuk@wm.umg.edu.pl",
+  "unit": [
+   "Wydział Mechaniczny",
+   "Katedra Podstaw Techniki"
+  ]
+ },
+ "Pawlak|Małgorzata": {
+  "lastName": "Pawlak",
+  "firstName": "Małgorzata",
+  "title": "dr hab. inż.",
+  "email": "m.pawlak@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Pepliński|Marcin": {
+  "lastName": "Pepliński",
+  "firstName": "Marcin",
+  "title": "dr inż.",
+  "email": "m.peplinski@we.umg.edu.pl",
+  "unit": [
+   "Wydział Elektryczny",
+   "Katedra Elektroenergetyki Okrętowej"
+  ]
+ },
+ "Popek|Marzenna": {
+  "lastName": "Popek",
+  "firstName": "Marzenna",
+  "title": "dr hab.",
+  "email": "dziekan@wznj.umg.edu.pl",
+  "unit": [
+   "Wydział Zarządzania i Nauk o Jakości",
+   "Katedra Jakości Produktów Przemysłowych i Chemii"
+  ]
+ },
+ "Pranszke|Bogusław": {
+  "lastName": "Pranszke",
+  "firstName": "Bogusław",
+  "title": "dr hab.",
+  "email": "b.pranszke@wm.umg.edu.pl",
+  "unit": [
+   "Wydział Mechaniczny",
+   "Katedra Fizyki"
+  ]
+ },
+ "Przybyłowski|Adam": {
+  "lastName": "Przybyłowski",
+  "firstName": "Adam",
+  "title": "dr hab.",
+  "email": "a.przybylowski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Roszkowski|Kamil": {
+  "lastName": "Roszkowski",
+  "firstName": "Kamil",
+  "title": "mgr",
+  "email": null,
+  "unit": []
+ },
+ "Rutkowski|Grzegorz": {
+  "lastName": "Rutkowski",
+  "firstName": "Grzegorz",
+  "title": "dr hab. inż. kpt. ż.w.",
+  "email": "g.rutkowski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Rybowski|Marcin": {
+  "lastName": "Rybowski",
+  "firstName": "Marcin",
+  "title": "mgr inż.",
+  "email": "m.rybowski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Schoeneich|Marta": {
+  "lastName": "Schoeneich",
+  "firstName": "Marta",
+  "title": "dr inż.",
+  "email": "m.schoeneich@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Shoeneich|Marta": {
+  "lastName": "Schoeneich",
+  "firstName": "Marta",
+  "title": "dr inż.",
+  "email": "m.schoeneich@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Skrzeszewska|Katarzyna": {
+  "lastName": "Skrzeszewska",
+  "firstName": "Katarzyna",
+  "title": "dr",
+  "email": "k.skrzeszewska@wznj.umg.edu.pl",
+  "unit": [
+   "Wydział Zarządzania i Nauk o Jakości",
+   "Katedra Zarządzania i Ekonomii"
+  ]
+ },
+ "Smacki|Andrzej": {
+  "lastName": "Smacki",
+  "firstName": "Andrzej",
+  "title": "mgr inż. kpt.",
+  "email": "a.smacki@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Soliwoda|Jarosław": {
+  "lastName": "Soliwoda",
+  "firstName": "Jarosław",
+  "title": "dr inż.",
+  "email": "j.soliwoda@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Soszyńska-Budny|Joanna": {
+  "lastName": "Soszyńska-Budny",
+  "firstName": "Joanna",
+  "title": "dr hab.",
+  "email": "j.soszynska-budny@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Specht|Cezary": {
+  "lastName": "Specht",
+  "firstName": "Cezary",
+  "title": "prof. dr hab. inż.",
+  "email": "c.specht@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Specht|Mariusz": {
+  "lastName": "Specht",
+  "firstName": "Mariusz",
+  "title": "dr inż.",
+  "email": "m.specht@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Specht|Oktawia": {
+  "lastName": "Specht",
+  "firstName": "Oktawia",
+  "title": "dr",
+  "email": "o.lewicka@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Stupak|Tadeusz": {
+  "lastName": "Stupak",
+  "firstName": "Tadeusz",
+  "title": "dr hab. inż.",
+  "email": "t.stupak@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Szczepański|Marek": {
+  "lastName": "Szczepański",
+  "firstName": "Marek",
+  "title": "mgr",
+  "email": "m.szczepanski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Szyc|Rafał": {
+  "lastName": "Szyc",
+  "firstName": "Rafał",
+  "title": "dr",
+  "email": "r.szyc@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Szyda|Monika": {
+  "lastName": "Szyda",
+  "firstName": "Monika",
+  "title": "dr",
+  "email": "m.szyda@wznj.umg.edu.pl",
+  "unit": [
+   "Wydział Zarządzania i Nauk o Jakości",
+   "Katedra Zarządzania i Ekonomii"
+  ]
+ },
+ "Tessmer|Agni": {
+  "lastName": "Tessmer",
+  "firstName": "Agnieszka",
+  "title": "mgr inż.",
+  "email": "a.tessmer@wn.umg.edu.pl",
+  "unit": [
+   "Pion Rektora",
+   "Biuro Promocji"
+  ]
+ },
+ "Tessmer|Agnieszka": {
+  "lastName": "Tessmer",
+  "firstName": "Agnieszka",
+  "title": "mgr inż.",
+  "email": "a.tessmer@wn.umg.edu.pl",
+  "unit": [
+   "Pion Rektora",
+   "Biuro Promocji"
+  ]
+ },
+ "Tomczuk|Tymoteusz": {
+  "lastName": "Tomczuk",
+  "firstName": "Tymoteusz",
+  "title": "mgr inż.",
+  "email": "t.tomczuk@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Torbicki|Mateusz": {
+  "lastName": "Torbicki",
+  "firstName": "Mateusz",
+  "title": "dr inż.",
+  "email": "m.torbicki@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Zakład Modelowania i Metod Matematycznych w Transporcie"
+  ]
+ },
+ "Wawruch|Ryszard": {
+  "lastName": "Wawruch",
+  "firstName": "Ryszard",
+  "title": "dr hab. inż. kpt. ż.w.",
+  "email": "r.wawruch@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Wawrzyńska|Aleksandra": {
+  "lastName": "Wawrzyńska",
+  "firstName": "Aleksandra",
+  "title": "dr inż.",
+  "email": "a.wawrzynska@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Transportu"
+  ]
+ },
+ "Wawrzyński|Wojciech": {
+  "lastName": "Wawrzyński",
+  "firstName": "Wojciech",
+  "title": "dr hab. inż.",
+  "email": "w.wawrzynski@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Weintrit|Adam": {
+  "lastName": "Weintrit",
+  "firstName": "Adam",
+  "title": "prof. dr hab. inż. kpt. ż.w.",
+  "email": "a.weintrit@umg.edu.pl",
+  "unit": [
+   "Pion Rektora"
+  ]
+ },
+ "Wierzbicki|Paweł": {
+  "lastName": "Wierzbicki",
+  "firstName": "Paweł",
+  "title": "mgr inż.",
+  "email": "p.wierzbicki@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Wróbel|Krzysztof": {
+  "lastName": "Wróbel",
+  "firstName": "Krzysztof",
+  "title": "dr hab. inż.",
+  "email": "k.wrobel@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Wójcik|Przemysław": {
+  "lastName": "Wójcik",
+  "firstName": "Przemysław",
+  "title": "mgr inż.",
+  "email": "p.wojcik@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Nawigacji"
+  ]
+ },
+ "Zawadzka-Mierzejewska|Anna": {
+  "lastName": "Zawadzka-Mierzejewska",
+  "firstName": "Anna",
+  "title": "mgr",
+  "email": "a.zawadzka@sjo.umg.edu.pl",
+  "unit": [
+   "Pion Prorektora ds. Studenckich i Kształcenia",
+   "Studium Języków Obcych"
+  ]
+ },
+ "Ziemska-Osuch|Monika": {
+  "lastName": "Ziemska-Osuch",
+  "firstName": "Monika",
+  "title": "dr inż.",
+  "email": "m.ziemska@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Zakład Modelowania i Metod Matematycznych w Transporcie"
+  ]
+ },
+ "Łozińska|Maria": {
+  "lastName": "Łozińska",
+  "firstName": "Maria",
+  "title": "mgr",
+  "email": "m.lozinska@sjo.umg.edu.pl",
+  "unit": [
+   "Pion Prorektora ds. Studenckich i Kształcenia",
+   "Studium Języków Obcych"
+  ]
+ },
+ "Łącki|Mirosław": {
+  "lastName": "Łącki",
+  "firstName": "Mirosław",
+  "title": "dr inż.",
+  "email": "m.lacki@wi.umg.edu.pl",
+  "unit": [
+   "Wydział Informatyki",
+   "Zakład Systemów Autonomicznych"
+  ]
+ },
+ "Śniegocki|Henryk": {
+  "lastName": "Śniegocki",
+  "firstName": "Henryk",
+  "title": "dr hab. inż. kpt ż.w.",
+  "email": "h.sniegocki@wn.umg.edu.pl",
+  "unit": [
+   "Wydział Nawigacyjny",
+   "Katedra Eksploatacji Statku"
+  ]
+ },
+ "Żuk|Daria": {
+  "lastName": "Żuk",
+  "firstName": "Daria",
+  "title": "dr inż.",
+  "email": "d.zuk@wm.umg.edu.pl",
+  "unit": [
+   "Wydział Mechaniczny",
+   "Katedra Podstaw Techniki"
+  ]
+ }
+}

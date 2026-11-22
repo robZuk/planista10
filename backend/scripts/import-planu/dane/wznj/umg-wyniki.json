@@ -1,0 +1,1756 @@
+{
+ "Barbucha": [
+  {
+   "name": "Dariusz Barbucha",
+   "title": "dr hab.",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Podstaw Informatyki"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "B-107",
+   "telefon": "58-5586-427",
+   "email": "pror.n@umg.edu.pl",
+   "funkcja": "Prorektor ds. nauki"
+  }
+ ],
+ "Baszanowska": [
+  {
+   "name": "Emilia Baszanowska",
+   "title": "dr",
+   "unit": [
+    "Wydział Mechaniczny",
+    "Katedra Fizyki"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-142",
+   "telefon": "58-5586-588",
+   "email": "e.baszanowska@wm.umg.edu.pl"
+  }
+ ],
+ "Biegańska": [
+  {
+   "name": "Justyna Biegańska",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Marketingu i Metod Ilościowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-406",
+   "telefon": "58-5586-806",
+   "email": "j.bieganska@wznj.umg.edu.pl"
+  }
+ ],
+ "Bobkowska": [
+  {
+   "name": "Anna Bobkowska",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Inżynierii Systemów"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "F-105",
+   "telefon": "58-5586-500",
+   "email": "a.bobkowska@wi.umg.edu.pl"
+  }
+ ],
+ "Borkowska": [
+  {
+   "name": "Beata Borkowska",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-15",
+   "telefon": "58-5586-472",
+   "email": "b.borkowska@wznj.umg.edu.pl"
+  }
+ ],
+ "Brzeska": [
+  {
+   "name": "Joanna Brzeska",
+   "title": "dr hab. inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Jakości Produktów Przemysłowych i Chemii"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "C-6",
+   "telefon": "58-5586-383",
+   "email": "j.brzeska@wznj.umg.edu.pl"
+  }
+ ],
+ "Bulczak": [
+  {
+   "name": "Grzegorz Bulczak",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Marketingu i Metod Ilościowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-405",
+   "telefon": "58-5586-805",
+   "email": "g.bulczak@wznj.umg.edu.pl"
+  }
+ ],
+ "Charłampowicz": [
+  {
+   "name": "Jędrzej Charłampowicz",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Logistyki i Systemów Transportowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-124",
+   "telefon": "58-5586-516",
+   "email": "j.charlampowicz@wznj.umg.edu.pl"
+  }
+ ],
+ "Czarnecka": [
+  {
+   "name": "Agnieszka Czarnecka",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-416",
+   "telefon": "58-5586-521",
+   "email": "a.czarnecka@wznj.umg.edu.pl"
+  }
+ ],
+ "Czarnowski": [
+  {
+   "name": "Ireneusz Czarnowski",
+   "title": "prof. dr hab. inż.",
+   "unit": [
+    "Wydział Informatyki",
+    "Dziekan WI"
+   ],
+   "stanowisko": "profesor",
+   "funkcja": "Kierownik Zakładu Informatyki Stosowanej i Sztucznej Inteligencji",
+   "pokój": "F-204",
+   "telefon": "58-5586-287",
+   "email": "i.czarnowski@umg.edu.pl"
+  }
+ ],
+ "Dereszewska": [
+  {
+   "name": "Alina Dereszewska",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Jakości Produktów Przemysłowych i Chemii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-111",
+   "telefon": "58-5586-585",
+   "email": "a.dereszewska@wznj.umg.edu.pl"
+  }
+ ],
+ "Dmowski": [
+  {
+   "name": "Przemysław Dmowski",
+   "title": "dr hab. inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "B-429",
+   "telefon": "58-5586-459",
+   "email": "prodziekan1@wznj.umg.edu.pl",
+   "funkcja": "Prodziekan ds. kształcenia"
+  }
+ ],
+ "Domachowska-Fic": [
+  {
+   "name": "Malina Domachowska-Fic",
+   "title": "mgr",
+   "unit": [
+    "Pion Prorektora ds. Studenckich i Kształcenia",
+    "Studium Języków Obcych"
+   ],
+   "stanowisko": "wykładowca",
+   "pokój": "B-309",
+   "telefon": "58-5586-212",
+   "email": "m.fic@sjo.umg.edu.pl"
+  }
+ ],
+ "Flis": [
+  {
+   "name": "Anna Flis",
+   "title": "mgr inż",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "asystent",
+   "pokój": "B-32",
+   "telefon": "58-5586-518",
+   "email": "a.flis@wznj.umg.edu.pl"
+  }
+ ],
+ "Forkiewicz": [
+  {
+   "name": "Marcin Forkiewicz",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Inżynierii Systemów"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "F-105",
+   "telefon": "58-5586-500",
+   "email": "m.forkiewicz@wi.umg.edu.pl"
+  }
+ ],
+ "Ginter": [
+  {
+   "name": "Renata Korzeniowska-Ginter",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-45d",
+   "telefon": "58-5586-641",
+   "email": "r.ginter@wznj.umg.edu.pl"
+  }
+ ],
+ "Grobelna": [
+  {
+   "name": "Aleksandra Grobelna",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Marketingu i Metod Ilościowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-404",
+   "telefon": "58-5586-527",
+   "email": "a.grobelna@wznj.umg.edu.pl"
+  }
+ ],
+ "Grzelakowski": [
+  {
+   "name": "Andrzej Grzelakowski",
+   "title": "prof. dr hab.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Logistyki i Systemów Transportowych"
+   ],
+   "stanowisko": "profesor",
+   "funkcja": "Kierownik Katedry Logistyki i Systemów Transportowych",
+   "pokój": "C-128c",
+   "telefon": "58-5586-499",
+   "email": "a.grzelakowski@wznj.umg.edu.pl"
+  }
+ ],
+ "Gwarda": [
+  {
+   "name": "Karolina Gwarda",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Logistyki i Systemów Transportowych"
+   ],
+   "stanowisko": "asystent",
+   "pokój": "C-124",
+   "telefon": "58-5586-516",
+   "email": "k.gwarda@wznj.umg.edu.pl"
+  }
+ ],
+ "Hajduk": [
+  {
+   "name": "Agnieszka Hajduk",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-416",
+   "telefon": "58-5586-521",
+   "email": "a.hajduk@wznj.umg.edu.pl"
+  },
+  {
+   "name": "Tomasz Hajduk",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Mechaniczny",
+    "Katedra Siłowni Okrętowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "A-225",
+   "telefon": "58-5586-324",
+   "email": "t.hajduk@wm.umg.edu.pl"
+  },
+  {
+   "name": "Grzegorz Hajdukiewicz",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Mechaniczny",
+    "Katedra Podstaw Techniki"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "A-211",
+   "telefon": "58-5586-451",
+   "email": "g.hajdukiewicz@wm.umg.edu.pl"
+  }
+ ],
+ "Hałaczkiewicz": [
+  {
+   "name": "Jacek Hałaczkiewicz",
+   "title": "dr inż.",
+   "unit": [
+    "Związek Zawodowy Pracowników UM w Gdyni"
+   ],
+   "stanowisko": "adiunkt",
+   "funkcja": "Przewodniczący Związku Zawodowego Pracowników UMG",
+   "pokój": "C-27",
+   "telefon": "58-5586-219",
+   "email": "j.halaczkiewicz@wznj.umg.edu.pl"
+  }
+ ],
+ "Heimowska": [
+  {
+   "name": "Aleksandra Heimowska",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Jakości Produktów Przemysłowych i Chemii"
+   ],
+   "stanowisko": "adiunkt",
+   "funkcja": "Zastępca Kierownika Katedry Jakości Produktów Przemysłowych i Chemii",
+   "pokój": "C-5",
+   "telefon": "58-5586-367",
+   "email": "a.heimowska@wznj.umg.edu.pl"
+  }
+ ],
+ "Hryniewicz": [
+  {
+   "name": "Konrad Hryniewicz",
+   "title": "mgr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Marketingu i Metod Ilościowych"
+   ],
+   "stanowisko": "asystent",
+   "pokój": "B-405",
+   "telefon": "58-5586-805",
+   "email": "k.hryniewicz@wznj.umg.edu.pl"
+  }
+ ],
+ "Jastrzębska": [
+  {
+   "name": "Mariola Jastrzębska",
+   "title": "dr hab. inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Jakości Produktów Przemysłowych i Chemii"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "C-111",
+   "telefon": "58-5586-585",
+   "email": "m.jastrzebska@wznj.umg.edu.pl"
+  }
+ ],
+ "Jędrzejowicz": [
+  {
+   "name": "Piotr Jędrzejowicz",
+   "title": "prof. dr hab.",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+   ],
+   "stanowisko": "profesor",
+   "pokój": "F-108",
+   "telefon": "58-5586-397",
+   "email": "p.jedrzejowicz@umg.edu.pl",
+   "funkcja": "Pełnomocnik Rektora ds. kontaktów międzynarodowych"
+  }
+ ],
+ "Kamedulska": [
+  {
+   "name": "Agnieszka Kamedulska",
+   "title": "dr",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Matematyki"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-303",
+   "telefon": "58-5586-386",
+   "email": "a.kamedulska@wi.umg.edu.pl"
+  }
+ ],
+ "Kamińska": [
+  {
+   "name": "Jolanta Kamińska",
+   "title": "mgr inż.",
+   "unit": [
+    "Wydział Mechaniczny",
+    "Katedra Fizyki"
+   ],
+   "stanowisko": "starszy wykładowca",
+   "pokój": "C-116a",
+   "telefon": "58-5586-284",
+   "email": "j.kaminska@wm.umg.edu.pl"
+  },
+  {
+   "name": "Katarzyna Kamińska",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-407",
+   "telefon": "58-5586-544",
+   "email": "k.kaminska@wznj.umg.edu.pl"
+  }
+ ],
+ "Karaś": [
+  {
+   "name": "Adrianna Karaś",
+   "title": "mgr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Logistyki i Systemów Transportowych"
+   ],
+   "stanowisko": "asystent",
+   "pokój": "C-119",
+   "telefon": "58-5586-644",
+   "email": "a.karas@wznj.umg.edu.pl"
+  }
+ ],
+ "Klopott": [
+  {
+   "name": "Magdalena Klopott",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Logistyki i Systemów Transportowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-126",
+   "telefon": "58-5586-615",
+   "email": "m.klopott@wznj.umg.edu.pl"
+  }
+ ],
+ "Korta": [
+  {
+   "name": "Danuta Korta",
+   "title": "mgr",
+   "unit": [
+    "Pion Prorektora ds. Studenckich i Kształcenia",
+    "Studium Języków Obcych"
+   ],
+   "stanowisko": "starszy wykładowca",
+   "pokój": "B-302",
+   "telefon": "58-5586-530",
+   "email": "d.korta@sjo.umg.edu.pl"
+  }
+ ],
+ "Kozirok": [
+  {
+   "name": "Witold Kozirok",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-32",
+   "telefon": "58-5586-400",
+   "email": "w.kozirok@wznj.umg.edu.pl"
+  }
+ ],
+ "Krasowska": [
+  {
+   "name": "Katarzyna Krasowska",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Jakości Produktów Przemysłowych i Chemii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-428",
+   "telefon": "58-5586-587",
+   "email": "prodziekan3@wznj.umg.edu.pl",
+   "funkcja": "Prodziekan ds. studenckich"
+  }
+ ],
+ "Kukułowicz": [
+  {
+   "name": "Anita Kukułowicz",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-13",
+   "telefon": "58-5586-537",
+   "email": "a.kukulowicz@wznj.umg.edu.pl"
+  }
+ ],
+ "Kwiatuszewska-Sarnecka": [
+  {
+   "name": "Bożena Kwiatuszewska-Sarnecka",
+   "title": "dr",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Matematyki"
+   ],
+   "stanowisko": "starszy wykładowca",
+   "funkcja": "Kierownik Zakładu Matematyki",
+   "pokój": "C-303a",
+   "telefon": "58-5586-228",
+   "email": "b.sarnecka@wi.umg.edu.pl"
+  }
+ ],
+ "Mackiewicz": [
+  {
+   "name": "Monika Maćkiewicz",
+   "title": "mgr",
+   "unit": [
+    "Pion Prorektora ds. Współpracy z Otoczeniem Społeczno-Gospodarczym",
+    "Centrum Transferu Technologii"
+   ],
+   "stanowisko": "broker innowacji - samodzielny referent ds. transferu technologii",
+   "pokój": "A-120",
+   "telefon": "58-5586-466",
+   "email": "biznes@umg.edu.pl"
+  },
+  {
+   "name": "Hanna Mackiewicz",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-409",
+   "telefon": "58-5586-379",
+   "email": "h.mackiewicz@wznj.umg.edu.pl"
+  }
+ ],
+ "Malewska-Szymichowska": [
+  {
+   "name": "Anna Malewska-Szymichowska",
+   "title": "mgr",
+   "unit": [
+    "Pion Prorektora ds. Studenckich i Kształcenia",
+    "Studium Języków Obcych"
+   ],
+   "stanowisko": "wykładowca",
+   "pokój": "N-214",
+   "telefon": "58-5586-159",
+   "email": "a.malewska@sjo.umg.edu.pl"
+  }
+ ],
+ "Marciszewska": [
+  {
+   "name": "Barbara Marciszewska",
+   "title": "prof. dr hab.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Marketingu i Metod Ilościowych"
+   ],
+   "stanowisko": "profesor",
+   "funkcja": "Kierownik Katedry Marketingu i Metod Ilościowych",
+   "pokój": "B-401",
+   "telefon": "58-5586-672",
+   "email": "b.marciszewska@wznj.umg.edu.pl"
+  }
+ ],
+ "Marek": [
+  {
+   "name": "Marek Lubowiecki",
+   "title": "",
+   "unit": [
+    "NSZZ \"Solidarność\""
+   ],
+   "funkcja": "Przewodniczący NSZZ",
+   "pokój": "C-52",
+   "telefon": "58-5586-353",
+   "email": "zzsolid@umg.edu.pl"
+  },
+  {
+   "name": "Marek Kubale",
+   "title": "prof. dr hab. inż.",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Matematyki"
+   ],
+   "stanowisko": "profesor",
+   "pokój": "C-306",
+   "telefon": "58-5586-803",
+   "email": "m.kubale@wi.umg.edu.pl"
+  },
+  {
+   "name": "Natalia Kaczmarek",
+   "title": "mgr",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Oceanografii Operacyjnej"
+   ],
+   "stanowisko": "główny specjalista",
+   "funkcja": "Zastępca Kierownika Zakładu Oceanografii Operacyjnej",
+   "pokój": "A205",
+   "telefon": "58-6693-764",
+   "email": "nkaczmarek@im.umg.edu.pl"
+  },
+  {
+   "name": "Marek Kitliński",
+   "title": "dr hab. inż.",
+   "unit": [
+    "Wydział Elektryczny",
+    "Katedra Elektroniki Morskiej"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "C-342",
+   "telefon": "58 5586-247",
+   "email": "m.kitlinski@we.umg.edu.pl"
+  },
+  {
+   "name": "Robert Marek",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Logistyki i Systemów Transportowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-119",
+   "telefon": "58-5586-644",
+   "email": "r.marek@wznj.umg.edu.pl"
+  },
+  {
+   "name": "Marek Szczepański",
+   "title": "mgr",
+   "unit": [
+    "Wydział Nawigacyjny",
+    "Katedra Nawigacji"
+   ],
+   "stanowisko": "starszy wykładowca",
+   "pokój": "Planetarium",
+   "telefon": "58-5586-113",
+   "email": "m.szczepanski@wn.umg.edu.pl"
+  }
+ ],
+ "Matczak": [
+  {
+   "name": "Maciej Matczak",
+   "title": "dr hab.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Logistyki i Systemów Transportowych"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "C-123",
+   "telefon": "58-5586-217",
+   "email": "m.matczak@wznj.umg.edu.pl"
+  }
+ ],
+ "Meyer": [
+  {
+   "name": "Ireneusz Meyer",
+   "title": "mgr",
+   "unit": [
+    "Pion Prorektora ds. Nauki",
+    "Centrum Informatyczne"
+   ],
+   "funkcja": "Administrator Sieci",
+   "pokój": "F-14",
+   "telefon": "58-5586-520",
+   "email": "i.meyer@ci.umg.edu.pl",
+   "stanowisko": "główny specjalista"
+  },
+  {
+   "name": "Maciej Meyer",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Marketingu i Metod Ilościowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-422",
+   "telefon": "58-5586-551",
+   "email": "m.meyer@wznj.umg.edu.pl"
+  }
+ ],
+ "Miklińska": [
+  {
+   "name": "Joanna Miklińska",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Logistyki i Systemów Transportowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-126",
+   "telefon": "58-5586-615",
+   "email": "j.miklinska@wznj.umg.edu.pl"
+  }
+ ],
+ "Morawska": [
+  {
+   "name": "Magda Morawska",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Jakości Produktów Przemysłowych i Chemii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-6",
+   "telefon": "58-5586-383",
+   "email": "m.morawska@wznj.umg.edu.pl"
+  }
+ ],
+ "Newerli-Guz": [
+  {
+   "name": "Joanna Newerli-Guz",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-434",
+   "telefon": "58-5586-344",
+   "email": "j.newerli-guz@wznj.umg.edu.pl"
+  }
+ ],
+ "Ocieczek": [
+  {
+   "name": "Aneta Ocieczek",
+   "title": "dr hab. inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "C-26",
+   "telefon": "58-5586-281",
+   "email": "a.ocieczek@wznj.umg.edu.pl",
+   "funkcja": "Dyrektor Szkoły Doktorskiej UMG"
+  }
+ ],
+ "Owczarek": [
+  {
+   "name": "Tomasz Owczarek",
+   "title": "dr",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Matematyki"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-306a",
+   "telefon": "58-5586-802",
+   "email": "t.owczarek@wi.umg.edu.pl",
+   "funkcja": "Prodziekan ds. organizacji studiów i kształcenia"
+  }
+ ],
+ "Palka": [
+  {
+   "name": "Agnieszka Palka",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-39",
+   "telefon": "58-5586-282",
+   "email": "a.palka@wznj.umg.edu.pl"
+  }
+ ],
+ "Pawłowska": [
+  {
+   "name": "Natalia Pawłowska",
+   "title": "dr",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Inżynierii Systemów"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "F-111",
+   "telefon": "58-5586-396",
+   "email": "n.pawlowska@wi.umg.edu.pl",
+   "funkcja": "Prodziekan ds. ogólnych"
+  }
+ ],
+ "Pigłowski": [
+  {
+   "name": "Marcin Pigłowski",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-3",
+   "telefon": "58-5586-295",
+   "email": "m.piglowski@wznj.umg.edu.pl"
+  }
+ ],
+ "Platta": [
+  {
+   "name": "Anna Platta",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-32",
+   "telefon": "58-5586-505",
+   "email": "a.platta@wznj.umg.edu.pl"
+  }
+ ],
+ "Popek": [
+  {
+   "name": "Marzenna Popek",
+   "title": "dr hab.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Jakości Produktów Przemysłowych i Chemii"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "B-430",
+   "telefon": "58-5586-489",
+   "email": "dziekan@wznj.umg.edu.pl",
+   "funkcja": "Dziekan Wydziału Zarządzania i Nauk o Jakości"
+  }
+ ],
+ "Przybyłowski": [
+  {
+   "name": "Piotr Przybyłowski",
+   "title": "prof. dr hab. inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "profesor",
+   "funkcja": "Kierownik Katedry Zarządzania Jakością",
+   "pokój": "C-107",
+   "telefon": "58-5586-342",
+   "email": "p.przybylowski@wznj.umg.edu.pl"
+  },
+  {
+   "name": "Adam Przybyłowski",
+   "title": "dr hab.",
+   "unit": [
+    "Wydział Nawigacyjny",
+    "Katedra Transportu"
+   ],
+   "stanowisko": "profesor UMG",
+   "funkcja": "IAMU Contact Person",
+   "pokój": "C-129A",
+   "telefon": "58-5586-838",
+   "email": "a.przybylowski@wn.umg.edu.pl"
+  }
+ ],
+ "Pukszta": [
+  {
+   "name": "Tomasz Pukszta",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-37",
+   "telefon": "58-5586-345",
+   "email": "t.pukszta@wznj.umg.edu.pl"
+  }
+ ],
+ "Ruszkowska": [
+  {
+   "name": "Millena Ruszkowska",
+   "title": "dr hab. inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "B-30",
+   "telefon": "58-5586-238",
+   "email": "m.ruszkowska@wznj.umg.edu.pl"
+  }
+ ],
+ "Rybowska": [
+  {
+   "name": "Agnieszka Rybowska",
+   "title": "dr hab. inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "C-33",
+   "telefon": "58-5586-625",
+   "email": "a.rybowska@wznj.umg.edu.pl"
+  }
+ ],
+ "Sarnowski": [
+  {
+   "name": "Krzysztof Sarnowski",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-413",
+   "telefon": "58-5586-623",
+   "email": "k.sarnowski@wznj.umg.edu.pl"
+  }
+ ],
+ "Skakovski": [
+  {
+   "name": "Aleksander Skakovski",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Podstaw Informatyki"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "F-102",
+   "telefon": "58-5586-420",
+   "email": "a.skakovski@wi.umg.edu.pl"
+  }
+ ],
+ "Skiba": [
+  {
+   "name": "Sławomir Skiba",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Logistyki i Systemów Transportowych"
+   ],
+   "stanowisko": "adiunkt",
+   "funkcja": "Zastępca Kierownika Katedry Logistyki i Systemów Transportowych",
+   "pokój": "C-119",
+   "telefon": "58-5586-644",
+   "email": "s.skiba@wznj.umg.edu.pl"
+  }
+ ],
+ "Skrodzka": [
+  {
+   "name": "Violetta Skrodzka",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-413",
+   "telefon": "58-5586-623",
+   "email": "v.skrodzka@wznj.umg.edu.pl"
+  }
+ ],
+ "Skrzeszewska": [
+  {
+   "name": "Katarzyna Skrzeszewska",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-414",
+   "telefon": "58-5586-508",
+   "email": "k.skrzeszewska@wznj.umg.edu.pl"
+  }
+ ],
+ "Spodarczyk": [
+  {
+   "name": "Edyta Spodarczyk",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-409",
+   "telefon": "58-5586-379",
+   "email": "e.spodarczyk@wznj.umg.edu.pl"
+  }
+ ],
+ "Stankiewicz": [
+  {
+   "name": "Jadwiga Stankiewicz",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-14",
+   "telefon": "58-5586-674",
+   "email": "j.stankiewicz@wznj.umg.edu.pl"
+  }
+ ],
+ "Stasiuk": [
+  {
+   "name": "Ewa Stasiuk",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-17",
+   "telefon": "58-5586-279",
+   "email": "e.stasiuk@wznj.umg.edu.pl"
+  }
+ ],
+ "Sulej-Suchomska": [],
+ "Surawski": [
+  {
+   "name": "Bartosz Surawski",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-417",
+   "telefon": "58-5586-343",
+   "email": "b.surawski@wznj.umg.edu.pl"
+  }
+ ],
+ "Szelągowska-Rudzka": [
+  {
+   "name": "Katarzyna Szelągowska-Rudzka",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-407",
+   "telefon": "58-5586-544",
+   "email": "k.szelagowska-rudzka@wznj.umg.edu.pl"
+  }
+ ],
+ "Szkiel": [
+  {
+   "name": "Agata Szkiel",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "funkcja": "Pełnomocnik ds. SZJ na WZNJ",
+   "pokój": "C-4",
+   "telefon": "58-5586-264",
+   "email": "a.szkiel@wznj.umg.edu.pl"
+  }
+ ],
+ "Sztramska": [
+  {
+   "name": "Mirosława Sztramska",
+   "title": "dr",
+   "unit": [
+    "Pion Prorektora ds. Studenckich i Kształcenia",
+    "Studium Języków Obcych"
+   ],
+   "stanowisko": "adiunkt",
+   "funkcja": "Kierownik Studium Języków Obcych",
+   "pokój": "B-306",
+   "telefon": "58-5586-531, 636",
+   "email": "m.sztramska@sjo.umg.edu.pl"
+  }
+ ],
+ "Szyda": [
+  {
+   "name": "Monika Szyda",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "funkcja": "Zastępca Kierownika Katedry Zarządzania i Ekonomii",
+   "pokój": "B-415",
+   "telefon": "58-5586-539",
+   "email": "m.szyda@wznj.umg.edu.pl"
+  }
+ ],
+ "Szyman": [
+  {
+   "name": "Natalia Szymańska",
+   "title": "mgr",
+   "unit": [
+    "Wydział Elektryczny",
+    "Dziekanat WE"
+   ],
+   "stanowisko": "starszy specjalista",
+   "pokój": "C-256",
+   "telefon": "58-5586-651",
+   "email": "n.szymanska@we.umg.edu.pl"
+  },
+  {
+   "name": "Paweł Szyman",
+   "title": "mgr",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+   ],
+   "stanowisko": "asystent",
+   "pokój": "F-206",
+   "telefon": "58-5586-461",
+   "email": "p.szyman@wi.umg.edu.pl"
+  }
+ ],
+ "Tura-Gawron": [
+  {
+   "name": "Karolina Tura-Gawron",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Marketingu i Metod Ilościowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-406",
+   "telefon": "58-5586-806",
+   "email": "k.tura-gawron@wznj.umg.edu.pl"
+  }
+ ],
+ "Urbanyi-Popiołek": [
+  {
+   "name": "Ilona Urbanyi-Popiołek",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Logistyki i Systemów Transportowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-431",
+   "telefon": "58-5586-667",
+   "email": "i.urbanyi@wznj.umg.edu.pl"
+  }
+ ],
+ "Wanagos": [
+  {
+   "name": "Marzena Wanagos",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Marketingu i Metod Ilościowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-402",
+   "telefon": "58-5586-286",
+   "email": "m.wanagos@wznj.umg.edu.pl"
+  }
+ ],
+ "Waśniewska": [
+  {
+   "name": "Anetta Waśniewska",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-414",
+   "telefon": "58-5586-508",
+   "email": "a.wasniewska@wznj.umg.edu.pl"
+  }
+ ],
+ "Wierzowiecka": [
+  {
+   "name": "Joanna Wierzowiecka",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-4",
+   "telefon": "58-5586-264",
+   "email": "j.wierzowiecka@wznj.umg.edu.pl"
+  }
+ ],
+ "Wilczyńska": [
+  {
+   "name": "Aleksandra Wilczyńska",
+   "title": "dr hab. inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "B-423",
+   "telefon": "58-5586-619",
+   "email": "prodziekan2@wznj.umg.edu.pl",
+   "funkcja": "Prodziekan ds. nauki i rozwoju"
+  }
+ ],
+ "Winiarska": [
+  {
+   "name": "Magdalena Winiarska",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-412",
+   "telefon": "58-5586-699",
+   "email": "m.winiarska@wznj.umg.edu.pl"
+  }
+ ],
+ "Winnicki": [
+  {
+   "name": "Tomasz Winnicki",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-415",
+   "telefon": "58-5586-539",
+   "email": "t.winnicki@wznj.umg.edu.pl"
+  }
+ ],
+ "Wolska": [
+  {
+   "name": "Grażyna Wolska",
+   "title": "dr hab.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania i Ekonomii"
+   ],
+   "stanowisko": "profesor UMG",
+   "funkcja": "Kierownik Katedry Zarządzania i Ekonomii",
+   "pokój": "B-409a",
+   "telefon": "58-5586-235",
+   "email": "g.wolska@wznj.umg.edu.pl"
+  }
+ ],
+ "Wójcik": [
+  {
+   "name": "Dorota Wójcik",
+   "title": "dr n. med.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Marketingu i Metod Ilościowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-422",
+   "telefon": "58-5586-551",
+   "email": "d.wojcik@wznj.umg.edu.pl"
+  },
+  {
+   "name": "Aleksandra Dzendrowska-Wójcik",
+   "title": "mgr",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Ochrony Środowiska"
+   ],
+   "stanowisko": "asystent",
+   "email": "adzendrowska@im.umg.edu.pl"
+  },
+  {
+   "name": "Przemysław Wójcik",
+   "title": "mgr inż.",
+   "unit": [
+    "Wydział Nawigacyjny",
+    "Katedra Nawigacji"
+   ],
+   "stanowisko": "asystent",
+   "pokój": "N-9B",
+   "telefon": "58-5586-178",
+   "email": "p.wojcik@wn.umg.edu.pl"
+  },
+  {
+   "name": "Jacek Wójcik",
+   "title": "mgr inż.",
+   "unit": [
+    "Wydział Elektryczny",
+    "Katedra OZE i Elektromobilności"
+   ],
+   "stanowisko": "starszy specjalista",
+   "pokój": "C-223, C-224, C-57, C-59",
+   "telefon": "58-5586-608",
+   "email": "j.wojcik@we.umg.edu.pl"
+  },
+  {
+   "name": "Piotr Wójcik",
+   "title": "inż.",
+   "unit": [
+    "Wydział Mechaniczny",
+    "Katedra Siłowni Okrętowych"
+   ],
+   "stanowisko": "starszy technik",
+   "pokój": "H-106",
+   "telefon": "58-5586-485",
+   "email": "p.wojcik@wm.umg.edu.pl"
+  }
+ ],
+ "Śmiechowska": [
+  {
+   "name": "Maria Śmiechowska",
+   "title": "prof. dr hab.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "profesor",
+   "pokój": "B-16",
+   "telefon": "58-5586-562",
+   "email": "m.smiechowska@wznj.umg.edu.pl"
+  }
+ ],
+ "Śniegocka-Dworak": [
+  {
+   "name": "Magda Śniegocka-Dworak",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-15",
+   "telefon": "58-5586-472",
+   "email": "m.sniegocka-dworak@wznj.umg.edu.pl"
+  }
+ ],
+ "Żak": [
+  {
+   "name": "Tomasz Dzido",
+   "title": "dr hab.",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Podstaw Informatyki"
+   ],
+   "stanowisko": "profesor UMG",
+   "funkcja": "Kierownik Zakładu Podstaw Informatyki",
+   "pokój": "F-111",
+   "telefon": "58-5586-396",
+   "email": "t.dzido@wi.umg.edu.pl"
+  },
+  {
+   "name": "Krzysztof Załęski",
+   "title": "mgr inż.",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Geotechniki Morskiej"
+   ],
+   "stanowisko": "główny specjalista",
+   "funkcja": "Kierownik Zakładu Geotechniki Morskiej",
+   "telefon": "58-6693-754",
+   "email": "kzaleski@im.umg.edu.pl"
+  },
+  {
+   "name": "Marcin Kalinowski",
+   "title": "dr inż.",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Ekonomiki i Polityki Przestrzennej"
+   ],
+   "stanowisko": "główny specjalista",
+   "funkcja": "Kierownik Zakładu Ekonomiki i Polityki Przestrzennej",
+   "telefon": "58-6693-728",
+   "email": "mkalinowski@im.umg.edu.pl"
+  },
+  {
+   "name": "Anna Barańska",
+   "title": "mgr",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Ekologii Wód"
+   ],
+   "stanowisko": "główny specjalista",
+   "funkcja": "Kierownik Zakładu Ekologii Wód",
+   "telefon": "58-6693-739",
+   "email": "abaranska@im.umg.edu.pl"
+  },
+  {
+   "name": "Katarzyna Galer-Tatarowicz",
+   "title": "dr inż.",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Ochrony Środowiska"
+   ],
+   "stanowisko": "adiunkt",
+   "funkcja": "Kierownik Zakładu Ochrony Środowiska",
+   "telefon": "58 301-69-56",
+   "email": "katarzyna.galer-tatarowicz@im.umg.edu.pl"
+  },
+  {
+   "name": "Juliusz Gajewski",
+   "title": "",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Oceanografii Operacyjnej"
+   ],
+   "stanowisko": "główny specjalista",
+   "funkcja": "Kierownik Zakładu Oceanografii Operacyjnej",
+   "pokój": "A224",
+   "telefon": "58-6693-765",
+   "email": "jgajewski@im.umg.edu.pl"
+  },
+  {
+   "name": "Ireneusz Czarnowski",
+   "title": "prof. dr hab. inż.",
+   "unit": [
+    "Wydział Informatyki",
+    "Dziekan WI"
+   ],
+   "stanowisko": "profesor",
+   "funkcja": "Kierownik Zakładu Informatyki Stosowanej i Sztucznej Inteligencji",
+   "pokój": "F-204",
+   "telefon": "58-5586-287",
+   "email": "i.czarnowski@umg.edu.pl"
+  },
+  {
+   "name": "Ewa Ratajczak-Ropel",
+   "title": "dr hab.",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Inżynierii Systemów"
+   ],
+   "stanowisko": "profesor UMG",
+   "funkcja": "Kierownik Zakładu Inżynierii Systemów",
+   "pokój": "F-106a",
+   "telefon": "58-5586-558",
+   "email": "e.ratajczak-ropel@wi.umg.edu.pl"
+  },
+  {
+   "name": "Agnieszka Lazarowska",
+   "title": "dr hab. inż.",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Systemów Autonomicznych"
+   ],
+   "stanowisko": "profesor UMG",
+   "funkcja": "Kierownik Zakładu Systemów Autonomicznych",
+   "pokój": "C-307",
+   "telefon": "58-5586-804",
+   "email": "a.lazarowska@wi.umg.edu.pl"
+  },
+  {
+   "name": "Wiesław Citko",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Elektryczny",
+    "Zakład Telekomunikacji Morskiej"
+   ],
+   "stanowisko": "adiunkt",
+   "funkcja": "Kierownik Zakładu Telekomunikacji Morskiej",
+   "pokój": "C-341",
+   "telefon": "58-5586-553, 556",
+   "email": "w.citko@we.umg.edu.pl"
+  },
+  {
+   "name": "Bożena Kwiatuszewska-Sarnecka",
+   "title": "dr",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Matematyki"
+   ],
+   "stanowisko": "starszy wykładowca",
+   "funkcja": "Kierownik Zakładu Matematyki",
+   "pokój": "C-303a",
+   "telefon": "58-5586-228",
+   "email": "b.sarnecka@wi.umg.edu.pl"
+  },
+  {
+   "name": "Agnieszka Blokus - Dziula",
+   "title": "dr hab.",
+   "unit": [
+    "Wydział Nawigacyjny",
+    "Zakład Modelowania i Metod Matematycznych w Transporcie"
+   ],
+   "stanowisko": "profesor UMG",
+   "funkcja": "Kierownik Zakładu Modelowania i Metod Matematycznych w Transporcie",
+   "pokój": "N-320",
+   "telefon": "58-5586-232",
+   "email": "a.blokus@wn.umg.edu.pl"
+  },
+  {
+   "name": "Tomasz Kusio",
+   "title": "mgr inż.",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Geotechniki Morskiej"
+   ],
+   "stanowisko": "główny specjalista",
+   "funkcja": "Zastępca Kierownika Zakładu Geotechniki Morskiej",
+   "telefon": "58-6693-753",
+   "email": "tkusio@im.umg.edu.pl"
+  },
+  {
+   "name": "Magdalena Jezierska",
+   "title": "mgr",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Ekonomiki i Polityki Przestrzennej"
+   ],
+   "stanowisko": "główny specjalista",
+   "funkcja": "Zastępca Kierownika Zakładu Ekonomiki i Polityki Przestrzennej",
+   "telefon": "58-6693-743",
+   "email": "mmatczak@im.umg.edu.pl"
+  },
+  {
+   "name": "Michał Olenycz",
+   "title": "mgr",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Ekologii Wód"
+   ],
+   "stanowisko": "starszy specjalista",
+   "funkcja": "Zastępca Kierownika Zakładu Ekologii Wód",
+   "telefon": "58-6693-739",
+   "email": "molenycz@im.umg.edu.pl"
+  },
+  {
+   "name": "Agnieszka Flasińska",
+   "title": "mgr inż.",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Ochrony Środowiska"
+   ],
+   "stanowisko": "asystent",
+   "funkcja": "Zastępca Kierownika Zakładu Ochrony Środowiska",
+   "telefon": "58 301-69-56",
+   "email": "aflasinska@im.umg.edu.pl"
+  },
+  {
+   "name": "Natalia Kaczmarek",
+   "title": "mgr",
+   "unit": [
+    "Instytut Morski",
+    "Zakład Oceanografii Operacyjnej"
+   ],
+   "stanowisko": "główny specjalista",
+   "funkcja": "Zastępca Kierownika Zakładu Oceanografii Operacyjnej",
+   "pokój": "A205",
+   "telefon": "58-6693-764",
+   "email": "nkaczmarek@im.umg.edu.pl"
+  },
+  {
+   "name": "Michał Kołodziejczak",
+   "title": "inż.",
+   "unit": [
+    "Pion Rektora",
+    "Biuro Promocji"
+   ],
+   "stanowisko": "Zastępca Kierownika Biura Promocji",
+   "pokój": "CSiR",
+   "telefon": "58-5586-274",
+   "email": "m.kolodziejczak@au.umg.edu.pl, promocja@umg.edu.pl"
+  },
+  {
+   "name": "Monika Kozioł",
+   "title": "mgr",
+   "unit": [
+    "Wydział Elektryczny",
+    "Zakład Telekomunikacji Morskiej"
+   ],
+   "stanowisko": "specjalista - Biuro Zakładu Telekomunikacji Morskiej",
+   "pokój": "C-219",
+   "telefon": "58-5586-556",
+   "email": "m.koziol@we.umg.edu.pl"
+  },
+  {
+   "name": "Justyna Magiera",
+   "title": "mgr",
+   "unit": [
+    "Wydział Nawigacyjny",
+    "Zakład Modelowania i Metod Matematycznych w Transporcie"
+   ],
+   "stanowisko": "specjalista - sekretariat Zakładu Modelowania i Metod Matematycznych w Transporcie",
+   "pokój": "N-320",
+   "telefon": "58-5586-233",
+   "email": "j.magiera@au.umg.edu.pl, zmt@wn.umg.edu.pl"
+  },
+  {
+   "name": "Andrzej Miszczak",
+   "title": "prof. dr hab. inż.",
+   "unit": [
+    "Wydział Mechaniczny",
+    "Dziekan WM"
+   ],
+   "stanowisko": "profesor",
+   "funkcja": "Dziekan Wydziału Mechanicznego",
+   "pokój": "A-222",
+   "telefon": "58-5586-348",
+   "email": "a.miszczak@wm.umg.edu.pl"
+  },
+  {
+   "name": "Maciej Matczak",
+   "title": "dr hab.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Logistyki i Systemów Transportowych"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "C-123",
+   "telefon": "58-5586-217",
+   "email": "m.matczak@wznj.umg.edu.pl"
+  },
+  {
+   "name": "Grzegorz Bulczak",
+   "title": "dr",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Marketingu i Metod Ilościowych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "B-405",
+   "telefon": "58-5586-805",
+   "email": "g.bulczak@wznj.umg.edu.pl"
+  },
+  {
+   "name": "Monika Rybczak",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Systemów Autonomicznych"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-307",
+   "telefon": "58-5586-804",
+   "email": "m.rybczak@wi.umg.edu.pl"
+  },
+  {
+   "name": "Magdalena Jakubczak-Sapała",
+   "title": "mgr",
+   "unit": [
+    "Pion Prorektora ds. Studenckich i Kształcenia",
+    "Studium Języków Obcych"
+   ],
+   "stanowisko": "starszy wykładowca",
+   "pokój": "B-310",
+   "telefon": "58-5586-532",
+   "email": "m.jakubczak@sjo.umg.edu.pl"
+  },
+  {
+   "name": "Andrzej Młynarczak",
+   "title": "dr inż. st.of.mech.okręt.",
+   "unit": [
+    "Wydział Mechaniczny",
+    "Katedra Siłowni Okrętowych"
+   ],
+   "stanowisko": "profesor UMG",
+   "pokój": "A-225",
+   "telefon": "58-5586-324",
+   "email": "a.mlynarczak@wm.umg.edu.pl"
+  },
+  {
+   "name": "Renata Zakrzewska",
+   "title": "dr",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Matematyki"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-303",
+   "telefon": "58-5586-386",
+   "email": "r.zakrzewska@wi.umg.edu.pl"
+  },
+  {
+   "name": "Krystian Kozakiewicz",
+   "title": "mgr inż.",
+   "unit": [
+    "Wydział Informatyki",
+    "Zakład Systemów Autonomicznych"
+   ],
+   "stanowisko": "asystent",
+   "pokój": "F-205",
+   "telefon": "58-5586-560",
+   "email": "k.kozakiewicz@wi.umg.edu.pl"
+  },
+  {
+   "name": "Katarzyna Gromadzka-Duszak",
+   "title": "mgr",
+   "unit": [
+    "Pion Prorektora ds. Studenckich i Kształcenia",
+    "Studium Języków Obcych"
+   ],
+   "stanowisko": "starszy wykładowca",
+   "pokój": "B-309",
+   "telefon": "58-5586-212",
+   "email": "k.gromadzka@sjo.umg.edu.pl"
+  },
+  {
+   "name": "Mirosław Tyliszczak",
+   "title": "mgr inż.",
+   "unit": [
+    "Wydział Mechaniczny",
+    "Katedra Siłowni Okrętowych"
+   ],
+   "stanowisko": "asystent",
+   "pokój": "A-248",
+   "telefon": "58-5586-439",
+   "email": "m.tyliszczak@wm.umg.edu.pl"
+  },
+  {
+   "name": "Paweł Kacprzak",
+   "title": "mgr inż.",
+   "unit": [
+    "Wydział Nawigacyjny",
+    "Katedra Eksploatacji Statku"
+   ],
+   "stanowisko": "asystent",
+   "pokój": "N-124",
+   "telefon": "58-5586-177",
+   "email": "p.kacprzak@wn.umg.edu.pl"
+  },
+  {
+   "name": "Natalia Żak",
+   "title": "dr inż.",
+   "unit": [
+    "Wydział Zarządzania i Nauk o Jakości",
+    "Katedra Zarządzania Jakością"
+   ],
+   "stanowisko": "adiunkt",
+   "pokój": "C-3",
+   "telefon": "58-5586-295",
+   "email": "n.zak@wznj.umg.edu.pl"
+  },
+  {
+   "name": "Mariusz Kaźmierczak",
+   "title": "mgr",
+   "unit": [
+    "Wydział Mechaniczny",
+    "Katedra Podstaw Techniki"
+   ],
+   "stanowisko": "specjalista",
+   "pokój": "I-102",
+   "telefon": "58-5586-613",
+   "email": "m.kazmierczak@wm.umg.edu.pl"
+  },
+  {
+   "name": "Jacek Błażejczak",
+   "title": "mgr inż. st. of. mech. okręt.",
+   "unit": [
+    "Wydział Mechaniczny",
+    "Katedra Siłowni Okrętowych"
+   ],
+   "stanowisko": "specjalista",
+   "funkcja": "Kierownik Laboratorium Silników Spalinowych",
+   "pokój": "H-106",
+   "telefon": "58-5586-485",
+   "email": "j.blazejczak@wm.umg.edu.pl"
+  }
+ ]
+}

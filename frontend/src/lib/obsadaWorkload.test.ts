@@ -74,10 +74,11 @@ const item = (studyMode: WorkloadItem['studyMode'], hours: number): WorkloadItem
 });
 const KEO = { id: 'd-keo', name: 'Katedra Elektroenergetyki Okretowej', label: 'KEO-WE' };
 const KPT = { id: 'd-kpt', name: 'Katedra Podstaw Techniki', label: 'KPT-WM' };
-const person = (id: string, department: typeof KEO | null, fullTime: number, partTime: number): WorkloadPerson => ({
+const person = (id: string, department: typeof KEO | null, fullTime: number, partTime: number, facultyId: string | null = null): WorkloadPerson => ({
   id,
   name: `dr ${id}`,
   department,
+  facultyId,
   here: fullTime + partTime,
   fullTime,
   partTime,
@@ -120,6 +121,18 @@ describe('obciazenia w ukladzie katedr', () => {
     const [block] = workloadBlocks(people, { department: KEO.id, mode: 'all', search: '', members });
     expect(block!.people.map((p) => `${p.id} ${p.here}`)).toEqual(['Lis 60', 'Nowak 45', 'Zet 0']);
     expect(block!.people[2]!.department?.label).toBe('KEO-WE');
+  });
+
+  it('z wydzialem widoku: najpierw katedry wydzialu, potem inne jednostki (bez katedry na koncu kazdej czesci)', () => {
+    const mixed = [
+      person('Nowak', KEO, 30, 0, 'we'),
+      person('Kos', KPT, 20, 0, 'wm'),
+      person('Mak', null, 10, 0, 'wm'),
+      person('Lektor', { id: 'd-sjo', name: 'Studium Jezykow Obcych', label: 'SJO' }, 5, 0, null),
+    ];
+    const blocks = workloadBlocks(mixed, { department: 'all', mode: 'all', search: '', facultyId: 'wm' });
+    expect(blocks.map((b) => `${b.own ? 'wydzial' : 'inne'} ${b.label}`)).toEqual(['wydzial KPT-WM', 'wydzial Bez katedry', 'inne KEO-WE', 'inne SJO']);
+    expect(workloadBlocks(mixed, { department: 'all', mode: 'all', search: '' }).every((b) => b.own)).toBe(true);
   });
 
   it('bez katedry i szukanie po nazwisku', () => {

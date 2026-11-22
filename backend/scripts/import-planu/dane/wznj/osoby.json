@@ -1,0 +1,639 @@
+{
+ "Barbucha": {
+  "lastName": "Barbucha",
+  "firstName": "Dariusz",
+  "title": "dr hab.",
+  "email": "pror.n@umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki"
+ },
+ "Baszanowska": {
+  "lastName": "Baszanowska",
+  "firstName": "Emilia",
+  "title": "dr",
+  "email": "e.baszanowska@wm.umg.edu.pl",
+  "unit": "Wydział Mechaniczny / Katedra Fizyki"
+ },
+ "Biegańska": {
+  "lastName": "Biegańska",
+  "firstName": "Justyna",
+  "title": "dr",
+  "email": "j.bieganska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Marketingu i Metod Ilościowych"
+ },
+ "Bobkowska": {
+  "lastName": "Bobkowska",
+  "firstName": "Anna",
+  "title": "dr inż.",
+  "email": "a.bobkowska@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "Borkowska": {
+  "lastName": "Borkowska",
+  "firstName": "Beata",
+  "title": "dr inż.",
+  "email": "b.borkowska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Brzeska": {
+  "lastName": "Brzeska",
+  "firstName": "Joanna",
+  "title": "dr hab. inż.",
+  "email": "j.brzeska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Jakości Produktów Przemysłowych i Chemii"
+ },
+ "Bulczak": {
+  "lastName": "Bulczak",
+  "firstName": "Grzegorz",
+  "title": "dr",
+  "email": "g.bulczak@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Marketingu i Metod Ilościowych"
+ },
+ "Charłampowicz": {
+  "lastName": "Charłampowicz",
+  "firstName": "Jędrzej",
+  "title": "dr",
+  "email": "j.charlampowicz@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Logistyki i Systemów Transportowych"
+ },
+ "Czarnecka": {
+  "lastName": "Czarnecka",
+  "firstName": "Agnieszka",
+  "title": "dr",
+  "email": "a.czarnecka@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Czarnowski": {
+  "lastName": "Czarnowski",
+  "firstName": "Ireneusz",
+  "title": "prof. dr hab. inż.",
+  "email": "i.czarnowski@umg.edu.pl",
+  "unit": "Wydział Informatyki / Dziekan WI"
+ },
+ "Dereszewska": {
+  "lastName": "Dereszewska",
+  "firstName": "Alina",
+  "title": "dr inż.",
+  "email": "a.dereszewska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Jakości Produktów Przemysłowych i Chemii"
+ },
+ "Dereszwska": {
+  "lastName": "Dereszewska",
+  "firstName": "Alina",
+  "title": "dr inż.",
+  "email": "a.dereszewska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Jakości Produktów Przemysłowych i Chemii"
+ },
+ "Dmowski": {
+  "lastName": "Dmowski",
+  "firstName": "Przemysław",
+  "title": "dr hab. inż.",
+  "email": "prodziekan1@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Domachowska-Fic": {
+  "lastName": "Domachowska-Fic",
+  "firstName": "Malina",
+  "title": "mgr",
+  "email": "m.fic@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych"
+ },
+ "Flis": {
+  "lastName": "Flis",
+  "firstName": "Anna",
+  "title": "mgr inż",
+  "email": "a.flis@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Forkiewicz": {
+  "lastName": "Forkiewicz",
+  "firstName": "Marcin",
+  "title": "dr inż.",
+  "email": "m.forkiewicz@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "Ginter": {
+  "lastName": "Ginter",
+  "firstName": "",
+  "title": "",
+  "email": null,
+  "unit": null
+ },
+ "Grobelna": {
+  "lastName": "Grobelna",
+  "firstName": "Aleksandra",
+  "title": "dr inż.",
+  "email": "a.grobelna@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Marketingu i Metod Ilościowych"
+ },
+ "Grzelakowski": {
+  "lastName": "Grzelakowski",
+  "firstName": "Andrzej",
+  "title": "prof. dr hab.",
+  "email": "a.grzelakowski@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Logistyki i Systemów Transportowych"
+ },
+ "Gwarda": {
+  "lastName": "Gwarda",
+  "firstName": "Karolina",
+  "title": "dr",
+  "email": "k.gwarda@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Logistyki i Systemów Transportowych"
+ },
+ "Hajduk": {
+  "lastName": "Hajduk",
+  "firstName": "Agnieszka",
+  "title": "dr",
+  "email": "a.hajduk@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Hałaczkiewicz": {
+  "lastName": "Hałaczkiewicz",
+  "firstName": "Jacek",
+  "title": "dr inż.",
+  "email": "j.halaczkiewicz@wznj.umg.edu.pl",
+  "unit": "Związek Zawodowy Pracowników UM w Gdyni"
+ },
+ "Heimowska": {
+  "lastName": "Heimowska",
+  "firstName": "Aleksandra",
+  "title": "dr inż.",
+  "email": "a.heimowska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Jakości Produktów Przemysłowych i Chemii"
+ },
+ "Hryniewicz": {
+  "lastName": "Hryniewicz",
+  "firstName": "Konrad",
+  "title": "mgr",
+  "email": "k.hryniewicz@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Marketingu i Metod Ilościowych"
+ },
+ "Jastrzębska": {
+  "lastName": "Jastrzębska",
+  "firstName": "Mariola",
+  "title": "dr hab. inż.",
+  "email": "m.jastrzebska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Jakości Produktów Przemysłowych i Chemii"
+ },
+ "Jędrzejowicz": {
+  "lastName": "Jędrzejowicz",
+  "firstName": "Piotr",
+  "title": "prof. dr hab.",
+  "email": "p.jedrzejowicz@umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "Kamedulska": {
+  "lastName": "Kamedulska",
+  "firstName": "Agnieszka",
+  "title": "dr",
+  "email": "a.kamedulska@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki"
+ },
+ "Kamińska": {
+  "lastName": "Kamińska",
+  "firstName": "Katarzyna",
+  "title": "dr inż.",
+  "email": "k.kaminska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Karaś": {
+  "lastName": "Karaś",
+  "firstName": "Adrianna",
+  "title": "mgr inż.",
+  "email": "a.karas@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Logistyki i Systemów Transportowych"
+ },
+ "Klopot": {
+  "lastName": "Klopott",
+  "firstName": "Magdalena",
+  "title": "dr",
+  "email": "m.klopott@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Logistyki i Systemów Transportowych"
+ },
+ "Klopott": {
+  "lastName": "Klopott",
+  "firstName": "Magdalena",
+  "title": "dr",
+  "email": "m.klopott@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Logistyki i Systemów Transportowych"
+ },
+ "Korta": {
+  "lastName": "Korta",
+  "firstName": "Danuta",
+  "title": "mgr",
+  "email": "d.korta@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych"
+ },
+ "Kozirok": {
+  "lastName": "Kozirok",
+  "firstName": "Witold",
+  "title": "dr inż.",
+  "email": "w.kozirok@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Krasowska": {
+  "lastName": "Krasowska",
+  "firstName": "Katarzyna",
+  "title": "dr inż.",
+  "email": "prodziekan3@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Jakości Produktów Przemysłowych i Chemii"
+ },
+ "Kukułowicz": {
+  "lastName": "Kukułowicz",
+  "firstName": "Anita",
+  "title": "dr inż.",
+  "email": "a.kukulowicz@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Kwiatuszewska-Sarnecka": {
+  "lastName": "Kwiatuszewska-Sarnecka",
+  "firstName": "Bożena",
+  "title": "dr",
+  "email": "b.sarnecka@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki"
+ },
+ "Mackiewicz": {
+  "lastName": "Mackiewicz",
+  "firstName": "Hanna",
+  "title": "dr",
+  "email": "h.mackiewicz@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Malewska": {
+  "lastName": "Malewska-Szymichowska",
+  "firstName": "Anna",
+  "title": "mgr",
+  "email": "a.malewska@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych"
+ },
+ "Malewska-Szymichowska": {
+  "lastName": "Malewska-Szymichowska",
+  "firstName": "Anna",
+  "title": "mgr",
+  "email": "a.malewska@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych"
+ },
+ "Marciszewska": {
+  "lastName": "Marciszewska",
+  "firstName": "Barbara",
+  "title": "prof. dr hab.",
+  "email": "b.marciszewska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Marketingu i Metod Ilościowych"
+ },
+ "Marek": {
+  "lastName": "Marek",
+  "firstName": "Robert",
+  "title": "dr",
+  "email": "r.marek@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Logistyki i Systemów Transportowych"
+ },
+ "Matczak": {
+  "lastName": "Matczak",
+  "firstName": "Maciej",
+  "title": "dr hab.",
+  "email": "m.matczak@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Logistyki i Systemów Transportowych"
+ },
+ "Meyer": {
+  "lastName": "Meyer",
+  "firstName": "Maciej",
+  "title": "dr",
+  "email": "m.meyer@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Marketingu i Metod Ilościowych"
+ },
+ "Miklińska": {
+  "lastName": "Miklińska",
+  "firstName": "Joanna",
+  "title": "dr",
+  "email": "j.miklinska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Logistyki i Systemów Transportowych"
+ },
+ "Morawska": {
+  "lastName": "Morawska",
+  "firstName": "Magda",
+  "title": "dr inż.",
+  "email": "m.morawska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Jakości Produktów Przemysłowych i Chemii"
+ },
+ "Newerli-Guz": {
+  "lastName": "Newerli-Guz",
+  "firstName": "Joanna",
+  "title": "dr inż.",
+  "email": "j.newerli-guz@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Ocieczek": {
+  "lastName": "Ocieczek",
+  "firstName": "Aneta",
+  "title": "dr hab. inż.",
+  "email": "a.ocieczek@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Owczarek": {
+  "lastName": "Owczarek",
+  "firstName": "Tomasz",
+  "title": "dr",
+  "email": "t.owczarek@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Matematyki"
+ },
+ "Palka": {
+  "lastName": "Palka",
+  "firstName": "Agnieszka",
+  "title": "dr inż.",
+  "email": "a.palka@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Pawłowska": {
+  "lastName": "Pawłowska",
+  "firstName": "Natalia",
+  "title": "dr",
+  "email": "n.pawlowska@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Inżynierii Systemów"
+ },
+ "Pigłowski": {
+  "lastName": "Pigłowski",
+  "firstName": "Marcin",
+  "title": "dr inż.",
+  "email": "m.piglowski@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Platta": {
+  "lastName": "Platta",
+  "firstName": "Anna",
+  "title": "dr inż.",
+  "email": "a.platta@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Popek": {
+  "lastName": "Popek",
+  "firstName": "Marzenna",
+  "title": "dr hab.",
+  "email": "dziekan@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Jakości Produktów Przemysłowych i Chemii"
+ },
+ "Przybyłowski": {
+  "lastName": "Przybyłowski",
+  "firstName": "Piotr",
+  "title": "prof. dr hab. inż.",
+  "email": "p.przybylowski@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Pukszta": {
+  "lastName": "Pukszta",
+  "firstName": "Tomasz",
+  "title": "dr inż.",
+  "email": "t.pukszta@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Ruszkowska": {
+  "lastName": "Ruszkowska",
+  "firstName": "Millena",
+  "title": "dr hab. inż.",
+  "email": "m.ruszkowska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Rybowska": {
+  "lastName": "Rybowska",
+  "firstName": "Agnieszka",
+  "title": "dr hab. inż.",
+  "email": "a.rybowska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Sarnowski": {
+  "lastName": "Sarnowski",
+  "firstName": "Krzysztof",
+  "title": "dr",
+  "email": "k.sarnowski@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Skakovski": {
+  "lastName": "Skakovski",
+  "firstName": "Aleksander",
+  "title": "dr inż.",
+  "email": "a.skakovski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki"
+ },
+ "Skakovwski": {
+  "lastName": "Skakovski",
+  "firstName": "Aleksander",
+  "title": "dr inż.",
+  "email": "a.skakovski@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Podstaw Informatyki"
+ },
+ "Skiba": {
+  "lastName": "Skiba",
+  "firstName": "Sławomir",
+  "title": "dr",
+  "email": "s.skiba@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Logistyki i Systemów Transportowych"
+ },
+ "Skrodzka": {
+  "lastName": "Skrodzka",
+  "firstName": "Violetta",
+  "title": "dr",
+  "email": "v.skrodzka@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Skrzeszewska": {
+  "lastName": "Skrzeszewska",
+  "firstName": "Katarzyna",
+  "title": "dr",
+  "email": "k.skrzeszewska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Sniegocka": {
+  "lastName": "Śniegocka-Dworak",
+  "firstName": "Magda",
+  "title": "dr inż.",
+  "email": "m.sniegocka-dworak@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Spodarczyk": {
+  "lastName": "Spodarczyk",
+  "firstName": "Edyta",
+  "title": "dr",
+  "email": "e.spodarczyk@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Stankiewcz": {
+  "lastName": "Stankiewicz",
+  "firstName": "Jadwiga",
+  "title": "dr inż.",
+  "email": "j.stankiewicz@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Stankiewicz": {
+  "lastName": "Stankiewicz",
+  "firstName": "Jadwiga",
+  "title": "dr inż.",
+  "email": "j.stankiewicz@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Stasiuk": {
+  "lastName": "Stasiuk",
+  "firstName": "Ewa",
+  "title": "dr inż.",
+  "email": "e.stasiuk@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Sulej": {
+  "lastName": "Sulej-Suchomska",
+  "firstName": "",
+  "title": "",
+  "email": null,
+  "unit": null
+ },
+ "Sulej-Suchomska": {
+  "lastName": "Sulej-Suchomska",
+  "firstName": "",
+  "title": "",
+  "email": null,
+  "unit": null
+ },
+ "Surawski": {
+  "lastName": "Surawski",
+  "firstName": "Bartosz",
+  "title": "dr",
+  "email": "b.surawski@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Szelągowska-Rudzka": {
+  "lastName": "Szelągowska-Rudzka",
+  "firstName": "Katarzyna",
+  "title": "dr",
+  "email": "k.szelagowska-rudzka@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Szkiel": {
+  "lastName": "Szkiel",
+  "firstName": "Agata",
+  "title": "dr inż.",
+  "email": "a.szkiel@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Sztramska": {
+  "lastName": "Sztramska",
+  "firstName": "Mirosława",
+  "title": "dr",
+  "email": "m.sztramska@sjo.umg.edu.pl",
+  "unit": "Pion Prorektora ds. Studenckich i Kształcenia / Studium Języków Obcych"
+ },
+ "Szyda": {
+  "lastName": "Szyda",
+  "firstName": "Monika",
+  "title": "dr",
+  "email": "m.szyda@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Szyman": {
+  "lastName": "Szyman",
+  "firstName": "Paweł",
+  "title": "mgr",
+  "email": "p.szyman@wi.umg.edu.pl",
+  "unit": "Wydział Informatyki / Zakład Informatyki Stosowanej i Sztucznej Inteligencji"
+ },
+ "Tura-Gawron": {
+  "lastName": "Tura-Gawron",
+  "firstName": "Karolina",
+  "title": "dr",
+  "email": "k.tura-gawron@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Marketingu i Metod Ilościowych"
+ },
+ "Urbanyi-Popiołek": {
+  "lastName": "Urbanyi-Popiołek",
+  "firstName": "Ilona",
+  "title": "dr",
+  "email": "i.urbanyi@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Logistyki i Systemów Transportowych"
+ },
+ "Wanagos": {
+  "lastName": "Wanagos",
+  "firstName": "Marzena",
+  "title": "dr",
+  "email": "m.wanagos@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Marketingu i Metod Ilościowych"
+ },
+ "Waśnierwska": {
+  "lastName": "Waśniewska",
+  "firstName": "Anetta",
+  "title": "dr inż.",
+  "email": "a.wasniewska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Waśniewska": {
+  "lastName": "Waśniewska",
+  "firstName": "Anetta",
+  "title": "dr inż.",
+  "email": "a.wasniewska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Wierzowiecka": {
+  "lastName": "Wierzowiecka",
+  "firstName": "Joanna",
+  "title": "dr inż.",
+  "email": "j.wierzowiecka@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Wilczyńska": {
+  "lastName": "Wilczyńska",
+  "firstName": "Aleksandra",
+  "title": "dr hab. inż.",
+  "email": "prodziekan2@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Winiarska": {
+  "lastName": "Winiarska",
+  "firstName": "Magdalena",
+  "title": "dr inż.",
+  "email": "m.winiarska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Winnicki": {
+  "lastName": "Winnicki",
+  "firstName": "Tomasz",
+  "title": "dr inż.",
+  "email": "t.winnicki@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Wolska": {
+  "lastName": "Wolska",
+  "firstName": "Grażyna",
+  "title": "dr hab.",
+  "email": "g.wolska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania i Ekonomii"
+ },
+ "Wójcik": {
+  "lastName": "Wójcik",
+  "firstName": "Dorota",
+  "title": "dr n. med.",
+  "email": "d.wojcik@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Marketingu i Metod Ilościowych"
+ },
+ "Śmiechowska": {
+  "lastName": "Śmiechowska",
+  "firstName": "Maria",
+  "title": "prof. dr hab.",
+  "email": "m.smiechowska@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Śniegocka": {
+  "lastName": "Śniegocka-Dworak",
+  "firstName": "Magda",
+  "title": "dr inż.",
+  "email": "m.sniegocka-dworak@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Śniegocka-Dworak": {
+  "lastName": "Śniegocka-Dworak",
+  "firstName": "Magda",
+  "title": "dr inż.",
+  "email": "m.sniegocka-dworak@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ },
+ "Żak": {
+  "lastName": "Żak",
+  "firstName": "Natalia",
+  "title": "dr inż.",
+  "email": "n.zak@wznj.umg.edu.pl",
+  "unit": "Wydział Zarządzania i Nauk o Jakości / Katedra Zarządzania Jakością"
+ }
+}

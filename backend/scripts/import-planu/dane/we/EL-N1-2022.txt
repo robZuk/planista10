@@ -1,0 +1,34 @@
+# Elektrotechnika, niestacjonarne I st., nabory 2022/23 i 2023/24 (Senat 55/XVII z 28.06.2021) — tylko semestry VII-VIII
+# zrodlo: 1st_nst_EL_{EO,KSS}-RN22-23_RN23-24_RA26-27_s7-8.pdf; EO = Elektroautomatyka Okretowa (EAO)
+@program ET-N1
+@wersja od naboru 2022/23
+@sumy EAO VII: W72 C15 L55 e30 | VIII: W38 C30 P30 e23
+@sumy KSS VII: W88 C15 L101 e28 | VIII: W38 C30 L10 P30 e25
+
+@spec -
+1 | Język angielski | VII: C15 e1 | VIII: C15 e1
+2 | Przedmiot humanistyczny I | VIII: W10 e1
+3 | Ekonomia i zarządzanie | VIII: W20 e3
+4 | Własność intelektualna i prawo pracy | VII: W10 e1
+29 | Technika iskrobezpieczeństwa | VII: W8 L10 e3
+30 | Budowa i teoria okrętu | VII: W8 e1
+32 | Układy kondycjonowania energii elektrycznej | VII: W8 L10 e2
+33 | Seminarium dyplomowe | VIII: C15 e2
+48 | Praca dyplomowa | VIII: P30 e15
+
+@spec EAO
+42 | Siłownie okrętowe i mechanizmy pomocnicze | VII: W30! L15 e6
+43 | Chłodnictwo, wentylacja i klimatyzacja | VII: W8 L10 e2
+44 | Ochrona środowiska morskiego | VIII: W8 e1
+46 | Seminarium problemowe | VII: L10 e14
+
+@spec KSS
+40 | Systemy kontrolno-pomiarowe | VII: L15 e1
+42 | Komputerowe sieci przemysłowe | VII: W15! L15 e4
+43 | Komputerowe systemy operacyjne | VII: L15 e2
+45 | Mikroprocesorowe układy pomiarowe | VIII: W8 L10 e3
+47 | Systemy łączności cyfrowej | VII: W15 L10 e3
+49 | Ochrona środowiska | VII: W8 e1
+50 | Siłownie okrętowe | VII: W8 L8 e2
+51 | Okrętowe sieci elektroenergetyczne | VII: W8 L8 e2
+53 | Seminarium problemowe | VII: L10 e5

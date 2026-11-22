@@ -1,0 +1,55 @@
+# Elektrotechnika, stacjonarne II st. (start w semestrze letnim), nabory 2024/25 L - 2026/27 (Senat 266/XVII z 25 IV 2024)
+# zrodlo: 2st_st_EL_{EA,KSS,OZE}-RN24-25_RN25-26_RA25-26_s1-3.pdf
+@program ET-S2
+@wersja od naboru 2024/25
+@sumy EA I: W285 C15 L150 P30 e32 | II: W105 C15 L210 P150 e31 | III: W30 C45 L15 P90 e27
+
+@spec -
+1 | Język angielski | I: L30 e2 | II: L30 e2
+2 | Przedmiot humanistyczny I | I: W15 e1
+3 | Podstawy przedsiębiorczości | I: W15 C15 e2
+4 | Przedmiot humanistyczny II | III: C30 e2
+5 | Wybrane zagadnienia teorii obwodów | I: W30! L45 e5
+6 | Elektromechaniczne systemy napędowe | I: W30 L15 P15 e4
+7 | Pomiary wielkości nieelektrycznych | I: W15 P15 e2
+8 | Kompatybilność w układach elektrycznych | I: W15 e1 | II: L15 e1
+9 | Metody sterowania automatycznego | I: W30 e2 | II: L15 P15 e2
+10 | Metody sztucznej inteligencji | II: W15 L15 e2
+11 | Wybrane zagadnienia maszyn elektrycznych | I: W15 e1 | II: L15 e1
+12 | Przekształtnikowe układy napędowe i generacyjne | I: W30! L15 e3 | II: P30 e2
+13 | Mechatronika i robotyka | I: W30! e2 | II: L45 P15 e4
+14 | Metody optymalizacji | I: W15 L30 e3
+15 | Metody przetwarzania sygnałów | I: W30 e2 | II: L15 P30 e3
+16 | Projektowanie i eksploatacja systemów elektroenergetycznych | II: W15 P15 e2
+17 | Zarządzanie projektem | III: W15 P15 e2
+18 | Jakość energii elektrycznej | II: W15 L15 e2
+19 | Energetyka odnawialna i rozproszona | I: W15 L15 e2
+20 | Programowalne układy cyfrowe | II: W15! L15 e2
+21 | Seminarium dyplomowe | II: C15 e1 | III: C15 e1
+
+@spec EA
+22 | Modelowanie i symulacja systemów technicznych | II: W30 L30 P15 e4
+23 | Sterowanie optymalne i modalne | III: W15! L15 P30 e4
+24 | Przemysłowe systemy rozproszone | II: W15 P30 e3
+25 | Praca dyplomowa | III: P45 e18
+
+@sumy KSS I: W285 C15 L150 P30 e32 | II: W75 C15 L180 P205 e31 | III: W45 C45 P90 e27
+@spec KSS
+22 | Projektowanie aplikacji internetowych | II: W15 P30 e3
+23 | Inżynieria oprogramowania | III: W30! P30 e4
+24 | Mikroprocesorowe układy pomiarowe | II: P30 e2
+25 | Oprogramowanie systemów kontrolno-pomiarowych | II: P40 e2
+26 | Praca dyplomowa | III: P45 e18
+
+@sumy OZE I: W285 C15 L150 P30 e32 | II: W120 C15 L210 P135 e30 | III: W75 C45 L45 P60 e28
+@spec OZE
+22 | Elektryczne układy napędowe dla pojazdów i statków | II: W15! L15 e2
+23 | Mobilne systemy zasilania elektrycznych układów napędowych | II: W15 P15 e1
+24 | Systemy fotowoltaiczne | III: W15! L15 e1
+25 | Technika wodorowa | III: W15 e1
+26 | Elektronika i informatyka w motoryzacji | II: W15 P15 e1
+27 | Eksploatacja systemów OZE | II: W15! L15 e2
+28 | Akwizycja danych i monitoring w systemach OZE | III: W15 L15 e1
+29 | Modelowanie systemów elektroenergetycznych w OZE | III: L15 e1
+30 | Hybrydowe układy zasilania elektrycznego i kogeneracja w OZE | III: W15 e1
+31 | Praca dyplomowa | III: P45 e18

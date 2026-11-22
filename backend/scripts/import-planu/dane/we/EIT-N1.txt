@@ -1,0 +1,105 @@
+# Elektronika i telekomunikacja, niestacjonarne I st., nabory 2024/25 i 2025/26 (Senat 267/XVII z 25 IV 2024)
+# zrodlo: 1st_nst_EiT_{EP,SEM,SIST}-RN24-25_RA26-27_s3-6.pdf
+@program EIT-N1
+@wersja od naboru 2024/25
+@sumy EP I: W105 C57 L65 e30 | II: W89 C62 L75 P8 e30 | III: W105 C56 L55 e30 | IV: W91 C56 L50 P24 e24 | V: W78 C26 L80 e24 | VI: W54 C26 L55 P31 e24 | VII: W40 C15 L90 P26 e24 | VIII: W39 C30 L20 P38 e24
+
+@spec -
+1 | Język angielski | II: C18 e2 | III: C18 e2 | IV: C18 e2 | V: C18 e2 | VI: C18 e2 | VII: C15 e1 | VIII: C15 e1
+2 | Przedmiot humanistyczny | I: W8 e1
+3 | Własność intelektualna i prawo pracy | I: W8 e1
+4 | Ekonomia i zarządzanie | VIII: W15 e2
+5 | Technologia informacyjna | I: W8 L10 e2
+6 | Ceremoniał morski | I: W5 e1
+7 | Analiza matematyczna | I: W20! C24 e6 | II: W12 C14 e2
+8 | Algebra | I: W10 C10 e2
+9 | Probabilistyka i procesy losowe | II: W8! C15 e3
+10 | Fizyka | I: W15! C15 L15 e6
+11 | Teoria pola elektromagnetycznego | III: W15 C8 e4 | IV: W8! C8 e2
+12 | Metodyka programowania | I: W8 L15 e4 | II: W8 L15 e4
+13 | Techniki obliczeniowe | II: W8 L15 e3
+14 | Symulacje komputerowe | IV: W8 e1 | V: L15 e2
+15 | Podstawy elektrotechniki | II: W15! C15 e4 | III: W15! C15 L15 e6
+16 | Inżynieria materiałowa | I: W8 L10 e2
+17 | Projektowanie i konstrukcja urządzeń | III: W15 e2 | IV: L10 P8 e2
+18 | Elementy półprzewodnikowe | III: W15! C15 e4 | IV: L15 e2
+19 | Optoelektronika | III: W15 L10 e4
+20 | Układy elektroniczne | IV: W15! C15 e4 | V: W8 C8 e2 | VI: L15 P8 e3
+21 | Technika mikrofalowa | VI: W8! C8 e2
+22 | Metrologia | II: W15 e2 | III: L15 e2
+23 | Technika cyfrowa | I: W15 C8 e3 | II: L15 P8 e3
+24 | Technika mikroprocesorowa | III: W15 e2 | IV: L15 P8 e3
+25 | Programowanie aplikacji internetowych | II: W15 L15 e4
+26 | Podstawy przetwarzania sygnałów | III: W15 L15 e4 | IV: P8 e1
+27 | Podstawy telekomunikacji i technika radiowa | IV: W45 C15 e4
+28 | Systemy i sieci telekomunikacyjne | V: W15 e2
+29 | Anteny i propagacja fal | V: W8! e1 | VI: L10 e1
+30 | Systemy operacyjne | II: W8 L15 e3
+31 | Sieci komputerowe | V: W15 L15 e4
+32 | Podstawy automatyki | IV: W15 L10 e3
+33 | Grafika inżynierska | I: L15 e2
+34 | Technika światłowodowa | V: W8 L10 e2
+35 | Systemy wbudowane | VII: W8 L15 e3
+36 | Seminarium dyplomowe | VIII: C15 e2
+
+@spec EP
+37 | Praca dyplomowa | VIII: P30 e15
+38 | Programowalne układy cyfrowe | V: W8 L15 e3
+39 | Półprzewodnikowe elementy mocy | VI: W8 L10 e2
+40 | Układy zasilania urządzeń elektronicznych | VI: W15 e2 | VII: L10 P8 e1
+41 | Systemy kontrolno-pomiarowe | VIII: W8 L10 e1
+42 | Systemy komunikacji bezprzewodowej | VII: W8 L10 e2
+43 | Komputery jednoukładowe | VII: L15 e2
+44 | Elementy sztucznej inteligencji | VI: W8 L10 P8 e4
+45 | Zaawansowane języki programowania | V: W8 L10 e2
+46 | Inżynieria oprogramowania | VII: W8 L10 e2
+47 | Programowanie aplikacji mobilnych | V: W8 L15 e4
+48 | Robotyka | VII: W8 L15 e2
+49 | Zaawansowane projektowanie układów elektronicznych | VII: W8 L15 P8 e5
+50 | Elektronika w zastosowaniach morskich | VIII: W8 e1
+51 | Procesory sygnałowe | VI: W15 L10 e2
+52 | Zjawiska termiczne w elementach i układach elektronicznych | VIII: W8 L10 e1
+53 | Pracownia problemowa EP | VI: P15 e6
+54 | Projekt zespołowy EP | VII: P10 e6
+55 | Seminarium problemowe EP | VIII: P8 e1
+
+@sumy SEM I: W105 C57 L65 e30 | II: W89 C62 L75 P8 e30 | III: W105 C56 L55 e30 | IV: W91 C56 L50 P24 e24 | V: W116 C26 L50 e24 | VI: W23 C26 L40 P28 e24 | VII: W54 C15 L65 P18 e24 | VIII: W30 C30 L10 P38 e24
+@spec SEM
+37 | Praca dyplomowa | VIII: P30 e15
+38 | Systemy radiokomunikacji morskiej | V: W15 e2 | VI: L15 e2
+39 | Półprzewodnikowe przyrządy mocy | V: W8 L10 e2
+40 | Budowa i teoria okrętu | V: W8 e1
+41 | Ergonomia i bezpieczeństwo pracy na statku | V: W8 e1
+42 | Zasilanie urządzeń elektronicznych | VI: W15 e2 | VII: P8 e1
+43 | Okrętowe systemy kontrolno-pomiarowe | VII: W8 L10 e3
+44 | Systemy radiokomunikacji ruchomej | VII: W15 L15 e4
+45 | Urządzenia radiokomunikacyjne | VII: W15 L15 e4
+46 | Przepisy radiokomunikacyjne | V: W15 e2
+47 | Automatyzacja okrętowych systemów energetycznych | VIII: W15 L10 e3
+48 | Morskie systemy elektronawigacyjne | VII: W8 L10 e3
+49 | Ochrona środowiska morskiego | V: W8 e1
+50 | Pracownia problemowa SEM | VI: P20 e12
+51 | Projekt zespołowy SEM | VII: P10 e5
+52 | Seminarium problemowe SEM | VIII: P8 e1
+
+@sumy SIST I: W105 C57 L65 e30 | II: W89 C62 L75 P8 e30 | III: W105 C56 L55 e30 | IV: W91 C56 L50 P24 e24 | V: W107 C34 L55 e24 | VI: W31 C26 L65 P23 e24 | VII: W79 C15 L50 P26 e24 | VIII: W23 C30 L15 P38 e24
+@spec SIST
+37 | Praca dyplomowa | VIII: P30 e15
+38 | Technologie rozległych sieci komputerowych | VIII: W8 e2
+39 | Projektowanie sieci radiokomunikacyjnych | VII: W8 P8 e2
+40 | Przetwarzanie sygnałów w telekomunikacji | V: W15 e2 | VI: L15 e2
+41 | Filtry cyfrowe i procesory sygnałowe | VI: W15 L10 e3
+42 | Bezpieczeństwo sieci i systemów komputerowych | VII: W8 P8 e2
+43 | Zasilanie urządzeń teleinformatycznych | VII: W8 e1
+44 | Systemy i sieci radiokomunikacji ruchomej | VII: W15 e3 | VIII: L15 e1
+45 | Programowanie urządzeń mobilnych | VI: W8 L15 e3
+46 | Systemy radiokomunikacji satelitarnej | V: W15 e2
+47 | Modulacje cyfrowe i kodowanie | V: W8 C8 e2
+48 | Technika nadawania i odbioru radiowego | VII: W8 L15 e3
+49 | Systemy i urządzenia nawigacyjne | VII: W8 e1
+50 | Oprogramowanie systemów pomiarowych | VII: W8 L10 e2
+51 | Morskie systemy komunikacji elektronicznej | V: W15 L15 e3
+52 | Pomiary radiokomunikacyjne | VII: W8 L10 e1
+53 | Pracownia problemowa SiST | VI: P15 e8
+54 | Projekt zespołowy SiST | VII: P10 e5
+55 | Seminarium problemowe SiST | VIII: P8 e1

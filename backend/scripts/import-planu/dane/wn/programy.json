@@ -1,0 +1,9158 @@
+[
+ {
+  "program": "NAW-S1",
+  "label": "od naboru 2023/24",
+  "semesters": 8,
+  "start": "WINTER",
+  "specs": [],
+  "cohorts": [
+   [
+    2023,
+    "W"
+   ],
+   [
+    2024,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 60,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 30
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 30
+    }
+   },
+   {
+    "subject": "Ekonomia",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Psychologia i Socjologia",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo i Higiena Pracy",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Technologie Informacyjne",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 60,
+     "C": 60,
+     "e": 9.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 45,
+     "C": 45,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Chemia Ładunkowa",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Informatyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Elektroniki",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Elektrotechnika Okrętowa",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Automatyki",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Mechanika Techniczna",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 8.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 20,
+     "L": 35,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 2,
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 5,
+     "C": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "C": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 10,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 10,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 10,
+     "L": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 20,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 10,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 45,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Meteorologia i Oceanografia",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 10,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Meteorologia i Oceanografia",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 30,
+     "L": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "L": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 20,
+     "L": 20,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 2,
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie statkiem",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Zarządzanie statkiem",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Ekonomika Transportu Morskiego",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Prawo Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Prawo Morskie",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Manewrowanie Statkiem",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 10,
+     "L": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Manewrowanie Statkiem",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Ratownictwo Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "L": 10,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 15,
+     "L": 25,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "L": 25,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Siłownie Okrętowe",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ochrona Środowiska Morskiego",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "ECDIS",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 10,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Statku",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 10,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 40,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Ceremoniał Morski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "S": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "S": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "e": 15.0
+    }
+   },
+   {
+    "subject": "Praktyka Morska",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "e": 30.0
+    }
+   }
+  ]
+ },
+ {
+  "program": "NAW-S1",
+  "label": "od naboru 2025/26",
+  "semesters": 8,
+  "start": "WINTER",
+  "specs": [],
+  "cohorts": [
+   [
+    2025,
+    "W"
+   ],
+   [
+    2026,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 60,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 30
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 30
+    }
+   },
+   {
+    "subject": "Ekonomia",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Psychologia i Socjologia",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo i Higiena Pracy",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Technologie Informacyjne",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 60,
+     "C": 60,
+     "e": 9.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 45,
+     "C": 45,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Chemia Ładunkowa",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Informatyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Elektroniki",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Elektrotechnika Okrętowa",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Automatyki",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Mechanika Techniczna",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 8.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 20,
+     "L": 35,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 2,
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 5,
+     "C": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "C": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 10,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 10,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 10,
+     "L": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 20,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 10,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 45,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Meteorologia i Oceanografia",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 10,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Meteorologia i Oceanografia",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 30,
+     "L": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "L": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 20,
+     "L": 20,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 2,
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie statkiem",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Zarządzanie statkiem",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Ekonomika Transportu Morskiego",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Prawo Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Prawo Morskie",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Manewrowanie Statkiem",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 10,
+     "L": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Manewrowanie Statkiem",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Ratownictwo Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "L": 10,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 15,
+     "L": 25,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "L": 25,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Siłownie Okrętowe",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ochrona Środowiska Morskiego",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "ECDIS",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 10,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Statku",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 10,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 40,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Ceremoniał Morski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "S": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "S": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "e": 15.0
+    }
+   },
+   {
+    "subject": "Praktyka Morska",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "e": 30.0
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie elementarnych zasad udzielania pierwszej pomocy medycznej",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 6,
+     "C": 6
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie indywidualnych technik ratunkowych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 14,
+     "C": 6
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie ochrony przeciwpożarowej stopień podstawowy",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 7,
+     "C": 10
+    }
+   },
+   {
+    "subject": "Szkolenia w zakresie bezpieczeństwa własnego i odpowiedzialności wspólnej",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 23,
+     "C": 3
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie problematyki ochrony na statku",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 4
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie eksploatacji zbiornikowców do przewozu produktów naftowych oraz chemikaliów – stopień podstawowy",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 22,
+     "C": 3
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie eksploatacji zbiornikowców do przewozu gazów skroplonych – stopień podstawowy",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 19,
+     "C": 3
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie przewozu ładunków niebezpiecznych",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 11,
+     "C": 1
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie kierowania tłumem",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 4,
+     "C": 2
+    }
+   },
+   {
+    "subject": "Szkolenia w zakresie bezpieczeństwa dla członków załóg bezpośrednio obsługujących pasażerów w pomieszczeniach pasażerskich",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 4,
+     "C": 2
+    }
+   },
+   {
+    "subject": "Szkolenia w zakresie zarządzania kryzysowego i zachowań ludzkich",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 11,
+     "C": 2
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie ochrony przeciwpożarowej stopień wyższy",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 17,
+     "C": 13
+    }
+   },
+   {
+    "subject": "Szkolenie dla członków załóg z przydzielonymi obowiązkami w zakresie ochrony",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 3,
+     "C": 2
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie udzielania pierwszej pomocy medycznej",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 13,
+     "C": 7
+    }
+   },
+   {
+    "subject": "Szkolenie w celu uzyskania świadectwa ratownika",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 15,
+     "C": 8
+    }
+   }
+  ]
+ },
+ {
+  "program": "NAW-N1",
+  "label": "od naboru 2023/24",
+  "semesters": 8,
+  "start": "WINTER",
+  "specs": [],
+  "cohorts": [
+   [
+    2023,
+    "W"
+   ],
+   [
+    2024,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 36,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Ekonomia",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Psychologia i Socjologia",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo i Higiena Pracy",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Technologie Informacyjne",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 36,
+     "C": 36,
+     "e": 9.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 27,
+     "C": 27,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "C": 9,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Chemia Ładunkowa",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Informatyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Elektroniki",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Elektrotechnika Okrętowa",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Automatyki",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Mechanika Techniczna",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "L": 9,
+     "e": 8.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 12,
+     "L": 21,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 1,
+     "L": 3,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 3,
+     "C": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "C": 12,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 6,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 6,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 3,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 6,
+     "L": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 11,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 17,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 27,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Meteorologia i Oceanografia",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "L": 6,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Meteorologia i Oceanografia",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 18,
+     "L": 9,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 18,
+     "L": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "L": 12,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 12,
+     "L": 12,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 3,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "L": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 1,
+     "L": 3,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie statkiem",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Zarządzanie statkiem",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 3,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Ekonomika Transportu Morskiego",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Prawo Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Prawo Morskie",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Manewrowanie Statkiem",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 6,
+     "L": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Manewrowanie Statkiem",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Ratownictwo Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "L": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "L": 6,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 9,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Siłownie Okrętowe",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ochrona Środowiska Morskiego",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "ECDIS",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 6,
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Statku",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 6,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 24,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Ceremoniał Morski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "S": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "S": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "e": 15.0
+    }
+   },
+   {
+    "subject": "Praktyka Morska",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "e": 30.0
+    }
+   }
+  ]
+ },
+ {
+  "program": "NAW-N1",
+  "label": "od naboru 2025/26",
+  "semesters": 8,
+  "start": "WINTER",
+  "specs": [],
+  "cohorts": [
+   [
+    2025,
+    "W"
+   ],
+   [
+    2026,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 36,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Ekonomia",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Psychologia i Socjologia",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo i Higiena Pracy",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Technologie Informacyjne",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 36,
+     "C": 36,
+     "e": 9.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 27,
+     "C": 27,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "C": 9,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Chemia Ładunkowa",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Informatyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Elektroniki",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Elektrotechnika Okrętowa",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Automatyki",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Mechanika Techniczna",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "L": 9,
+     "e": 8.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 12,
+     "L": 21,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Nawigacja",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 1,
+     "L": 3,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 3,
+     "C": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Astronawigacja",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "C": 12,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 6,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 6,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Nawigacji",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 3,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 6,
+     "L": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 11,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 5,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 17,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 27,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Meteorologia i Oceanografia",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "L": 6,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Meteorologia i Oceanografia",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 18,
+     "L": 9,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 18,
+     "L": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "L": 12,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 12,
+     "L": 12,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Budowa i Stateczność Statku",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 3,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "L": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 1,
+     "L": 3,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie statkiem",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Zarządzanie statkiem",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "L": 3,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Ekonomika Transportu Morskiego",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Prawo Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Prawo Morskie",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Manewrowanie Statkiem",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 6,
+     "L": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Manewrowanie Statkiem",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Ratownictwo Morskie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "L": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "L": 6,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 9,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Łączność Morska",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Siłownie Okrętowe",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ochrona Środowiska Morskiego",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "ECDIS",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 6,
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Statku",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 6,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 24,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Ceremoniał Morski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "S": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "S": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "e": 15.0
+    }
+   },
+   {
+    "subject": "Praktyka Morska",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "e": 30.0
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie elementarnych zasad udzielania pierwszej pomocy medycznej",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 3,
+     "C": 3
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie indywidualnych technik ratunkowych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 8,
+     "C": 3
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie ochrony przeciwpożarowej stopień podstawowy",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 4,
+     "C": 6
+    }
+   },
+   {
+    "subject": "Szkolenia w zakresie bezpieczeństwa własnego i odpowiedzialności wspólnej",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 13,
+     "C": 1
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie problematyki ochrony na statku",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 2
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie eksploatacji zbiornikowców do przewozu produktów naftowych oraz chemikaliów – stopień podstawowy",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 13,
+     "C": 1
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie eksploatacji zbiornikowców do przewozu gazów skroplonych – stopień podstawowy",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 11,
+     "C": 1
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie przewozu ładunków niebezpiecznych",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 6
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie kierowania tłumem",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 2,
+     "C": 1
+    }
+   },
+   {
+    "subject": "Szkolenia w zakresie bezpieczeństwa dla członków załóg bezpośrednio obsługujących pasażerów w pomieszczeniach pasażerskich",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 2,
+     "C": 1
+    }
+   },
+   {
+    "subject": "Szkolenia w zakresie zarządzania kryzysowego i zachowań ludzkich",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 6,
+     "C": 1
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie ochrony przeciwpożarowej stopień wyższy",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 10,
+     "C": 7
+    }
+   },
+   {
+    "subject": "Szkolenie dla członków załóg z przydzielonymi obowiązkami w zakresie ochrony",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 1,
+     "C": 1
+    }
+   },
+   {
+    "subject": "Szkolenie w zakresie udzielania pierwszej pomocy medycznej",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 7,
+     "C": 4
+    }
+   },
+   {
+    "subject": "Szkolenie w celu uzyskania świadectwa ratownika",
+    "spec": null,
+    "sem": 8,
+    "cell": {
+     "W": 9,
+     "C": 4
+    }
+   }
+  ]
+ },
+ {
+  "program": "TR-S1",
+  "label": "od naboru 2023/24",
+  "semesters": 7,
+  "start": "WINTER",
+  "specs": [
+   "TiL",
+   "EST"
+  ],
+  "cohorts": [
+   [
+    2023,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Badania Operacyjne",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "L": 30,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo i Higiena Pracy",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Elementy Prawa z Prawem Transportowym",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Informatyka",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 30,
+     "W": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 60,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 60,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 30,
+     "W": 30,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Materiałoznawstwo",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Mechanika Techniczna",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 30,
+     "L": 15,
+     "W": 15,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Nauki Humanistyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Ekonomii",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Podstawy Statystyki",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 30,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Technologie Informacyjne",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "C": 30
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "C": 30
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": "TiL",
+    "sem": 1,
+    "cell": {
+     "W": 60,
+     "C": 60,
+     "e": 9.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": "TiL",
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 7.0
+    }
+   },
+   {
+    "subject": "Podstawy Nautyki w Transporcie",
+    "spec": "TiL",
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": "TiL",
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": "TiL",
+    "sem": 2,
+    "cell": {
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elektrotechnika",
+    "spec": "TiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Elektroniki",
+    "spec": "TiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Geodezji",
+    "spec": "TiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": "TiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Podstawy Budowy i Konstrukcji Maszyn",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Środki Transportu",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Satelitarne w Transporcie",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej w Transporcie",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej w Transporcie",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Automatyki",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Eksploatacji Technicznej",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Ekonomika Transportu",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Logistyka",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Systemy Transportowe",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Telematyka Transportu",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Inżynierii Ruchu",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Inżynierii Ruchu",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Obiektów Transportu",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Obiektów Transportu",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Niezawodność i Bezpieczeństwo Systemów Transportowych",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ocena Oddziaływania Transportu na Środowisko",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ocena Oddziaływania Transportu na Środowisko",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Logistyka Dostaw",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Morskich Systemów Transportowych",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Narzędzia Wspomagania Logistyki",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Spedycja",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Spedycja",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Logistyka Magazynowania",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Planowanie Sieci Transportowych i Logistycznych",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "L": 15,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie w Systemach Logistycznych",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 20,
+     "C": 20,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Globalnymi Łańcuchami Dostaw",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 20,
+     "C": 20,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "S": 5,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "S": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "S": 20,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Praktyka Kierunkowa",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "e": 10.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "e": 15.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": "EST",
+    "sem": 1,
+    "cell": {
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": "EST",
+    "sem": 3,
+    "cell": {
+     "L": 15
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": "EST",
+    "sem": 4,
+    "cell": {
+     "L": 15
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": "EST",
+    "sem": 1,
+    "cell": {
+     "W": 60,
+     "C": 60,
+     "e": 8.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": "EST",
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 6.0
+    }
+   }
+  ]
+ },
+ {
+  "program": "TR-S1",
+  "label": "od naboru 2024/25",
+  "semesters": 7,
+  "start": "WINTER",
+  "specs": [
+   "TiL",
+   "EST"
+  ],
+  "cohorts": [
+   [
+    2024,
+    "W"
+   ],
+   [
+    2025,
+    "W"
+   ],
+   [
+    2026,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Badania Operacyjne",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "L": 30,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo i Higiena Pracy",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ekonomika Transportu",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Obiektów Transportu",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 30,
+     "W": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Obiektów Transportu",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "C": 30,
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Elektrotechnika",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Elektroniki",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Prawa z Prawem Transportowym",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 30,
+     "W": 30,
+     "e": 7.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Informatyka",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 30,
+     "W": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 30,
+     "W": 30,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 30,
+     "W": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 60,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 60,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Logistyka",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 30,
+     "W": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 60,
+     "W": 60,
+     "e": 9.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 30,
+     "W": 30,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Materiałoznawstwo",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Mechanika Techniczna",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 30,
+     "L": 15,
+     "W": 15,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Nauki Humanistyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Niezawodność i Bezpieczeństwo Systemów Transportowych",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ocena Oddziaływania Transportu na Środowisko",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ocena Oddziaływania Transportu na Środowisko",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "W": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Automatyki",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Budowy i Konstrukcji Maszyn",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Ekonomii",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Podstawy Eksploatacji Technicznej",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Geodezji",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Inżynierii Ruchu",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "L": 30,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Inżynierii Ruchu",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "C": 30,
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Nautyki w Transporcie",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Podstawy Statystyki",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 30,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "e": 15.0
+    }
+   },
+   {
+    "subject": "Praktyka Kierunkowa",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "e": 10.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "S": 5,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "S": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "S": 20,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej w Transporcie",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej w Transporcie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Systemy Satelitarne w Transporcie",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 30,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Transportowe",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 15,
+     "W": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 30,
+     "W": 30,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 15,
+     "W": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Technologie Informacyjne",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Telematyka Transportu",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "L": 15,
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 30
+    }
+   },
+   {
+    "subject": "Wychowanie Fizyczne",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 30
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "W": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "W": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Środki Transportu",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 15,
+     "W": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Logistyka Dostaw",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Morskich Systemów Transportowych",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Narzędzia Wspomagania Logistyki",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Spedycja",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Spedycja",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Logistyka Magazynowania",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Planowanie Mobilności Miejskiej",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "L": 15,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie w Systemach Logistycznych",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 20,
+     "C": 20,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Globalnymi Łańcuchami Dostaw",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 20,
+     "C": 20,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Transport Miejski i Regionalny",
+    "spec": "EST",
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Środki Transportu",
+    "spec": "EST",
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Inteligentne Systemy Zarządzania w Transporcie",
+    "spec": "EST",
+    "sem": 5,
+    "cell": {
+     "W": 30,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Transport w Łańcuchach Dostaw",
+    "spec": "EST",
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Nowoczesne Narzędzia w Logistyce",
+    "spec": "EST",
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Planowanie Sieci Transportowych i Logistycznych",
+    "spec": "EST",
+    "sem": 6,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "L": 15,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Planowanie Sieci Transportowych i Logistycznych",
+    "spec": "EST",
+    "sem": 7,
+    "cell": {
+     "W": 10,
+     "L": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie Systemami Transportowymi",
+    "spec": "EST",
+    "sem": 7,
+    "cell": {
+     "W": 20,
+     "C": 20,
+     "e": 5.0
+    }
+   }
+  ]
+ },
+ {
+  "program": "TR-N1",
+  "label": "od naboru 2023/24",
+  "semesters": 7,
+  "start": "WINTER",
+  "specs": [
+   "TiL",
+   "EST"
+  ],
+  "cohorts": [
+   [
+    2023,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Badania Operacyjne",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "L": 18,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo i Higiena Pracy",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Elementy Prawa z Prawem Transportowym",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Informatyka",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 18,
+     "W": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 36,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 36,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 18,
+     "W": 18,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Materiałoznawstwo",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Mechanika Techniczna",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 18,
+     "L": 9,
+     "W": 9,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Nauki Humanistyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Ekonomii",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Podstawy Statystyki",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 18,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Technologie Informacyjne",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": "TiL",
+    "sem": 1,
+    "cell": {
+     "W": 36,
+     "C": 36,
+     "e": 9.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": "TiL",
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 7.0
+    }
+   },
+   {
+    "subject": "Podstawy Nautyki w Transporcie",
+    "spec": "TiL",
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "L": 8,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": "TiL",
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": "TiL",
+    "sem": 2,
+    "cell": {
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elektrotechnika",
+    "spec": "TiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Elektroniki",
+    "spec": "TiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Geodezji",
+    "spec": "TiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": "TiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Podstawy Budowy i Konstrukcji Maszyn",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Środki Transportu",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 18,
+     "C": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Satelitarne w Transporcie",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej w Transporcie",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej w Transporcie",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": "TiL",
+    "sem": 3,
+    "cell": {
+     "W": 18,
+     "L": 18,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "C": 9,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Automatyki",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Eksploatacji Technicznej",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Ekonomika Transportu",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Logistyka",
+    "spec": "TiL",
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Systemy Transportowe",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "C": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Telematyka Transportu",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Inżynierii Ruchu",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Inżynierii Ruchu",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Obiektów Transportu",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Obiektów Transportu",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Niezawodność i Bezpieczeństwo Systemów Transportowych",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ocena Oddziaływania Transportu na Środowisko",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ocena Oddziaływania Transportu na Środowisko",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Logistyka Dostaw",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Morskich Systemów Transportowych",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 12,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Narzędzia Wspomagania Logistyki",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Spedycja",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Spedycja",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Logistyka Magazynowania",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Planowanie Sieci Transportowych i Logistycznych",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "C": 9,
+     "L": 9,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie w Systemach Logistycznych",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 12,
+     "C": 12,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Globalnymi Łańcuchami Dostaw",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 12,
+     "C": 12,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "S": 3,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "S": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "S": 12,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Praktyka Kierunkowa",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "e": 10.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "e": 15.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": "EST",
+    "sem": 1,
+    "cell": {
+     "L": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": "EST",
+    "sem": 1,
+    "cell": {
+     "W": 36,
+     "C": 36,
+     "e": 8.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": "EST",
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 6.0
+    }
+   }
+  ]
+ },
+ {
+  "program": "TR-N1",
+  "label": "od naboru 2024/25",
+  "semesters": 7,
+  "start": "WINTER",
+  "specs": [
+   "TiL",
+   "EST"
+  ],
+  "cohorts": [
+   [
+    2024,
+    "W"
+   ],
+   [
+    2025,
+    "W"
+   ],
+   [
+    2026,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Badania Operacyjne",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "L": 18,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo i Higiena Pracy",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ekonomika Transportu",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Obiektów Transportu",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 18,
+     "W": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Obiektów Transportu",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "C": 18,
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Elektrotechnika",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Elektroniki",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Prawa z Prawem Transportowym",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 18,
+     "W": 18,
+     "e": 7.0
+    }
+   },
+   {
+    "subject": "Fizyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Grafika Inżynierska",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Informatyka",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 18,
+     "W": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 18,
+     "W": 18,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 18,
+     "W": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 36,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 36,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Logistyka",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 18,
+     "W": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 36,
+     "W": 36,
+     "e": 9.0
+    }
+   },
+   {
+    "subject": "Matematyka",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 18,
+     "W": 18,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Materiałoznawstwo",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Mechanika Techniczna",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 18,
+     "L": 9,
+     "W": 9,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Nauki Humanistyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Niezawodność i Bezpieczeństwo Systemów Transportowych",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ocena Oddziaływania Transportu na Środowisko",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Ocena Oddziaływania Transportu na Środowisko",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "W": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Automatyki",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Budowy i Konstrukcji Maszyn",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Ekonomii",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Podstawy Eksploatacji Technicznej",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Geodezji",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Inżynierii Ruchu",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "L": 18,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Inżynierii Ruchu",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "C": 18,
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Nautyki w Transporcie",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 8,
+     "W": 9,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Podstawy Statystyki",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 18,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "e": 15.0
+    }
+   },
+   {
+    "subject": "Praktyka Kierunkowa",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "e": 10.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "S": 3,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "S": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "S": 12,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej w Transporcie",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej w Transporcie",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Systemy Satelitarne w Transporcie",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 18,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Transportowe",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "C": 9,
+     "W": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "L": 18,
+     "W": 18,
+     "e": 6.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "C": 9,
+     "W": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Technologia Przewozu Przeładunku i Składowania",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Technologie Informacyjne",
+    "spec": null,
+    "sem": 4,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Telematyka Transportu",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "L": 9,
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 5,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "W": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 7,
+    "cell": {
+     "W": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Środki Transportu",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 9,
+     "W": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Logistyka Dostaw",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Morskich Systemów Transportowych",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 12,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Narzędzia Wspomagania Logistyki",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Spedycja",
+    "spec": "TiL",
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Spedycja",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Logistyka Magazynowania",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 9,
+     "L": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Planowanie Mobilności Miejskiej",
+    "spec": "TiL",
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "C": 9,
+     "L": 9,
+     "e": 5.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie w Systemach Logistycznych",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 12,
+     "C": 12,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Globalnymi Łańcuchami Dostaw",
+    "spec": "TiL",
+    "sem": 7,
+    "cell": {
+     "W": 12,
+     "C": 12,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Transport Miejski i Regionalny",
+    "spec": "EST",
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Środki Transportu",
+    "spec": "EST",
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "L": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Inteligentne Systemy Zarządzania w Transporcie",
+    "spec": "EST",
+    "sem": 5,
+    "cell": {
+     "W": 18,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Transport w Łańcuchach Dostaw",
+    "spec": "EST",
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Nowoczesne Narzędzia w Logistyce",
+    "spec": "EST",
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "L": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Planowanie Sieci Transportowych i Logistycznych",
+    "spec": "EST",
+    "sem": 6,
+    "cell": {
+     "W": 18,
+     "C": 9,
+     "L": 9,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Planowanie Sieci Transportowych i Logistycznych",
+    "spec": "EST",
+    "sem": 7,
+    "cell": {
+     "W": 6,
+     "L": 12,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie Systemami Transportowymi",
+    "spec": "EST",
+    "sem": 7,
+    "cell": {
+     "W": 12,
+     "C": 12,
+     "e": 5.0
+    }
+   }
+  ]
+ },
+ {
+  "program": "NAW-S2",
+  "label": "od naboru 2024/25",
+  "semesters": 3,
+  "start": "WINTER",
+  "specs": [
+   "TO",
+   "EZ",
+   "MSI",
+   "ZBTM",
+   "APSE",
+   "PHiON",
+   "ŻA"
+  ],
+  "cohorts": [
+   [
+    2025,
+    "S"
+   ],
+   [
+    2025,
+    "W"
+   ],
+   [
+    2026,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Bazy i Hurtownie Danych",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Elementy Oceanografii i Hydrografii",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 30,
+     "W": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Inżynieria Ruchu Morskiego",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Decyzji",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Matematyka Stosowana",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 30,
+     "W": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Metody Analizy Danych Nawigacyjnych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 15,
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Metody Opracowania Danych",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Ochrona Środowiska Morskiego",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Oceny Niezawodności i Bezpieczeństwa Systemów Technicznych",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 15,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Systemów Dynamicznego Pozycjonowania",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "e": 20.0
+    }
+   },
+   {
+    "subject": "Psychologia i Socjologia",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "S": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "S": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Systemy Map Elektronicznych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 30,
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Teleinformatyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 30,
+     "W": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Bezpieczeństwem w Nawigacji",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Systemami Transportowymi",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Zasobami Ludzkimi",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Nawigacyjne Zabezpieczenie Operacji Offshore",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Referencyjne",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Offshorowe Technologie Wydobycia i Przetwarzania Węglowodorów Kopalnych",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploracja Podmorskich Złóż Węglowodorów",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Budowa i Konstrukcja Kadłuba Zbiornikowców",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Stateczność Jednostek Offshorowych",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Siłownie Okrętowe",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie - LCHS",
+    "spec": "TO",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "C": 20,
+     "L": 40,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Geodezyjne Podstawy Pomiarów Morskich",
+    "spec": "TO",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie Inwestycjami Offshorowymi",
+    "spec": "TO",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Bezpieczeństwem w Morskim Przemyśle Wydobywczym Ropy i Gazu",
+    "spec": "TO",
+    "sem": 3,
+    "cell": {
+     "W": 10,
+     "C": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Nawigacyjne Planowanie Podróży dla Zbiornikowców",
+    "spec": "EZ",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Manewrowanie Zbiornikowcami",
+    "spec": "EZ",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Budowa i Konstrukcja Kadłuba Zbiornikowców",
+    "spec": "EZ",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Wymagania Statecznościowe Zbiornikowców",
+    "spec": "EZ",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie - LCHS",
+    "spec": "EZ",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "L": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie - LCHS",
+    "spec": "EZ",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "C": 20,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Zbiornikowców",
+    "spec": "EZ",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 40,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Dynamicznego Pozycjonowania Zbiornikowców",
+    "spec": "EZ",
+    "sem": 3,
+    "cell": {
+     "W": 10,
+     "L": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Siłownie Okrętowe",
+    "spec": "EZ",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Bezpieczeństwem Zbiornikowców",
+    "spec": "EZ",
+    "sem": 3,
+    "cell": {
+     "W": 10,
+     "C": 10,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Algorytmy Dyskretne",
+    "spec": "MSI",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Środowisko Programistyczne Systemów Informacji Przestrzennej",
+    "spec": "MSI",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Monitorowania i Zarządzania Ruchem",
+    "spec": "MSI",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Protokoły Komunikacyjne w Morskich Systemach Informacyjnych",
+    "spec": "MSI",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej",
+    "spec": "MSI",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Morskie Zastosowanie Technologii GIS",
+    "spec": "MSI",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "E-Navigation",
+    "spec": "MSI",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Języki Programowania",
+    "spec": "MSI",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Języki Programowania",
+    "spec": "MSI",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 40,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Systemów Informatycznych",
+    "spec": "MSI",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Systemów Informatycznych",
+    "spec": "MSI",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Środowisko Obliczeń i Modelowania Matematycznego",
+    "spec": "MSI",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Podstawy Prawne Zarządzania Bezpieczeństwem w Transporcie Morskim",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "System Zarządzania Bezpieczeństwem w Transporcie Morskim",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Metody Oceny Bezpieczeństwa w Transporcie Morskim",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "L": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Prawa Morskiego",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Systemami Ratowniczymi",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Systemami Ratowniczymi",
+    "spec": "ZBTM",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "C": 20,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Statku w Stanach Awaryjnych",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Statku w Stanach Awaryjnych",
+    "spec": "ZBTM",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Statku Handlowego",
+    "spec": "ZBTM",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Stateczność i Niezatapialność Statku",
+    "spec": "ZBTM",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zagospadarowanie Polskiej Strefy Ekonomicznej",
+    "spec": "APSE",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Zasoby Morza Bałtyckiego",
+    "spec": "APSE",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Przybrzeżne Prace Hydrograficzne",
+    "spec": "APSE",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej",
+    "spec": "APSE",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Budowle Hydrograficzne i Infrastruktura Nawigacyjna",
+    "spec": "APSE",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Budowle Hydrograficzne i Infrastruktura Nawigacyjna",
+    "spec": "APSE",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 40,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Aspekty Prawne w Polskiej Strefie Ekonomicznej",
+    "spec": "APSE",
+    "sem": 3,
+    "cell": {
+     "W": 40,
+     "L": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie w Administracji Morskiej",
+    "spec": "APSE",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "C": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Przyrządy i Systemy Pomiarowe",
+    "spec": "PHiON",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Przybrzeżne Prace Hydrograficzne",
+    "spec": "PHiON",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej",
+    "spec": "PHiON",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Projektowanie Oznakowania Nawigacyjnego",
+    "spec": "PHiON",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Projektowanie Oznakowania Nawigacyjnego",
+    "spec": "PHiON",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Rachunek Wyrównawczy w Hydrografii",
+    "spec": "PHiON",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Rachunek Wyrównawczy w Hydrografii",
+    "spec": "PHiON",
+    "sem": 3,
+    "cell": {
+     "W": 10,
+     "C": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Pomiary Hydrograficzne",
+    "spec": "PHiON",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Pomiary Hydrograficzne",
+    "spec": "PHiON",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Nawigacyjne Planowanie Podróży w Rejonach Polarnych",
+    "spec": "ŻA",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "L": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Manewrowanie Statków w Rejonach Polarnych",
+    "spec": "ŻA",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Stateczność i Niezatapialność Statków Operujacych w Rejonach Polarnych",
+    "spec": "ŻA",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Technologie Przeładunku i Przewozu w Rejonach Polarnych",
+    "spec": "ŻA",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Systemy Łączności i Ratownictwo w Rejonach Polarnych",
+    "spec": "ŻA",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Ochrona Środowiska w Arktyce",
+    "spec": "ŻA",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Oceanografia i Geologia Morza Rejonów Polarnych",
+    "spec": "ŻA",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "L": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Dynamicznego Pozycjonowania Statków",
+    "spec": "ŻA",
+    "sem": 3,
+    "cell": {
+     "W": 10,
+     "L": 10,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Budowa i Konstrukcja Kadłuba Statków Operujących w Rejonach Polarnych",
+    "spec": "ŻA",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "C": 40,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Bezpieczeństwem Statków w Rejonach Polarnych",
+    "spec": "ŻA",
+    "sem": 3,
+    "cell": {
+     "W": 10,
+     "C": 10,
+     "e": 1.0
+    }
+   }
+  ]
+ },
+ {
+  "program": "NAW-N2",
+  "label": "od naboru 2024/25",
+  "semesters": 3,
+  "start": "WINTER",
+  "specs": [
+   "TO",
+   "ZBTM"
+  ],
+  "cohorts": [
+   [
+    2025,
+    "S"
+   ],
+   [
+    2025,
+    "W"
+   ],
+   [
+    2026,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Bazy i Hurtownie Danych",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Elementy Oceanografii i Hydrografii",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 18,
+     "W": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Inżynieria Ruchu Morskiego",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Decyzji",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Matematyka Stosowana",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 18,
+     "W": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Metody Analizy Danych Nawigacyjnych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 9,
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Metody Opracowania Danych",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Ochrona Środowiska Morskiego",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Oceny Niezawodności i Bezpieczeństwa Systemów Technicznych",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 9,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Podstawy Systemów Dynamicznego Pozycjonowania",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "e": 20.0
+    }
+   },
+   {
+    "subject": "Psychologia i Socjologia",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "S": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "S": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Systemy Map Elektronicznych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 18,
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Teleinformatyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Urządzenia Nawigacyjne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 18,
+     "W": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Bezpieczeństwem w Nawigacji",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Systemami Transportowymi",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Zasobami Ludzkimi",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Nawigacyjne Zabezpieczenie Operacji Offshore",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "C": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Referencyjne",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Offshorowe Technologie Wydobycia i Przetwarzania Węglowodorów Kopalnych",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploracja Podmorskich Złóż Węglowodorów",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Budowa i Konstrukcja Kadłuba Zbiornikowców",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Stateczność Jednostek Offshorowych",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Siłownie Okrętowe",
+    "spec": "TO",
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przewozy Morskie - LCHS",
+    "spec": "TO",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "C": 12,
+     "L": 24,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Geodezyjne Podstawy Pomiarów Morskich",
+    "spec": "TO",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "L": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie Inwestycjami Offshorowymi",
+    "spec": "TO",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Bezpieczeństwem w Morskim Przemyśle Wydobywczym Ropy i Gazu",
+    "spec": "TO",
+    "sem": 3,
+    "cell": {
+     "W": 6,
+     "C": 6,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Podstawy Prawne Zarządzania Bezpieczeństwem w Transporcie Morskim",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "System Zarządzania Bezpieczeństwem w Transporcie Morskim",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Metody Oceny Bezpieczeństwa w Transporcie Morskim",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "L": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Elementy Prawa Morskiego",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Systemami Ratowniczymi",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "L": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Systemami Ratowniczymi",
+    "spec": "ZBTM",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "C": 12,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Statku w Stanach Awaryjnych",
+    "spec": "ZBTM",
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "L": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Bezpieczeństwo Statku w Stanach Awaryjnych",
+    "spec": "ZBTM",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "L": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Statku Handlowego",
+    "spec": "ZBTM",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "L": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Stateczność i Niezatapialność Statku",
+    "spec": "ZBTM",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "L": 12,
+     "e": 2.0
+    }
+   }
+  ]
+ },
+ {
+  "program": "TR-S2",
+  "label": "od naboru 2024/25",
+  "semesters": 3,
+  "start": "WINTER",
+  "specs": [
+   "MSTiL",
+   "LSO",
+   "ESTiL",
+   "ZIiŚTŚ"
+  ],
+  "cohorts": [
+   [
+    2025,
+    "S"
+   ],
+   [
+    2025,
+    "W"
+   ],
+   [
+    2026,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Bazy i Hurtownie Danych",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 40,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Decyzji",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Logistyka i Zarządzanie Łańcuchami Dostaw",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 30,
+     "W": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Mechanika Stosowana",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Metody Stochastyczne w Transporcie",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 30,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Modelowanie Procesów i Systemów Transportowo-Logistycznych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 30,
+     "W": 30,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Morskie Prawo Publiczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Nauki Humanistyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Niezawodność i Bezpieczeństwo Systemów Transportowych i Logistycznych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 15,
+     "W": 30,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Ochrona Środowiska w Transporcie",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "e": 16.0
+    }
+   },
+   {
+    "subject": "Projektowanie Terminali Portowych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "S": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "S": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Spedycja Krajowa i Międzynarodowa",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej w Transporcie Morskim",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Teleinformatyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Technologie Przewozu i Przeładunku w Transporcie",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wybrane Działy Matematyki Stosowanej",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 15,
+     "W": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 40,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 40,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Projektowania CAD",
+    "spec": "MSTiL",
+    "sem": 1,
+    "cell": {
+     "L": 30,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Zarządzanie w Przedsiębiorstwach Sektora TSL",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Mobilność i Zrównoważony Transport",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Transport w Gospodarce Globalnej",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Projektowanie i Wykonawstwo Robót Portowych",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Flotą Morską",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Transport Intermodalny",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Cła i Procedury Celne",
+    "spec": "MSTiL",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Otoczenie Transportowe Portów Morskich",
+    "spec": "MSTiL",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Transport Ładunków Niebezpiecznych",
+    "spec": "MSTiL",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "C": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Ubezpieczenia Morskie",
+    "spec": "MSTiL",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "MSTiL",
+    "sem": 1,
+    "cell": {
+     "S": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Analizy i Projektowania Sieci Transportowo-Logistycznych",
+    "spec": "LSO",
+    "sem": 1,
+    "cell": {
+     "L": 30,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Zarządzanie w Przedsiębiorstwach Sektora TSL",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Geologia Morza Bałtyckiego",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Geodezyjne Podstawy Pomiarów Morskich",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przesył Energii Elektrycznej",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Logistyka Transportu Ładunków Nienormatywnych",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Hydrotechnicznych Obiektów Sektora Offshore",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Budowle Hydrotechniczne i Akweny Portowe",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Podstawy Manewrowania",
+    "spec": "LSO",
+    "sem": 3,
+    "cell": {
+     "W": 10,
+     "L": 10,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Górnictwo Podmorskie i Prace Głębokowodne",
+    "spec": "LSO",
+    "sem": 3,
+    "cell": {
+     "W": 10,
+     "C": 10,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie Projektami Offshorowymi",
+    "spec": "LSO",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "LSO",
+    "sem": 1,
+    "cell": {
+     "S": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Analizy i Projektowania Sieci Transportowo-Logistycznych",
+    "spec": "ESTiL",
+    "sem": 1,
+    "cell": {
+     "L": 30,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Infrastruktury i Środków Transportu",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "C": 30,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Transport Miejski i Regionalny",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 30,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Cła i Procedury Celne",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Transport Intermodalny",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Globalne Systemy Nawigacji Satelitarnej",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Innowacje w Transporcie",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Rachunek Kosztów w Logistyce",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "L": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Rynki Transportowe i Logistyczne",
+    "spec": "ESTiL",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Biznes Plan",
+    "spec": "ESTiL",
+    "sem": 3,
+    "cell": {
+     "W": 10,
+     "L": 10,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "ESTiL",
+    "sem": 1,
+    "cell": {
+     "S": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Analizy i Projektowania Sieci Transportowo-Logistycznych",
+    "spec": "ZIiŚTŚ",
+    "sem": 1,
+    "cell": {
+     "L": 30,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Zarządzanie w Przedsiębiorstwach Sektora TSL",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Systemami Transportowymi",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Środkami Transportu Wodnego Śródlądowego",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu Śródlądowego",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Prace Czerpalne i Podwodne",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Regulacja i Rewitalizacja Rzek",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "C": 15,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Transport Intermodalny",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 15,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Transport Ładunków Niebezpiecznych",
+    "spec": "ZIiŚTŚ",
+    "sem": 3,
+    "cell": {
+     "W": 20,
+     "C": 20,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Ubezpieczenia i Podatki w Transporcie Śródlądowym",
+    "spec": "ZIiŚTŚ",
+    "sem": 3,
+    "cell": {
+     "W": 20
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "ZIiŚTŚ",
+    "sem": 1,
+    "cell": {
+     "S": 5,
+     "e": 1.0
+    }
+   }
+  ]
+ },
+ {
+  "program": "TR-N2",
+  "label": "od naboru 2024/25",
+  "semesters": 3,
+  "start": "WINTER",
+  "specs": [
+   "MSTiL",
+   "LSO",
+   "ESTiL",
+   "ZIiŚTŚ"
+  ],
+  "cohorts": [
+   [
+    2025,
+    "S"
+   ],
+   [
+    2025,
+    "W"
+   ],
+   [
+    2026,
+    "W"
+   ]
+  ],
+  "entries": [
+   {
+    "subject": "Bazy i Hurtownie Danych",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Język Angielski",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "C": 24,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Decyzji",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Logistyka i Zarządzanie Łańcuchami Dostaw",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 18,
+     "W": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Mechanika Stosowana",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Metody Stochastyczne w Transporcie",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 18,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Modelowanie Procesów i Systemów Transportowo-Logistycznych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 18,
+     "W": 18,
+     "e": 4.0
+    }
+   },
+   {
+    "subject": "Morskie Prawo Publiczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Nauki Humanistyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Niezawodność i Bezpieczeństwo Systemów Transportowych i Logistycznych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 9,
+     "W": 18,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Ochrona Środowiska w Transporcie",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Praca Dyplomowa",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "e": 16.0
+    }
+   },
+   {
+    "subject": "Projektowanie Terminali Portowych",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "S": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "S": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Spedycja Krajowa i Międzynarodowa",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "C": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Informacji Przestrzennej w Transporcie Morskim",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Systemy Teleinformatyczne",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Technologie Przewozu i Przeładunku w Transporcie",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "L": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wybrane Działy Matematyki Stosowanej",
+    "spec": null,
+    "sem": 1,
+    "cell": {
+     "C": 9,
+     "W": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Fakultatywny",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 24,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Wykład Monograficzny",
+    "spec": null,
+    "sem": 3,
+    "cell": {
+     "W": 24,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Projektowania CAD",
+    "spec": "MSTiL",
+    "sem": 1,
+    "cell": {
+     "L": 18,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Zarządzanie w Przedsiębiorstwach Sektora TSL",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Mobilność i Zrównoważony Transport",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Transport w Gospodarce Globalnej",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Projektowanie i Wykonawstwo Robót Portowych",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Flotą Morską",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Transport Intermodalny",
+    "spec": "MSTiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Cła i Procedury Celne",
+    "spec": "MSTiL",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Otoczenie Transportowe Portów Morskich",
+    "spec": "MSTiL",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Transport Ładunków Niebezpiecznych",
+    "spec": "MSTiL",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "C": 12,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Ubezpieczenia Morskie",
+    "spec": "MSTiL",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "MSTiL",
+    "sem": 1,
+    "cell": {
+     "S": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Analizy i Projektowania Sieci Transportowo-Logistycznych",
+    "spec": "LSO",
+    "sem": 1,
+    "cell": {
+     "L": 18,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Zarządzanie w Przedsiębiorstwach Sektora TSL",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Geologia Morza Bałtyckiego",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Geodezyjne Podstawy Pomiarów Morskich",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Przesył Energii Elektrycznej",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Logistyka Transportu Ładunków Nienormatywnych",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Hydrotechnicznych Obiektów Sektora Offshore",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Budowle Hydrotechniczne i Akweny Portowe",
+    "spec": "LSO",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Podstawy Manewrowania",
+    "spec": "LSO",
+    "sem": 3,
+    "cell": {
+     "W": 6,
+     "L": 6,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Górnictwo Podmorskie i Prace Głębokowodne",
+    "spec": "LSO",
+    "sem": 3,
+    "cell": {
+     "W": 6,
+     "C": 6,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Organizacja i Zarządzanie Projektami Offshorowymi",
+    "spec": "LSO",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "LSO",
+    "sem": 1,
+    "cell": {
+     "S": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Analizy i Projektowania Sieci Transportowo-Logistycznych",
+    "spec": "ESTiL",
+    "sem": 1,
+    "cell": {
+     "L": 18,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Eksploatacja Infrastruktury i Środków Transportu",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "C": 18,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Transport Miejski i Regionalny",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 18,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Cła i Procedury Celne",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Transport Intermodalny",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Globalne Systemy Nawigacji Satelitarnej",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Innowacje w Transporcie",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Rachunek Kosztów w Logistyce",
+    "spec": "ESTiL",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "L": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Rynki Transportowe i Logistyczne",
+    "spec": "ESTiL",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Biznes Plan",
+    "spec": "ESTiL",
+    "sem": 3,
+    "cell": {
+     "W": 6,
+     "L": 6,
+     "e": 3.0
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "ESTiL",
+    "sem": 1,
+    "cell": {
+     "S": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Komputerowe Wspomaganie Analizy i Projektowania Sieci Transportowo-Logistycznych",
+    "spec": "ZIiŚTŚ",
+    "sem": 1,
+    "cell": {
+     "L": 18,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Zarządzanie w Przedsiębiorstwach Sektora TSL",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Systemami Transportowymi",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Zarządzanie Środkami Transportu Wodnego Śródlądowego",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Infrastruktura Transportu Śródlądowego",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Prace Czerpalne i Podwodne",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Regulacja i Rewitalizacja Rzek",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "C": 9,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Transport Intermodalny",
+    "spec": "ZIiŚTŚ",
+    "sem": 2,
+    "cell": {
+     "W": 9,
+     "e": 1.0
+    }
+   },
+   {
+    "subject": "Transport Ładunków Niebezpiecznych",
+    "spec": "ZIiŚTŚ",
+    "sem": 3,
+    "cell": {
+     "W": 12,
+     "C": 12,
+     "e": 2.0
+    }
+   },
+   {
+    "subject": "Ubezpieczenia i Podatki w Transporcie Śródlądowym",
+    "spec": "ZIiŚTŚ",
+    "sem": 3,
+    "cell": {
+     "W": 12
+    }
+   },
+   {
+    "subject": "Seminarium Dyplomowe",
+    "spec": "ZIiŚTŚ",
+    "sem": 1,
+    "cell": {
+     "S": 3,
+     "e": 1.0
+    }
+   }
+  ]
+ }
+]

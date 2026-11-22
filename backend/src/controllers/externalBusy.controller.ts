@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma';
 import { AppError } from '../lib/AppError';
 import { asyncHandler } from '../middleware/asyncHandler';
 import { fromIsoDate, toIsoDate } from '../lib/isoDate';
-import { parseTermKey } from '../lib/terms';
+import { parseTermKey, termLabel, termOfDate } from '../lib/terms';
 import { toMinutes } from '../lib/timeGrid';
 import { plural } from '../lib/plural';
 import { externalBusyProblems, externalClashes, normalizeDates, type ExternalClash } from '../lib/externalBusy';
@@ -69,10 +69,22 @@ function planBusy(term: AcademicTerm, entries: { roomId: string | null; instruct
   return termOccupancy(term, { includeGenerated: true, skipExternal: true, onlyResources: { roomIds, instructorIds } });
 }
 
-async function toData(body: ExternalBusyBody) {
+/** "30.11.2026" — data w komunikacie (z rokiem, bo moze byc z innego roku akademickiego). */
+const longDate = (d: string) => `${Number(d.slice(8, 10))}.${d.slice(5, 7)}.${d.slice(0, 4)}`;
+
+async function toData(body: ExternalBusyBody, term: AcademicTerm) {
   const startMinute = toMinutes(body.startTime);
   const endMinute = toMinutes(body.endTime);
   const dates = normalizeDates(body.dates);
+  // Wpis nalezy do semestru — data z innego semestru nigdy nie zablokowalaby planu tego semestru,
+  // a na liscie innego semestru by jej nie bylo (zima 1.10–14.02, lato 15.02–30.09: lib/terms.termOfDate).
+  const outside = dates.filter((d) => {
+    const t = termOfDate(d);
+    return t.startYear !== term.startYear || t.type !== term.type;
+  });
+  if (outside.length > 0) {
+    throw new AppError(400, `Daty spoza semestru ${termLabel(term)}: ${outside.slice(0, 5).map(longDate).join(', ')}${outside.length > 5 ? ` i jeszcze ${outside.length - 5}` : ''}`);
+  }
   const problems = externalBusyProblems({ instructorId: body.instructorId, roomId: body.roomId, startMinute, endMinute, dates });
   if (problems.length > 0) throw new AppError(400, problems.join('; '));
   if (body.instructorId && !(await prisma.instructor.findUnique({ where: { id: body.instructorId }, select: { id: true } }))) {
@@ -114,7 +126,7 @@ export const list = asyncHandler(async (req, res) => {
 export const create = asyncHandler(async (req, res) => {
   const term = await findTerm(String(req.params.key));
   await assertTermWritable(term.id);
-  const data = await toData(req.body as ExternalBusyBody);
+  const data = await toData(req.body as ExternalBusyBody, term);
   const row = await prisma.externalBusy.create({ data: { ...data, termId: term.id }, include });
   const clashes = externalClashes(row, await planBusy(term, [row]));
   req.log.info({ externalBusyId: row.id, source: row.source, clashes: clashes.length }, 'dodano zajetosc zewnetrzna');
@@ -125,7 +137,7 @@ export const update = asyncHandler(async (req, res) => {
   const current = await prisma.externalBusy.findUnique({ where: { id: String(req.params.id) }, include: { term: true } });
   if (!current) throw new AppError(404, 'Zajetosc zewnetrzna nie znaleziona');
   await assertTermWritable(current.termId);
-  const data = await toData(req.body as ExternalBusyBody);
+  const data = await toData(req.body as ExternalBusyBody, current.term);
   const row = await prisma.externalBusy.update({ where: { id: current.id }, data, include });
   const clashes = externalClashes(row, await planBusy(current.term, [row]));
   res.json({ data: toDto(row, clashes), message: savedMessage('zapisana', clashes) });

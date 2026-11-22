@@ -1,3 +1,4 @@
+import { joinUnique, mergeJoint } from '../lib/jointMerge';
 import type { Request } from 'express';
 import type { AcademicTerm } from '@prisma/client';
 import { prisma } from '../lib/prisma';
@@ -248,7 +249,7 @@ export const myPlan = asyncHandler(async (req, res) => {
   const visibleCohorts = await publishedCohortKeys(cohortIds.map((cohortId) => ({ termId: term.id, cohortId })));
   const shown = rows.filter((o) => visibleCohorts.has(`${term.id}|${o.section.cohortId}`));
   const nameOf = new Map(contexts.map((c) => [c.cohort.id, c.nameOf]));
-  const data = shown
+  const rowsOut = shown
     .map((o) => ({
       id: o.id,
       date: toIsoDate(o.date),
@@ -263,7 +264,18 @@ export const myPlan = asyncHandler(async (req, res) => {
       room: o.room ? `${o.room.number} (${o.room.building.name})` : 'ON-LINE',
       instructor: o.instructor ? `${o.instructor.title ?? ''} ${o.instructor.firstName} ${o.instructor.lastName}`.trim() : 'NN',
       note: o.note,
+      slot: { date: toIsoDate(o.date), startMinute: o.startMinute, endMinute: o.endMinute, jointKey: o.jointKey, roomId: o.roomId, instructorId: o.instructorId },
     }));
+  // Zajecia laczone prowadzacego to jedne zajecia — jeden kafelek z grupami (jak Obciazenia).
+  const data = mergeJoint(
+    rowsOut,
+    (r) => r.slot,
+    (first, rest) => ({
+      ...first,
+      program: joinUnique([first.program, ...rest.map((r) => r.program)]),
+      group: joinUnique([first.group, ...rest.map((r) => r.group)]),
+    }),
+  ).map(({ slot: _slot, ...row }) => row);
   const calendars = await personCalendars(term, personCohortIds);
   // Zakres semestru wg opublikowanych kalendarzy osoby — front przestawia tydzien albo mowi,
   // ze planu jeszcze nie ma (zamiast pustego tygodnia z samym swietem spoza semestru).
