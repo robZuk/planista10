@@ -76,10 +76,17 @@ export interface BusySlot {
   groupId: string | null;
   jointKey: string | null;
   label: string;
+  /** Skad zajetosc — czyta ja widok „Zajetosc sal” (services/roomOccupancy); kolizje czytaja tylko label. */
+  origin?: BusyOrigin;
 }
 
+/** Pochodzenie zajetosci: zajecia (z wzorca albo termin reczny) albo wpis zajetosci zewnetrznej. */
+export type BusyOrigin =
+  | { kind: 'SECTION'; sectionId: string; manual: boolean }
+  | { kind: 'EXTERNAL'; externalBusyId: string };
+
 /** Sprawdzany slot (termin, umieszczenie na dacie) — zawsze zajecia konkretnej grupy. */
-export type CandidateSlot = Omit<BusySlot, 'label' | 'groupId'> & { groupId: string };
+export type CandidateSlot = Omit<BusySlot, 'label' | 'groupId' | 'origin'> & { groupId: string };
 
 export interface PlannedOccurrence {
   sectionId: string;

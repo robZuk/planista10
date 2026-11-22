@@ -896,3 +896,42 @@ export interface MyPlanRow {
   instructor: string;
   note: string | null;
 }
+
+/** Zajetosc sali (strona „Zajetosc sal”): zajecia z planu, termin reczny albo zajetosc zewnetrzna. */
+export type RoomEntryKind = 'CLASS' | 'MANUAL' | 'EXTERNAL';
+
+/** Jedne zajecia w sali na konkretnej dacie — zajecia laczone raz, z lista grup. */
+export interface RoomOccupancyEntry {
+  id: string;
+  roomId: string;
+  date: string;
+  startMinute: number;
+  endMinute: number;
+  kind: RoomEntryKind;
+  /** Przedmiot; przy zajetosci zewnetrznej — kto zglosil. */
+  title: string;
+  classType: ClassType | null;
+  /** Grupy ("MBM-S1 s1 · MBM-1-C-A") z rocznikiem i jego wydzialem — kilka przy zajeciach laczonych; puste przy zajetosci zewnetrznej. */
+  groups: { label: string; cohortId: string; facultyId: string }[];
+  facultyIds: string[];
+  instructor: string | null;
+  note: string | null;
+  joint: boolean;
+  /** Sale w tym czasie zajmuje cos jeszcze — kolizja do wyjasnienia. */
+  conflict: boolean;
+}
+
+/** Tydzien semestru: poniedzialek i numer („tydz. N”). */
+export interface TermWeek {
+  monday: string;
+  number: number;
+}
+
+export interface RoomOccupancy {
+  weeks: TermWeek[];
+  /** Poniedzialek pokazanego tygodnia; null — semestr bez kalendarzy. */
+  week: string | null;
+  days: string[];
+  holidays: { date: string; name: string }[];
+  entries: RoomOccupancyEntry[];
+}

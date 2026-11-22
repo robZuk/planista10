@@ -15,6 +15,7 @@ import { pdfFileName } from '../lib/planPrint';
 import { renderPlanPdf } from '../lib/planPdf';
 import { renderSheetPdf } from '../lib/planSheetPdf';
 import { planPrint, type PrintSubject } from '../services/planPrint';
+import { roomOccupancy } from '../services/roomOccupancy';
 import {
   assertPlanEditable,
   createManualOccurrence as createManual,
@@ -133,6 +134,17 @@ export const getPlanPdf = asyncHandler(async (req, res) => {
     .set('Content-Disposition', `attachment; filename="${fileName}"`)
     .set('Access-Control-Expose-Headers', 'Content-Disposition')
     .send(pdf);
+});
+
+/**
+ * Zajetosc sal w tygodniu (cala uczelnia): ?week=RRRR-MM-DD (dowolny dzien tygodnia; bez parametru —
+ * biezacy tydzien semestru albo pierwszy).
+ */
+export const getRoomOccupancy = asyncHandler(async (req, res) => {
+  const term = await findTerm(String(req.params.key));
+  const week = typeof req.query.week === 'string' && req.query.week ? req.query.week : null;
+  if (week !== null && !isIsoDate(week)) throw new AppError(400, 'Nieprawidlowa data tygodnia (RRRR-MM-DD)');
+  res.json({ data: await roomOccupancy(term, week) });
 });
 
 export const getAvailability = asyncHandler(async (req, res) => {

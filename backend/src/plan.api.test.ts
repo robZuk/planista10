@@ -38,6 +38,10 @@ vi.mock('./services/plan', async (importOriginal) => ({
   refreshPlanningTerms: refreshMock,
 }));
 
+// Zajetosc sal — logika w services/roomOccupancy.test; tu tylko uprawnienia i parametr tygodnia.
+const roomOccupancyMock = vi.hoisted(() => vi.fn().mockResolvedValue({ weeks: [], week: null, days: [], holidays: [], entries: [] }));
+vi.mock('./services/roomOccupancy', () => ({ roomOccupancy: roomOccupancyMock }));
+
 import { createApp } from './index';
 import { signAccessToken } from './lib/jwt';
 
@@ -63,6 +67,33 @@ let student: string;
 beforeAll(() => {
   dean = signAccessToken({ sub: 'u-dean', role: 'DEAN_OFFICE' });
   student = signAccessToken({ sub: 'u-st', role: 'STUDENT' });
+});
+
+describe('API — zajetosc sal', () => {
+  it('prowadzacy i student nie ogladaja zajetosci sal -> 403', async () => {
+    const instructor = signAccessToken({ sub: 'u-i', role: 'INSTRUCTOR' });
+    roomOccupancyMock.mockClear();
+    for (const token of [instructor, student]) {
+      const res = await request(app).get('/api/terms/2026-L/room-occupancy').set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(403);
+    }
+    expect(roomOccupancyMock).not.toHaveBeenCalled();
+  });
+
+  it('planista: tydzien z parametru albo domyslny; bledna data -> 400', async () => {
+    roomOccupancyMock.mockClear();
+    const ok = await request(app).get('/api/terms/2026-L/room-occupancy?week=2026-03-11').set('Authorization', `Bearer ${dean}`);
+    expect(ok.status).toBe(200);
+    expect(ok.body.data).toEqual({ weeks: [], week: null, days: [], holidays: [], entries: [] });
+    expect(roomOccupancyMock).toHaveBeenLastCalledWith(expect.objectContaining({ id: 't1' }), '2026-03-11');
+
+    await request(app).get('/api/terms/2026-L/room-occupancy').set('Authorization', `Bearer ${dean}`);
+    expect(roomOccupancyMock).toHaveBeenLastCalledWith(expect.objectContaining({ id: 't1' }), null);
+
+    const bad = await request(app).get('/api/terms/2026-L/room-occupancy?week=2026-02-30').set('Authorization', `Bearer ${dean}`);
+    expect(bad.status).toBe(400);
+    expect(roomOccupancyMock).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe('API — plan', () => {

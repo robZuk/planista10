@@ -302,6 +302,14 @@ export interface OccupancyOptions {
  * Czas w minutach — siatki wydzialow sie roznia.
  */
 export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions = {}): Promise<BusySlot[]> {
+  return (await occupancyWithScope(term, opts)).busy;
+}
+
+/**
+ * Jak termOccupancy, razem z zakresem planu (roczniki z nazwami grup w semestrze) — widok
+ * „Zajetosc sal” opisuje zajetosc tymi samymi danymi, na ktorych licza sie kolizje.
+ */
+export async function occupancyWithScope(term: AcademicTerm, opts: OccupancyOptions = {}): Promise<{ busy: BusySlot[]; scope: Scope }> {
   const scope = await loadScope(term, null);
   const skip = new Set(opts.excludeCohortIds ?? []);
   const skipPlacements = new Set([...(opts.excludePlacementIds ?? []), ...(opts.excludePlacementId ? [opts.excludePlacementId] : [])]);
@@ -419,6 +427,7 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
       groupId: o.groupId,
       jointKey: o.jointKey,
       label: labelOf(sectionById.get(o.sectionId)!),
+      origin: { kind: 'SECTION', sectionId: o.sectionId, manual: false },
     }));
   for (const o of [...manual, ...orphans]) {
     if (o.id === opts.excludeOccurrenceId) continue;
@@ -434,10 +443,13 @@ export async function termOccupancy(term: AcademicTerm, opts: OccupancyOptions =
       groupId: o.groupId,
       jointKey: o.jointKey,
       label: `${labelOf(o.section)}${o.kind === 'MANUAL' ? ' (termin reczny)' : ''}`,
+      origin: { kind: 'SECTION', sectionId: o.sectionId, manual: o.kind === 'MANUAL' },
     });
   }
-  for (const e of external) busy.push(...externalBusySlots(e));
-  return busy;
+  for (const e of external) {
+    for (const slot of externalBusySlots(e)) busy.push({ ...slot, origin: { kind: 'EXTERNAL', externalBusyId: e.id } });
+  }
+  return { busy, scope };
 }
 
 /**

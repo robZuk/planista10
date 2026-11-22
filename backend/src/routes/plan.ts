@@ -20,6 +20,8 @@ const planners = authorize('ADMIN', 'DEAN_OFFICE');
 
 termPlanRouter.get('/plan', authenticate, planners, plan.getPlan);
 termPlanRouter.get('/plan/availability', authenticate, planners, plan.getAvailability);
+// Zajetosc sal w tygodniu — cala uczelnia (sale sa wspolne), tylko do wgladu.
+termPlanRouter.get('/room-occupancy', authenticate, planners, plan.getRoomOccupancy);
 // Druk planu (PDF): ?cohortId=[&groupId=] | ?instructorId= | ?roomId=
 termPlanRouter.get('/plan/pdf', authenticate, planners, plan.getPlanPdf);
 termPlanRouter.post('/placements', authenticate, planners, planLocked(termFromKey), plan.createPlacement);
