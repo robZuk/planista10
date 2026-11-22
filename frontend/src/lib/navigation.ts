@@ -110,6 +110,12 @@ export const NAV_GROUPS: NavGroup[] = [
         keywords: ['inne wydzialy', 'zgloszenia', 'mail', 'kolizje', 'blokady', 'zajety prowadzacy', 'zajeta sala'],
         termScoped: true,
       },
+    ],
+  },
+  {
+    // Strony tylko do wgladu: zajetosc calej uczelni na konkretnych datach (plan zmienia sie w Ukladaniu planu).
+    label: 'Podglad',
+    items: [
       {
         to: '/room-occupancy',
         label: 'Zajetosc sal',
