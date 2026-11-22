@@ -59,6 +59,19 @@ export default function ObsadaPage() {
   const VIEW_PARAM: Record<string, string> = { sections: 'zajecia', orders: 'zlecenia' };
   const tab = params.get('widok') === 'zajecia' ? 'sections' : params.get('widok') === 'zlecenia' ? 'orders' : 'workload';
   const setTab = (value: string) => setParams(VIEW_PARAM[value] ? { widok: VIEW_PARAM[value] } : {}, { replace: true });
+  // „Tylko braki” w adresie: kafelek „Zajec z brakami” i lista kontrolna prowadza prosto do brakow.
+  const onlyVacant = params.get('braki') === '1';
+  const setOnlyVacant = (value: boolean) =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value) next.set('braki', '1');
+        else next.delete('braki');
+        return next;
+      },
+      { replace: true },
+    );
+  const showVacancies = () => setParams({ widok: 'zajecia', braki: '1' }, { replace: true });
 
   // Prowadzacy wybrany w Obciazeniach ("Pokaz w Zajeciach") — lista zajec pokazuje tylko jego zajecia.
   const [instructorFilter, setInstructorFilter] = useState<{ id: string; name: string } | null>(null);
@@ -149,12 +162,26 @@ export default function ObsadaPage() {
             ['Obsadzonych godzin', `${summary.assignedHours} (${staffedPercent(summary.assignedHours, summary.hours)}%)`],
             ['Zajec z brakami', summary.vacancies],
             ['Osieroconych', summary.orphaned],
-          ].map(([label, value]) => (
-            <div key={label} className="rounded-lg border p-3">
-              <div className="text-xs text-muted-foreground">{label}</div>
-              <div className="text-xl font-semibold tabular-nums">{value}</div>
-            </div>
-          ))}
+          ].map(([label, value]) =>
+            label === 'Zajec z brakami' && summary.vacancies > 0 && data && data.rows.length > 0 ? (
+              <button
+                key={label}
+                type="button"
+                onClick={showVacancies}
+                title="Pokaz zajecia z brakami w obsadzie"
+                className="rounded-lg border border-amber-500/50 p-3 text-left transition-colors hover:bg-amber-500/10"
+              >
+                <div className="text-xs text-muted-foreground">{label}</div>
+                <div className="text-xl font-semibold text-amber-600 tabular-nums dark:text-amber-400">{value}</div>
+                <div className="text-xs text-muted-foreground">pokaz →</div>
+              </button>
+            ) : (
+              <div key={label} className="rounded-lg border p-3">
+                <div className="text-xs text-muted-foreground">{label}</div>
+                <div className="text-xl font-semibold tabular-nums">{value}</div>
+              </div>
+            ),
+          )}
         </div>
       )}
       {notice && (
@@ -218,6 +245,8 @@ export default function ObsadaPage() {
               allStaffedOverall={summary?.vacancies === 0}
               instructorFilter={instructorFilter}
               onInstructorFilterChange={setInstructorFilter}
+              onlyVacant={onlyVacant}
+              onOnlyVacantChange={setOnlyVacant}
               onEdit={setEditing}
               scopeKey={`${term.key}|${facultyId}`}
             />

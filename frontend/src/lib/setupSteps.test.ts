@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SetupCohort, SetupStatus } from '@/types';
-import { plural, setupSteps } from './setupSteps';
+import { cohortsWithIssues, plural, setupSteps, STEP_ISSUES } from './setupSteps';
 
 const cohort = (over: Partial<SetupCohort> = {}): SetupCohort => ({
   id: 'c',
@@ -132,7 +132,9 @@ describe('setupSteps', () => {
 
   it('braki obsady i roczniki bez kalendarza -> "!" z czynnoscia', () => {
     const data = ready({}, { vacancies: 3, cohortsWithoutCalendar: 2 });
-    expect(step(data, 5)).toMatchObject({ state: 'warn', summary: '3 zajecia bez pelnej obsady (NN)' });
+    expect(step(data, 5)).toMatchObject({ state: 'warn', summary: '3 zajecia bez pelnej obsady (NN)', to: '/obsada/2026-Z?widok=zajecia&braki=1' });
+    // Bez brakow link prowadzi na zwykla strone Obsady.
+    expect(step(ready(), 5).to).toBe('/obsada/2026-Z');
     expect(step(data, 2)).toMatchObject({ state: 'warn', todo: 'Wybierz kalendarz 2 rocznikom bez kalendarza' });
   });
 });
@@ -143,5 +145,19 @@ describe('krok 4 — semestr programu bez przedmiotow', () => {
     expect(s4.state).toBe('done');
     expect(s4.todo).toBeNull();
     expect(s4.summary).toBe('80 zajec · 2 roczniki bez przedmiotow w tym semestrze programu');
+  });
+});
+
+describe('roczniki z brakami kroku (Pokaz roczniki)', () => {
+  it('krok 6 liczy roczniki z zajeciami poza planem, krok 7 — bez terminow, nieaktualne albo z brakiem godzin', () => {
+    const cohorts = [
+      cohort({ id: 'a', sections: 10, placedSections: 8 }),
+      cohort({ id: 'b', stale: true }),
+      cohort({ id: 'c', shortSections: 2 }),
+      cohort({ id: 'd' }),
+    ];
+    expect(cohortsWithIssues(cohorts, STEP_ISSUES[6]!)).toBe(1);
+    expect(cohortsWithIssues(cohorts, STEP_ISSUES[7]!)).toBe(2);
+    expect(cohortsWithIssues(cohorts, STEP_ISSUES[5]!)).toBe(0);
   });
 });

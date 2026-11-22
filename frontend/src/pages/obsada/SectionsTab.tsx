@@ -49,6 +49,8 @@ export default function SectionsTab({
   allStaffedOverall,
   instructorFilter,
   onInstructorFilterChange,
+  onlyVacant,
+  onOnlyVacantChange,
   onEdit,
   scopeKey,
 }: {
@@ -59,12 +61,14 @@ export default function SectionsTab({
   allStaffedOverall: boolean;
   instructorFilter: Person | null;
   onInstructorFilterChange: (person: Person | null) => void;
+  /** „Tylko braki” — w adresie strony (kafelek „Zajec z brakami”, lista kontrolna). */
+  onlyVacant: boolean;
+  onOnlyVacantChange: (value: boolean) => void;
   onEdit: (group: SectionGroup) => void;
   /** Semestr i wydzial — zmiana wraca na pierwsza strone. */
   scopeKey: string;
 }) {
   const [cohortFilter, setCohortFilter] = useState('all');
-  const [onlyVacant, setOnlyVacant] = useState(false);
   const [search, setSearch] = useState('');
 
   const cohorts = useMemo(() => {
@@ -97,10 +101,13 @@ export default function SectionsTab({
   const setPage = (p: number) => setPageState({ key: filterKey, page: p });
   const pageGroups = shown.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
+  // Grupy (zajecia) z brakami w pokazanych pozycjach — ta sama liczba co kafelek „Zajec z brakami”.
+  const vacantRows = useMemo(() => shown.reduce((n, g) => n + g.sections.filter((x) => x.hasVacancy).length, 0), [shown]);
+
   const filtersActive = cohortFilter !== 'all' || onlyVacant || search.trim() !== '' || !!instructorFilter;
   const clearFilters = () => {
     setCohortFilter('all');
-    setOnlyVacant(false);
+    onOnlyVacantChange(false);
     setSearch('');
     onInstructorFilterChange(null);
   };
@@ -136,11 +143,12 @@ export default function SectionsTab({
           </Badge>
         )}
         <label className="flex items-center gap-2 text-sm">
-          <Checkbox checked={onlyVacant} onCheckedChange={(v) => setOnlyVacant(v === true)} />
+          <Checkbox checked={onlyVacant} onCheckedChange={(v) => onOnlyVacantChange(v === true)} />
           Tylko braki (NN / niepelna obsada)
         </label>
         <span className="text-sm text-muted-foreground">
-          {filtersActive ? `${shown.length} z ${groups.length} pozycji` : `${groups.length} pozycji`} · {rows.length} grup
+          {filtersActive ? `${shown.length} z ${groups.length} pozycji` : `${groups.length} pozycji`} ·{' '}
+          {onlyVacant ? `${vacantRows} grup z brakami` : `${rows.length} grup`}
         </span>
         {filtersActive && (
           <Button variant="ghost" size="sm" onClick={clearFilters}>

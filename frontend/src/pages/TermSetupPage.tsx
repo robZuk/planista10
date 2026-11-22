@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircle2, Circle, CircleAlert, EyeOff, FilterX } from 'lucide-react';
+import { CheckCircle2, Circle, CircleAlert, EyeOff, FilterX, ListFilter, X } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ import { CALENDAR_STATUS_LABELS, STUDY_MODE_LABELS } from '@/lib/labels';
 import { staleMessage } from '@/lib/planStaleness';
 import { cn } from '@/lib/utils';
 import { setupIssues, sortSetupCohorts } from '@/lib/setupIssues';
-import { setupSteps, type SetupStep, type StepState } from '@/lib/setupSteps';
+import { cohortsWithIssues, setupSteps, STEP_ISSUES, type SetupStep, type StepState } from '@/lib/setupSteps';
 import { CohortFacetFilters } from './cohorts/CohortFacetFilters';
 import { useCohortFilters } from './cohorts/useCohortFilters';
 import { useAuthStore } from '@/store/authStore';
@@ -29,7 +29,8 @@ const STATE_ICON: Record<StepState, { Icon: typeof CheckCircle2; className: stri
   todo: { Icon: Circle, className: 'text-muted-foreground', label: 'do zrobienia' },
 };
 
-function Step({ step }: { step: SetupStep }) {
+/** `cohorts` — roczniki z brakami tego kroku: przycisk zaweza do nich tabele ponizej. */
+function Step({ step, cohorts, onShowCohorts }: { step: SetupStep; cohorts: number; onShowCohorts?: () => void }) {
   const { Icon, className, label } = STATE_ICON[step.state];
   return (
     <Card>
@@ -46,9 +47,16 @@ function Step({ step }: { step: SetupStep }) {
             Do zrobienia: {step.todo}
           </p>
         )}
-        <Link to={step.to} className="text-sm font-medium text-primary hover:underline">
-          {step.link} →
-        </Link>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <Link to={step.to} className="text-sm font-medium text-primary hover:underline">
+            {step.link} →
+          </Link>
+          {onShowCohorts && cohorts > 0 && (
+            <button type="button" onClick={onShowCohorts} className="inline-flex items-center gap-1 text-sm font-medium text-amber-600 hover:underline dark:text-amber-400">
+              <ListFilter className="size-3.5" /> Pokaz roczniki ({cohorts})
+            </button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -72,6 +80,21 @@ export default function TermSetupPage() {
   });
 
   const [onlyIssues, setOnlyIssues] = useState(false);
+  // „Pokaz roczniki” z karty kroku: tabela tylko z rocznikami z brakami tego kroku (?krok=N w adresie).
+  const [params, setParams] = useSearchParams();
+  const stepParam = Number(params.get('krok'));
+  const stepFilter = STEP_ISSUES[stepParam] ? stepParam : null;
+  const tableRef = useRef<HTMLDivElement>(null);
+  const setStepFilter = (n: number | null) =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (n === null) next.delete('krok');
+        else next.set('krok', String(n));
+        return next;
+      },
+      { replace: true },
+    );
 
   const t = data?.totals;
   const key = term?.key ?? '';
@@ -82,11 +105,29 @@ export default function TermSetupPage() {
   // Roczniki z brakami na gorze; komorka z brakiem wyrozniona (lib/setupIssues).
   const rows = sortSetupCohorts(cohortFilter.visible).map((c) => ({ c, issues: setupIssues(c) }));
   const withIssues = rows.filter((r) => r.issues.size > 0).length;
-  const visibleRows = onlyIssues ? rows.filter((r) => r.issues.size > 0) : rows;
-  const filtered = cohortFilter.facetsActive || onlyIssues;
+  const visibleRows = stepFilter
+    ? rows.filter((r) => STEP_ISSUES[stepFilter]!.some((i) => r.issues.has(i)))
+    : onlyIssues
+      ? rows.filter((r) => r.issues.size > 0)
+      : rows;
+  const filtered = cohortFilter.facetsActive || onlyIssues || stepFilter !== null;
   const clearFilters = () => {
     cohortFilter.clearFacets();
     setOnlyIssues(false);
+    setStepFilter(null);
+  };
+  // Liczby na kartach dotycza calego wydzialu — filtry rocznikow zdejmujemy, zeby tabela pokazala wszystkie.
+  const showStepCohorts = (n: number) => {
+    cohortFilter.clearFacets();
+    setOnlyIssues(false);
+    setStepFilter(n);
+    requestAnimationFrame(() => tableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  };
+  const steps = data ? setupSteps(data, key) : [];
+  const STEP_FILTER_LABEL: Record<number, string> = {
+    5: 'krok 5 — braki obsady',
+    6: 'krok 6 — zajecia poza planem',
+    7: 'krok 7 — terminy (brak, nieaktualne albo za malo godzin)',
   };
   // Plan widza studenci i prowadzacy tylko z kalendarzy opublikowanych lub w archiwum (services/visibility).
   const unpublished = (data?.calendars ?? []).filter((c) => c.status === 'PLANNING');
@@ -112,8 +153,13 @@ export default function TermSetupPage() {
             })}
           </div>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {setupSteps(data, key).map((step) => (
-              <Step key={step.n} step={step} />
+            {steps.map((step) => (
+              <Step
+                key={step.n}
+                step={step}
+                cohorts={STEP_ISSUES[step.n] && step.state !== 'done' ? cohortsWithIssues(allCohorts, STEP_ISSUES[step.n]!) : 0}
+                onShowCohorts={() => showStepCohorts(step.n)}
+              />
             ))}
           </div>
 
@@ -137,8 +183,22 @@ export default function TermSetupPage() {
 
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <CohortFacetFilters filters={cohortFilter.filters} facets={cohortFilter.facets} onChange={cohortFilter.setFacet} loading={isPending} />
+            {stepFilter && (
+              <Badge variant="secondary" className="h-7 gap-1 border-amber-500/60 pr-1">
+                Roczniki: {STEP_FILTER_LABEL[stepFilter]}
+                <Button variant="ghost" size="icon" className="size-5" aria-label="Pokaz wszystkie roczniki" onClick={() => setStepFilter(null)}>
+                  <X />
+                </Button>
+              </Badge>
+            )}
             <label className="flex items-center gap-2">
-              <Checkbox checked={onlyIssues} onCheckedChange={(v) => setOnlyIssues(v === true)} />
+              <Checkbox
+                checked={onlyIssues}
+                onCheckedChange={(v) => {
+                  setOnlyIssues(v === true);
+                  if (v === true) setStepFilter(null);
+                }}
+              />
               Tylko roczniki z brakami ({withIssues})
             </label>
             <span className="text-muted-foreground">
@@ -158,7 +218,7 @@ export default function TermSetupPage() {
             Roczniki z brakami sa na gorze; kliknij rocznik, zeby otworzyc jego plan. Karty powyzej licza caly wydzial.
           </p>
 
-          <div className="overflow-x-auto rounded-lg border">
+          <div ref={tableRef} className="scroll-mt-4 overflow-x-auto rounded-lg border">
             <Table>
               <TableHeader>
                 <TableRow>

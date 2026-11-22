@@ -1,5 +1,5 @@
 import type { SetupStatus } from '@/types';
-import { setupIssues } from './setupIssues';
+import { setupIssues, type SetupIssue } from './setupIssues';
 
 /**
  * Karty listy kontrolnej "Przygotowanie semestru". Czysta funkcja — stan kazdego kroku
@@ -22,6 +22,21 @@ export interface SetupStep {
   todo: string | null;
   to: string;
   link: string;
+}
+
+/** Braki rocznikow liczone w krokach listy (filtr tabeli: `?krok=N`). */
+export const STEP_ISSUES: Record<number, SetupIssue[]> = {
+  5: ['VACANCIES'],
+  6: ['UNPLACED'],
+  7: ['NO_OCCURRENCES', 'STALE', 'SHORT_HOURS'],
+};
+
+/** Ile rocznikow ma ktorykolwiek z brakow kroku. */
+export function cohortsWithIssues(cohorts: Parameters<typeof setupIssues>[0][], issues: SetupIssue[]): number {
+  return cohorts.filter((c) => {
+    const has = setupIssues(c);
+    return issues.some((i) => has.has(i));
+  }).length;
 }
 
 /** Odmiana: 1 rocznik, 2-4 roczniki, 5+ rocznikow (12-14 jak 5+). */
@@ -139,7 +154,8 @@ export function setupSteps(data: SetupStatus, termKey: string): SetupStep[] {
         : t.vacancies > 0
           ? 'Uzupelnij prowadzacych — recznie, z CSV albo „Obsada z poprzedniego roku”'
           : null,
-      to: `/obsada/${termKey}`,
+      // Braki -> od razu zakladka Zajecia z filtrem „Tylko braki”.
+      to: t.vacancies > 0 ? `/obsada/${termKey}?widok=zajecia&braki=1` : `/obsada/${termKey}`,
       link: 'Obsada',
     },
     {
