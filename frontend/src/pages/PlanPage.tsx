@@ -323,17 +323,24 @@ export default function PlanPage() {
         actions={
           <>
             {plan && (
-              // Druk: wybrana grupa (jej zajecia, grupy nadrzedne i podgrupy) albo caly rocznik —
-              // strona na kazda grupe wykladowa (specjalnosc); niestacjonarne — strona na zjazd.
+              // Druk dla studentow — arkusz jak na stronie wydzialu: stacjonarne — rok studiow ze wszystkimi
+              // kierunkami wydzialu, niestacjonarne — wszystkie lata stopnia, dzien po dniu zjazdow.
+              // Z filtrem grupy — tylko kolumny tej grupy.
               <Button
                 variant="outline"
                 disabled={pdf.isPending}
                 onClick={() => {
                   const group = groups.find((g) => g.id === groupFilter);
-                  const what = cohort ? `${cohort.program.code} · sem. ${cohort.semester}` : 'Plan rocznika';
+                  const what = stationary
+                    ? `Arkusz planu · ${Math.ceil((cohort?.semester ?? 1) / 2)} rok, sem. ${cohort?.semester ?? '?'}`
+                    : 'Arkusz planu · studia niestacjonarne';
                   pdf.open(group ? { cohortId, groupId: group.id } : { cohortId }, group ? `${what} · ${group.name}` : what);
                 }}
-                title={groupFilter !== 'all' ? 'Plan wybranej grupy (PDF)' : 'Plan rocznika (PDF) — strona na kazda grupe wykladowa'}
+                title={
+                  groupFilter !== 'all'
+                    ? 'Arkusz planu wybranej grupy (PDF)'
+                    : 'Arkusz planu jak na stronie wydzialu (PDF) — wszystkie kierunki roku obok siebie'
+                }
               >
                 <FileDown /> {pdf.isPending ? 'Przygotowuje PDF…' : 'PDF'}
               </Button>

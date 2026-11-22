@@ -1,15 +1,13 @@
 import PDFDocument from 'pdfkit';
 import { formatMinutes } from './timeGrid';
 import { CLASS_LETTER, CLASS_NAME, printLanes, timeWindow, type PrintDocument, type PrintPage } from './planPrint';
+import { collectPdf, registerFonts } from './pdfFonts';
 
 /**
  * Rysowanie druku planu (A4 poziomo) — pdfkit, bez bazy. Strony przychodza gotowe
  * (lib/planPrint); tu tylko geometria: os minut, kolumny, kafelki w torach, stopka.
  * Czcionka DejaVu Sans Condensed — polskie znaki i waskie kafelki.
  */
-
-const FONT = require.resolve('dejavu-fonts-ttf/ttf/DejaVuSansCondensed.ttf');
-const FONT_BOLD = require.resolve('dejavu-fonts-ttf/ttf/DejaVuSansCondensed-Bold.ttf');
 
 const PAGE = { width: 841.89, height: 595.28 };
 const MARGIN = 24;
@@ -38,15 +36,8 @@ export function renderPlanPdf(document: PrintDocument, generatedAt: Date = new D
     bufferPages: true,
     info: { Title: document.title, Creator: 'Planista 10' },
   });
-  doc.registerFont('regular', FONT);
-  doc.registerFont('bold', FONT_BOLD);
-
-  const chunks: Buffer[] = [];
-  doc.on('data', (chunk: Buffer) => chunks.push(chunk));
-  const done = new Promise<Buffer>((resolve, reject) => {
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
-    doc.on('error', reject);
-  });
+  registerFonts(doc);
+  const done = collectPdf(doc);
 
   const pages = document.pages.length > 0 ? document.pages : [{ heading: document.title, subheading: '', columns: [], entries: [], emptyText: 'Brak zajęć w planie.' }];
   pages.forEach((page, i) => {
