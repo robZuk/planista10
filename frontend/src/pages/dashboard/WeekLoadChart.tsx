@@ -45,6 +45,8 @@ export function WeekLoadChart({
   }, [entries]);
 
   const total = data.reduce((sum, item) => sum + item.hours, 0);
+  // Szerokosc osi Y wg najdluzszej liczby — stale 40 px ucinalo setki godzin (cala uczelnia).
+  const axisWidth = 12 + String(Math.ceil(Math.max(...data.map((d) => d.hours)) * 1.25)).length * 8;
 
   return (
     <Card>
@@ -61,11 +63,11 @@ export function WeekLoadChart({
           </p>
         ) : (
           <ChartContainer config={config} className="h-56 w-full">
-            <BarChart accessibilityLayer data={data} margin={{ left: -20, right: 8 }}>
+            <BarChart accessibilityLayer data={data} margin={{ left: 0, right: 8 }}>
               {/* Siatka ma byc tlem, nie trescia — same poziome linie, bez pionowych. */}
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis dataKey="day" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis tickLine={false} axisLine={false} allowDecimals={false} width={40} />
+              <YAxis tickLine={false} axisLine={false} allowDecimals={false} width={axisWidth} />
               <ChartTooltip content={<ChartTooltipContent hideLabel={false} />} cursor={false} />
               <Bar dataKey="hours" fill="var(--color-hours)" radius={[4, 4, 0, 0]} maxBarSize={40} />
             </BarChart>

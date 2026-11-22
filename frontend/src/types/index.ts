@@ -201,7 +201,6 @@ export interface DashboardStats {
   students: { total: number };
   rooms: { total: number };
   buildings: { total: number };
-  templates: { total: number };
   entries: { total: number; todayCount: number };
   faculties: { total: number };
   subjects: { total: number };

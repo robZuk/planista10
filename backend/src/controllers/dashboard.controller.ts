@@ -52,7 +52,6 @@ export const getStats = asyncHandler(async (req, res) => {
     studentCount,
     roomCount,
     buildingCount,
-    placementCount,
     occurrenceCount,
     recentUsers,
     facultyCount,
@@ -68,7 +67,6 @@ export const getStats = asyncHandler(async (req, res) => {
     }),
     prisma.room.count({ where: fid ? { building: { facultyId: fid } } : {} }),
     prisma.building.count({ where: fid ? { facultyId: fid } : {} }),
-    prisma.placement.count({ where: fid ? { facultyId: fid } : {} }),
     prisma.occurrence.count({ where: fid ? { facultyId: fid } : {} }),
     admin
       ? prisma.user.findMany({
@@ -164,7 +162,6 @@ export const getStats = asyncHandler(async (req, res) => {
       students: { total: studentCount },
       rooms: { total: roomCount },
       buildings: { total: buildingCount },
-      templates: { total: placementCount },
       entries: {
         total: occurrenceCount,
         todayCount: todayEntries.length,

@@ -8,7 +8,6 @@ import {
   GraduationCap,
   LayoutGrid,
   ShieldCheck,
-  Table2,
   Users,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -136,7 +135,7 @@ export default function DashboardPage() {
         description={stats?.scope.kind === 'FACULTY' ? `${greeting} · liczby dla wydzialu: ${stats.scope.name}` : greeting}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 ${isAdmin ? 'xl:grid-cols-5' : 'xl:grid-cols-4'}`}>
         {isAdmin && (
           <StatTile
             label="Uzytkownicy"
@@ -168,12 +167,6 @@ export default function DashboardPage() {
           value={stats?.rooms.total ?? 0}
           hint={stats ? `w ${stats.buildings.total} budynkach` : undefined}
           icon={Building2}
-          loading={isPending}
-        />
-        <StatTile
-          label="Zajecia we wzorcach planu"
-          value={stats?.templates.total ?? 0}
-          icon={Table2}
           loading={isPending}
         />
         <StatTile
