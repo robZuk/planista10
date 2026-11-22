@@ -84,8 +84,11 @@ async function main() {
     },
     { timeout: 300_000 },
   );
+  // Terminy wydzialu kasujemy RAZ, przed przeliczeniem kalendarzy. Kasowanie w petli (przed kazdym
+  // kalendarzem) usuwalo tez terminy przeliczone chwile wczesniej dla innego kalendarza wydzialu —
+  // tak stacjonarne WE, WN i WZNJ zostaly bez terminow po przeliczeniu niestacjonarnych.
+  await prisma.occurrence.deleteMany({ where: { termId: zima.id, kind: 'DERIVED', section: { cohort: { program: { fieldOfStudy: { facultyId: we.id } } } } } });
   for (const cal of await prisma.termCalendar.findMany({ where: { termId: zima.id, facultyId: we.id } })) {
-    await prisma.occurrence.deleteMany({ where: { termId: zima.id, kind: 'DERIVED', section: { cohort: { program: { fieldOfStudy: { facultyId: we.id } } } } } });
     await prisma.termCalendar.update({ where: { id: cal.id }, data: { status: 'PLANNING' } });
     const { refresh } = await changeCalendarStatus(zima, { ...cal, status: 'PLANNING' }, 'PUBLISHED', () => prisma.termCalendar.update({ where: { id: cal.id }, data: { status: 'PUBLISHED' } }));
     const r = refresh.report as unknown as { total: number; conflicts: { reason?: string; kind?: string }[]; beyondHours: number; shortfalls: unknown[] } | null;
