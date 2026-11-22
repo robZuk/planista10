@@ -115,17 +115,29 @@ export interface MatResult {
 }
 
 /** Pierwszy konflikt slotu z zajetymi (sala, prowadzacy, grupy), albo null. */
+/** Wszystkie powody kolizji slotu z jedna zajetoscia (sala, prowadzacy, grupa — w tej kolejnosci). */
+export function conflictReasons(
+  slot: CandidateSlot,
+  b: BusySlot,
+  groupsOverlap: (a: string, b: string) => boolean,
+): MatConflict['reason'][] {
+  if (b.date !== slot.date || !minutesOverlap(slot.startMinute, slot.endMinute, b.startMinute, b.endMinute)) return [];
+  if (slot.jointKey && slot.jointKey === b.jointKey) return [];
+  const reasons: MatConflict['reason'][] = [];
+  if (slot.roomId !== null && b.roomId === slot.roomId) reasons.push('ROOM');
+  if (slot.instructorId && b.instructorId === slot.instructorId) reasons.push('INSTRUCTOR');
+  if (b.groupId !== null && groupsOverlap(slot.groupId, b.groupId)) reasons.push('GROUP');
+  return reasons;
+}
+
 export function findConflict(
   slot: CandidateSlot,
   busy: BusySlot[],
   groupsOverlap: (a: string, b: string) => boolean,
 ): { reason: MatConflict['reason']; with: string } | null {
   for (const b of busy) {
-    if (b.date !== slot.date || !minutesOverlap(slot.startMinute, slot.endMinute, b.startMinute, b.endMinute)) continue;
-    if (slot.jointKey && slot.jointKey === b.jointKey) continue;
-    if (slot.roomId !== null && b.roomId === slot.roomId) return { reason: 'ROOM', with: b.label };
-    if (slot.instructorId && b.instructorId === slot.instructorId) return { reason: 'INSTRUCTOR', with: b.label };
-    if (b.groupId !== null && groupsOverlap(slot.groupId, b.groupId)) return { reason: 'GROUP', with: b.label };
+    const [reason] = conflictReasons(slot, b, groupsOverlap);
+    if (reason) return { reason, with: b.label };
   }
   return null;
 }

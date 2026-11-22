@@ -11,7 +11,7 @@ import { gridFor, loadGrids, pickGrid, type FacultyGrids } from './timeGrids';
 /** Bloki obowiazujace w danym dniu tygodnia (siatka dnia albo podstawowa) — dla materializera. */
 const gridOfDay = (grids: FacultyGrids) => (day: WeekdayName) => grids.forDay(day).time;
 import {
-  findConflict,
+  conflictReasons,
   materialize,
   type BusySlot,
   type MatException,
@@ -542,12 +542,15 @@ export async function checkPlacement(
     const byDate = new Map<string, BusySlot[]>();
     for (const b of busy) byDate.set(b.date, [...(byDate.get(b.date) ?? []), b]);
     for (const d of dates) {
-      const conflict = findConflict(
-        { date: d.date, ...time, roomId: input.roomId, instructorId: input.instructorId, groupId: section.groupId, jointKey: input.jointKey },
-        byDate.get(d.date) ?? [],
-        overlap,
-      );
-      if (conflict) conflicts.push({ date: d.date, ...conflict });
+      // Wszystkie powody z tymi samymi zajeciami naraz ("ROOM+GROUP") — inaczej planista zmienia sale
+      // i dopiero wtedy slyszy, ze grupa tez ma wtedy zajecia.
+      const slot = { date: d.date, ...time, roomId: input.roomId, instructorId: input.instructorId, groupId: section.groupId, jointKey: input.jointKey };
+      for (const b of byDate.get(d.date) ?? []) {
+        const reasons = conflictReasons(slot, b, overlap);
+        if (reasons.length === 0) continue;
+        conflicts.push({ date: d.date, reason: reasons.join('+'), with: b.label });
+        break;
+      }
     }
   }
   const slots: BusySlot[] = time
