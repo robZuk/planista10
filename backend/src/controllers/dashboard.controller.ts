@@ -6,6 +6,7 @@ import { formatMinutes } from '../lib/timeGrid';
 import { upcomingDaysOff, type CalendarDayOff } from '../lib/daysOff';
 import { occurrenceScope, publishedCohortKeys } from '../services/visibility';
 import { activeCohorts } from '../services/sections';
+import { joinUnique, mergeJoint } from '../lib/jointMerge';
 
 const occurrenceInclude = {
   room: { select: { number: true, building: { select: { name: true } } } },
@@ -92,7 +93,7 @@ export const getStats = asyncHandler(async (req, res) => {
   const visible = scope?.publishedOnly ? await publishedCohortKeys(weekRows.map((o) => ({ termId: o.termId, cohortId: o.section.cohortId }))) : null;
   const shownRows = weekRows.filter((o) => !visible || visible.has(`${o.termId}|${o.section.cohortId}`));
   const groupName = await groupNamesOf(shownRows);
-  const week = shownRows
+  const mapped = shownRows
     .map((o) => ({
       id: o.id,
       classType: o.section.classType,
@@ -108,7 +109,14 @@ export const getStats = asyncHandler(async (req, res) => {
       // Godziny z terminu (rozne wydzialy moga miec rozne siatki godzin).
       startBlock: { order: o.startOrder, startTime: formatMinutes(o.startMinute) },
       endBlock: { order: o.endOrder, endTime: formatMinutes(o.endMinute) },
+      slot: { date: o.date.toISOString().slice(0, 10), startMinute: o.startMinute, endMinute: o.endMinute, jointKey: o.jointKey, roomId: o.roomId, instructorId: o.instructorId },
     }));
+  // Zajecia laczone liczone raz (jak Obciazenia): jedna pozycja z grupami po przecinku.
+  const week = mergeJoint(
+    mapped,
+    (e) => e.slot,
+    (first, rest) => ({ ...first, studentGroup: { ...first.studentGroup, name: joinUnique([first.studentGroup.name, ...rest.map((r) => r.studentGroup.name)]) } }),
+  ).map(({ slot: _slot, ...entry }) => entry);
 
   // Najblizsze dni wolne (karta planisty): swieta i przerwy/dni wolne kalendarzy w zakresie roli.
   const horizon = addDays(today, 60);
